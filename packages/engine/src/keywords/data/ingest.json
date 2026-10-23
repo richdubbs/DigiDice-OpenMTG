@@ -1,0 +1,50 @@
+{
+  "name": "ingest",
+  "rule": "702.115",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature deals combat damage to a player, that player exiles the top card of their library.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ deals combat damage to a player, that player exiles the top card of their library.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "damage",
+            "source": {
+              "self": true
+            },
+            "combat": true,
+            "recipient": {
+              "player": "any"
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "topCards",
+              "player": {
+                "ref": "event",
+                "role": "recipient"
+              },
+              "count": 1
+            },
+            "to": {
+              "zone": "exile"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

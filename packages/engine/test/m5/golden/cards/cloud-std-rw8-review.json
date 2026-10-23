@@ -1,0 +1,289 @@
+[
+ {
+  "card": "Bolg of the North",
+  "expect": "full",
+  "verified": "card wave 2 round std-rw8 review (Standard, held-out half: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (trg.enters, eff.t44.may.sacrifice.another, rf.whenYouDo, eff.damage.equal, cond.if, eff.e16.amass.goblins.whereX): when it enters you may sacrifice another creature (an optional payment, CR 118.12); when you do, a reflexive trigger (CR 603.12, 603.12a) targeting another creature: Bolg deals damage equal to the sacrificed creature's power, read from its last known information as the trigger is created (CR 608.2h); if excess damage was dealt (CR 120.4a, 120.10), amass Goblins X with X that excess (CR 701.47a); cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "pay",
+         "as": "paid",
+         "cost": {
+          "other": [
+           {
+            "kind": "sacrifice",
+            "count": 1,
+            "filter": {
+             "anyOf": [
+              {
+               "types": [
+                "Creature"
+               ]
+              }
+             ],
+             "other": true
+            }
+           }
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "reflexive",
+         "do": [
+          {
+           "op": "damage",
+           "amount": {
+            "q": "stat",
+            "of": {
+             "ref": "costSacrificed"
+            },
+            "stat": "power"
+           },
+           "as": "dealt",
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "target",
+            "id": "t0"
+           }
+          },
+          {
+           "op": "if",
+           "cond": {
+            "op": ">",
+            "cond": "compare",
+            "left": {
+             "q": "excessDamage",
+             "step": "dealt"
+            },
+            "right": 0
+           },
+           "then": [
+            {
+             "op": "action",
+             "action": "amass",
+             "arg": "Goblin",
+             "n": {
+              "q": "excessDamage",
+              "step": "dealt"
+             },
+             "who": {
+              "ref": "you"
+             }
+            }
+           ]
+          }
+         ],
+         "targets": [
+          {
+           "kind": "object",
+           "filter": {
+            "other": true,
+            "types": [
+             "Creature"
+            ]
+           },
+           "id": "t0",
+           "max": 1,
+           "min": 1
+          }
+         ],
+         "when": {
+          "did": "paid"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bullseye, Death Dealer",
+  "expect": "full",
+  "verified": "card wave 2 round std-rw8 review (Standard, held-out half: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (trg.enters, eff.t44.may.sacrifice.orDiscardNonland, rf.whenYouDo, eff.damage, cost.stdrw8.oneOf): when it enters you may sacrifice an artifact or discard a nonland card (a payment of one of two costs, CR 118.12); when you do (either payment), a reflexive trigger deals 2 damage to any target (CR 603.12, 603.12a); {3}, {T} and a choice between sacrificing an artifact and discarding a nonland card (CR 601.2b, 602.2b, 118.3): 2 damage to any target; cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "pay",
+         "as": "paid",
+         "cost": {
+          "other": [
+           {
+            "kind": "sacrifice",
+            "count": 1,
+            "filter": {
+             "types": [
+              "Artifact"
+             ]
+            }
+           }
+          ]
+         },
+         "else": [
+          {
+           "op": "pay",
+           "cost": {
+            "other": [
+             {
+              "kind": "discard",
+              "count": 1,
+              "filter": {
+               "notTypes": [
+                "Land"
+               ]
+              }
+             }
+            ]
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "reflexive",
+         "do": [
+          {
+           "op": "damage",
+           "amount": 2,
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ],
+         "targets": [
+          {
+           "kind": "anyTarget",
+           "id": "t0",
+           "max": 1,
+           "min": 1
+          }
+         ],
+         "when": {
+          "did": "paid"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        }
+       ],
+       "other": [
+        {
+         "kind": "oneOf",
+         "options": [
+          {
+           "other": [
+            {
+             "kind": "sacrifice",
+             "count": 1,
+             "filter": {
+              "types": [
+               "Artifact"
+              ]
+             }
+            }
+           ]
+          },
+          {
+           "other": [
+            {
+             "kind": "discard",
+             "count": 1,
+             "filter": {
+              "notTypes": [
+               "Land"
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "damage",
+         "amount": 2,
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "anyTarget",
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

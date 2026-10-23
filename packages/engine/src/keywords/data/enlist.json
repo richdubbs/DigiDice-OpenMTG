@@ -1,0 +1,65 @@
+{
+  "name": "enlist",
+  "rule": "702.154",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "As this creature attacks, you may tap a nonattacking creature you control without summoning sickness. When you do, add its power to this creature's until end of turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Enlist",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "enlist",
+          "then": {
+            "as": "enlisted",
+            "do": [
+              {
+                "op": "reflexive",
+                "when": {
+                  "did": "enlisted"
+                },
+                "targets": [],
+                "do": [
+                  {
+                    "op": "effect",
+                    "duration": {
+                      "d": "endOfTurn"
+                    },
+                    "effects": [
+                      {
+                        "s": "continuous",
+                        "affects": {
+                          "ref": "self"
+                        },
+                        "mods": [
+                          {
+                            "layer": "7c",
+                            "power": {
+                              "q": "stat",
+                              "stat": "power",
+                              "of": {
+                                "ref": "bound",
+                                "name": "enlisted"
+                              }
+                            },
+                            "toughness": 0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

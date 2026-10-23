@@ -1,0 +1,363 @@
+[
+  {
+    "id": "eff.e27.emblem.you",
+    "kind": "effect",
+    "cr": [
+      "CR 114.1",
+      "CR 114.2",
+      "CR 114.4"
+    ],
+    "pattern": "you get an emblem with {a:Abilities}",
+    "build": {
+      "op": "createEmblem",
+      "who": {
+        "ref": "you"
+      },
+      "abilities": "$a"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "You get an emblem with \"Creatures you control get +1/+1.\""
+      },
+      {
+        "text": "Draw a card. You get an emblem with \"Whenever you cast a spell, draw a card.\""
+      },
+      {
+        "text": "-5: You get an emblem with \"Whenever you gain life, target opponent loses that much life.\""
+      }
+    ],
+    "counterExamples": [
+      "Target opponent gets an emblem with \"Creatures you control get +1/+1.\"",
+      "You get two emblems with \"Creatures you control get +1/+1.\"",
+      "Each player gets an emblem with \"Creatures you control get +1/+1.\""
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e27.asTransforms.emblem",
+    "kind": "static",
+    "cr": [
+      "CR 712.20",
+      "CR 614.1e",
+      "CR 701.28a",
+      "CR 114.2"
+    ],
+    "pattern": "as ~ transforms into ~ , you get an emblem with {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "becomes",
+            "what": "transformed",
+            "object": {
+              "self": true
+            }
+          },
+          "body": {
+            "b": "during",
+            "do": [
+              {
+                "op": "createEmblem",
+                "who": {
+                  "ref": "you"
+                },
+                "abilities": "$a"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "needs": [
+      "body:during",
+      "feature:replace.on.transform"
+    ],
+    "examples": [
+      {
+        "text": "As this permanent transforms into ~, you get an emblem with \"Creatures you control get +1/+1.\""
+      },
+      {
+        "text": "As this creature transforms into ~, you get an emblem with \"Whenever you cast a spell, draw a card.\""
+      }
+    ],
+    "counterExamples": [
+      "When this creature transforms into ~, you get an emblem with \"Creatures you control get +1/+1.\"",
+      "As this creature enters, you get an emblem with \"Creatures you control get +1/+1.\""
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.e27.equip.dash.once",
+    "kind": "ability",
+    "cr": [
+      "CR 702.6a",
+      "CR 602.5b",
+      "CR 118.1"
+    ],
+    "pattern": "equip -- {c:Cost} . activate only once each turn",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": "$c",
+      "limit": {
+        "per": "turn",
+        "max": 1
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "examples": [
+      {
+        "text": "Equip--Pay 2 life. Activate only once each turn.",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "equip",
+            "cost": {
+              "other": [
+                {
+                  "kind": "payLife",
+                  "amount": 2
+                }
+              ]
+            },
+            "limit": {
+              "per": "turn",
+              "max": 1
+            }
+          }
+        ]
+      },
+      {
+        "text": "Equip--Sacrifice another creature. Activate only once each turn."
+      }
+    ],
+    "counterExamples": [
+      "Equip--Pay 2 life. Activate only twice each turn.",
+      "Equip--Pay 2 life. Activate only as a sorcery."
+    ],
+    "status": "stable",
+    "since": 8,
+    "consumes": [
+      "only",
+      "each"
+    ]
+  },
+  {
+    "id": "kw.e27.equip.or.payFirst",
+    "kind": "ability",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2b",
+      "CR 602.2b",
+      "CR 118.3"
+    ],
+    "pattern": "equip -- pay {m:ManaCost} or {c:Cost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "other": [
+          {
+            "kind": "oneOf",
+            "options": [
+              {
+                "mana": "$m"
+              },
+              "$c"
+            ]
+          }
+        ]
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "examples": [
+      {
+        "text": "Equip--Pay {2} or discard a card.",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "equip",
+            "cost": {
+              "other": [
+                {
+                  "kind": "oneOf",
+                  "options": [
+                    {
+                      "mana": [
+                        {
+                          "kind": "generic",
+                          "amount": 2
+                        }
+                      ]
+                    },
+                    {
+                      "other": [
+                        {
+                          "kind": "discard",
+                          "count": 1
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Equip--Pay {1}{R} or pay 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Equip--Pay {2} and discard a card.",
+      "Equip--Pay {2} or discard a card at random or sacrifice a land."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.e27.equip.or.paySecond",
+    "kind": "ability",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2b",
+      "CR 602.2b",
+      "CR 118.3"
+    ],
+    "pattern": "equip -- {c:Cost} or pay {m:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "other": [
+          {
+            "kind": "oneOf",
+            "options": [
+              "$c",
+              {
+                "mana": "$m"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "examples": [
+      {
+        "text": "Equip--Discard a card or pay {2}.",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "equip",
+            "cost": {
+              "other": [
+                {
+                  "kind": "oneOf",
+                  "options": [
+                    {
+                      "other": [
+                        {
+                          "kind": "discard",
+                          "count": 1
+                        }
+                      ]
+                    },
+                    {
+                      "mana": [
+                        {
+                          "kind": "generic",
+                          "amount": 2
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Equip--Sacrifice a creature or pay {3}."
+      }
+    ],
+    "counterExamples": [
+      "Equip--Discard a card and pay {2}.",
+      "Equip--Discard a card or pay {2} or sacrifice a land."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "kw.typecycling.halfling",
+    "kind": "ability",
+    "cr": [
+      "CR 702.29e",
+      "CR 702.29f"
+    ],
+    "pattern": "halflingcycling {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "typecycling",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "zone": "library",
+        "subtypes": [
+          "Halfling"
+        ]
+      }
+    },
+    "needs": [
+      "keyword:typecycling"
+    ],
+    "examples": [
+      {
+        "text": "Halflingcycling {3}",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "typecycling",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 3
+                }
+              ]
+            },
+            "filter": {
+              "zone": "library",
+              "subtypes": [
+                "Halfling"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Flying, halflingcycling {1}{G}"
+      }
+    ],
+    "counterExamples": [
+      "Halflingcycling",
+      "Halflingcycling {T}"
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

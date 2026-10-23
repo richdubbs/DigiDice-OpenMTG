@@ -1,0 +1,71 @@
+[
+  {
+    "id": "eff.p2pr2.clash",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.30a",
+      "CR 701.30b",
+      "CR 701.30c"
+    ],
+    "pattern": "clash with {p:Player}",
+    "build": {
+      "op": "clash",
+      "who": {
+        "ref": "you"
+      },
+      "with": "$p"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "You gain 3 life. Clash with an opponent. If you win, draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks, clash with defending player. If you win, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Clash with an opponent twice.",
+      "Each player clashes.",
+      "You gain 3 life. Clash with an opponent. If you win the flip, draw a card."
+    ]
+  },
+  {
+    "id": "eff.p2pr2.ifClash.win",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.30c",
+      "CR 608.2c"
+    ],
+    "pattern": "if you win , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "clash",
+        "won": true
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Clash with an opponent. If you win, you gain 4 life."
+      },
+      {
+        "text": "Clash with an opponent. If you win, draw two cards. Otherwise, you lose 1 life."
+      }
+    ],
+    "counterExamples": [
+      "If you win, draw two cards.",
+      "Draw a card. If you win, you gain 4 life.",
+      "Clash with an opponent. If you lose, draw two cards."
+    ]
+  }
+]

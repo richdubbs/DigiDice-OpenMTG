@@ -1,0 +1,193 @@
+[
+  {
+    "id": "eff.stdcosts1.search.playerGraveyardHandLibrary.thatName.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 201.2",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 406.1"
+    ],
+    "pattern": "search {p:Player} 's graveyard , hand [,] and library for any number of cards with that name and exile them",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "owner": "$p",
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "allZones": true,
+        "filter": {
+          "sharesWith": {
+            "with": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "singular",
+                "head": "card",
+                "text": "that name"
+              }
+            },
+            "quality": "name"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Exile a card from an opponent's graveyard. Then search its owner's graveyard, hand, and library for any number of cards with that name and exile them. Then that player shuffles."
+      },
+      {
+        "text": "Exile a card from an opponent's graveyard. Search its owner's graveyard, hand and library for any number of cards with that name and exile them. That player shuffles, then draws a card for each card exiled from their hand this way."
+      }
+    ],
+    "counterExamples": [
+      "Exile a card from an opponent's graveyard. Then search its owner's graveyard, hand, and library for any number of cards with that name and put them into your hand. Then that player shuffles.",
+      "Exile a card from an opponent's graveyard. Then search its owner's graveyard and library for any number of cards with that name and exile them. Then that player shuffles.",
+      "Exile a card from an opponent's graveyard. Then search its owner's graveyard, hand, and library for any number of cards with that power and exile them. Then that player shuffles."
+    ]
+  },
+  {
+    "id": "eff.stdcosts1.forEach.counterOn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 609.3"
+    ],
+    "pattern": "[then] for each {k:CounterKind} counter on {o:Obj} , {e:Effects}",
+    "build": {
+      "op": "repeat",
+      "times": {
+        "q": "counters",
+        "on": "$o",
+        "kind": "$k"
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, put a fate counter on it. Then for each fate counter on it, you gain 2 life."
+      },
+      {
+        "text": "Whenever this creature blocks, put a fate counter on it. Then for each fate counter on it, each opponent loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, put a fate counter on it. Then for each fate counter on each creature, you gain 2 life.",
+      "Whenever this creature attacks, put a fate counter on it. Then for each fate counter, you gain 2 life.",
+      "Whenever this creature attacks, put a fate counter on it. Then for each fate counter on it you gain 2 life."
+    ]
+  },
+  {
+    "id": "cm.stdcosts1.additional.sacrificeAny.lessForEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 701.21a"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may sacrifice any number of {f:Filter} . ~ costs {m:ManaCost} less to cast for each permanent sacrificed this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$f",
+                "count": "any"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "sacrificed",
+          "announceCount": true
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "costCount",
+                  "name": "sacrificed"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "may",
+      "any number",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, you may sacrifice any number of artifacts. This spell costs {1} less to cast for each permanent sacrificed this way."
+      },
+      {
+        "text": "As an additional cost to cast this spell, you may sacrifice any number of tokens. This spell costs {2} less to cast for each permanent sacrificed this way."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast this spell, you may sacrifice any number of artifacts. This spell costs {1} more to cast for each permanent sacrificed this way.",
+      "As an additional cost to cast this spell, you may discard any number of cards. This spell costs {1} less to cast for each card discarded this way.",
+      "As an additional cost to cast this spell, sacrifice any number of artifacts. This spell costs {1} less to cast for each permanent sacrificed this way."
+    ]
+  }
+]

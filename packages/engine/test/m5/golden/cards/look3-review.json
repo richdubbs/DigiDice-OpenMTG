@@ -1,0 +1,734 @@
+[
+  {
+    "card": "Risen Reef",
+    "expect": "full",
+    "verified": "LOOK3 review, by hand against the Oracle text and the rules cited (eff.look3.ifNotPut.battlefield): the trigger is the stable trg.selfOrAnother.enters reading, any Elemental you control entering, the object itself one as it enters (CR 603.6a, 603.2); the look names the one top card (`seen`, CR 701.20e, LOOK1) and 'If it's a land card' reads it as the ability resolves (CR 608.2c, no intervening if: CR 603.4); 'you may put it onto the battlefield tapped' is your option of moving that card, under your control (CR 110.2a); 'If you don't put the card onto the battlefield' is the negation of whether that move was performed, true when the card was not a land card (the move never ran) and when you declined, so it is no else of the condition; 'put it into your hand' moves the same card looked at, never the Elemental that entered (CR 608.2c, 400.3: its owner's hand)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "subtypes": [
+                      "Elemental"
+                    ],
+                    "controller": "you"
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 1
+                  },
+                  "as": "seen"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "matches",
+                    "object": {
+                      "ref": "bound",
+                      "name": "seen"
+                    },
+                    "filter": {
+                      "types": [
+                        "Land"
+                      ],
+                      "isCard": true
+                    }
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "battlefield",
+                            "controller": {
+                              "ref": "you"
+                            },
+                            "tapped": true
+                          },
+                          "as": "moved"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "moved",
+                    "not": true,
+                    "to": "battlefield"
+                  },
+                  "then": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "bound",
+                        "name": "seen"
+                      },
+                      "to": {
+                        "zone": "hand"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Parcelbeast",
+    "expect": "full",
+    "verified": "LOOK3 review, by hand against the Oracle text and the rules cited (eff.look3.ifNotPut.battlefield): mutate with its cost (CR 702.140a); the activated ability costs {1} and {T} (CR 602.1); its effect is the look at the one top card (`seen`, CR 701.20e), the option to put a land card onto the battlefield under your control (CR 608.2c, 110.2a), and 'If you don't put the card onto the battlefield, put it into your hand' as the negated `did` of that move: a nonland card or a declined land goes to your hand (CR 608.2c, 400.3)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "mutate",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "colored",
+                  "color": "G"
+                },
+                {
+                  "kind": "colored",
+                  "color": "U"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "activated",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 1
+                }
+              ],
+              "tap": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 1
+                  },
+                  "as": "seen"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "matches",
+                    "object": {
+                      "ref": "bound",
+                      "name": "seen"
+                    },
+                    "filter": {
+                      "types": [
+                        "Land"
+                      ],
+                      "isCard": true
+                    }
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "battlefield",
+                            "controller": {
+                              "ref": "you"
+                            }
+                          },
+                          "as": "moved"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "moved",
+                    "not": true,
+                    "to": "battlefield"
+                  },
+                  "then": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "bound",
+                        "name": "seen"
+                      },
+                      "to": {
+                        "zone": "hand"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "N'Yami-Class Mother Ship",
+    "expect": "full",
+    "verified": "LOOK3 review, by hand against the Oracle text and the rules cited (eff.look3.ifNotPut.battlefield): flying, vigilance, haste and crew 3 (CR 702.9, 702.20, 702.10, 702.122); the trigger is combat damage the object itself deals to a player (CR 510.1, 603.2); 'it' after the look is the card looked at, never the Vehicle that dealt the damage (LOOK1, CR 701.20e); 'If it's a permanent card' is an artifact, battle, creature, enchantment, land or planeswalker card (CR 110.4a); the option puts it onto the battlefield under your control (CR 110.2a); 'If you don't put it onto the battlefield, put it into your hand' is the negated `did` of that move, so a nonpermanent card or a declined permanent card goes to your hand (CR 608.2c, 400.3)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "flying"
+          },
+          {
+            "kind": "keyword",
+            "keyword": "vigilance"
+          },
+          {
+            "kind": "keyword",
+            "keyword": "haste"
+          },
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "damage",
+                  "source": {
+                    "self": true
+                  },
+                  "combat": true,
+                  "recipient": {
+                    "player": "any"
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 1
+                  },
+                  "as": "seen"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "matches",
+                    "object": {
+                      "ref": "bound",
+                      "name": "seen"
+                    },
+                    "filter": {
+                      "types": [
+                        "Artifact",
+                        "Battle",
+                        "Creature",
+                        "Enchantment",
+                        "Land",
+                        "Planeswalker"
+                      ],
+                      "isCard": true
+                    }
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "battlefield",
+                            "controller": {
+                              "ref": "you"
+                            }
+                          },
+                          "as": "moved"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "moved",
+                    "not": true,
+                    "to": "battlefield"
+                  },
+                  "then": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "bound",
+                        "name": "seen"
+                      },
+                      "to": {
+                        "zone": "hand"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "kind": "keyword",
+            "keyword": "crew",
+            "amount": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Cabaretti Ascendancy",
+    "expect": "full",
+    "verified": "Merge of PR #12 into LOOK1-3 (std-integration), by hand against the Oracle text and the rules cited (eff.look3.ifNotPut.hand, with Cloud std-fin's eff.stdfin.may.reveal.putIntoHand): the trigger is the beginning of your upkeep (CR 503.1a, 603.2); the look names the one top card (`seen`, CR 701.20e) and 'If it's a creature or planeswalker card' reads it as the ability resolves (CR 608.2c, not an intervening if, CR 603.4); the option reveals that card and puts it into your hand (CR 701.20a, 608.2c), the move named `moved`; 'If you don't put the card into your hand' is that move not performed, declined or never offered because the card is neither (CR 608.2c: a missing result is not performed), and then you may put the card looked at, still on top, on the bottom of your library (CR 400.7: it never left the library, the same card).",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "step",
+                  "step": "upkeep",
+                  "whose": "you"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 1
+                  },
+                  "as": "seen"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "matches",
+                    "object": {
+                      "ref": "bound",
+                      "name": "seen"
+                    },
+                    "filter": {
+                      "types": [
+                        "Creature",
+                        "Planeswalker"
+                      ],
+                      "isCard": true
+                    }
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "reveal",
+                          "who": {
+                            "ref": "you"
+                          },
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          }
+                        },
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "hand"
+                          },
+                          "as": "moved"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "moved",
+                    "not": true,
+                    "to": "hand"
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "library",
+                            "position": "bottom"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Sarinth Steelseeker",
+    "expect": "full",
+    "verified": "Merge of PR #12 into LOOK1-3 (std-integration), by hand against the Oracle text and the rules cited (eff.look3.ifNotPut.hand, with Cloud std-fin's eff.stdfin.may.reveal.putIntoHand): the trigger is an artifact you control entering the battlefield (CR 603.6a, 603.2); the look names the one top card (`seen`, CR 701.20e), never the artifact that entered (LOOK1); 'If it's a land card' reads it as the ability resolves (CR 608.2c); the option reveals it and puts it into your hand (CR 701.20a), the move named `moved`; 'If you don't put the card into your hand' is that move not performed, declined or never offered (CR 608.2c), and then you may put the card looked at into your graveyard (CR 400.7: the same card, still on top of the library).",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "types": [
+                      "Artifact"
+                    ],
+                    "controller": "you"
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 1
+                  },
+                  "as": "seen"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "matches",
+                    "object": {
+                      "ref": "bound",
+                      "name": "seen"
+                    },
+                    "filter": {
+                      "types": [
+                        "Land"
+                      ],
+                      "isCard": true
+                    }
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "reveal",
+                          "who": {
+                            "ref": "you"
+                          },
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          }
+                        },
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "hand"
+                          },
+                          "as": "moved"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "moved",
+                    "not": true,
+                    "to": "hand"
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "graveyard"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Territory Culler",
+    "expect": "full",
+    "verified": "Merge of PR #12 into LOOK1-3 (std-integration), by hand against the Oracle text and the rules cited (eff.look3.ifNotPut.hand, with Cloud std-fin's eff.stdfin.may.reveal.putIntoHand): devoid and reach (CR 702.114, 702.17); Landfall is an ability word with no rules meaning (CR 207.2c); the trigger is a land you control entering the battlefield (CR 603.6a); the look names the one top card (`seen`, CR 701.20e), never the land that entered (LOOK1); 'If it's a creature card' reads it as the ability resolves (CR 608.2c); the option reveals it and puts it into your hand (CR 701.20a), the move named `moved`; 'If you don't put the card into your hand' is that move not performed, declined or never offered (CR 608.2c), and then you may put the card looked at into your graveyard (CR 400.7).",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "devoid"
+          },
+          {
+            "kind": "keyword",
+            "keyword": "reach"
+          },
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "types": [
+                      "Land"
+                    ],
+                    "controller": "you"
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 1
+                  },
+                  "as": "seen"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "matches",
+                    "object": {
+                      "ref": "bound",
+                      "name": "seen"
+                    },
+                    "filter": {
+                      "types": [
+                        "Creature"
+                      ],
+                      "isCard": true
+                    }
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "reveal",
+                          "who": {
+                            "ref": "you"
+                          },
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          }
+                        },
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "hand"
+                          },
+                          "as": "moved"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "moved",
+                    "not": true,
+                    "to": "hand"
+                  },
+                  "then": [
+                    {
+                      "op": "may",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "do": [
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "seen"
+                          },
+                          "to": {
+                            "zone": "graveyard"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

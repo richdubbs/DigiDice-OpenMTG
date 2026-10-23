@@ -1,0 +1,1118 @@
+[
+ {
+  "card": "Inscription of Ruin",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: kicker {2}{B}{B}; choose one, or any number of the three modes when kicked (the cast record's kicker, read as the modes are chosen): target opponent discards two cards; return target creature card with mana value 2 or less from your graveyard to the battlefield under your control; destroy target creature with mana value 3 or less (no template; the reading 'choose any number instead' of lower/ability.ts#conditionalModeCount, render family any-number-instead). (CR 700.2, 601.2b, 702.33d, 701.9a, 701.8a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 2,
+             "op": "discard",
+             "who": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "player",
+             "max": 1,
+             "min": 1,
+             "players": {
+              "who": "opponent"
+             }
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "move",
+             "to": {
+              "controller": {
+               "ref": "you"
+              },
+              "zone": "battlefield"
+             },
+             "what": {
+              "id": "t1",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "isCard": true,
+              "manaValue": {
+               "op": "<=",
+               "value": 2
+              },
+              "owner": "you",
+              "types": [
+               "Creature"
+              ],
+              "zone": "graveyard"
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "destroy",
+             "what": {
+              "id": "t2",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "manaValue": {
+               "op": "<=",
+               "value": 3
+              },
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t2",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ],
+        "override": {
+         "max": 3,
+         "min": 1,
+         "when": {
+          "cond": "wasCast",
+          "kicked": true
+         }
+        }
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Disciple of Perdition",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: when it dies, choose one, or one or both when its controller has exactly 13 life as the modes are chosen: you draw a card and lose 1 life; exile every card of target opponent's graveyard and that player loses 1 life (no template; Cond 'you have exactly N life', parser/holes/cond.ts#youHave). (CR 700.2, 119.1, 603.3c, 121.1, 119.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "op": "draw",
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "amount": 1,
+             "op": "loseLife",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "move",
+             "to": {
+              "zone": "exile"
+             },
+             "what": {
+              "filter": {
+               "owner": {
+                "id": "t0",
+                "ref": "target"
+               },
+               "zone": "graveyard"
+              },
+              "ref": "each"
+             }
+            },
+            {
+             "amount": 1,
+             "op": "loseLife",
+             "who": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "player",
+             "max": 1,
+             "min": 1,
+             "players": {
+              "who": "opponent"
+             }
+            }
+           ]
+          }
+         }
+        ],
+        "override": {
+         "max": 2,
+         "min": 1,
+         "when": {
+          "cond": "compare",
+          "left": {
+           "of": {
+            "ref": "you"
+           },
+           "q": "life"
+          },
+          "op": "==",
+          "right": 13
+         }
+        }
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "self": true
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fury Charm",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: choose one: destroy target artifact; target creature gets +1/+1 and gains trample until end of turn; remove two time counters from target permanent or suspended card (a card in exile with suspend and a time counter on it, parser/holes/object.ts#SUSPENDED_CARD; no template). (CR 700.2, 701.8a, 613.4c, 702.62b, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "destroy",
+             "what": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Artifact"
+              ]
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "id": "t1",
+                "ref": "target"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 1,
+                 "toughness": 1
+                },
+                {
+                 "add": [
+                  {
+                   "keyword": "trample",
+                   "kind": "keyword"
+                  }
+                 ],
+                 "layer": 6
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 2,
+             "from": {
+              "id": "t2",
+              "ref": "target"
+             },
+             "kind": "time",
+             "op": "removeCounters"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "anyOf": [
+               {
+                "counters": {
+                 "kind": "time"
+                },
+                "isCard": true,
+                "keyword": "suspend",
+                "zone": "exile"
+               },
+               {}
+              ],
+              "zone": [
+               "battlefield",
+               "exile"
+              ]
+             },
+             "id": "t2",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Timebender",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: morph {U}; when it is turned face up, choose one: remove two time counters from target permanent or suspended card; put two time counters on target permanent with a time counter on it or suspended card (the suspended card as in Fury Charm; no template). (CR 702.37e, 700.2, 702.62b, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "morph",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 2,
+             "from": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "kind": "time",
+             "op": "removeCounters"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "anyOf": [
+               {
+                "counters": {
+                 "kind": "time"
+                },
+                "isCard": true,
+                "keyword": "suspend",
+                "zone": "exile"
+               },
+               {}
+              ],
+              "zone": [
+               "battlefield",
+               "exile"
+              ]
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 2,
+             "kind": "time",
+             "on": {
+              "id": "t1",
+              "ref": "target"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "anyOf": [
+               {
+                "counters": {
+                 "kind": "time"
+                },
+                "isCard": true,
+                "keyword": "suspend",
+                "zone": "exile"
+               },
+               {
+                "counters": {
+                 "kind": "time"
+                }
+               }
+              ],
+              "zone": [
+               "battlefield",
+               "exile"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "turnedFaceUp"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Shivan Sand-Mage",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: when it enters, choose one: remove two time counters from target permanent or suspended card; put two time counters on target permanent with a time counter on it or suspended card; suspend 4 -- {R} (the suspended card as in Fury Charm; no template). (CR 603.3c, 700.2, 702.62a, 702.62b, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 2,
+             "from": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "kind": "time",
+             "op": "removeCounters"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "anyOf": [
+               {
+                "counters": {
+                 "kind": "time"
+                },
+                "isCard": true,
+                "keyword": "suspend",
+                "zone": "exile"
+               },
+               {}
+              ],
+              "zone": [
+               "battlefield",
+               "exile"
+              ]
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 2,
+             "kind": "time",
+             "on": {
+              "id": "t1",
+              "ref": "target"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "anyOf": [
+               {
+                "counters": {
+                 "kind": "time"
+                },
+                "isCard": true,
+                "keyword": "suspend",
+                "zone": "exile"
+               },
+               {
+                "counters": {
+                 "kind": "time"
+                }
+               }
+              ],
+              "zone": [
+               "battlefield",
+               "exile"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "amount": 4,
+      "cost": {
+       "mana": [
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "suspend",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Timecrafting",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: choose one: remove X time counters from target permanent or suspended card; put X time counters on target permanent with a time counter on it or suspended card; X is the spell's own X (the suspended card as in Fury Charm; no template). (CR 700.2, 107.3a, 702.62b, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": {
+              "q": "X"
+             },
+             "from": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "kind": "time",
+             "op": "removeCounters"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "anyOf": [
+               {
+                "counters": {
+                 "kind": "time"
+                },
+                "isCard": true,
+                "keyword": "suspend",
+                "zone": "exile"
+               },
+               {}
+              ],
+              "zone": [
+               "battlefield",
+               "exile"
+              ]
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": {
+              "q": "X"
+             },
+             "kind": "time",
+             "on": {
+              "id": "t1",
+              "ref": "target"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "anyOf": [
+               {
+                "counters": {
+                 "kind": "time"
+                },
+                "isCard": true,
+                "keyword": "suspend",
+                "zone": "exile"
+               },
+               {
+                "counters": {
+                 "kind": "time"
+                }
+               }
+              ],
+              "zone": [
+               "battlefield",
+               "exile"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dust of Moments",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: choose one: remove two time counters from each permanent and each suspended card; put two time counters on each permanent with a time counter on it and each suspended card (the union of the battlefield group and the suspended cards in exile; 'suspended card' as a noun of parser/holes/filter.ts; no template). (CR 700.2, 702.62b, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 2,
+             "from": {
+              "of": [
+               {
+                "filter": {},
+                "ref": "each"
+               },
+               {
+                "filter": {
+                 "counters": {
+                  "kind": "time"
+                 },
+                 "isCard": true,
+                 "keyword": "suspend",
+                 "zone": "exile"
+                },
+                "ref": "each"
+               }
+              ],
+              "ref": "union"
+             },
+             "kind": "time",
+             "op": "removeCounters"
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 2,
+             "kind": "time",
+             "on": {
+              "of": [
+               {
+                "filter": {
+                 "counters": {
+                  "kind": "time"
+                 }
+                },
+                "ref": "each"
+               },
+               {
+                "filter": {
+                 "counters": {
+                  "kind": "time"
+                 },
+                 "isCard": true,
+                 "keyword": "suspend",
+                 "zone": "exile"
+                },
+                "ref": "each"
+               }
+              ],
+              "ref": "union"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": []
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sigarda's Vanguard",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: flash, flying; whenever it enters or attacks, you choose any number of creatures (any controller) no two of which have the same power, and those creatures gain double strike until end of turn (eff.p2modal1.choose.anyNumber.differentPowers, eff.cont.grant.each). (CR 702.8a, 208.1, 608.2d, 702.4a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flash",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "distinct": "power",
+         "from": {
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         },
+         "max": "any",
+         "min": 0,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "double strike",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Splinter & Leo, Father & Son",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: when it enters, choose one or both, the two modes targeting different players: target player creates a 2/2 red Mutant creature token; put a +1/+1 counter on each creature other than this one that target player controls (no template; ModeSpec through distinctFrom across the modes, lower/ability.ts#differentPlayerModes; 'other' beside a player target is other than this object, lower/anaphora.ts). (CR 700.2, 115.3, 109.2, 111.1, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 2,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "op": "createToken",
+             "token": {
+              "colors": [
+               "R"
+              ],
+              "power": 2,
+              "subtypes": [
+               "Mutant"
+              ],
+              "toughness": 2,
+              "types": [
+               "Creature"
+              ]
+             },
+             "who": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "player",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "kind": "+1/+1",
+             "on": {
+              "filter": {
+               "controller": {
+                "id": "t1",
+                "ref": "target"
+               },
+               "other": true,
+               "types": [
+                "Creature"
+               ]
+              },
+              "ref": "each"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": [
+            {
+             "distinctFrom": [
+              "t0"
+             ],
+             "id": "t1",
+             "kind": "player",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Venser's Diffusion",
+  "expect": "full",
+  "verified": "p2-modal-1 review (lane p2-modal; tuning half, non-Standard; made full by the round's general reading, read after the whole-index diff), by hand against the Oracle text and the rules cited: return target nonland permanent, or target suspended card (a card in exile with suspend and a time counter on it), to its owner's hand (no template; parser/holes/object.ts#SUSPENDED_CARD). (CR 702.62b, 115.1, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "anyOf": [
+           {
+            "counters": {
+             "kind": "time"
+            },
+            "isCard": true,
+            "keyword": "suspend",
+            "zone": "exile"
+           },
+           {
+            "notTypes": [
+             "Land"
+            ]
+           }
+          ],
+          "zone": [
+           "battlefield",
+           "exile"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ }
+]

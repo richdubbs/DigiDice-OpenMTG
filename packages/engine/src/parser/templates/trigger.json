@@ -1,0 +1,304 @@
+[
+  {
+    "id": "trg.when",
+    "kind": "trigger",
+    "cr": ["CR 603.1", "CR 603.2", "CR 603.6", "CR 603.10a"],
+    "pattern": "( when | whenever ) {e:Event}",
+    "build": { "on": "$e" },
+    "consumes": ["when", "whenever"],
+    "examples": [
+      { "text": "Whenever ~ attacks, draw two cards.", "expect": { "on": [{ "ev": "attacks", "attacker": { "self": true } }] } },
+      { "text": "When ~ dies, draw three cards." },
+      { "text": "Whenever another creature you control enters, draw a card." },
+      { "text": "Whenever an opponent casts a noncreature spell, target player draws four cards." },
+      { "text": "Whenever ~ deals combat damage to a player, draw two cards." },
+      { "text": "Whenever you gain life, target player draws four cards." },
+      { "text": "Whenever ~ enters or attacks, draw two cards." },
+      { "text": "Whenever ~ becomes tapped, draw a card." },
+      { "text": "Whenever one or more creatures you control deal combat damage to a player, target player draws four cards." }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks and isn't blocked, draw two cards.",
+      "Whenever ~ attacks while saddled, draw two cards.",
+      "When ~ enters tapped, draw two cards.",
+      "Whenever ~ attacks for the first time each turn, draw two cards."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.at",
+    "kind": "trigger",
+    "cr": ["CR 603.1", "CR 603.2b", "CR 503.1", "CR 513.1"],
+    "pattern": "at {e:Event}",
+    "build": { "on": "$e" },
+    "examples": [
+      { "text": "At the beginning of your upkeep, draw two cards.", "expect": { "on": [{ "ev": "step", "step": "upkeep", "whose": "you" }] } },
+      { "text": "At the beginning of each end step, draw a card." },
+      { "text": "At the beginning of combat on your turn, draw a card." },
+      { "text": "At the beginning of each opponent's upkeep, draw a card." },
+      { "text": "At end of combat, draw a card." }
+    ],
+    "counterExamples": [
+      "At the beginning of your next upkeep, draw two cards.",
+      "At the beginning of your upkeep this turn, draw two cards.",
+      "At the beginning of the upkeep of enchanted creature's controller, draw two cards."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.selfOrAnother.dies",
+    "kind": "trigger",
+    "cr": ["CR 603.6c", "CR 603.10a", "CR 700.4"],
+    "pattern": "( when | whenever ) ~ or another {f:Filter} die[s]",
+    "build": { "on": [{ "ev": "zoneChange", "subject": "$f", "from": "battlefield", "to": "graveyard" }] },
+    "consumes": ["when", "whenever", "another"],
+    "priority": 1,
+    "examples": [{ "text": "Whenever ~ or another creature dies, draw a card.", "expect": { "on": [{ "ev": "zoneChange", "subject": { "types": ["Creature"] }, "from": "battlefield", "to": "graveyard" }] } }, { "text": "Whenever ~ or another creature you control dies, draw two cards." }],
+    "counterExamples": ["Whenever ~ or another creature leaves the battlefield, draw a card.", "Whenever ~ and another creature die, draw a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.selfOrAnother.enters",
+    "kind": "trigger",
+    "cr": ["CR 603.6a", "CR 603.2"],
+    "pattern": "( when | whenever ) ~ or another {f:Filter} enter[s]",
+    "build": { "on": [{ "ev": "zoneChange", "subject": "$f", "to": "battlefield" }] },
+    "consumes": ["when", "whenever", "another"],
+    "priority": 1,
+    "examples": [
+      { "text": "Whenever ~ or another creature you control enters, draw a card.", "expect": { "on": [{ "ev": "zoneChange", "subject": { "types": ["Creature"], "controller": "you" }, "to": "battlefield" }] } },
+      { "text": "Whenever ~ or another creature enters, draw two cards." }
+    ],
+    "counterExamples": ["Whenever ~ or another creature you control enters tapped, draw a card.", "Whenever ~ or another creature you control dies, draw a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.sacrifice",
+    "kind": "trigger",
+    "cr": ["CR 701.21a", "CR 603.10a"],
+    "pattern": "whenever you sacrifice {f:Filter}",
+    "build": { "on": [{ "ev": "action", "verb": "sacrifice", "actor": "you", "object": "$f" }] },
+    "consumes": ["whenever"],
+    "examples": [{ "text": "Whenever you sacrifice another permanent, draw a card.", "expect": { "on": [{ "ev": "action", "verb": "sacrifice", "actor": "you", "object": { "other": true } }] } }, { "text": "Whenever you sacrifice another creature, draw two cards." }],
+    "counterExamples": ["Whenever you sacrifice two artifacts, draw a card.", "Whenever an opponent sacrifices another permanent, draw a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.discard",
+    "kind": "trigger",
+    "cr": ["CR 701.9a"],
+    "pattern": "whenever you discard a card",
+    "build": { "on": [{ "ev": "action", "verb": "discard", "actor": "you" }] },
+    "consumes": ["whenever"],
+    "priority": 1,
+    "examples": [{ "text": "Whenever you discard a card, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "discard", "actor": "you" }] } }, { "text": "Whenever you discard a card, target player draws three cards." }],
+    "counterExamples": ["Whenever you discard a creature card, draw two cards.", "Whenever you discard a card at random, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.opponent.discard",
+    "kind": "trigger",
+    "cr": ["CR 701.9a"],
+    "pattern": "whenever an opponent discards a card",
+    "build": { "on": [{ "ev": "action", "verb": "discard", "actor": "opponent" }] },
+    "consumes": ["whenever"],
+    "priority": 1,
+    "examples": [
+      { "text": "Whenever an opponent discards a card, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "discard", "actor": "opponent" }] } },
+      { "text": "Whenever an opponent discards a card, target player draws three cards." }
+    ],
+    "counterExamples": ["Whenever an opponent discards a land card, draw two cards.", "Whenever an opponent discards two cards, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.player.discard",
+    "kind": "trigger",
+    "cr": ["CR 701.9a"],
+    "pattern": "whenever a player discards a card",
+    "build": { "on": [{ "ev": "action", "verb": "discard", "actor": "any" }] },
+    "consumes": ["whenever"],
+    "priority": 1,
+    "examples": [
+      { "text": "Whenever a player discards a card, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "discard", "actor": "any" }] } },
+      { "text": "Whenever a player discards a card, target player draws three cards." }
+    ],
+    "counterExamples": ["Whenever a player discards a nonland card, draw two cards.", "Whenever a player discards their hand, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.discard.batch",
+    "kind": "trigger",
+    "cr": ["CR 701.9a", "CR 603.2c"],
+    "pattern": "whenever you discard one or more cards",
+    "build": { "on": [{ "ev": "action", "verb": "discard", "actor": "you" }], "batch": true },
+    "consumes": ["whenever"],
+    "priority": 1,
+    "examples": [
+      { "text": "Whenever you discard one or more cards, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "discard", "actor": "you" }], "batch": true } },
+      { "text": "Whenever you discard one or more cards, target player draws three cards." }
+    ],
+    "counterExamples": ["Whenever you discard one or more creature cards, draw two cards.", "Whenever you discard two or more cards, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.cycle",
+    "kind": "trigger",
+    "cr": ["CR 702.29a", "CR 702.29c", "CR 702.29f"],
+    "pattern": "whenever you cycle a card",
+    "build": { "on": [{ "ev": "action", "verb": "cycle", "actor": "you" }] },
+    "consumes": ["whenever"],
+    "priority": 1,
+    "examples": [{ "text": "Whenever you cycle a card, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "cycle", "actor": "you" }] } }, { "text": "Whenever you cycle a card, target player draws three cards." }],
+    "counterExamples": ["Whenever you cycle another card, draw two cards.", "Whenever you cycle or discard a card, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.player.cycle",
+    "kind": "trigger",
+    "cr": ["CR 702.29a", "CR 702.29c", "CR 702.29f"],
+    "pattern": "whenever a player cycles a card",
+    "build": { "on": [{ "ev": "action", "verb": "cycle", "actor": "any" }] },
+    "consumes": ["whenever"],
+    "priority": 1,
+    "examples": [{ "text": "Whenever a player cycles a card, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "cycle", "actor": "any" }] } }, { "text": "Whenever a player cycles a card, target player draws three cards." }],
+    "counterExamples": ["Whenever a player cycles two cards, draw two cards.", "Whenever a player cycles a card from their graveyard, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.scry",
+    "kind": "trigger",
+    "cr": ["CR 701.22a"],
+    "pattern": "whenever you scry",
+    "build": { "on": [{ "ev": "action", "verb": "scry", "actor": "you" }] },
+    "consumes": ["whenever"],
+    "examples": [{ "text": "Whenever you scry, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "scry", "actor": "you" }] } }, { "text": "Whenever you scry, target player draws three cards." }],
+    "counterExamples": ["Whenever you scry two, draw two cards.", "Whenever an opponent scries, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.surveil",
+    "kind": "trigger",
+    "cr": ["CR 701.25a"],
+    "pattern": "whenever you surveil",
+    "build": { "on": [{ "ev": "action", "verb": "surveil", "actor": "you" }] },
+    "consumes": ["whenever"],
+    "examples": [{ "text": "Whenever you surveil, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "surveil", "actor": "you" }] } }, { "text": "Whenever you surveil, target player draws three cards." }],
+    "counterExamples": ["Whenever you surveil two, draw two cards.", "Whenever you surveil for the first time each turn, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.scryOrSurveil",
+    "kind": "trigger",
+    "cr": ["CR 701.22a", "CR 701.25a"],
+    "pattern": "whenever you scry or surveil",
+    "build": { "on": [{ "ev": "action", "verb": "scry", "actor": "you" }, { "ev": "action", "verb": "surveil", "actor": "you" }] },
+    "consumes": ["whenever"],
+    "examples": [{ "text": "Whenever you scry or surveil, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "scry", "actor": "you" }, { "ev": "action", "verb": "surveil", "actor": "you" }] } }, { "text": "Whenever you scry or surveil, target player draws three cards." }],
+    "counterExamples": ["Whenever you scry and surveil, draw two cards.", "Whenever you scry or mill, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.proliferate",
+    "kind": "trigger",
+    "cr": ["CR 701.34a"],
+    "pattern": "whenever you proliferate",
+    "build": { "on": [{ "ev": "action", "verb": "proliferate", "actor": "you" }] },
+    "consumes": ["whenever"],
+    "examples": [{ "text": "Whenever you proliferate, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "proliferate", "actor": "you" }] } }, { "text": "Whenever you proliferate, target player draws three cards." }],
+    "counterExamples": ["Whenever an opponent proliferates, draw two cards.", "Whenever you proliferate twice, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.opponent.drawNth",
+    "kind": "trigger",
+    "cr": ["CR 121.2"],
+    "pattern": "whenever an opponent draws their second card each turn",
+    "build": { "on": [{ "ev": "draw", "player": "opponent", "nth": 2 }] },
+    "consumes": ["whenever", "each"],
+    "examples": [
+      { "text": "Whenever an opponent draws their second card each turn, draw two cards.", "expect": { "on": [{ "ev": "draw", "player": "opponent", "nth": 2 }] } },
+      { "text": "Whenever an opponent draws their second card each turn, target player draws three cards." }
+    ],
+    "counterExamples": ["Whenever an opponent draws their third card each turn, draw two cards.", "Whenever an opponent draws their second card, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.player.drawNth",
+    "kind": "trigger",
+    "cr": ["CR 121.2"],
+    "pattern": "whenever a player draws their second card each turn",
+    "build": { "on": [{ "ev": "draw", "player": "any", "nth": 2 }] },
+    "consumes": ["whenever", "each"],
+    "examples": [
+      { "text": "Whenever a player draws their second card each turn, draw two cards.", "expect": { "on": [{ "ev": "draw", "player": "any", "nth": 2 }] } },
+      { "text": "Whenever a player draws their second card each turn, target player draws three cards." }
+    ],
+    "counterExamples": ["Whenever a player draws their first card each turn, draw two cards.", "Whenever a player draws their second card each combat, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.you.activate",
+    "kind": "trigger",
+    "cr": ["CR 602.2", "CR 605.1a"],
+    "pattern": "whenever you activate an ability that isn't a mana ability",
+    "build": { "on": [{ "ev": "activate", "player": "you", "manaAbility": false }] },
+    "consumes": ["whenever"],
+    "examples": [
+      { "text": "Whenever you activate an ability that isn't a mana ability, draw two cards.", "expect": { "on": [{ "ev": "activate", "player": "you", "manaAbility": false }] } },
+      { "text": "Whenever you activate an ability that isn't a mana ability, target player draws three cards." }
+    ],
+    "counterExamples": ["Whenever you activate an ability, draw two cards.", "Whenever you activate a loyalty ability, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.opponent.activate",
+    "kind": "trigger",
+    "cr": ["CR 602.2", "CR 605.1a"],
+    "pattern": "whenever an opponent activates an ability that isn't a mana ability",
+    "build": { "on": [{ "ev": "activate", "player": "opponent", "manaAbility": false }] },
+    "consumes": ["whenever"],
+    "examples": [
+      { "text": "Whenever an opponent activates an ability that isn't a mana ability, draw two cards.", "expect": { "on": [{ "ev": "activate", "player": "opponent", "manaAbility": false }] } },
+      { "text": "Whenever an opponent activates an ability that isn't a mana ability, target player draws three cards." }
+    ],
+    "counterExamples": ["Whenever an opponent activates an ability, draw two cards.", "Whenever an opponent activates an ability of an artifact, draw two cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.player.activate",
+    "kind": "trigger",
+    "cr": ["CR 602.2", "CR 605.1a"],
+    "pattern": "whenever a player activates an ability that isn't a mana ability",
+    "build": { "on": [{ "ev": "activate", "player": "any", "manaAbility": false }] },
+    "consumes": ["whenever"],
+    "examples": [
+      { "text": "Whenever a player activates an ability that isn't a mana ability, draw two cards.", "expect": { "on": [{ "ev": "activate", "player": "any", "manaAbility": false }] } },
+      { "text": "Whenever a player activates an ability that isn't a mana ability, target player draws three cards." }
+    ],
+    "counterExamples": [
+      "Whenever a player activates an ability that is a mana ability, draw two cards.",
+      "Whenever a player activates a loyalty ability, draw two cards."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "sta.stdfreecast1.firstSpell.eachPlayer.free",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2i",
+      "CR 102.1",
+      "CR 611.3a"
+    ],
+    "pattern": "the first spell each player casts during each of their turns ( may | can ) be cast without paying its mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "active"
+          },
+          "action": "cast",
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "firstSpellThisTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may",
+      "its"
+    ],
+    "examples": [
+      {
+        "text": "The first spell each player casts during each of their turns can be cast without paying its mana cost."
+      },
+      {
+        "text": "Ward {9}\nThe first spell each player casts during each of their turns can be cast without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "The first spell each player casts during each of their turns costs {1} less to cast.",
+      "The first spell you cast during each of your turns can be cast without paying its mana cost.",
+      "The second spell each player casts during each of their turns can be cast without paying its mana cost.",
+      "The first spell each player casts each turn can be cast without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.stdfreecast1.nextSpell.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2i",
+      "CR 611.2"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn can be cast without paying its mana cost",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "free"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "its"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: The next creature spell you cast this turn can be cast without paying its mana cost."
+      },
+      {
+        "text": "Draw a card. The next blue instant spell you cast this turn can be cast without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: The next creature spell you cast can be cast without paying its mana cost.",
+      "{3}, {T}: The next creature spell an opponent casts this turn can be cast without paying its mana cost.",
+      "{3}, {T}: The next creature spell you cast this turn costs {2} less to cast.",
+      "{3}, {T}: Creature spells you cast this turn can be cast without paying their mana costs."
+    ]
+  }
+]

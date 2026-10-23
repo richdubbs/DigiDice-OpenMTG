@@ -1,0 +1,101 @@
+[
+  {
+    "id": "eff.stdrx22.counter.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 608.2c",
+      "CR 608.2b"
+    ],
+    "pattern": "counter {o:Objs} if {c:Cond}",
+    "build": {
+      "op": "counter",
+      "what": "$o",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell if it's green."
+      },
+      {
+        "text": "Counter target creature spell if its mana value is 3 or less."
+      },
+      {
+        "text": "Counter target spell if you control four or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless it's green.",
+      "Counter target spell if it's green instead.",
+      "Exile target spell if it's green.",
+      "Counter target spell, then draw a card if it's green."
+    ]
+  },
+  {
+    "id": "rep.stdrx22.enters.choose.color.otherThan",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a"
+    ],
+    "pattern": "as ~ enters , choose a color other than {c:Color}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "color",
+                "link": "color",
+                "exclude": [
+                  "$c"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As this permanent enters, choose a color other than green."
+      },
+      {
+        "text": "As this permanent enters, choose a color other than blue."
+      }
+    ],
+    "counterExamples": [
+      "As this permanent enters, choose a color other than green or blue.",
+      "As this permanent enters, you may choose a color other than green.",
+      "As this permanent enters, choose a creature type other than Elf.",
+      "As this permanent enters, choose two colors other than green."
+    ]
+  }
+]

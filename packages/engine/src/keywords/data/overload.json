@@ -1,0 +1,16 @@
+{
+  "name": "overload",
+  "rule": "702.96",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may cast this spell for its overload cost. If you do, change \"target\" in its text to \"each.\"",
+  "multiple": "independent",
+  "status": "planned"
+}

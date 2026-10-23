@@ -1,0 +1,382 @@
+/* Settings screen (docs/design/m8-client.md screen 9). Colors only from the theme variables. */
+/*
+ * Two columns on a wide window so the whole screen fits without scrolling (the stops table is the tall panel on the right); one column below 900px.
+ * Panels are .hud-panel (theme): dark glass with neon corner brackets.
+ */
+.screen.settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-auto-flow: dense;
+  align-content: start;
+  gap: 0 20px;
+  max-width: 1120px;
+}
+
+.settings > .screen-header,
+.settings > .settings-warning {
+  grid-column: 1 / -1;
+}
+
+.settings section[aria-labelledby='settings-stops'] {
+  grid-column: 2;
+  grid-row: span 3;
+}
+
+.settings section {
+  min-width: 0;
+  margin: 0 0 18px;
+  padding: 18px 22px;
+}
+
+/* The sound panel is wide (the list of every sound): it takes both columns, under the stops. */
+.settings section.settings-sound {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  .screen.settings {
+    display: block;
+    max-width: 960px;
+  }
+}
+
+.settings h2 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--neon);
+  text-shadow: 0 0 10px var(--glow-soft);
+}
+
+.settings-hint {
+  margin: 4px 0 8px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.settings-warning {
+  padding: 8px 12px;
+  border: 1px solid var(--accent-2);
+  border-radius: 8px;
+  background: rgba(var(--neon-2-rgb), 0.08);
+}
+
+.settings-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 16px 4px 0;
+}
+
+.settings-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.settings-field span {
+  min-width: 80px;
+  color: var(--text-muted);
+}
+
+.settings input[type='text'],
+.settings select {
+  padding: 7px 12px;
+  font: inherit;
+}
+
+.settings-stops {
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.settings-stops thead th {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.settings-stops tbody tr:nth-child(odd) {
+  background: rgba(var(--neon-rgb), 0.05);
+}
+
+.settings-stops th,
+.settings-stops td {
+  padding: 4px 12px;
+  text-align: center;
+}
+
+.settings-stops th[scope='row'] {
+  text-align: left;
+  font-weight: normal;
+}
+
+.settings-stops input:disabled {
+  opacity: 0.4;
+}
+
+/* Sound: one row per volume (label, slider, value, test), then the list of every sound. */
+.settings-volumes {
+  display: grid;
+  grid-template-columns: max-content minmax(120px, 360px) 3.5em max-content;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 8px 0 12px;
+}
+
+.settings-volume {
+  display: contents;
+}
+
+.settings-volume label {
+  color: var(--text-muted);
+}
+
+.settings-volume input[type='range'] {
+  width: 100%;
+  accent-color: var(--neon);
+}
+
+.settings-volume output {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.settings-test {
+  padding: 3px 12px;
+  font-size: 0.85rem;
+  --btn-depth: 2px;
+}
+
+.settings-sounds > summary {
+  cursor: pointer;
+  color: var(--neon);
+  letter-spacing: 0.08em;
+}
+
+.settings-sound-group h3 {
+  margin: 14px 0 4px;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.settings-sound-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-sound-row {
+  display: grid;
+  grid-template-columns: minmax(9em, max-content) minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--grid-line);
+}
+
+.settings-sound-row:nth-child(odd) {
+  background: rgba(var(--neon-rgb), 0.05);
+}
+
+.settings-sound-row code {
+  color: var(--neon);
+  white-space: nowrap;
+}
+
+.settings-sound-purpose {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .settings-volumes {
+    grid-template-columns: max-content minmax(0, 1fr) 3.5em max-content;
+  }
+
+  .settings-sound-row {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  .settings-sound-purpose {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* ---- Look and feel (ProfilesSection.tsx): the UI profiles; like the rest of the screen it follows the profile it shows ---- */
+
+.settings section.settings-profiles {
+  grid-column: 1 / -1;
+}
+
+.profile-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  margin: 10px 0 12px;
+}
+
+.profile-group {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.profile-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.profile-option:hover {
+  background: var(--surface-strong);
+}
+
+.profile-option.is-active {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.profile-option-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.profile-option-text b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-option-text small {
+  color: var(--text-muted);
+}
+
+.profile-swatches {
+  display: inline-flex;
+  flex: none;
+  gap: 3px;
+}
+
+.profile-swatches span {
+  width: 12px;
+  height: 22px;
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.profile-actions,
+.profile-name-form,
+.profile-confirm,
+.profile-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-actions button,
+.profile-name-form button,
+.profile-confirm button {
+  min-width: 0;
+  padding: 6px 14px;
+}
+
+.profile-name-form,
+.profile-confirm {
+  margin-top: 10px;
+}
+
+.profile-confirm p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.profile-name-form .settings-field {
+  flex: 1 1 260px;
+}
+
+.profile-message {
+  min-height: 1.2em;
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.profile-customize {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.profile-label {
+  margin-right: 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.profile-preset {
+  min-width: 0;
+  gap: 8px;
+  padding: 5px 12px 5px 8px;
+}
+
+.profile-colors {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px 14px;
+}
+
+.profile-color {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.profile-color input[type='color'] {
+  flex: none;
+  width: 44px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.profile-color span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.profile-color small {
+  color: var(--text-muted);
+}
+
+.profile-reset {
+  align-self: flex-start;
+}

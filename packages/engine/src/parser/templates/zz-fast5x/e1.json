@@ -1,0 +1,716 @@
+[
+  {
+    "id": "kw.fast5x.gift.card",
+    "kind": "ability",
+    "cr": [
+      "CR 702.174a",
+      "CR 702.174b",
+      "CR 702.174e"
+    ],
+    "pattern": "gift a card",
+    "build": {
+      "kind": "keyword",
+      "keyword": "gift",
+      "quality": "a card"
+    },
+    "examples": [
+      {
+        "text": "Gift a card"
+      },
+      {
+        "text": "Gift a card\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "Gift a cards",
+      "Gift two cards",
+      "Gift a card and a Food"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.fast5x.gift.food",
+    "kind": "ability",
+    "cr": [
+      "CR 702.174a",
+      "CR 702.174b",
+      "CR 702.174d"
+    ],
+    "pattern": "gift a food",
+    "build": {
+      "kind": "keyword",
+      "keyword": "gift",
+      "quality": "a Food"
+    },
+    "examples": [
+      {
+        "text": "Gift a Food"
+      },
+      {
+        "text": "Gift a Food\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "Gift a Foods",
+      "Gift two Food",
+      "Gift a Food token"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.fast5x.gift.treasure",
+    "kind": "ability",
+    "cr": [
+      "CR 702.174a",
+      "CR 702.174b",
+      "CR 702.174h"
+    ],
+    "pattern": "gift a treasure",
+    "build": {
+      "kind": "keyword",
+      "keyword": "gift",
+      "quality": "a Treasure"
+    },
+    "examples": [
+      {
+        "text": "Gift a Treasure"
+      },
+      {
+        "text": "Gift a Treasure\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "Gift a Treasures",
+      "Gift two Treasure",
+      "Gift a tapped Treasure"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.fast5x.gift.fish",
+    "kind": "ability",
+    "cr": [
+      "CR 702.174a",
+      "CR 702.174b",
+      "CR 702.174f"
+    ],
+    "pattern": "gift a tapped fish",
+    "build": {
+      "kind": "keyword",
+      "keyword": "gift",
+      "quality": "a tapped Fish"
+    },
+    "examples": [
+      {
+        "text": "Gift a tapped Fish"
+      },
+      {
+        "text": "Gift a tapped Fish\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "Gift a Fish",
+      "Gift an untapped Fish",
+      "Gift a tapped Fishes"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.fast5x.gift.octopus",
+    "kind": "ability",
+    "cr": [
+      "CR 702.174a",
+      "CR 702.174b",
+      "CR 702.174i"
+    ],
+    "pattern": "gift an octopus",
+    "build": {
+      "kind": "keyword",
+      "keyword": "gift",
+      "quality": "an Octopus"
+    },
+    "examples": [
+      {
+        "text": "Gift an Octopus"
+      },
+      {
+        "text": "Gift an Octopus\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "Gift a tapped Octopus",
+      "Gift an Octopi",
+      "Gift two Octopus"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.fast5x.gift.turn",
+    "kind": "ability",
+    "cr": [
+      "CR 702.174a",
+      "CR 702.174b",
+      "CR 702.174g"
+    ],
+    "pattern": "gift an extra turn",
+    "build": {
+      "kind": "keyword",
+      "keyword": "gift",
+      "quality": "an extra turn"
+    },
+    "examples": [
+      {
+        "text": "Gift an extra turn"
+      },
+      {
+        "text": "Gift an extra turn\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "Gift a turn",
+      "Gift two extra turns",
+      "Gift an extra combat"
+    ],
+    "status": "stable",
+    "since": 8,
+    "consumes": [
+      "extra"
+    ]
+  },
+  {
+    "id": "eff.fast5x.if.also.grant",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "if {c:Cond} , {o:Obj} also gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +1/+1 until end of turn. If ~ was kicked, that creature also gains trample until end of turn."
+      },
+      {
+        "text": "Target creature you control gets +3/+0 until end of turn. If the gift was promised, that creature also gains first strike and vigilance until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +1/+1 until end of turn. If ~ was kicked, that creature gains trample until end of turn instead.",
+      "Target creature gets +1/+1 until end of turn. If ~ was kicked, that creature also gains trample.",
+      "Target creature gets +1/+1 until end of turn. If ~ was kicked, that creature also loses trample until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.fast5x.if.also.grant.each",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "if {c:Cond} , {o:Objs} also gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control get +1/+0 until end of turn. If ~ was kicked, creatures you control also gain menace until end of turn."
+      },
+      {
+        "text": "Artifacts you control gain hexproof until end of turn. If the gift was promised, artifacts you control also gain indestructible until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+0 until end of turn. If ~ was kicked, creatures you control also gain menace.",
+      "Creatures you control get +1/+0 until end of turn. If ~ was kicked, creatures you control gain menace until end of turn instead.",
+      "Creatures you control get +1/+0 until end of turn. If ~ was kicked, each creature also gains menace until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.fast5x.if.also.damage",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "if {c:Cond} , {src:Obj} also deal[s] {n:Qty} damage to {to:Recipient}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 1 damage to target creature. If ~ was kicked, ~ also deals 2 damage to that creature's controller."
+      },
+      {
+        "text": "~ deals 4 damage to target creature. If the gift was promised, ~ also deals 1 damage to you."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 1 damage to target creature. If ~ was kicked, ~ deals 2 damage to that creature's controller instead.",
+      "~ deals 1 damage to target creature. If ~ was kicked, ~ also deals 2 damage.",
+      "~ deals 1 damage to target creature. If ~ was kicked, ~ also loses 2 life."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.fast5x.instead.front",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 601.2c"
+    ],
+    "pattern": "if {c:Cond} , instead {e:Effects}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": "$e",
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Return target artifact to its owner's hand. If ~ was kicked, instead return target nonland permanent to its owner's hand."
+      },
+      {
+        "text": "Tap target creature. If the gift was promised, instead tap up to two target creatures."
+      }
+    ],
+    "counterExamples": [
+      "If ~ was kicked, instead tap up to two target creatures.",
+      "Tap target creature. If ~ was kicked, instead you may tap up to two target creatures.",
+      "Tap target creature and draw a card. If ~ was kicked, instead tap up to two target creatures."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.fast5x.self.less.bargained",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 702.166b",
+      "CR 118.7",
+      "CR 604.5"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast if it's bargained",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "wasCast",
+        "kicked": "bargain"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {1} less to cast if it's bargained."
+      },
+      {
+        "text": "~ costs {3} less to cast if it's bargained."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {1} more to cast if it's bargained.",
+      "~ costs {1} less to cast if it's kicked.",
+      "~ costs {G} less to cast if it's bargained."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.fast5x.you.giveGift",
+    "kind": "trigger",
+    "cr": [
+      "CR 702.174c",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you give a gift",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "giveGift",
+          "actor": "you"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you give a gift, draw a card.",
+        "expect": {
+          "on": [
+            {
+              "ev": "action",
+              "verb": "giveGift",
+              "actor": "you"
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever you give a gift, target player gains 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent gives a gift, draw a card.",
+      "Whenever you give two gifts, draw a card.",
+      "Whenever you promise a gift, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.fast5x.token.cursedRole.attached",
+    "kind": "effect",
+    "cr": [
+      "CR 111.10j",
+      "CR 303.4f",
+      "CR 701.7a"
+    ],
+    "pattern": "create a cursed role token attached to {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "predefined": "Cursed Role"
+      },
+      "attachTo": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a Cursed Role token attached to target creature."
+      },
+      {
+        "text": "Create a Cursed Role token attached to target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Create two Cursed Role tokens attached to target creature.",
+      "Create a Cursed Role token.",
+      "Create a Monster Role token attached to target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.fast5x.players.cant.cast",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 101.2"
+    ],
+    "pattern": "players can't cast spells {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "cast"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't cast spells this turn."
+      },
+      {
+        "text": "Draw a card. If ~ was kicked, players can't cast spells this turn."
+      }
+    ],
+    "counterExamples": [
+      "Players can cast spells this turn.",
+      "Players can't cast spells.",
+      "Players can't cast creature spells this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.fast5x.damage.anyTargetAndEach",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 115.4"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:AnyTarget} and {m:Qty} damage to each {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 3 damage to any target and 1 damage to each creature."
+      },
+      {
+        "text": "~ deals 2 damage to any target and 2 damage to each artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to any target and 1 damage to target creature.",
+      "~ deals 3 damage to any target or 1 damage to each creature.",
+      "~ deals 3 damage to each creature and 1 damage to any target."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.fast5x.becomes.colorSubtype.basePT",
+    "kind": "effect",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {c:Color} {st:Subtypes} with base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature becomes a blue Frog with base power and toughness 1/1."
+      },
+      {
+        "text": "Until end of turn, target creature an opponent controls becomes a green Elk with base power and toughness 3/3."
+      }
+    ],
+    "counterExamples": [
+      "Target creature becomes a blue Frog with base power and toughness 1/1.",
+      "Until end of turn, target creature loses all abilities and becomes a blue Frog with base power and toughness 1/1.",
+      "Until end of turn, each creature becomes a blue Frog with base power and toughness 1/1."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.fast5x.youAndObjs.gain.hexproof",
+    "kind": "effect",
+    "cr": [
+      "CR 702.11b",
+      "CR 702.11c",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "you and {o:Objs} gain hexproof {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "hexproof",
+                  "text": "hexproof"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "You and permanents you control gain hexproof until end of turn."
+      },
+      {
+        "text": "You and creatures you control gain hexproof until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You and permanents you control gain shroud until end of turn.",
+      "You and permanents you control gain hexproof.",
+      "Target player and permanents they control gain hexproof until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

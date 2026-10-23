@@ -1,0 +1,482 @@
+[
+  {
+    "id": "trg.battalion",
+    "kind": "trigger",
+    "cr": [
+      "CR 508.3a",
+      "CR 207.2c",
+      "CR 603.2"
+    ],
+    "pattern": "whenever ~ and at least two other creatures attack",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "self": true
+          },
+          "count": {
+            "op": ">=",
+            "value": 3
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "other",
+      "at least"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ and at least two other creatures attack, draw a card."
+      },
+      {
+        "text": "Whenever ~ and at least two other creatures attack, ~ gets +2/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ and at least three other creatures attack, draw a card.",
+      "Whenever ~ and another creature attack, draw a card.",
+      "Whenever ~ and at least two other creatures block, draw a card."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "trg.you.cycleOrDiscard",
+    "kind": "trigger",
+    "cr": [
+      "CR 702.29a",
+      "CR 701.9a",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you cycle or discard a card",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "you"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cycle or discard a card, draw two cards."
+      },
+      {
+        "text": "Whenever you cycle or discard a card, target opponent loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cycle or discard a creature card, draw two cards.",
+      "Whenever an opponent cycles or discards a card, draw two cards.",
+      "Whenever you cycle or discard a card at random, draw two cards."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.return.self.gy.hand",
+    "kind": "effect",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 608.2b"
+    ],
+    "pattern": "return ~ from your graveyard to your hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{B}{B}{B}: Return ~ from your graveyard to your hand."
+      },
+      {
+        "text": "{5}{U}: Return ~ from your graveyard to your hand. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{2}{B}{B}{B}: Return ~ from your graveyard to the battlefield.",
+      "{2}{B}{B}{B}: Return ~ from a graveyard to your hand.",
+      "{2}{B}{B}{B}: Return ~ from your graveyard to your hand unless an opponent pays {2}."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.return.self.gy.bf",
+    "kind": "effect",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 608.2b"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}{B}{B}{B}: Return ~ from your graveyard to the battlefield."
+      },
+      {
+        "text": "{7}: Return ~ from your graveyard to the battlefield. Activate only during your upkeep."
+      }
+    ],
+    "counterExamples": [
+      "{3}{B}{B}{B}: Return ~ from your graveyard to the battlefield tapped.",
+      "{3}{B}{B}{B}: Return ~ from your graveyard to your hand.",
+      "{3}{B}{B}{B}: Return ~ from your graveyard to the battlefield under an opponent's control."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.return.self.gy.bf.tapped",
+    "kind": "effect",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 608.2b"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield tapped",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{B}{B}{B}: Return ~ from your graveyard to the battlefield tapped."
+      },
+      {
+        "text": "{6}{G}: Return ~ from your graveyard to the battlefield tapped. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{2}{B}{B}{B}: Return ~ from your graveyard to the battlefield.",
+      "{2}{B}{B}{B}: Return ~ from your graveyard to the battlefield tapped and attacking.",
+      "{2}{B}{B}{B}: Return ~ from your graveyard to your hand tapped."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.mana.additional",
+    "kind": "effect",
+    "cr": [
+      "CR 106.4",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "consumes": [
+      "additional"
+    ],
+    "status": "stable",
+    "since": 3,
+    "pattern": "add an additional {u:ManaUnits}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "units": "$u"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you tap a Plains for mana, add an additional {W}."
+      },
+      {
+        "text": "Whenever you tap a land for mana, add an additional {R} or {G}."
+      },
+      {
+        "text": "Whenever you tap a Swamp for mana, add an additional {B}{B}."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you tap a Plains for mana, add an additional {W} unless an opponent pays {1}.",
+      "Whenever you tap a Plains for mana, add an additional {2}.",
+      "Whenever you tap a Plains for mana, add an additional {W}{W} or {U}{U}."
+    ]
+  },
+  {
+    "id": "eff.mana.additional.player",
+    "kind": "effect",
+    "cr": [
+      "CR 106.4",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "consumes": [
+      "additional"
+    ],
+    "status": "stable",
+    "since": 3,
+    "pattern": "{p:Player} add[s] an additional {u:ManaUnits}",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "units": "$u"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional {U}{U}."
+      },
+      {
+        "text": "Whenever a player taps a land for mana, that player adds an additional {C}."
+      }
+    ],
+    "counterExamples": [
+      "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional {U} at random.",
+      "Whenever a player taps a land for mana, that player adds an additional {2}.",
+      "Whenever a player taps a land for mana, each opponent adds an additional {C} unless you pay {1}."
+    ]
+  },
+  {
+    "id": "eff.mana.additional.any",
+    "kind": "effect",
+    "cr": [
+      "CR 106.4",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "consumes": [
+      "additional"
+    ],
+    "status": "stable",
+    "since": 3,
+    "pattern": "add an additional one mana of any color",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "units": [
+        [
+          "W",
+          "U",
+          "B",
+          "R",
+          "G"
+        ]
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you tap a Forest for mana, add an additional one mana of any color."
+      },
+      {
+        "text": "Whenever you tap a nonbasic land for mana, add an additional one mana of any color."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you tap a Forest for mana, add an additional one mana of the chosen color.",
+      "Whenever you tap a Forest for mana, add an additional two mana of any color.",
+      "Whenever you tap a Forest for mana, add an additional one mana of any color an opponent controls."
+    ]
+  },
+  {
+    "id": "eff.mana.additional.any.player",
+    "kind": "effect",
+    "cr": [
+      "CR 106.4",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "consumes": [
+      "additional"
+    ],
+    "status": "stable",
+    "since": 3,
+    "pattern": "{p:Player} add[s] an additional one mana of any color",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "units": [
+        [
+          "W",
+          "U",
+          "B",
+          "R",
+          "G"
+        ]
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever a player taps an Island for mana, that player adds an additional one mana of any color."
+      },
+      {
+        "text": "Whenever a Plains is tapped for mana, its controller adds an additional one mana of any color."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a Plains is tapped for mana, its controller adds an additional one mana of the chosen color.",
+      "Whenever a player taps an Island for mana, that player adds an additional one mana of any type that land produced."
+    ]
+  },
+  {
+    "id": "eff.mana.additional.two.player",
+    "kind": "effect",
+    "cr": [
+      "CR 106.4",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "consumes": [
+      "additional"
+    ],
+    "status": "stable",
+    "since": 3,
+    "pattern": "{p:Player} add[s] an additional two mana in any combination of colors",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "units": [
+        [
+          "W",
+          "U",
+          "B",
+          "R",
+          "G"
+        ],
+        [
+          "W",
+          "U",
+          "B",
+          "R",
+          "G"
+        ]
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever a Swamp is tapped for mana, its controller adds an additional two mana in any combination of colors."
+      },
+      {
+        "text": "Whenever a player taps a Mountain for mana, that player adds an additional two mana in any combination of colors."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a Swamp is tapped for mana, its controller adds an additional three mana in any combination of colors.",
+      "Whenever a Swamp is tapped for mana, its controller adds an additional two mana in any combination of {R} and/or {G}."
+    ]
+  },
+  {
+    "id": "trg.upkeep.enchantedController",
+    "kind": "trigger",
+    "cr": [
+      "CR 503.1",
+      "CR 603.2",
+      "CR 303.4"
+    ],
+    "pattern": "at the beginning of the upkeep of enchanted ( creature | enchantment | artifact | land | permanent ) 's controller",
+    "build": {
+      "on": [
+        {
+          "ev": "step",
+          "step": "upkeep",
+          "whose": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchant creature\nAt the beginning of the upkeep of enchanted creature's controller, that player loses 3 life."
+      },
+      {
+        "text": "Enchant artifact\nAt the beginning of the upkeep of enchanted artifact's controller, ~ deals 4 damage to that player."
+      },
+      {
+        "text": "Enchant enchantment\nAt the beginning of the upkeep of enchanted enchantment's controller, that player draws two cards."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nAt the beginning of the upkeep of enchanted creature's owner, that player loses 3 life.",
+      "Enchant creature\nAt the beginning of the end step of enchanted creature's controller, that player gains 3 life.",
+      "Enchant creature\nAt the beginning of the upkeep of each opponent, that player loses 3 life."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "trg.endstep.enchantedController",
+    "kind": "trigger",
+    "cr": [
+      "CR 513.1",
+      "CR 603.2",
+      "CR 303.4"
+    ],
+    "pattern": "at the beginning of the end step of enchanted ( creature | enchantment | artifact | land | permanent ) 's controller",
+    "build": {
+      "on": [
+        {
+          "ev": "step",
+          "step": "end",
+          "whose": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchant creature\nAt the beginning of the end step of enchanted creature's controller, that player loses 3 life."
+      },
+      {
+        "text": "Enchant land\nAt the beginning of the end step of enchanted land's controller, that player draws two cards."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nAt the beginning of the end step of enchanted creature's owner, that player loses 3 life.",
+      "Enchant creature\nAt the beginning of the draw step of enchanted creature's controller, that player loses 3 life.",
+      "Enchant creature\nAt the beginning of the next end step of enchanted creature's controller, that player loses 3 life."
+    ],
+    "status": "experimental",
+    "since": 3
+  }
+]

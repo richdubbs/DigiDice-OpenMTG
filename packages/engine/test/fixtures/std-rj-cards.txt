@@ -1,0 +1,13 @@
+# Standard round J (std-rj, test/cloud/std-rj, golden cloud-std-rj-review.json): slot J of the parallel rounds F-J
+# put the revealed creature card onto the battlefield tapped and attacking, the rest on the bottom (eff.stdrj.putThat.battlefield.attacking.rest.bottomRandom)
+Raph & Mikey, Troublemakers
+# "they entered or were cast from a graveyard", a token copy of one of them (eff.stdrj.copy.token.oneOfThem)
+Twilight Diviner
+# any number of legendary and/or enchantment cards from among the milled cards (eff.stdrj.milled.anyNumber.hand)
+Nashi, Searcher in the Dark
+# a sentence after "When you do" reads the cards the reflexive trigger exiled; up to N spells from among the exiled cards (eff.stdrj.cast.upTo.free.fromAmong)
+Doom Reigns Supreme
+# cast free if the spell's mana value is less than N; "if you don't cast that card this way" (eff.stdrj.cast.free.ifSpellMvLess)
+Solstice Revelations
+# a life loss under a trailing "if", "that much" of the otherwise branch (eff.stdrj.loselife.equal.if)
+Caustic Bronco

@@ -1,0 +1,105 @@
+[
+  {
+    "id": "eff.p2zm1.discardHand.drawThatManyMinus",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 107.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] ( their hand | all the cards in their hand ) , then draw[s] that many cards minus {k:Qty}",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "hand",
+        "as": "discarded"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "math",
+          "op": "-",
+          "args": [
+            {
+              "q": "resultCount",
+              "step": "discarded"
+            },
+            "$k"
+          ]
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "all",
+      "that many",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player discards all the cards in their hand, then draws that many cards minus two."
+      },
+      {
+        "text": "Target player discards their hand, then draws that many cards minus one. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each player discards all the cards in their hand, then draws that many cards plus two.",
+      "Each player discards all the cards in their graveyard, then draws that many cards minus two.",
+      "Each player discards all the cards in their hand, then you draw that many cards minus two."
+    ]
+  },
+  {
+    "id": "eff.p2zm1.discardHand.drawGreatestDiscarded",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} discard[s] their hand , then draw[s] cards equal to the greatest number of cards a player discarded this way",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "hand",
+        "as": "discarded"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "resultCount",
+          "step": "discarded",
+          "maxPerOwner": true
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each player discards their hand, then draws cards equal to the greatest number of cards a player discarded this way. You lose 2 life."
+      },
+      {
+        "text": "When this creature enters, each player discards their hand, then draws cards equal to the greatest number of cards a player discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Each player discards their hand, then draws cards equal to the smallest number of cards a player discarded this way.",
+      "Each player discards their hand, then draws cards equal to the greatest number of cards a player drew this way.",
+      "Each player discards their graveyard, then draws cards equal to the greatest number of cards a player discarded this way."
+    ],
+    "consumes": [
+      "this way",
+      "then"
+    ]
+  }
+]

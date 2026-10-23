@@ -1,0 +1,205 @@
+[
+  {
+    "id": "sta.stri.spendAnyColor.toCast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 601.2h",
+      "CR 601.3e",
+      "CR 105.1",
+      "CR 107.4c"
+    ],
+    "pattern": "you may spend mana as though it were mana of any color to cast {f:Filter}",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "spendMana",
+      "asThough": "any color",
+      "of": "$f"
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "You may spend mana as though it were mana of any color to cast artifact spells."
+      },
+      {
+        "text": "You may spend mana as though it were mana of any color to cast Dragon spells."
+      }
+    ],
+    "counterExamples": [
+      "You may spend mana as though it were mana of any type to cast artifact spells.",
+      "You may spend mana as though it were mana of any color to activate abilities of artifacts you control.",
+      "Your opponents may spend mana as though it were mana of any color to cast artifact spells.",
+      "You may spend mana as though it were mana of any color to cast artifact spells this turn."
+    ]
+  },
+  {
+    "id": "eff.stri.eachYouControl.deals.damage.power",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "each {f:Filter} you control deals damage equal to its power to {to:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you"
+        }
+      },
+      "to": "$to",
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": {
+          "ref": "subject"
+        }
+      },
+      "perSource": true
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control deals damage equal to its power to target creature you don't control."
+      },
+      {
+        "text": "When ~ enters, each other Warrior you control deals damage equal to its power to target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control deals damage equal to its toughness to target creature you don't control.",
+      "Each creature you control deals damage equal to its power to itself.",
+      "Each creature you control deals damage equal to its power to target creature unless it is tapped.",
+      "Each creature an opponent controls deals damage equal to its power to target creature you don't control."
+    ]
+  },
+  {
+    "id": "eff.stri.mill.you.equalTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2h"
+    ],
+    "pattern": "mill cards equal to {q:Qty}",
+    "build": {
+      "op": "mill",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$q"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, mill cards equal to the number of Islands you control."
+      },
+      {
+        "text": "When ~ dies, mill cards equal to its toughness."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, draw cards equal to the number of Islands you control.",
+      "When ~ enters, mill cards equal to the number of Islands you control unless you pay {1}.",
+      "When ~ enters, target player mills cards equal to the number of Islands you control and loses 2 life."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.stri.return.self.hand.andUpToOne.milledThisWay.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j",
+      "CR 110.2"
+    ],
+    "pattern": "return ~ to its owner 's hand and up to one {f:Filter} card {g:MilledThisWay} to the battlefield under your control",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When enchanted creature dies, mill three cards. Return ~ to its owner's hand and up to one artifact card milled this way to the battlefield under your control."
+      },
+      {
+        "text": "When enchanted creature dies, mill five cards. Return ~ to its owner's hand and up to one land card milled this way to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When enchanted creature dies, mill three cards. Return ~ to its owner's hand and up to two artifact cards milled this way to the battlefield under your control.",
+      "When enchanted creature dies, mill three cards. Return ~ to its owner's hand and up to one artifact card milled this way to your hand.",
+      "When enchanted creature dies, mill three cards. Return ~ to its owner's hand and up to one artifact card from your graveyard to the battlefield under your control."
+    ]
+  }
+]

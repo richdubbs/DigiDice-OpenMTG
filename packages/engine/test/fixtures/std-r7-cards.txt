@@ -1,0 +1,3 @@
+# Standard round 7 (test/cloud/std-r7, golden cloud-std-r7-review.json): hole readings
+# a zone after a subtype-first list ("target Equipment, instant, or sorcery card from your graveyard", parser/holes/filter.ts)
+Thor, God of Thunder

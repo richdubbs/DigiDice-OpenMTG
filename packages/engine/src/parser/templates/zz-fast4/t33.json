@@ -1,0 +1,1076 @@
+[
+  {
+    "id": "sta.t33.self.unblockable.aslong",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ can't be blocked as long as {c:Cond}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "cant",
+      "action": "beBlocked",
+      "when": "$c"
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked as long as there are five or more cards in your graveyard."
+      },
+      {
+        "text": "~ can't be blocked as long as you control a Wizard."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block as long as there are five or more cards in your graveyard.",
+      "~ can't be blocked this turn as long as you control a Wizard.",
+      "~ can't be blocked by Walls as long as you control a Wizard."
+    ]
+  },
+  {
+    "id": "sta.t33.self.unblockable.spellsCast",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 601.2i",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ can't be blocked if you've cast {n:Qty} or more spells this turn",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "cant",
+      "action": "beBlocked",
+      "when": {
+        "cond": "compare",
+        "left": {
+          "q": "spellsCastThisTurn"
+        },
+        "op": ">=",
+        "right": "$n"
+      }
+    },
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked if you've cast three or more spells this turn."
+      },
+      {
+        "text": "Flying\n~ can't be blocked if you've cast four or more spells this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block if you've cast three or more spells this turn.",
+      "~ can't be blocked if you've cast three or more creature spells this turn.",
+      "~ can't be blocked if an opponent has cast three or more spells this turn."
+    ]
+  },
+  {
+    "id": "sta.t33.self.cantattack.unless",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 508.1c",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ can't attack unless {c:Cond}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "onlyIf",
+      "action": "attack",
+      "when": "$c"
+    },
+    "consumes": [
+      "unless",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't attack unless you control another creature."
+      },
+      {
+        "text": "~ can't attack unless you control another Goblin."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block unless you control another creature.",
+      "~ can't attack if you control another creature.",
+      "~ can't attack or block unless you control another Goblin."
+    ]
+  },
+  {
+    "id": "sta.t33.self.unblockable.defending",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 506.2",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ can't be blocked as long as defending player controls ( a | an ) {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "cant",
+      "action": "beBlocked",
+      "when": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "controller": {
+              "ref": "defending"
+            },
+            "anyOf": [
+              "$f"
+            ]
+          }
+        }
+      }
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked as long as defending player controls a Swamp."
+      },
+      {
+        "text": "~ can't be blocked as long as defending player controls an Equipment."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be blocked as long as you control a Swamp.",
+      "~ can't block as long as defending player controls an enchantment.",
+      "~ can't be blocked as long as defending player controls two enchantments."
+    ]
+  },
+  {
+    "id": "eff.t33.extrablock.self",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "~ can block an additional creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "extraBlockers",
+          "value": 1,
+          "of": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "{3}: ~ can block an additional creature this turn."
+      },
+      {
+        "text": "Flying\n{2}{W}: ~ can block an additional creature this turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ can block two additional creatures this turn.",
+      "{3}: ~ can block an additional creature each combat.",
+      "{3}: Target creature can block an additional creature this turn."
+    ]
+  },
+  {
+    "id": "sta.t33.each.extrablock",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 604.1"
+    ],
+    "pattern": "each {f:Filter} can block an additional creature each combat",
+    "build": {
+      "s": "rule",
+      "rule": "extraBlockers",
+      "value": 1,
+      "of": "$f"
+    },
+    "consumes": [
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Each Wall you control can block an additional creature each combat."
+      },
+      {
+        "text": "Each artifact creature you control can block an additional creature each combat."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control can block two additional creatures each combat.",
+      "Each creature you control can block an additional creature this turn.",
+      "Each creature you control can block any number of creatures."
+    ]
+  },
+  {
+    "id": "eff.t33.may.have.block",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1c",
+      "CR 608.2d",
+      "CR 611.2a"
+    ],
+    "pattern": "you may have {o:Obj} block {t:Obj} {d:Dur} if able",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "restrict",
+              "subject": "$o",
+              "mode": "mustIfAble",
+              "action": "block",
+              "other": {
+                "is": "$t"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may have target green creature block it this turn if able."
+      },
+      {
+        "text": "Whenever ~ attacks, you may have target creature an opponent controls block it this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may have target creature block it this turn.",
+      "When ~ enters, target creature blocks it this turn if able.",
+      "When ~ enters, you may have target creature attack it this turn if able."
+    ]
+  },
+  {
+    "id": "eff.t33.pump.mustbeblocked",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1c",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Objs} get[s] {pt:PT} {d:Dur} and must be blocked this turn if able",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "must",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+2 until end of turn and must be blocked this turn if able."
+      },
+      {
+        "text": "{1}{G}: ~ gets +1/+1 until end of turn and must be blocked this turn if able."
+      },
+      {
+        "text": "Each creature you control gets +2/+2 until end of turn and must be blocked this turn if able."
+      },
+      {
+        "text": "Creatures you control get +1/+0 until end of turn and must be blocked this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+2 until end of turn and must be blocked this turn.",
+      "Target creature gets +2/+2 until end of turn and can't be blocked this turn.",
+      "Target creature gets +2/+2 until end of turn and must block this turn if able."
+    ]
+  },
+  {
+    "id": "eff.t33.grant.cantbeblocked",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} {d:Dur} and can't be blocked this turn",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target creature you control with power 3 or less gains deathtouch until end of turn and can't be blocked this turn."
+      },
+      {
+        "text": "{2}{B}: ~ gains lifelink until end of turn and can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target creature gains deathtouch until end of turn and can't block this turn.",
+      "{T}: Target creature gains deathtouch until end of turn and can't be blocked.",
+      "{T}: Target creature loses deathtouch until end of turn and can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.noactivate",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 303.4",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature 's activated abilities can't be activated",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "attachedTo"
+      },
+      "mode": "cant",
+      "action": "activate"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature's activated abilities can't be activated."
+      },
+      {
+        "text": "Flash\nEquipped creature's activated abilities can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature's triggered abilities can't be activated.",
+      "Enchanted creature's activated abilities can't be activated unless they're mana abilities.",
+      "Enchanted creature's activated abilities cost {2} more to activate."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.loseall.nountap",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 502.3",
+      "CR 701.26b",
+      "CR 604.1"
+    ],
+    "pattern": "( enchanted | equipped ) creature loses all abilities and can't become untapped",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "untap"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature loses all abilities and can't become untapped."
+      },
+      {
+        "text": "Flash\nEquipped creature loses all abilities and can't become untapped."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature loses flying and can't become untapped.",
+      "Equipped creature loses all abilities and can't become tapped.",
+      "Equipped creature loses all abilities and doesn't untap during its controller's untap step."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.nountap.nocounters",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 701.26b",
+      "CR 122.6",
+      "CR 614.17"
+    ],
+    "pattern": "( enchanted | equipped ) creature can't become untapped and can't have counters put on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "untap"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "haveCountersPut"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't become untapped and can't have counters put on it."
+      },
+      {
+        "text": "Flash\nEquipped creature can't become untapped and can't have counters put on it."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature can't become untapped and can't have +1/+1 counters put on it.",
+      "Equipped creature can't become untapped and can't be the target of spells.",
+      "Equipped creature can become untapped and can't have counters put on it."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.subtype.base.loseall",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "( enchanted | equipped ) creature is ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} and loses all abilities",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature is a Frog with base power and toughness 1/1 and loses all abilities."
+      },
+      {
+        "text": "Enchanted creature is an Elk with base power and toughness 3/3 and loses all abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature is a Frog with base power and toughness 1/1 and loses flying.",
+      "Enchanted creature is a Frog in addition to its other types with base power and toughness 1/1 and loses all abilities.",
+      "Enchanted creature is a Frog with base power and toughness 1/1 and has all abilities."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.colorless.land",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 305.7",
+      "CR 105.2c",
+      "CR 613.1d",
+      "CR 613.1e"
+    ],
+    "pattern": "( enchanted | equipped ) permanent is a colorless {st:Subtypes} land",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Land"
+            ]
+          },
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": []
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchant permanent\nEnchanted permanent is a colorless Island land."
+      },
+      {
+        "text": "Flash\nEnchanted permanent is a colorless Mountain land."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted permanent is a green Island land.",
+      "Enchanted permanent is a colorless Island land in addition to its other types.",
+      "Enchanted permanent is a colorless Island artifact."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.loseall.colorless.subtype.base",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 105.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "( enchanted | equipped ) creature loses all abilities and is a colorless {st:Subtypes} with base power and toughness {pt:BasePT}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": []
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature loses all abilities and is a colorless Ooze with base power and toughness 2/2."
+      },
+      {
+        "text": "Flash\nEnchanted creature loses all abilities and is a colorless Frog with base power and toughness 1/1."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature loses all abilities and is a green Ooze with base power and toughness 2/2.",
+      "Enchanted creature loses flying and is a colorless Ooze with base power and toughness 2/2.",
+      "Enchanted creature loses all abilities and is a colorless Ooze with base power 2."
+    ]
+  },
+  {
+    "id": "eff.t33.self.pump.damageyou",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 120.3",
+      "CR 608.2c"
+    ],
+    "pattern": "~ gets {pt:PT} {d:Dur} and deals {n:Qty} damage to you",
+    "build": [
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": {
+              "ref": "self"
+            },
+            "mods": [
+              {
+                "layer": "7c",
+                "power": "$pt.p",
+                "toughness": "$pt.t"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "damage",
+        "source": {
+          "ref": "self"
+        },
+        "to": {
+          "ref": "you"
+        },
+        "amount": "$n"
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}{R}: ~ gets +2/+0 until end of turn and deals 2 damage to you."
+      },
+      {
+        "text": "Flying\n{R}: ~ gets +1/+1 until end of turn and deals 1 damage to you."
+      }
+    ],
+    "counterExamples": [
+      "{R}: ~ gets +1/+1 until end of turn and deals 1 damage to any target.",
+      "{R}: ~ gets +1/+1 until end of turn and you lose 1 life.",
+      "{R}: Target creature gets +1/+1 until end of turn and deals 1 damage to you."
+    ]
+  },
+  {
+    "id": "sta.t33.graveyard.control.grant",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 113.6",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as ~ is in your graveyard and {c:Cond} , {f:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "Vigilance\nAs long as ~ is in your graveyard and you control a Plains, creatures you control have vigilance."
+      },
+      {
+        "text": "As long as ~ is in your graveyard and you control a Swamp, creatures you control have deathtouch."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is on the battlefield and you control a Plains, creatures you control have vigilance.",
+      "As long as ~ is in your graveyard or you control a Plains, creatures you control have vigilance.",
+      "As long as ~ is in your graveyard and you control a Plains, creatures you control get +1/+1."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.nonbasic.landwalk",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 702.14a",
+      "CR 702.14c",
+      "CR 613.1f",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature has nonbasic landwalk",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "landwalk",
+              "quality": "nonbasic",
+              "text": "nonbasic landwalk"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature has nonbasic landwalk."
+      },
+      {
+        "text": "Flash\nEnchant creature\nEnchanted creature has nonbasic landwalk."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEnchanted creature has basic landwalk.",
+      "Enchant creature\nEnchanted creature has nonbasic landwalk until end of turn.",
+      "Enchant creature\nEnchanted creature loses nonbasic landwalk."
+    ]
+  },
+  {
+    "id": "sta.t33.group.cantattack.you",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} can't attack you or planeswalkers you control",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures with trample can't attack you or planeswalkers you control."
+      },
+      {
+        "text": "Creatures with power 4 or greater can't attack you or planeswalkers you control.\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "Creatures with flying can't attack you.",
+      "Creatures with flying can't block you or planeswalkers you control.",
+      "Creatures with flying can't attack you or planeswalkers you control unless their controller pays {1} for each of those creatures."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.pump.grant.cantattack.you",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , has {a:Abilities} , and can't attack you or planeswalkers you control",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature gets +1/+1, has reach, and can't attack you or planeswalkers you control."
+      },
+      {
+        "text": "Enchant creature\nEnchanted creature gets +4/+2, has menace, and can't attack you or planeswalkers you control."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEnchanted creature gets +1/+1, has reach, and can't attack.",
+      "Enchant creature\nEnchanted creature gets +1/+1, has reach, and can't block you or planeswalkers you control.",
+      "Enchant creature\nEnchanted creature gets +1/+1, has reach, and can't attack you or creatures you control."
+    ]
+  },
+  {
+    "id": "sta.t33.attached.noattackblock.noactivate.exceptMana",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) ( permanent | creature ) can't attack or block , and its activated abilities can't be activated unless they're mana abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "block"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "activate",
+          "exceptMana": true
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't attack or block, and its activated abilities can't be activated unless they're mana abilities."
+      },
+      {
+        "text": "Flash\nEquipped creature can't attack or block, and its activated abilities can't be activated unless they're mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature can't attack or block, and its activated abilities can't be activated unless they're loyalty abilities.",
+      "Equipped creature can't attack, and its activated abilities can't be activated unless they're mana abilities.",
+      "Equipped creature can't attack or block, and its triggered abilities can't be activated unless they're mana abilities."
+    ]
+  }
+]

@@ -1,0 +1,12 @@
+# ---- std-rn (precon round N, Commander precon cards, tuning half): activation during any step, addendum, each player shuffles their zones (its phase-out fix was dropped for std-rm's)
+Desert
+Lavinia, Foil to Conspiracy
+Return to Dust
+Might of Old Krosa
+Haunting Hymn
+Arrester's Zeal
+Unbreakable Formation
+Struggle // Survive
+Temporal Cascade
+Timetwister
+Day's Undoing

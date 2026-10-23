@@ -1,0 +1,83 @@
+[
+  {
+    "id": "eff.e21.counters.putEvery",
+    "kind": "effect",
+    "cr": [
+      "CR 122.5",
+      "CR 122.8",
+      "CR 608.2h"
+    ],
+    "pattern": "put {a:CountersOf} on {b:Obj}",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": "$b",
+      "kind": "any",
+      "count": "all"
+    },
+    "subject": "none",
+    "needs": [
+      "op:moveCounters.every"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, put its counters on target creature you control."
+      },
+      {
+        "text": "When ~ leaves the battlefield, put its counters on up to one target artifact you control."
+      },
+      {
+        "text": "When ~ dies, if it had counters on it, put those counters on up to one target creature."
+      },
+      {
+        "text": "When ~ dies, create a 0/0 green Ooze creature token, then put ~'s counters on that token."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, put its counters on each creature you control.",
+      "When ~ dies, put its counters on two target creatures.",
+      "Put its counters on target creature you control."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.e21.while",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2"
+    ],
+    "pattern": "( when | whenever ) {e:Event} while {c:Cond}",
+    "build": {
+      "on": "$e",
+      "while": "$c"
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "while"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes tapped while it has a -1/-1 counter on it, draw a card."
+      },
+      {
+        "text": "Whenever another creature you control enters while ~ has a -1/-1 counter on it, you gain 1 life."
+      },
+      {
+        "text": "Whenever one or more creature cards are put into your graveyard from anywhere while ~ has a -1/-1 counter on it, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes tapped while saddled, draw a card.",
+      "Whenever ~ becomes tapped, while it has a -1/-1 counter on it, draw a card."
+    ],
+    "status": "stable",
+    "since": 1,
+    "priority": -1
+  }
+]

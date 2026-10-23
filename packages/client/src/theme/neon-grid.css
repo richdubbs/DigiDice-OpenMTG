@@ -1,0 +1,55 @@
+/*
+ * Neon Grid profiles (profiles/profiles.ts). The template itself is theme/styles.css and the package stylesheets, untouched: their glows and edges take
+ * the profile's neons through --neon-rgb and --neon-2-rgb. Here: the few lit gradients drawn in fixed shades of the brand blue and magenta, mixed from
+ * the profile's own neons when the player changed them (data-tint), and the profile's background switches.
+ */
+
+:root[data-ui='grid'][data-tint='custom'] .button-primary:not(:disabled):not([aria-disabled='true']),
+:root[data-ui='grid'][data-tint='custom'] .deck-segment button[aria-pressed='true'],
+:root[data-ui='grid'][data-tint='custom'] .replays-end-buttons button[aria-pressed='true'],
+:root[data-ui='grid'][data-tint='custom'] .replays-row-actions button[aria-pressed='true'] {
+  --btn-face: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon) 55%, #fff) 0%,
+    var(--neon) 38%,
+    color-mix(in srgb, var(--neon) 78%, #000) 100%
+  );
+  --btn-face-hover: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neon) 40%, #fff) 0%,
+    color-mix(in srgb, var(--neon) 85%, #fff) 38%,
+    color-mix(in srgb, var(--neon) 88%, #000) 100%
+  );
+  --btn-side: color-mix(in srgb, var(--neon) 42%, #000);
+  --btn-rim: color-mix(in srgb, var(--neon) 35%, #fff);
+  --btn-text: var(--accent-text);
+  --btn-glow: rgba(var(--neon-rgb), 0.85);
+}
+
+:root[data-ui='grid'][data-tint='custom'] .button-danger:not(:disabled) {
+  --btn-face: linear-gradient(180deg, color-mix(in srgb, var(--neon-2) 24%, #0a0410) 0%, color-mix(in srgb, var(--neon-2) 14%, #06020a) 100%);
+  --btn-face-hover: linear-gradient(180deg, color-mix(in srgb, var(--neon-2) 34%, #0a0410) 0%, color-mix(in srgb, var(--neon-2) 20%, #06020a) 100%);
+  --btn-side: color-mix(in srgb, var(--neon-2) 26%, #000);
+}
+
+:root[data-ui='grid'][data-tint='custom'] .phase-step.is-current {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--neon) 50%, #fff), var(--neon));
+  color: var(--accent-text);
+}
+
+:root[data-ui='grid'][data-tint='custom'] .phase-bar:not(.is-my-turn) .phase-step.is-current {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--neon-2) 50%, #fff), var(--neon-2));
+}
+
+/* The scene switch: the grid floor and the horizon line. */
+:root[data-ui='grid'][data-scene='off'] .app::before,
+:root[data-ui='grid'][data-scene='off'] .app::after {
+  display: none;
+}
+
+/* Still backgrounds: the floor stops drifting and the rings behind the Home logo stop turning. */
+:root[data-motion='off'] .app::before,
+:root[data-motion='off'] .home-logo::before,
+:root[data-motion='off'] .home-logo::after {
+  animation: none;
+}

@@ -1,0 +1,336 @@
+{
+  "classic": {
+    "file": "sleeves/sleeve-classic.svg",
+    "tracers": "sleeves/sleeve-classic-tracers.svg"
+  },
+  "sleeves": [
+    {
+      "id": "w",
+      "colors": [
+        "W"
+      ],
+      "name": "White",
+      "file": "sleeves/sleeve-w.svg",
+      "tracers": "sleeves/sleeve-w-tracers.svg"
+    },
+    {
+      "id": "u",
+      "colors": [
+        "U"
+      ],
+      "name": "Blue",
+      "file": "sleeves/sleeve-u.svg",
+      "tracers": "sleeves/sleeve-u-tracers.svg"
+    },
+    {
+      "id": "b",
+      "colors": [
+        "B"
+      ],
+      "name": "Black",
+      "file": "sleeves/sleeve-b.svg",
+      "tracers": "sleeves/sleeve-b-tracers.svg"
+    },
+    {
+      "id": "r",
+      "colors": [
+        "R"
+      ],
+      "name": "Red",
+      "file": "sleeves/sleeve-r.svg",
+      "tracers": "sleeves/sleeve-r-tracers.svg"
+    },
+    {
+      "id": "g",
+      "colors": [
+        "G"
+      ],
+      "name": "Green",
+      "file": "sleeves/sleeve-g.svg",
+      "tracers": "sleeves/sleeve-g-tracers.svg"
+    },
+    {
+      "id": "wu",
+      "colors": [
+        "W",
+        "U"
+      ],
+      "name": "White-Blue",
+      "file": "sleeves/sleeve-wu.svg",
+      "tracers": "sleeves/sleeve-wu-tracers.svg"
+    },
+    {
+      "id": "ub",
+      "colors": [
+        "U",
+        "B"
+      ],
+      "name": "Blue-Black",
+      "file": "sleeves/sleeve-ub.svg",
+      "tracers": "sleeves/sleeve-ub-tracers.svg"
+    },
+    {
+      "id": "br",
+      "colors": [
+        "B",
+        "R"
+      ],
+      "name": "Black-Red",
+      "file": "sleeves/sleeve-br.svg",
+      "tracers": "sleeves/sleeve-br-tracers.svg"
+    },
+    {
+      "id": "rg",
+      "colors": [
+        "R",
+        "G"
+      ],
+      "name": "Red-Green",
+      "file": "sleeves/sleeve-rg.svg",
+      "tracers": "sleeves/sleeve-rg-tracers.svg"
+    },
+    {
+      "id": "gw",
+      "colors": [
+        "G",
+        "W"
+      ],
+      "name": "Green-White",
+      "file": "sleeves/sleeve-gw.svg",
+      "tracers": "sleeves/sleeve-gw-tracers.svg"
+    },
+    {
+      "id": "wb",
+      "colors": [
+        "W",
+        "B"
+      ],
+      "name": "White-Black",
+      "file": "sleeves/sleeve-wb.svg",
+      "tracers": "sleeves/sleeve-wb-tracers.svg"
+    },
+    {
+      "id": "ur",
+      "colors": [
+        "U",
+        "R"
+      ],
+      "name": "Blue-Red",
+      "file": "sleeves/sleeve-ur.svg",
+      "tracers": "sleeves/sleeve-ur-tracers.svg"
+    },
+    {
+      "id": "bg",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "name": "Black-Green",
+      "file": "sleeves/sleeve-bg.svg",
+      "tracers": "sleeves/sleeve-bg-tracers.svg"
+    },
+    {
+      "id": "rw",
+      "colors": [
+        "R",
+        "W"
+      ],
+      "name": "Red-White",
+      "file": "sleeves/sleeve-rw.svg",
+      "tracers": "sleeves/sleeve-rw-tracers.svg"
+    },
+    {
+      "id": "gu",
+      "colors": [
+        "G",
+        "U"
+      ],
+      "name": "Green-Blue",
+      "file": "sleeves/sleeve-gu.svg",
+      "tracers": "sleeves/sleeve-gu-tracers.svg"
+    },
+    {
+      "id": "wub",
+      "colors": [
+        "W",
+        "U",
+        "B"
+      ],
+      "name": "White-Blue-Black",
+      "file": "sleeves/sleeve-wub.svg",
+      "tracers": "sleeves/sleeve-wub-tracers.svg"
+    },
+    {
+      "id": "ubr",
+      "colors": [
+        "U",
+        "B",
+        "R"
+      ],
+      "name": "Blue-Black-Red",
+      "file": "sleeves/sleeve-ubr.svg",
+      "tracers": "sleeves/sleeve-ubr-tracers.svg"
+    },
+    {
+      "id": "brg",
+      "colors": [
+        "B",
+        "R",
+        "G"
+      ],
+      "name": "Black-Red-Green",
+      "file": "sleeves/sleeve-brg.svg",
+      "tracers": "sleeves/sleeve-brg-tracers.svg"
+    },
+    {
+      "id": "rgw",
+      "colors": [
+        "R",
+        "G",
+        "W"
+      ],
+      "name": "Red-Green-White",
+      "file": "sleeves/sleeve-rgw.svg",
+      "tracers": "sleeves/sleeve-rgw-tracers.svg"
+    },
+    {
+      "id": "gwu",
+      "colors": [
+        "G",
+        "W",
+        "U"
+      ],
+      "name": "Green-White-Blue",
+      "file": "sleeves/sleeve-gwu.svg",
+      "tracers": "sleeves/sleeve-gwu-tracers.svg"
+    },
+    {
+      "id": "wbg",
+      "colors": [
+        "W",
+        "B",
+        "G"
+      ],
+      "name": "White-Black-Green",
+      "file": "sleeves/sleeve-wbg.svg",
+      "tracers": "sleeves/sleeve-wbg-tracers.svg"
+    },
+    {
+      "id": "urw",
+      "colors": [
+        "U",
+        "R",
+        "W"
+      ],
+      "name": "Blue-Red-White",
+      "file": "sleeves/sleeve-urw.svg",
+      "tracers": "sleeves/sleeve-urw-tracers.svg"
+    },
+    {
+      "id": "bgu",
+      "colors": [
+        "B",
+        "G",
+        "U"
+      ],
+      "name": "Black-Green-Blue",
+      "file": "sleeves/sleeve-bgu.svg",
+      "tracers": "sleeves/sleeve-bgu-tracers.svg"
+    },
+    {
+      "id": "rwb",
+      "colors": [
+        "R",
+        "W",
+        "B"
+      ],
+      "name": "Red-White-Black",
+      "file": "sleeves/sleeve-rwb.svg",
+      "tracers": "sleeves/sleeve-rwb-tracers.svg"
+    },
+    {
+      "id": "gur",
+      "colors": [
+        "G",
+        "U",
+        "R"
+      ],
+      "name": "Green-Blue-Red",
+      "file": "sleeves/sleeve-gur.svg",
+      "tracers": "sleeves/sleeve-gur-tracers.svg"
+    },
+    {
+      "id": "wubr",
+      "colors": [
+        "W",
+        "U",
+        "B",
+        "R"
+      ],
+      "name": "White-Blue-Black-Red",
+      "file": "sleeves/sleeve-wubr.svg",
+      "tracers": "sleeves/sleeve-wubr-tracers.svg"
+    },
+    {
+      "id": "ubrg",
+      "colors": [
+        "U",
+        "B",
+        "R",
+        "G"
+      ],
+      "name": "Blue-Black-Red-Green",
+      "file": "sleeves/sleeve-ubrg.svg",
+      "tracers": "sleeves/sleeve-ubrg-tracers.svg"
+    },
+    {
+      "id": "brgw",
+      "colors": [
+        "B",
+        "R",
+        "G",
+        "W"
+      ],
+      "name": "Black-Red-Green-White",
+      "file": "sleeves/sleeve-brgw.svg",
+      "tracers": "sleeves/sleeve-brgw-tracers.svg"
+    },
+    {
+      "id": "rgwu",
+      "colors": [
+        "R",
+        "G",
+        "W",
+        "U"
+      ],
+      "name": "Red-Green-White-Blue",
+      "file": "sleeves/sleeve-rgwu.svg",
+      "tracers": "sleeves/sleeve-rgwu-tracers.svg"
+    },
+    {
+      "id": "gwub",
+      "colors": [
+        "G",
+        "W",
+        "U",
+        "B"
+      ],
+      "name": "Green-White-Blue-Black",
+      "file": "sleeves/sleeve-gwub.svg",
+      "tracers": "sleeves/sleeve-gwub-tracers.svg"
+    },
+    {
+      "id": "wubrg",
+      "colors": [
+        "W",
+        "U",
+        "B",
+        "R",
+        "G"
+      ],
+      "name": "All five colors",
+      "file": "sleeves/sleeve-wubrg.svg",
+      "tracers": "sleeves/sleeve-wubrg-tracers.svg"
+    }
+  ]
+}

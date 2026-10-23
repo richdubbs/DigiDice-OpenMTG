@@ -1,0 +1,18 @@
+{
+  "name": "convoke",
+  "rule": "702.51",
+  "params": [],
+  "mechanisms": [
+    "hook"
+  ],
+  "reminder": "Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "hooks": [
+    "paymentOptions"
+  ],
+  "readers": [
+    "rules/payment-options.ts#payableWithOptions",
+    "rules/payment-options.ts#applyPaymentOptions"
+  ]
+}

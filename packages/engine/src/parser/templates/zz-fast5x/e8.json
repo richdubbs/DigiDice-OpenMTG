@@ -1,0 +1,138 @@
+[
+  {
+    "id": "trg.e8.unlockThisDoor",
+    "kind": "trigger",
+    "cr": ["CR 709.5h", "CR 709.5j", "CR 709.5d", "CR 603.2"],
+    "pattern": "when you unlock ~",
+    "build": {"on": [{"ev": "becomes", "what": "unlocked", "object": {"self": true}, "door": "this"}]},
+    "needs": ["feature:ev.becomes.unlocked"],
+    "consumes": ["when"],
+    "examples": [
+      {"text": "When you unlock ~, draw a card.", "expect": [{"kind": "triggered", "text": "When you unlock ~, draw a card.", "trigger": {"on": [{"ev": "becomes", "what": "unlocked", "object": {"self": true}, "door": "this"}]}, "effect": {"targets": [], "steps": [{"op": "draw", "who": {"ref": "you"}, "count": 1}]}}]},
+      {"text": "When you unlock ~, you gain 3 life."}
+    ],
+    "counterExamples": [
+      "Whenever you unlock a door, draw a card.",
+      "When you lock ~, draw a card.",
+      "When you fully unlock ~, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.e8.fullyUnlockRoom",
+    "kind": "trigger",
+    "cr": ["CR 709.5i", "CR 603.2"],
+    "pattern": "whenever you fully unlock a room",
+    "build": {"on": [{"ev": "becomes", "what": "fullyUnlocked", "object": {"subtypes": ["Room"]}}]},
+    "needs": ["feature:ev.becomes.fullyUnlocked"],
+    "consumes": ["whenever"],
+    "examples": [
+      {"text": "Whenever you fully unlock a Room, draw a card.", "expect": [{"kind": "triggered", "text": "Whenever you fully unlock a Room, draw a card.", "trigger": {"on": [{"ev": "becomes", "what": "fullyUnlocked", "object": {"subtypes": ["Room"]}}]}, "effect": {"targets": [], "steps": [{"op": "draw", "who": {"ref": "you"}, "count": 1}]}}]},
+      {"text": "Whenever you fully unlock a Room, you gain 2 life."}
+    ],
+    "counterExamples": [
+      "Whenever you unlock a Room, draw a card.",
+      "Whenever an opponent fully unlocks a Room, draw a card.",
+      "Whenever you fully unlock a Room for the first time each turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.e8.entersAndFullyUnlock",
+    "kind": "trigger",
+    "cr": ["CR 603.2", "CR 603.6a", "CR 709.5i"],
+    "pattern": "whenever {f:Filter} enter[s] and whenever you fully unlock a room",
+    "build": {"on": [{"ev": "zoneChange", "subject": "$f", "to": "battlefield"}, {"ev": "becomes", "what": "fullyUnlocked", "object": {"subtypes": ["Room"]}}]},
+    "needs": ["feature:ev.becomes.fullyUnlocked"],
+    "consumes": ["whenever"],
+    "examples": [
+      {"text": "Whenever an enchantment you control enters and whenever you fully unlock a Room, draw a card.", "expect": [{"kind": "triggered", "text": "Whenever an enchantment you control enters and whenever you fully unlock a Room, draw a card.", "trigger": {"on": [{"ev": "zoneChange", "subject": {"types": ["Enchantment"], "controller": "you"}, "to": "battlefield"}, {"ev": "becomes", "what": "fullyUnlocked", "object": {"subtypes": ["Room"]}}]}, "effect": {"targets": [], "steps": [{"op": "draw", "who": {"ref": "you"}, "count": 1}]}}]},
+      {"text": "Whenever an artifact you control enters and whenever you fully unlock a Room, you gain 1 life."}
+    ],
+    "counterExamples": [
+      "Whenever an enchantment you control enters and whenever you unlock a Room, draw a card.",
+      "Whenever an enchantment you control leaves the battlefield and whenever you fully unlock a Room, draw a card.",
+      "Whenever an enchantment you control enters or you fully unlock a Room, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.e8.selfOrAnotherEntersAndFullyUnlock",
+    "kind": "trigger",
+    "cr": ["CR 603.2", "CR 603.6a", "CR 709.5i"],
+    "pattern": "whenever ~ or another {f:Filter} enter[s] and whenever you fully unlock a room",
+    "build": {"on": [{"ev": "zoneChange", "subject": "$f", "to": "battlefield"}, {"ev": "becomes", "what": "fullyUnlocked", "object": {"subtypes": ["Room"]}}]},
+    "needs": ["feature:ev.becomes.fullyUnlocked"],
+    "consumes": ["whenever", "another"],
+    "priority": 1,
+    "examples": [
+      {"text": "Whenever ~ or another creature you control enters and whenever you fully unlock a Room, draw a card.", "expect": [{"kind": "triggered", "text": "Whenever ~ or another creature you control enters and whenever you fully unlock a Room, draw a card.", "trigger": {"on": [{"ev": "zoneChange", "subject": {"types": ["Creature"], "controller": "you"}, "to": "battlefield"}, {"ev": "becomes", "what": "fullyUnlocked", "object": {"subtypes": ["Room"]}}]}, "effect": {"targets": [], "steps": [{"op": "draw", "who": {"ref": "you"}, "count": 1}]}}]},
+      {"text": "Whenever ~ or another creature you control enters and whenever you fully unlock a Room, you gain 2 life."}
+    ],
+    "counterExamples": [
+      "Whenever ~ or another creature you control dies and whenever you fully unlock a Room, draw a card.",
+      "Whenever ~ or another creature you control enters and whenever you unlock a Room, draw a card."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "rid.e8.mana.roomAndUnlock",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 709.5e", "CR 116.2m"],
+    "pattern": "spend this mana only to cast room spells and unlock doors",
+    "build": {"$patchPrevious": {"restriction": {"spells": {"subtypes": ["Room"]}, "unlock": true}}},
+    "attachTo": "addMana",
+    "consumes": ["only"],
+    "examples": [
+      {"text": "{T}: Add {R}. Spend this mana only to cast Room spells and unlock doors."},
+      {"text": "{1}, {T}: Add {U}{U}. Spend this mana only to cast Room spells and unlock doors."}
+    ],
+    "counterExamples": [
+      "{T}: Add {R}. Spend this mana only to cast Room spells or unlock doors this turn.",
+      "{T}: Add {R}. Spend this mana only to cast enchantment spells, unlock doors, or turn permanents face up."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "eff.e8.unlockLockedDoor",
+    "kind": "effect",
+    "cr": ["CR 709.5f", "CR 709.5j"],
+    "pattern": "unlock a locked door of {o:Obj}",
+    "build": {"op": "designateObject", "what": "$o", "designation": "unlockDoor"},
+    "needs": ["op:designateObject.unlockDoor"],
+    "examples": [
+      {"text": "Unlock a locked door of target Room you control.", "expect": [{"kind": "spell", "text": "Unlock a locked door of target Room you control.", "effect": {"targets": [{"id": "t0", "kind": "object", "filter": {"subtypes": ["Room"], "controller": "you"}, "min": 1, "max": 1, "text": "target Room you control"}], "steps": [{"op": "designateObject", "what": {"ref": "target", "id": "t0"}, "designation": "unlockDoor"}]}}]},
+      {"text": "Whenever ~ deals combat damage to a player, unlock a locked door of up to one target Room you control."}
+    ],
+    "counterExamples": [
+      "Unlock a door of target Room you control.",
+      "Lock a locked door of target Room you control.",
+      "Unlock each locked door of target Room you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e8.lockOrUnlockDoor",
+    "kind": "effect",
+    "cr": ["CR 709.5f", "CR 709.5g", "CR 709.5j"],
+    "pattern": "lock or unlock a door of {o:Obj}",
+    "build": {"op": "designateObject", "what": "$o", "designation": "lockOrUnlockDoor"},
+    "needs": ["op:designateObject.lockOrUnlockDoor"],
+    "examples": [
+      {"text": "Lock or unlock a door of target Room you control.", "expect": [{"kind": "spell", "text": "Lock or unlock a door of target Room you control.", "effect": {"targets": [{"id": "t0", "kind": "object", "filter": {"subtypes": ["Room"], "controller": "you"}, "min": 1, "max": 1, "text": "target Room you control"}], "steps": [{"op": "designateObject", "what": {"ref": "target", "id": "t0"}, "designation": "lockOrUnlockDoor"}]}}]},
+      {"text": "{T}: Lock or unlock a door of target Room you control. Activate only as a sorcery."}
+    ],
+    "counterExamples": [
+      "Lock a door of target Room you control.",
+      "Lock or unlock each door of target Room you control."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

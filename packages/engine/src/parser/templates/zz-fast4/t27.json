@@ -1,0 +1,809 @@
+[
+  {
+    "id": "trg.t27.cast.opponentsTurn",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 500.1"
+    ],
+    "pattern": "whenever you cast a spell during an opponent 's turn",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you"
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "opponent"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell during an opponent's turn, draw a card.",
+        "expect": {
+          "on": [
+            {
+              "ev": "cast",
+              "player": "you"
+            }
+          ],
+          "while": {
+            "cond": "turnOf",
+            "whose": "opponent"
+          }
+        }
+      },
+      {
+        "text": "Whenever you cast a spell during an opponent's turn, put a +1/+1 counter on ~."
+      },
+      {
+        "text": "Whenever you cast a spell during an opponent's turn, scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell during your turn, draw a card.",
+      "Whenever an opponent casts a spell during an opponent's turn, draw a card.",
+      "Whenever you cast a creature spell during an opponent's turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.life.gain.firstEachTurn",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 119.9"
+    ],
+    "pattern": "whenever you gain life for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "life",
+          "change": "gain",
+          "player": "you"
+        }
+      ],
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each"
+    ],
+    "needs": [
+      "feature:trigger.first"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you gain life for the first time each turn, draw a card.",
+        "expect": {
+          "on": [
+            {
+              "ev": "life",
+              "change": "gain",
+              "player": "you"
+            }
+          ],
+          "first": "turn"
+        }
+      },
+      {
+        "text": "Whenever you gain life for the first time each turn, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you gain life for the second time each turn, draw a card.",
+      "Whenever you lose life for the first time each turn, draw a card.",
+      "Whenever an opponent gains life for the first time each turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.life.gain.firstYourTurns",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 119.9",
+      "CR 500.1"
+    ],
+    "pattern": "whenever you gain life for the first time during each of your turns",
+    "build": {
+      "on": [
+        {
+          "ev": "life",
+          "change": "gain",
+          "player": "you"
+        }
+      ],
+      "first": "turn",
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "during",
+      "each"
+    ],
+    "needs": [
+      "feature:trigger.first",
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you gain life for the first time during each of your turns, draw a card.",
+        "expect": {
+          "on": [
+            {
+              "ev": "life",
+              "change": "gain",
+              "player": "you"
+            }
+          ],
+          "first": "turn",
+          "while": {
+            "cond": "turnOf",
+            "whose": "you"
+          }
+        }
+      },
+      {
+        "text": "Whenever you gain life for the first time during each of your turns, create a 1/1 white Cat creature token."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you gain life for the first time during each opponent's turn, draw a card.",
+      "Whenever you lose life for the first time during each of your turns, draw a card.",
+      "Whenever you gain life during each of your turns, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.life.gainOrLose.yourTurn",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 119.9",
+      "CR 119.10",
+      "CR 500.1"
+    ],
+    "pattern": "whenever you gain or lose life during your turn",
+    "build": {
+      "on": [
+        {
+          "ev": "life",
+          "change": "gain",
+          "player": "you"
+        },
+        {
+          "ev": "life",
+          "change": "loss",
+          "player": "you"
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "or",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you gain or lose life during your turn, ~ gets +1/+0 until end of turn.",
+        "expect": {
+          "on": [
+            {
+              "ev": "life",
+              "change": "gain",
+              "player": "you"
+            },
+            {
+              "ev": "life",
+              "change": "loss",
+              "player": "you"
+            }
+          ],
+          "while": {
+            "cond": "turnOf",
+            "whose": "you"
+          }
+        }
+      },
+      {
+        "text": "Whenever you gain or lose life during your turn, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you gain or lose life during an opponent's turn, draw a card.",
+      "Whenever you gain and lose life during your turn, draw a card.",
+      "Whenever an opponent gains or loses life during your turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.attacks.while",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 508.1",
+      "CR 508.3a"
+    ],
+    "pattern": "whenever ~ attacks while {c:Cond}",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "self": true
+          }
+        }
+      ],
+      "while": "$c"
+    },
+    "consumes": [
+      "whenever",
+      "while"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks while you control a creature with power 4 or greater, ~ gets +1/+1 until end of turn.",
+        "expect": {
+          "on": [
+            {
+              "ev": "attacks",
+              "attacker": {
+                "self": true
+              }
+            }
+          ],
+          "while": {
+            "cond": "exists",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "power": {
+                  "op": ">=",
+                  "value": 4
+                },
+                "controller": "you"
+              }
+            }
+          }
+        }
+      },
+      {
+        "text": "Whenever ~ attacks while you control three or more artifacts, draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks while you control a token, you gain 2 life."
+      },
+      {
+        "text": "Whenever ~ attacks while you control a Dinosaur, ~ gets +2/+0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks unless you control a creature with power 4 or greater, draw a card.",
+      "Whenever ~ blocks while you control a creature with power 4 or greater, draw a card.",
+      "Whenever ~ attacks while an opponent controls a creature with power 4 or greater and you control a token or, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.attacksOrBlocks.while",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 508.3a",
+      "CR 509.3a"
+    ],
+    "pattern": "whenever ~ attacks or blocks while {c:Cond}",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "self": true
+          }
+        },
+        {
+          "ev": "blocks",
+          "blocker": {
+            "self": true
+          }
+        }
+      ],
+      "while": "$c"
+    },
+    "consumes": [
+      "whenever",
+      "or",
+      "while"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks or blocks while you control a Dinosaur, ~ gets +1/+1 until end of turn.",
+        "expect": {
+          "on": [
+            {
+              "ev": "attacks",
+              "attacker": {
+                "self": true
+              }
+            },
+            {
+              "ev": "blocks",
+              "blocker": {
+                "self": true
+              }
+            }
+          ],
+          "while": {
+            "cond": "exists",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "subtypes": [
+                  "Dinosaur"
+                ],
+                "controller": "you"
+              }
+            }
+          }
+        }
+      },
+      {
+        "text": "Whenever ~ attacks or blocks while you control two or more artifacts, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks and blocks while you control a Dinosaur, draw a card.",
+      "Whenever ~ attacks or blocks unless you control a Dinosaur, draw a card.",
+      "Whenever ~ attacks or becomes blocked while you control a Dinosaur, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.youAttack.while",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 508.1"
+    ],
+    "pattern": "whenever you attack while {c:Cond}",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "controller": "you"
+          },
+          "count": {
+            "op": ">=",
+            "value": 1
+          }
+        }
+      ],
+      "batch": true,
+      "while": "$c"
+    },
+    "consumes": [
+      "whenever",
+      "while"
+    ],
+    "needs": [
+      "feature:trigger.while",
+      "feature:trigger.batch"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack while you control a creature with power 4 or greater, draw a card.",
+        "expect": {
+          "on": [
+            {
+              "ev": "attacks",
+              "attacker": {
+                "controller": "you"
+              },
+              "count": {
+                "op": ">=",
+                "value": 1
+              }
+            }
+          ],
+          "batch": true,
+          "while": {
+            "cond": "exists",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "power": {
+                  "op": ">=",
+                  "value": 4
+                },
+                "controller": "you"
+              }
+            }
+          }
+        }
+      },
+      {
+        "text": "Whenever you attack while you control two or more artifacts, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack unless you control a creature with power 4 or greater, draw a card.",
+      "Whenever an opponent attacks while you control a creature with power 4 or greater, draw a card.",
+      "Whenever you block while you control a creature with power 4 or greater, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.targeted.youControl.firstEachTurn",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 603.2e",
+      "CR 115.1",
+      "CR 115.10"
+    ],
+    "pattern": "whenever ~ becomes the target of a spell or ability you control for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "becomes",
+          "what": "targeted",
+          "object": {
+            "self": true
+          },
+          "by": {
+            "controller": "you"
+          }
+        }
+      ],
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each"
+    ],
+    "needs": [
+      "feature:trigger.first"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes the target of a spell or ability you control for the first time each turn, put a +1/+1 counter on ~.",
+        "expect": {
+          "on": [
+            {
+              "ev": "becomes",
+              "what": "targeted",
+              "object": {
+                "self": true
+              },
+              "by": {
+                "controller": "you"
+              }
+            }
+          ],
+          "first": "turn"
+        }
+      },
+      {
+        "text": "Whenever ~ becomes the target of a spell or ability you control for the first time each turn, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes the target of a spell or ability an opponent controls for the first time each turn, draw a card.",
+      "Whenever ~ becomes the target of a spell you control for the first time each turn, draw a card.",
+      "Whenever ~ becomes the target of a spell or ability you control for the second time each turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.opponent.dealtNoncombatDamage",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 120.1",
+      "CR 120.2b"
+    ],
+    "pattern": "whenever an opponent is dealt noncombat damage",
+    "build": {
+      "on": [
+        {
+          "ev": "damage",
+          "recipient": {
+            "player": "opponent"
+          },
+          "combat": false
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent is dealt noncombat damage, put a +1/+1 counter on ~.",
+        "expect": {
+          "on": [
+            {
+              "ev": "damage",
+              "recipient": {
+                "player": "opponent"
+              },
+              "combat": false
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever an opponent is dealt noncombat damage, creatures you control get +1/+0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent is dealt combat damage, put a +1/+1 counter on ~.",
+      "Whenever a player is dealt noncombat damage, put a +1/+1 counter on ~.",
+      "Whenever an opponent deals noncombat damage, put a +1/+1 counter on ~."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.player.discard.batch",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2c",
+      "CR 701.9a"
+    ],
+    "pattern": "whenever a player discards one or more cards",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "any"
+        }
+      ],
+      "batch": true
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "needs": [
+      "feature:trigger.batch"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player discards one or more cards, ~ deals 1 damage to each opponent.",
+        "expect": {
+          "on": [
+            {
+              "ev": "action",
+              "verb": "discard",
+              "actor": "any"
+            }
+          ],
+          "batch": true
+        }
+      },
+      {
+        "text": "Whenever a player discards one or more cards, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player discards two or more cards, you gain 2 life.",
+      "Whenever a player discards a creature card, you gain 2 life.",
+      "Whenever a player draws one or more cards, you gain 2 life."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.cast.noncreatureOrSubtype",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 205.3"
+    ],
+    "pattern": "whenever you cast a noncreature or {s:Subtypes} spell",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "anyOf": [
+              {
+                "notTypes": [
+                  "Creature"
+                ]
+              },
+              {
+                "subtypes": [
+                  "$s.0"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a noncreature or Dragon spell, ~ deals 1 damage to each opponent.",
+        "expect": {
+          "on": [
+            {
+              "ev": "cast",
+              "player": "you",
+              "spell": {
+                "anyOf": [
+                  {
+                    "notTypes": [
+                      "Creature"
+                    ]
+                  },
+                  {
+                    "subtypes": [
+                      "Dragon"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever you cast a noncreature or Otter spell, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a noncreature and Dragon spell, draw a card.",
+      "Whenever an opponent casts a noncreature or Dragon spell, draw a card.",
+      "Whenever you cast a noncreature or Human Soldier spell, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t27.anotherSubtypeAndOrArtifact.enters",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.6a",
+      "CR 205.3",
+      "CR 301.1"
+    ],
+    "pattern": "whenever another {s:Subtypes} and/or artifact you control enters",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "other": true,
+            "controller": "you",
+            "anyOf": [
+              {
+                "subtypes": [
+                  "$s.0"
+                ]
+              },
+              {
+                "types": [
+                  "Artifact"
+                ]
+              }
+            ]
+          },
+          "to": "battlefield"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "another",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another Villain and/or artifact you control enters, ~ deals 1 damage to target opponent.",
+        "expect": {
+          "on": [
+            {
+              "ev": "zoneChange",
+              "subject": {
+                "other": true,
+                "controller": "you",
+                "anyOf": [
+                  {
+                    "subtypes": [
+                      "Villain"
+                    ]
+                  },
+                  {
+                    "types": [
+                      "Artifact"
+                    ]
+                  }
+                ]
+              },
+              "to": "battlefield"
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever another Hero and/or artifact you control enters, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another Villain and/or artifact an opponent controls enters, draw a card.",
+      "Whenever another Villain and/or artifact you control dies, draw a card.",
+      "Whenever another Human Soldier and/or artifact you control enters, draw a card."
+    ],
+    "status": "experimental",
+    "since": 7
+  }
+]

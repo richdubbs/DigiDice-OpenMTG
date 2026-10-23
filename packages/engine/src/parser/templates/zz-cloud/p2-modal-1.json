@@ -1,0 +1,22 @@
+[
+  {
+    "id": "eff.p2modal1.choose.anyNumber.differentPowers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 608.2c", "CR 608.2d", "CR 208.1"],
+    "pattern": "choose any number of {f:Filter} with different powers",
+    "build": [{ "op": "chooseObjects", "who": { "ref": "you" }, "from": { "ref": "each", "filter": { "anyOf": ["$f"] } }, "min": 0, "max": "any", "as": "chosen", "distinct": "power" }],
+    "subject": "none",
+    "consumes": ["any number", "different"],
+    "examples": [
+      { "text": "Whenever this creature attacks, choose any number of creatures with different powers. Those creatures get +1/+0 until end of turn." },
+      { "text": "Choose any number of artifact creatures with different powers. Untap those creatures." }
+    ],
+    "counterExamples": [
+      "Choose any number of creatures with different names. Those creatures get +1/+0 until end of turn.",
+      "Choose up to two creatures with different powers. Those creatures get +1/+0 until end of turn.",
+      "Choose any number of target creatures with different powers. Those creatures get +1/+0 until end of turn."
+    ]
+  }
+]

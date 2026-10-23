@@ -1,0 +1,172 @@
+[
+  {
+    "id": "eff.p2refs1.linked.return.hand.owner",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "return the exiled cards to their owner 's hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile all cards from target player's graveyard.\nWhen ~ is put into your graveyard from the battlefield, return the exiled cards to their owner's hand."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifacts.\nWhen ~ dies, return the exiled cards to their owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target artifacts.\nWhen ~ leaves the battlefield, return the exiled cards to your hand.",
+      "When ~ enters, exile up to two target artifacts.\nWhen ~ leaves the battlefield, return the exiled card to their owner's hand."
+    ]
+  },
+  {
+    "id": "eff.p2refs1.linked.return.battlefield.owners",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return the exiled cards to the battlefield under their ( owner 's | owners' ) control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to three target enchantments.\nWhen ~ dies, return the exiled cards to the battlefield under their owner's control."
+      },
+      {
+        "text": "When ~ enters, exile two target artifacts.\nWhen ~ dies, return the exiled cards to the battlefield under their owners' control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile two target artifacts.\nWhen ~ leaves the battlefield, return the exiled cards to the battlefield under your control.",
+      "When ~ enters, exile two target artifacts.\nWhen ~ leaves the battlefield, return the exiled card to the battlefield under their owners' control."
+    ]
+  },
+  {
+    "id": "eff.p2refs1.linked.return.battlefield.tapped.owners",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return the exiled cards to the battlefield tapped under their ( owner 's | owners' ) control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "tapped": true
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile all artifacts.\nWhen ~ dies, return the exiled cards to the battlefield tapped under their owners' control."
+      },
+      {
+        "text": "When ~ enters, exile up to three target enchantments.\nWhen ~ leaves the battlefield, return the exiled cards to the battlefield tapped under their owner's control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile all artifacts.\nWhen ~ leaves the battlefield, return the exiled cards to the battlefield tapped under your control.",
+      "When ~ enters, exile all artifacts.\nWhen ~ leaves the battlefield, return the exiled cards to the battlefield untapped under their owners' control."
+    ]
+  },
+  {
+    "id": "eff.p2refs1.player.exilesHand.faceDown.drawsThatMany",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} exile[s] all cards from their hand face down , then draw[s] that many cards",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "exiled"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "resultCount",
+          "step": "exiled"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, target player exiles all cards from their hand face down, then draws that many cards."
+      },
+      {
+        "text": "Target opponent exiles all cards from their hand face down, then draws that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Target player exiles all cards from their hand, then draws that many cards.",
+      "Target player exiles all cards from their graveyard face down, then draws that many cards."
+    ]
+  }
+]

@@ -1,0 +1,97 @@
+[
+  {
+    "id": "eff.p2cf2.becomeBlocked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1h",
+      "CR 506.4",
+      "CR 509.3c"
+    ],
+    "pattern": "{o:Obj} becomes blocked",
+    "build": {
+      "op": "becomeBlocked",
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target unblocked attacking creature becomes blocked. You gain 2 life."
+      },
+      {
+        "text": "Target attacking creature with power 3 or greater becomes blocked."
+      }
+    ],
+    "counterExamples": [
+      "Target unblocked attacking creature becomes unblocked.",
+      "Target unblocked attacking creature becomes blocked by ~.",
+      "Target unblocked attacking creature can't be blocked."
+    ]
+  },
+  {
+    "id": "eff.p2cf2.becomeBlocked.group",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 509.1h",
+      "CR 506.4",
+      "CR 509.3c"
+    ],
+    "pattern": "{o:Objs} become blocked",
+    "build": {
+      "op": "becomeBlocked",
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Attacking creatures with flying become blocked."
+      },
+      {
+        "text": "Up to two target attacking creatures become blocked. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Attacking creatures with flying become unblocked.",
+      "Attacking creatures with flying can't be blocked.",
+      "Attacking creatures with flying become blocked by ~."
+    ]
+  },
+  {
+    "id": "eff.p2cf2.token.attacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 508.4"
+    ],
+    "pattern": "create {n:Qty} {t:TokenDesc} ( that's | that are ) attacking",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "attacking": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create two 2/2 red Warrior creature tokens with haste that are attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, create a 3/1 white Soldier creature token with first strike that's attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create two 2/2 red Warrior creature tokens with haste that are blocking.",
+      "Whenever ~ attacks, create two 2/2 red Warrior creature tokens with haste that are tapped and attacking.",
+      "Whenever ~ attacks, create two 2/2 red Warrior creature tokens with haste."
+    ]
+  }
+]

@@ -1,0 +1,1045 @@
+[
+  {
+    "id": "eff.t31.search.powerAtMost.reveal.hand",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 208.1"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card with power {n:Qty} or less , reveal ( it | that card ) , put it into your hand , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "power": {
+            "op": "<=",
+            "value": "$n"
+          }
+        },
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for a creature card with power 3 or less, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "{2}, {T}: Search your library for a Goblin card with power 1 or less, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, search your library for a creature card with power 3 or greater, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, search your library for a creature card with toughness 3 or less, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, search your library for a creature card with power 3 or less, reveal it, put it onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t31.search.reveal.shuffle.theCardOnTop",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card , reveal it , then shuffle and put the card on top",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for an artifact card, reveal it, then shuffle and put the card on top."
+      },
+      {
+        "text": "Search your library for a Wizard card, reveal it, then shuffle and put the card on top."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an artifact card, then shuffle and put the card on top.",
+      "Search your library for an artifact card, reveal it, then shuffle and put the card on the bottom.",
+      "Search your library for an artifact card, reveal it, put the card on top, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t31.search.nonlegendary.graveyard",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.24a",
+      "CR 400.3"
+    ],
+    "pattern": "search your library for a nonlegendary card , put that card into your graveyard , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "notSupertypes": [
+            "Legendary"
+          ]
+        },
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}, {T}: Search your library for a nonlegendary card, put that card into your graveyard, then shuffle."
+      },
+      {
+        "text": "When ~ enters, search your library for a nonlegendary card, put that card into your graveyard, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a legendary card, put that card into your graveyard, then shuffle.",
+      "Search your library for a nonlegendary card, put that card into your hand, then shuffle.",
+      "Search your library for a nonlegendary card, put that card into your graveyard."
+    ],
+    "priority": 2
+  },
+  {
+    "id": "eff.t31.search.orCardWithKeyword.reveal.hand",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 702.1"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card or a card with {k:Keyword} , reveal it , put it into your hand , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "anyOf": [
+            "$f",
+            {
+              "keyword": "$k.keyword"
+            }
+          ]
+        },
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for a sorcery card or a card with flash, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, search your library for an Aura card or a card with flying, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a sorcery card or a card with flash, put it into your hand, then shuffle.",
+      "Search your library for a sorcery card or a card without flash, reveal it, put it into your hand, then shuffle.",
+      "Search your library for a sorcery card or a card with flash, reveal it, put it onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t31.search.orMvAtMost.reveal.hand",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 202.3"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card or ( a | an ) {g:Filter} card with mana value {n:Qty} or less , reveal it , put it into your hand , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "anyOf": [
+            "$f",
+            {
+              "anyOf": [
+                "$g"
+              ],
+              "manaValue": {
+                "op": "<=",
+                "value": "$n"
+              }
+            }
+          ]
+        },
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for a basic Island card or a creature card with mana value 2 or less, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for a land card or an artifact card with mana value 1 or less, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a land card or an artifact card with mana value 1 or greater, reveal it, put it into your hand, then shuffle.",
+      "Search your library for a land card or an artifact card with mana value 1 or less, put it into your hand, then shuffle.",
+      "Search your library for a land card and an artifact card with mana value 1 or less, reveal them, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t31.search.may.mvAtMost.reveal.hand",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2d",
+      "CR 202.3"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card with mana value {n:Qty} or less , reveal ( it | that card ) , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for an artifact card with mana value 2 or less, reveal that card, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for an enchantment card with mana value 3 or less, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for an artifact card with mana value 2 or greater, reveal that card, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for an artifact card with mana value 2 or less, reveal that card, put it onto the battlefield, then shuffle.",
+      "When ~ enters, you may search your library for two artifact cards with mana value 2 or less, reveal them, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t31.search.may.mvEquals.reveal.hand",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2d",
+      "CR 202.3"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card with mana value {n:Qty} , reveal ( it | that card ) , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": "==",
+              "value": "$n"
+            }
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for an artifact card with mana value 4, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for a creature card with mana value 5, reveal that card, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for an artifact card with mana value 4 or less, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for an artifact card with power 4, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for an artifact card with mana value 4, reveal it, put it onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t31.search.may.orFilter.reveal.hand",
+    "kind": "effect",
+    "since": 7,
+    "status": "experimental",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} or {g:Filter} card , reveal it , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ]
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for a Wizard or basic Island card, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for a Goblin or basic Mountain card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for a Wizard and basic land card, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for a Wizard or basic land card, reveal it, put it onto the battlefield, then shuffle.",
+      "When ~ enters, you may search your library for a Wizard or basic land card, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t31.search.may.upTo.threeKinds.mvAtMost.reveal.hand",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2d",
+      "CR 202.3"
+    ],
+    "pattern": "you may search your library for up to {n:Qty} {f:Filter} , {g:Filter} , and/or {h:Filter} cards with mana value {m:Qty} or less , reveal them , put them into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$g",
+              "$h"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$m"
+            }
+          },
+          "min": 0,
+          "max": "$n",
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "up to"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for up to three artifact, creature, and/or land cards with mana value 2 or less, reveal them, put them into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for up to two instant, sorcery, and/or enchantment cards with mana value 1 or less, reveal them, put them into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for up to three artifact, creature, and/or land cards with mana value 2 or greater, reveal them, put them into your hand, then shuffle.",
+      "When ~ enters, you may search your library for three artifact, creature, and/or land cards with mana value 2 or less, reveal them, put them into your hand, then shuffle.",
+      "When ~ enters, you may search your library for up to three artifact, creature, and/or land cards with mana value 2 or less, reveal them, put them onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t31.search.ifCond.reveal.hand",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2c",
+      "CR 608.2e"
+    ],
+    "pattern": "if {c:Cond} , search your library for ( a | an ) {f:Filter} card , reveal it , put it into your hand , then shuffle",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "When ~ enters, you may discard a card. If you do, search your library for an artifact card, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may sacrifice a creature. If you do, search your library for a Dragon card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may discard a card. If you don't, search your library for an artifact card, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, you may discard a card. If you do, search your library for an artifact card, put it onto the battlefield, then shuffle.",
+      "When ~ enters, you may discard a card. If you do, search your library for an artifact card, reveal it, put it into your hand."
+    ]
+  },
+  {
+    "id": "eff.t31.flicker.owner",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 400.7",
+      "CR 610.3c",
+      "CR 110.2"
+    ],
+    "pattern": "exile {o:Objs} , then return ( those cards | that card ) to the battlefield under ( its owner 's | their owner 's | their owners' ) control",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "exile"
+        },
+        "as": "moved"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "moved"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": 2,
+    "examples": [
+      {
+        "text": "Whenever you cast a noncreature spell, exile up to one target nonland permanent you control, then return that card to the battlefield under its owner's control."
+      },
+      {
+        "text": "Whenever you cast a noncreature spell, exile up to one target creature you control, then return that card to the battlefield under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "Exile up to three target creatures you control, then return those cards to the battlefield under your control.",
+      "Exile up to three target creatures you control, then return those cards to the battlefield tapped under their owner's control.",
+      "Exile up to three target creatures you control. At the beginning of the next end step, return those cards to the battlefield under their owner's control."
+    ]
+  },
+  {
+    "id": "eff.t31.flicker.may.you",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 400.7",
+      "CR 610.3c",
+      "CR 110.2",
+      "CR 608.2d"
+    ],
+    "pattern": "you may exile {o:Obj} , then return ( that card | it ) to the battlefield under your control",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "exile"
+          },
+          "as": "moved"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "moved"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "When ~ enters, you may exile target non-Elf creature you control, then return that card to the battlefield under your control."
+      },
+      {
+        "text": "Whenever ~ attacks, you may exile another target creature you control, then return that card to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may exile target non-Elf creature you control, then return that card to the battlefield under its owner's control.",
+      "When ~ enters, you may exile target non-Elf creature you control, then return that card to its owner's hand.",
+      "When ~ enters, exile target non-Elf creature you control, then return that card to the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.t31.flicker.may.owner",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 400.7",
+      "CR 610.3c",
+      "CR 110.2",
+      "CR 608.2d"
+    ],
+    "pattern": "you may exile {o:Obj} , then return ( that card | it ) to the battlefield under its owner 's control",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "exile"
+          },
+          "as": "moved"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "moved"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": "owner"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "Whenever a creature you control deals combat damage to an opponent, you may exile it, then return it to the battlefield under its owner's control."
+      },
+      {
+        "text": "Whenever a creature you control attacks, you may exile it, then return it to the battlefield under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control deals combat damage to a player, you may exile it, then return it to the battlefield under your control.",
+      "Whenever a creature you control deals combat damage to a player, you may exile it, then return it to the battlefield tapped under its owner's control.",
+      "Whenever a creature you control deals combat damage to a player, exile it, then return it to the battlefield under its owner's control."
+    ]
+  },
+  {
+    "id": "eff.t31.return.selfAndTarget.gy.bf.tapped",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 608.2b",
+      "CR 110.2"
+    ],
+    "pattern": "return ~ and {o:Obj} to the battlefield tapped",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "self"
+          },
+          "$o"
+        ]
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true
+      }
+    },
+    "subject": "none",
+    "priority": 2,
+    "examples": [
+      {
+        "text": "{4}{G}: Return this card and target land card from your graveyard to the battlefield tapped."
+      },
+      {
+        "text": "{2}{B}{B}: Return this card and target creature card from your graveyard to the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "{4}{G}: Return this card and target land card from your graveyard to the battlefield.",
+      "{4}{G}: Return this card and target land card from your graveyard to your hand.",
+      "{4}{G}: Return this card and target land card from your graveyard to the battlefield tapped under an opponent's control."
+    ]
+  },
+  {
+    "id": "eff.t31.permit.play.thisTurn",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 305.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may play {o:Obj} ( this turn | from exile this turn )",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Exile the top card of your library. You may play that card this turn."
+      },
+      {
+        "text": "At the beginning of your end step, exile the top card of your library. You may play it this turn."
+      },
+      {
+        "text": "{1}, {T}: Mill a card. You may play that card this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top card of your library. You may play that card from exile this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Exile the top card of your library. You may play that card until your next turn.",
+      "{2}, {T}: Exile the top card of your library. You may cast that card this turn.",
+      "{2}, {T}: Exile the top card of your library. You may play that card this turn without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.t31.permit.play.whileControlled",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 305.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may play {o:Obj} for as long as you control ~",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileSource",
+        "as": "controlled"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top card of your library. You may play that card for as long as you control ~."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, exile the top card of your library. You may play that card for as long as you control ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top card of your library. You may play that card for as long as ~ remains on the battlefield.",
+      "When ~ enters, exile the top card of your library. You may cast that card for as long as you control ~.",
+      "When ~ enters, exile the top card of your library. You may play that card for as long as you control ~ without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.t31.counters.removeUpTo.any",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "remove up to {n:Qty} counter[s] from {o:Objs}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "any",
+      "count": "$n",
+      "upTo": true
+    },
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Remove up to four counters from target permanent."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, remove up to two counters from target creature."
+      }
+    ],
+    "counterExamples": [
+      "Remove four counters from target permanent.",
+      "Remove up to four +1/+1 counters from target permanent.",
+      "Remove up to four counters from each permanent unless its controller pays {1}."
+    ]
+  }
+]

@@ -1,0 +1,414 @@
+[
+  {
+    "id": "sta.anthem.grant",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 613.1f"],
+    "pattern": "{f:Filter} get {pt:PT} and have {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "each", "filter": "$f" },
+      "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }, { "layer": 6, "add": "$a" }]
+    },
+    "examples": [
+      { "text": "Creatures you control get +1/+1 and have vigilance." },
+      { "text": "Other Soldiers you control get +2/+0 and have first strike and trample." }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+1 and have vigilance until end of turn.",
+      "Creatures you control get +1/+1 and lose vigilance."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.grant.each",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f"],
+    "pattern": "{f:Filter} have {a:Abilities}",
+    "build": { "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": 6, "add": "$a" }] },
+    "examples": [
+      { "text": "Golems you control have reach and haste." },
+      { "text": "Other Wizards you control have flying and hexproof." }
+    ],
+    "counterExamples": [
+      "Creatures you control have haste until end of turn.",
+      "Creatures you control lose haste."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.each.pump",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c"],
+    "pattern": "each {f:Filter} gets {pt:PT}",
+    "build": { "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] },
+    "consumes": ["each", "each other"],
+    "examples": [
+      { "text": "Each creature you control gets +1/+2." },
+      { "text": "Each other creature you control gets +2/+0." }
+    ],
+    "counterExamples": [
+      "Each creature you control gets +1/+2 until end of turn.",
+      "Each creature you control gets +1/+2 for each Elf you control."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.obj.pump",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 303.4", "CR 301.5"],
+    "pattern": "{o:Obj} gets {pt:PT}",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] },
+    "examples": [
+      { "text": "Enchanted creature gets +5/+1." },
+      { "text": "Equipped creature gets +2/+3." }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +3/+1 until end of turn.",
+      "Enchanted creature gets +3/+1 for each Aura you control.",
+      "Target creature gets +3/+1."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.obj.pumpgrant",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 613.1f"],
+    "pattern": "{o:Obj} gets {pt:PT} and has {a:Abilities}",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "add": "$a" }, { "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] },
+    "examples": [
+      { "text": "Enchanted creature gets +2/+4 and has reach." },
+      { "text": "Equipped creature gets +3/+0 and has first strike and haste." }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+3 and has reach until end of turn.",
+      "Enchanted creature gets +1/+3 and loses reach."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.obj.grant",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f"],
+    "pattern": "{o:Obj} has {a:Abilities}",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "add": "$a" }] },
+    "examples": [
+      { "text": "Enchanted creature has vigilance and reach." },
+      { "text": "Equipped creature has trample and lifelink." }
+    ],
+    "counterExamples": [
+      "Enchanted creature has flying until end of turn.",
+      "Enchanted creature loses flying.",
+      "Enchanted creature has flying as long as it's your turn and."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.loseall.base",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f", "CR 613.4b", "CR 613.6"],
+    "pattern": "{o:Objs} lose all abilities and have base power and toughness {pt:BasePT}",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "removeAll": true }, { "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }] },
+    "consumes": ["all"],
+    "examples": [
+      { "text": "All artifacts lose all abilities and have base power and toughness 2/2." },
+      { "text": "Creatures your opponents control lose all abilities and have base power and toughness 0/1." }
+    ],
+    "counterExamples": [
+      "All artifacts lose all abilities and have base power and toughness 2/2 until end of turn.",
+      "All artifacts lose flying and have base power and toughness 2/2."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.loseall.each",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f"],
+    "pattern": "{o:Objs} lose all abilities",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "removeAll": true }] },
+    "consumes": ["all"],
+    "examples": [
+      { "text": "Creatures your opponents control lose all abilities." },
+      { "text": "Artifacts your opponents control lose all abilities." }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control lose all abilities until end of turn.",
+      "Creatures your opponents control lose flying."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.base.obj",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4b"],
+    "pattern": "{o:Obj} has base power and toughness {pt:BasePT}",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }] },
+    "examples": [
+      { "text": "Enchanted creature has base power and toughness 0/3." },
+      { "text": "Equipped creature has base power and toughness 5/2." }
+    ],
+    "counterExamples": [
+      "Enchanted creature has base power and toughness 0/3 until end of turn.",
+      "Enchanted creature gets base power and toughness 0/3."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.loseall.base.obj",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f", "CR 613.4b"],
+    "pattern": "{o:Obj} loses all abilities and has base power and toughness {pt:BasePT}",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "removeAll": true }, { "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }] },
+    "consumes": ["all"],
+    "examples": [
+      { "text": "Enchanted creature loses all abilities and has base power and toughness 0/2." },
+      { "text": "Equipped creature loses all abilities and has base power and toughness 3/1." }
+    ],
+    "counterExamples": [
+      "Enchanted creature loses all abilities and has base power and toughness 0/2 until end of turn.",
+      "Enchanted creature loses flying and has base power and toughness 0/2."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.typeadd.manavalue",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 205.1b", "CR 613.1d", "CR 613.4b", "CR 202.3"],
+    "pattern": "{o:Objs} is a creature in addition to its other types and has base power and base toughness each equal to its mana value",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        { "layer": 4, "types": { "add": ["Creature"] } },
+        {
+          "layer": "7b",
+          "power": { "q": "stat", "stat": "manaValue", "of": { "ref": "subject" } },
+          "toughness": { "q": "stat", "stat": "manaValue", "of": { "ref": "subject" } }
+        }
+      ]
+    },
+    "consumes": ["in addition", "each", "other"],
+    "examples": [
+      { "text": "Each other noncreature artifact is a creature in addition to its other types and has base power and base toughness each equal to its mana value." },
+      { "text": "Each noncreature artifact you control is a creature in addition to its other types and has base power and base toughness each equal to its mana value." }
+    ],
+    "counterExamples": [
+      "Each other noncreature artifact is a creature and has base power and base toughness each equal to its mana value.",
+      "Each other noncreature artifact is a creature in addition to its other types and has base power and base toughness each equal to its power."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.control",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 613.1b", "CR 303.4"],
+    "pattern": "you control {o:Obj}",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": 2, "controller": { "ref": "you" } }] },
+    "examples": [
+      { "text": "You control equipped creature." },
+      { "text": "You control enchanted planeswalker." }
+    ],
+    "counterExamples": [
+      "You control enchanted creature until end of turn.",
+      "You don't control enchanted creature.",
+      "You control target creature."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.cda.pt",
+    "kind": "static",
+    "cr": ["CR 604.3", "CR 613.4a", "CR 208.2a"],
+    "pattern": "~ 's power and toughness are each equal to {q:Qty}",
+    "build": { "s": "continuous", "cda": true, "affects": { "ref": "self" }, "mods": [{ "layer": "7a", "power": "$q", "toughness": "$q" }] },
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~'s power and toughness are each equal to the number of Golems you control." },
+      { "text": "~'s power and toughness are each equal to the number of Auras you control." }
+    ],
+    "counterExamples": [
+      "~'s power and toughness are each equal to the number of artifacts you control until end of turn.",
+      "~'s power is equal to the number of artifacts you control and its toughness is 2."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.cda.power",
+    "kind": "static",
+    "cr": ["CR 604.3", "CR 613.4a", "CR 208.2a"],
+    "pattern": "~ 's power is equal to {q:Qty}",
+    "build": { "s": "continuous", "cda": true, "affects": { "ref": "self" }, "mods": [{ "layer": "7a", "power": "$q" }] },
+    "examples": [
+      { "text": "~'s power is equal to the number of Golems you control." },
+      { "text": "~'s power is equal to the number of cards in your graveyard." }
+    ],
+    "counterExamples": [
+      "~'s power is equal to the number of artifacts you control until end of turn.",
+      "~'s power is less than the number of artifacts you control."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.cda.toughness",
+    "kind": "static",
+    "cr": ["CR 604.3", "CR 613.4a", "CR 208.2a"],
+    "pattern": "~ 's toughness is equal to {q:Qty}",
+    "build": { "s": "continuous", "cda": true, "affects": { "ref": "self" }, "mods": [{ "layer": "7a", "toughness": "$q" }] },
+    "examples": [
+      { "text": "~'s toughness is equal to the number of cards in your hand." },
+      { "text": "~'s toughness is equal to the number of artifacts you control." }
+    ],
+    "counterExamples": [
+      "~'s toughness is equal to the number of cards in your hand until end of turn.",
+      "~'s toughness is greater than the number of cards in your hand."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.each.grant",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f"],
+    "pattern": "each {f:Filter} has {a:Abilities}",
+    "build": { "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": 6, "add": "$a" }] },
+    "consumes": ["each", "each other"],
+    "examples": [
+      { "text": "Each creature you control with a +1/+1 counter on it has trample and reach." },
+      { "text": "Each other Wizard you control has ward {1}." }
+    ],
+    "counterExamples": [
+      "Each creature you control with a +1/+1 counter on it has menace until end of turn.",
+      "Each creature you control with a +1/+1 counter on it loses menace."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.obj.pump.foreach",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c"],
+    "pattern": "{o:Obj} gets +1/+1 for each {f:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": { "q": "count", "of": { "ref": "each", "filter": "$f" } },
+          "toughness": { "q": "count", "of": { "ref": "each", "filter": "$f" } }
+        }
+      ]
+    },
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~ gets +1/+1 for each Golem you control." },
+      { "text": "Enchanted creature gets +1/+1 for each Aura you control." }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each artifact you control until end of turn.",
+      "~ gets +2/+2 for each artifact you control.",
+      "~ gets +1/+1 for each other artifact you control."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.obj.pump.foreach.power",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c"],
+    "pattern": "{o:Obj} gets +1/+0 for each {f:Filter}",
+    "build": { "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": { "q": "count", "of": { "ref": "each", "filter": "$f" } } }] },
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~ gets +1/+0 for each card in your hand." },
+      { "text": "Equipped creature gets +1/+0 for each Equipment you control." }
+    ],
+    "counterExamples": [
+      "~ gets +0/+1 for each card in your hand.",
+      "~ gets +1/+0 for each card in your hand until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.permit.lookattop",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 609.4", "CR 401.2"],
+    "pattern": "you may look at the top card of your library any time",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "lookAt" },
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may look at the top card of your library any time." }
+    ],
+    "counterExamples": [
+      "You may look at the top two cards of your library any time.",
+      "You may look at the top card of target player's library any time."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.rule.nomaxhand",
+    "kind": "static",
+    "cr": ["CR 402.2", "CR 514.1"],
+    "pattern": "you have no maximum hand size",
+    "build": { "s": "rule", "rule": "handSizeNoLimit", "player": { "ref": "you" } },
+    "examples": [
+      { "text": "You have no maximum hand size." }
+    ],
+    "counterExamples": [
+      "You have no minimum hand size.",
+      "Each opponent has no maximum hand size."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.permit.extraland",
+    "kind": "static",
+    "cr": ["CR 305.2", "CR 305.2a"],
+    "pattern": "you may play an additional land on each of your turns",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "playLand" },
+    "consumes": ["may", "additional", "each"],
+    "examples": [
+      { "text": "You may play an additional land on each of your turns." }
+    ],
+    "counterExamples": [
+      "You may play two additional lands on each of your turns.",
+      "You may play an additional land on each player's turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.rule.extrablock",
+    "kind": "static",
+    "cr": ["CR 509.1a", "CR 604.1"],
+    "pattern": "~ can block an additional creature each combat",
+    "build": { "s": "rule", "rule": "extraBlockers", "value": 1, "of": { "self": true } },
+    "consumes": ["additional", "each"],
+    "examples": [
+      { "text": "~ can block an additional creature each combat." },
+      { "text": "This creature can block an additional creature each combat." }
+    ],
+    "counterExamples": [
+      "~ can block two additional creatures each combat.",
+      "~ can block an additional creature this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

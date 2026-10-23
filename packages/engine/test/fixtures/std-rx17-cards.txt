@@ -1,0 +1,14 @@
+# std-rx17 (wave 2, Commander precon lane rx17; test/cloud/std-rx17, golden cloud-std-rx17-review.json): keywords dash, graft and exploit; every +X/+Y
+# counter (CR 122.1a); rad counters (CR 728.1)
+Acquired Mutation
+Balduvian Hydra
+Colonel Autumn
+Cytospawn Shambler
+Diver Skaab
+Fell Stinger
+Mardu Scout
+Megaton's Fate
+Plaxcaster Frogling
+Rakshasa Gravecaller
+Riders of Rohan
+Wall of Roots

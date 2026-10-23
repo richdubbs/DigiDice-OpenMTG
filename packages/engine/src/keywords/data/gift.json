@@ -1,0 +1,135 @@
+{
+  "name": "gift",
+  "rule": "702.174",
+  "params": [
+    {
+      "name": "quality",
+      "type": "quality"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may promise an opponent a gift as you cast this spell. If you do, they receive the gift before its other effects.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Gift {quality}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {},
+          "optional": true,
+          "name": "gift",
+          "choosePlayer": "opponent"
+        }
+      ]
+    },
+    {
+      "$ifTypes": [
+        "Instant",
+        "Sorcery"
+      ],
+      "then": {
+        "kind": "spell",
+        "text": "If this spell's gift cost was paid, the chosen player receives the gift ({quality}).",
+        "effect": {
+          "targets": [],
+          "steps": [
+            {
+              "op": "if",
+              "cond": {
+                "cond": "wasCast",
+                "kicked": "gift"
+              },
+              "then": {
+                "$byQuality": {
+                  "a card": [
+                    { "op": "draw", "who": { "ref": "costChosen", "name": "gift" }, "count": 1 },
+                    { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+                  ],
+                  "a Food": [
+                    { "op": "createToken", "who": { "ref": "costChosen", "name": "gift" }, "count": 1, "token": { "predefined": "Food" } },
+                    { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+                  ],
+                  "a Treasure": [
+                    { "op": "createToken", "who": { "ref": "costChosen", "name": "gift" }, "count": 1, "token": { "predefined": "Treasure" } },
+                    { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+                  ],
+                  "a tapped Fish": [
+                    { "op": "createToken", "who": { "ref": "costChosen", "name": "gift" }, "count": 1, "tapped": true, "token": { "colors": ["U"], "types": ["Creature"], "subtypes": ["Fish"], "power": 1, "toughness": 1 } },
+                    { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+                  ],
+                  "an Octopus": [
+                    { "op": "createToken", "who": { "ref": "costChosen", "name": "gift" }, "count": 1, "token": { "colors": ["U"], "types": ["Creature"], "subtypes": ["Octopus"], "power": 8, "toughness": 8 } },
+                    { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+                  ],
+                  "an extra turn": [
+                    { "op": "extraTurn", "who": { "ref": "costChosen", "name": "gift" }, "count": 1 },
+                    { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "else": {
+        "kind": "triggered",
+        "text": "When this permanent enters, if its gift cost was paid, the chosen player receives the gift ({quality}).",
+        "trigger": {
+          "on": [
+            {
+              "ev": "zoneChange",
+              "subject": {
+                "self": true
+              },
+              "to": "battlefield"
+            }
+          ]
+        },
+        "interveningIf": {
+          "cond": "wasCast",
+          "kicked": "gift"
+        },
+        "effect": {
+          "targets": [],
+          "steps": {
+            "$byQuality": {
+              "a card": [
+                { "op": "draw", "who": { "ref": "costChosen", "name": "gift" }, "count": 1 },
+                { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+              ],
+              "a Food": [
+                { "op": "createToken", "who": { "ref": "costChosen", "name": "gift" }, "count": 1, "token": { "predefined": "Food" } },
+                { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+              ],
+              "a Treasure": [
+                { "op": "createToken", "who": { "ref": "costChosen", "name": "gift" }, "count": 1, "token": { "predefined": "Treasure" } },
+                { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+              ],
+              "a tapped Fish": [
+                { "op": "createToken", "who": { "ref": "costChosen", "name": "gift" }, "count": 1, "tapped": true, "token": { "colors": ["U"], "types": ["Creature"], "subtypes": ["Fish"], "power": 1, "toughness": 1 } },
+                { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+              ],
+              "an Octopus": [
+                { "op": "createToken", "who": { "ref": "costChosen", "name": "gift" }, "count": 1, "token": { "colors": ["U"], "types": ["Creature"], "subtypes": ["Octopus"], "power": 8, "toughness": 8 } },
+                { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+              ],
+              "an extra turn": [
+                { "op": "extraTurn", "who": { "ref": "costChosen", "name": "gift" }, "count": 1 },
+                { "op": "action", "action": "giveGift", "who": { "ref": "you" } }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

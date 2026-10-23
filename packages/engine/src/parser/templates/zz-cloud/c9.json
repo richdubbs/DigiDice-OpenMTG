@@ -1,0 +1,65 @@
+[
+  {
+    "id": "eff.c9.search.anyCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.23a", "CR 701.23d", "CR 401.2"],
+    "pattern": "search your library for any card",
+    "build": { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": {}, "max": 1, "as": "search" },
+    "subject": "none",
+    "examples": [
+      { "text": "Search your library for any card, put it into your hand, then shuffle." },
+      { "text": "Search your library for any card, put that card into your graveyard, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for any cards, put them into your hand, then shuffle.",
+      "Search your graveyard for any card, put it into your hand, then shuffle.",
+      "Search your library for any two cards, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.c9.reveal.putHand.shuffle.one",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.20a", "CR 701.24a", "CR 608.2c", "CR 400.7j"],
+    "pattern": "^ reveal {o:Obj} , put it into your hand , then shuffle",
+    "build": [
+      { "op": "reveal", "who": { "ref": "you" }, "what": "$o" },
+      { "op": "move", "what": "$o", "to": { "zone": "hand" } },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "consumes": ["then"],
+    "examples": [
+      { "text": "Search your library for a creature card. Reveal that card, put it into your hand, then shuffle." },
+      { "text": "Search your library for an artifact or enchantment card. Reveal that card, put it into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for a creature card. Reveal that card, put it onto the battlefield, then shuffle.",
+      "Search your library for a creature card. Reveal that card, put it into your hand.",
+      "Search your library for a creature card. Reveal that card, put it into its owner's hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.c9.search.oneOfEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 401.2"],
+    "pattern": "search your library for ( a | an ) {f:Filter} card and ( a | an ) {g:Filter} card",
+    "build": { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "max": 1, "and": ["$g"], "as": "search" },
+    "subject": "none",
+    "needs": ["op:search.and"],
+    "examples": [
+      { "text": "Search your library for a Swamp card and an Island card, put them onto the battlefield tapped, then shuffle." },
+      { "text": "Search your library for a basic land card and an Equipment card. Reveal those cards, put them into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for a Swamp card and two Island cards, put them onto the battlefield tapped, then shuffle.",
+      "Search your library for a Swamp card or an Island card, put it onto the battlefield tapped, then shuffle.",
+      "Search your graveyard for a Swamp card and an Island card, put them onto the battlefield tapped, then shuffle."
+    ]
+  }
+]

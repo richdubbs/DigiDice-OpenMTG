@@ -1,0 +1,22 @@
+[
+  {
+    "id": "rf.whenYouDo",
+    "kind": "effect",
+    "cr": ["CR 603.12", "CR 603.12a", "CR 118.12"],
+    "pattern": "when {c:Cond} , {e:Effects}",
+    "build": { "op": "reflexive", "when": "$c", "targets": [], "do": "$e" },
+    "subject": "none",
+    "consumes": ["when"],
+    "examples": [
+      { "text": "You may discard a card. When you do, draw two cards." },
+      { "text": "You may pay {2}. When you do, destroy target artifact." }
+    ],
+    "counterExamples": [
+      "When you control an Elf, draw two cards.",
+      "You may discard a card. When you don't, draw two cards.",
+      "When you do, draw two cards."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

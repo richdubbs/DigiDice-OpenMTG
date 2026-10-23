@@ -1,0 +1,222 @@
+[
+  {
+    "id": "eff.stdrn.eachPlayer.shuffle.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.1",
+      "CR 404.1",
+      "CR 608.2e"
+    ],
+    "pattern": "each player shuffles their graveyard into their library",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": "graveyard",
+              "owner": {
+                "ref": "bound",
+                "name": "each"
+              }
+            }
+          },
+          "to": {
+            "zone": "library",
+            "owner": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Each player shuffles their graveyard into their library."
+      },
+      {
+        "text": "When this creature dies, each player shuffles their graveyard into their library."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Each opponent shuffles their graveyard into their library.",
+      "{3}, {T}: Each player shuffles their hand into their library.",
+      "{3}, {T}: Each player exiles their graveyard."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.stdrn.eachPlayer.shuffle.handGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.1",
+      "CR 404.1",
+      "CR 608.2e",
+      "CR 402.1"
+    ],
+    "pattern": "each player shuffles their hand and graveyard into their library",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": [
+                "hand",
+                "graveyard"
+              ],
+              "owner": {
+                "ref": "bound",
+                "name": "each"
+              }
+            }
+          },
+          "to": {
+            "zone": "library",
+            "owner": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player shuffles their hand and graveyard into their library. You gain 5 life."
+      },
+      {
+        "text": "When this creature enters, each player shuffles their hand and graveyard into their library."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent shuffles their hand and graveyard into their library. You gain 5 life.",
+      "Each player shuffles their hand into their library. You gain 5 life.",
+      "Each player may shuffle their hand and graveyard into their library. You gain 5 life."
+    ]
+  },
+  {
+    "id": "eff.stdrn.eachPlayer.shuffle.handGraveyard.draw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.1",
+      "CR 404.1",
+      "CR 608.2e",
+      "CR 402.1",
+      "CR 121.1"
+    ],
+    "pattern": "each player shuffles their hand and graveyard into their library , then draws {n:Qty} cards",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": [
+                "hand",
+                "graveyard"
+              ],
+              "owner": {
+                "ref": "bound",
+                "name": "each"
+              }
+            }
+          },
+          "to": {
+            "zone": "library",
+            "owner": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          }
+        },
+        {
+          "op": "draw",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player shuffles their hand and graveyard into their library, then draws five cards."
+      },
+      {
+        "text": "When this creature enters, each player shuffles their hand and graveyard into their library, then draws three cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player shuffles their hand and graveyard into their library, then discards five cards.",
+      "Each opponent shuffles their hand and graveyard into their library, then draws five cards.",
+      "Each player shuffles their hand and graveyard into their library, then draws that many cards."
+    ]
+  }
+]

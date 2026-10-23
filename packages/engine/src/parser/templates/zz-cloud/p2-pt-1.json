@@ -1,0 +1,335 @@
+[
+  {
+    "id": "eff.p2pt1.dur.double.power.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10c",
+      "CR 608.2h",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , double {o:Obj} 's power and it gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": "$o"
+              },
+              "toughness": 0
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, double target creature's power and it gains trample."
+      },
+      {
+        "text": "{2}{R}: Until end of turn, double ~'s power and it gains first strike and haste."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, double target creature's toughness and it gains trample.",
+      "Double target creature's power and it gains trample.",
+      "Until end of turn, double target creature's power and it loses trample."
+    ]
+  },
+  {
+    "id": "eff.p2pt1.pump.has.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} and has {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}{G}, {T}: Target Elf creature gets +1/+1 and has reach for as long as ~ remains tapped."
+      },
+      {
+        "text": "{3}, {T}: Target creature gets +3/+0 and has trample for as long as ~ remains tapped."
+      }
+    ],
+    "counterExamples": [
+      "{1}{G}, {T}: Target Elf creature gets +1/+1 and has reach.",
+      "{1}{G}, {T}: Target Elf creature gets +1/+1 and loses reach for as long as ~ remains tapped.",
+      "{1}{G}, {T}: Target Elf creature gets +1/+1 for as long as ~ remains tapped."
+    ]
+  },
+  {
+    "id": "eff.p2pt1.damage.equal.eachOtherCreature.andPlayers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 120.3",
+      "CR 608.2h",
+      "CR 109.2"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to each other creature and {p:Player}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "not": {
+            "is": "$src"
+          }
+        }
+      },
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Target creature you control deals damage equal to its toughness to each other creature and each opponent."
+      },
+      {
+        "text": "Target creature an opponent controls deals damage equal to its power to each other creature and each player."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control deals damage equal to its toughness to each creature and each opponent.",
+      "Target creature you control deals damage equal to its toughness to each other creature you control and each opponent.",
+      "Target creature you control deals damage equal to its toughness to each other creature."
+    ]
+  },
+  {
+    "id": "sta.p2pt1.pump.foreach.otherSharingCreatureType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 205.3m",
+      "CR 109.1"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} for each other creature on the battlefield that shares at least one creature type with it",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "sharesWith": {
+                      "with": {
+                        "ref": "subject"
+                      },
+                      "quality": "creatureType",
+                      "other": true
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "sharesWith": {
+                      "with": {
+                        "ref": "subject"
+                      },
+                      "quality": "creatureType",
+                      "other": true
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "at least"
+    ],
+    "examples": [
+      {
+        "text": "Each creature gets +1/+0 for each other creature on the battlefield that shares at least one creature type with it."
+      },
+      {
+        "text": "Each creature you control gets +1/+1 for each other creature on the battlefield that shares at least one creature type with it."
+      }
+    ],
+    "counterExamples": [
+      "Each creature gets +1/+0 for each creature on the battlefield that shares at least one creature type with it.",
+      "Each creature gets +1/+0 for each other creature on the battlefield that shares at least one color with it.",
+      "Each creature gets +1/+0 for each other creature you control."
+    ]
+  },
+  {
+    "id": "eff.p2pt1.exchange.yourLife.toughness",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.12a",
+      "CR 613.4b",
+      "CR 119.5",
+      "CR 119.7",
+      "CR 119.8"
+    ],
+    "pattern": "exchange your life total with {o:Obj} 's toughness",
+    "build": {
+      "op": "exchange",
+      "a": {
+        "ref": "you"
+      },
+      "b": "$o",
+      "what": "lifeToughness"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}, {T}: Exchange your life total with ~'s toughness."
+      },
+      {
+        "text": "When ~ enters, exchange your life total with target creature's toughness."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Exchange your life total with ~'s power.",
+      "{2}, {T}: Exchange your hand with ~'s toughness.",
+      "{2}, {T}: Exchange ~'s power and toughness."
+    ]
+  },
+  {
+    "id": "eff.p2pt1.exchange.playerLife.toughness",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.12a",
+      "CR 613.4b",
+      "CR 119.5",
+      "CR 119.7",
+      "CR 119.8",
+      "CR 115.1"
+    ],
+    "pattern": "exchange {p:Player} 's life total with {o:Obj} 's toughness",
+    "build": {
+      "op": "exchange",
+      "a": "$p",
+      "b": "$o",
+      "what": "lifeToughness"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}{B}, {T}: Exchange target player's life total with ~'s toughness."
+      },
+      {
+        "text": "When ~ enters, exchange target opponent's life total with target creature's toughness."
+      }
+    ],
+    "counterExamples": [
+      "{1}{B}, {T}: Exchange target player's life total with ~'s power.",
+      "{1}{B}, {T}: Exchange target player's hand with ~'s toughness.",
+      "{1}{B}, {T}: Exchange target player's life total with target player's life total."
+    ]
+  }
+]

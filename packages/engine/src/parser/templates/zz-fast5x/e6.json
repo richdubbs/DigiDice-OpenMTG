@@ -1,0 +1,29 @@
+[
+  {
+    "id": "trg.e6.becomesPlotted",
+    "kind": "trigger",
+    "cr": ["CR 603.1", "CR 603.2", "CR 702.170a", "CR 113.6k"],
+    "pattern": "when ~ becomes plotted",
+    "build": {
+      "on": [{ "ev": "becomes", "what": "plotted", "object": { "self": true } }]
+    },
+    "consumes": ["when"],
+    "needs": ["feature:ev.becomes.plotted"],
+    "examples": [
+      {
+        "text": "When ~ becomes plotted, draw a card.",
+        "expect": {
+          "on": [{ "ev": "becomes", "what": "plotted", "object": { "self": true } }]
+        }
+      },
+      { "text": "When ~ becomes plotted, you gain 3 life." }
+    ],
+    "counterExamples": [
+      "When ~ becomes saddled, draw a card.",
+      "When ~ becomes plotted or tapped, draw a card.",
+      "When target creature becomes plotted, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

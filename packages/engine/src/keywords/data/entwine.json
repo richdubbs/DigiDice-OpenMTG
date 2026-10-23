@@ -1,0 +1,42 @@
+{
+  "name": "entwine",
+  "rule": "702.42",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "Choose both if you pay the entwine cost.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Entwine {cost}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$cost",
+          "optional": true,
+          "name": "entwine"
+        }
+      ]
+    }
+  ],
+  "modifies": {
+    "kind": "modal",
+    "chooseAll": {
+      "when": {
+        "cond": "wasCast",
+        "kicked": "entwine"
+      }
+    }
+  }
+}

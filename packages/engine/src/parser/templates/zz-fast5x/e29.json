@@ -1,0 +1,742 @@
+[
+  {
+    "id": "eff.e29.permit.play.obj.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "you may play {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top card of your library. You may play that card until the end of your next turn."
+      },
+      {
+        "text": "At the beginning of your end step, exile the top card of your library. You may play it until the end of your next turn."
+      },
+      {
+        "text": "{3}, {T}: Exile the top card of your library. You may play that card until your next end step."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top card of your library. You may play that card.",
+      "When ~ enters, exile the top card of your library. You may play that card until the end of your next turn without paying its mana cost.",
+      "When ~ enters, exile the top card of your library. Target opponent may play that card until the end of your next turn."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.play.obj.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top card of your library. Until the end of your next turn, you may play that card."
+      },
+      {
+        "text": "{2}{R}, {T}: Exile the top card of your library. Until end of turn, you may play that card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top card of your library. Until the end of your next turn, you may cast spells.",
+      "When ~ enters, exile the top card of your library. Until the end of your next turn, each opponent may play that card.",
+      "When ~ enters, exile the top card of your library. Until the end of your next turn you may play that card without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.play.group.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "you may play {o:Group} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top two cards of your library. You may play those cards this turn."
+      },
+      {
+        "text": "Exile the top three cards of your library. You may play them until the end of your next turn."
+      },
+      {
+        "text": "Exile the top two cards of your library. You may play those cards until your next end step."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. You may play those cards.",
+      "Exile the top two cards of your library. You may play those spells this turn.",
+      "Exile the top two cards of your library. Target opponent may play those cards this turn."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.play.group.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Group}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top two cards of your library. Until the end of your next turn, you may play those cards."
+      },
+      {
+        "text": "Exile the top three cards of your library. Until end of turn, you may play them."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. Until end of turn, you may play lands.",
+      "Exile the top two cards of your library. Until end of turn, target opponent may play those cards."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.cast.obj.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "you may cast {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile target instant card from your graveyard. You may cast that card until the end of your next turn."
+      },
+      {
+        "text": "Exile the top card of your library. You may cast it until the end of your next turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target instant card from your graveyard. You may cast that card.",
+      "When ~ enters, exile target instant card from your graveyard. You may cast that card this turn without paying its mana cost.",
+      "When ~ enters, exile target instant card from your graveyard. You may cast that card from your graveyard this turn."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.cast.obj.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "{d:Dur} , you may cast {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile target noncreature, nonland card from your graveyard. Until the end of your next turn, you may cast that card."
+      },
+      {
+        "text": "Exile the top card of your library. Until end of turn, you may cast that card."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of your library. Until end of turn, you may cast instant spells.",
+      "Exile the top card of your library. Until end of turn, you may cast that card without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.cast.group.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "you may cast {o:Group} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. You may cast those cards this turn."
+      },
+      {
+        "text": "Exile the top three cards of your library. You may cast them until the end of your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. You may cast those cards.",
+      "Exile the top two cards of your library. You may cast those cards this turn without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.cast.group.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "{d:Dur} , you may cast {o:Group}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. Until the end of your next turn, you may cast those cards."
+      },
+      {
+        "text": "Exile the top three cards of your library. Until end of turn, you may cast them."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. Until end of turn, you may cast spells.",
+      "Exile the top two cards of your library. Until end of turn, you may cast those cards without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.cast.obj.dur.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 611.2b"
+    ],
+    "pattern": "you may cast {o:Obj} {d:Dur} ( , and | and ) mana of any type can be spent to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaType": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals their hand. You choose a nonland card from it. Exile that card. You may cast that card for as long as it remains exiled, and mana of any type can be spent to cast it."
+      },
+      {
+        "text": "Exile the top card of target opponent's library. You may cast that card this turn, and mana of any type can be spent to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. You may cast that card this turn, and you may spend mana as though it were mana of any color to cast that spell.",
+      "Exile the top card of target opponent's library. You may cast that card, and mana of any type can be spent to cast that spell."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.play.obj.dur.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 611.2b"
+    ],
+    "pattern": "you may play {o:Obj} {d:Dur} , and mana of any type can be spent to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaType": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library. You may play that card for as long as it remains exiled, and mana of any type can be spent to cast it."
+      },
+      {
+        "text": "Exile the top card of target opponent's library. You may play that card until the end of your next turn, and mana of any type can be spent to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. You may play that card for as long as it remains exiled.",
+      "Exile the top card of target opponent's library. You may play that card, and mana of any type can be spent to cast it."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.play.group.dur.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 611.2b"
+    ],
+    "pattern": "you may play {o:Group} {d:Dur} , and mana of any type can be spent to cast ( them | those spells )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaType": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of target opponent's library. You may play those cards for as long as they remain exiled, and mana of any type can be spent to cast them."
+      },
+      {
+        "text": "Exile the top three cards of target opponent's library. You may play them this turn, and mana of any type can be spent to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of target opponent's library. You may play those cards for as long as they remain exiled.",
+      "Exile the top two cards of target opponent's library. You may play those cards, and mana of any type can be spent to cast them."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.play.group.durFirst.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 611.2b"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Group} , and mana of any type can be spent to cast ( them | those spells )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaType": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of target opponent's library. Until end of turn, you may play those cards, and mana of any type can be spent to cast them."
+      },
+      {
+        "text": "Exile the top three cards of target opponent's library. Until your next end step, you may play those cards, and mana of any type can be spent to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of target opponent's library. Until end of turn, you may play those cards.",
+      "Exile the top two cards of target opponent's library. Until end of turn, you may play those cards, and you may spend mana as though it were mana of any color to cast them."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.play.obj.durFirst.while",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 611.2b"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Obj} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "while": "$c"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, exile the top card of your library. For as long as that card remains exiled, you may play it if you control a Wizard."
+      },
+      {
+        "text": "When ~ enters, exile the top card of your library. Until the end of your next turn, you may play that card if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top card of your library. For as long as that card remains exiled, you may play it.",
+      "When ~ enters, exile the top card of your library. For as long as that card remains exiled, you may play it unless you control a Wizard."
+    ]
+  },
+  {
+    "id": "eff.e29.permit.play.group.durFirst.while",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 611.2b"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Group} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "while": "$c"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. For as long as they remain exiled, you may play them if you control a Wizard."
+      },
+      {
+        "text": "Exile the top two cards of your library. Until the end of your next turn, you may play those cards if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. For as long as they remain exiled, you may play them.",
+      "Exile the top two cards of your library. For as long as they remain exiled, you may play them unless you control a Wizard."
+    ]
+  },
+  {
+    "id": "eff.e29.cast.now.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 609.4b",
+      "CR 601.2",
+      "CR 117.1d"
+    ],
+    "pattern": "you may cast {o:Obj} , and mana of any type can be spent to cast that spell",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "optional": true,
+      "anyManaType": true
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, you may cast target instant card from that player's graveyard, and mana of any type can be spent to cast that spell."
+      },
+      {
+        "text": "When ~ enters, you may cast target creature card from an opponent's graveyard, and mana of any type can be spent to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast target creature card from an opponent's graveyard.",
+      "When ~ enters, you may cast target creature card from an opponent's graveyard without paying its mana cost."
+    ]
+  }
+]

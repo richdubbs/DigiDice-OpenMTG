@@ -1,0 +1,56 @@
+[
+  {
+    "id": "rid.stdcopy3.mana.whenSpent.copy",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 603.2",
+      "CR 707.10",
+      "CR 707.10c"
+    ],
+    "pattern": "when that mana is spent to cast ( a | an ) {f:CastSpell} , copy that spell and you may choose new targets for the copy",
+    "build": {
+      "$patchPrevious": {
+        "whenSpent": {
+          "@new": {
+            "spells": "$f",
+            "do": [
+              {
+                "op": "copy",
+                "what": {
+                  "ref": "event",
+                  "role": "spell"
+                },
+                "result": "spell",
+                "who": {
+                  "ref": "you"
+                },
+                "newTargets": "may"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {U}. When that mana is spent to cast a blue instant spell, copy that spell and you may choose new targets for the copy."
+      },
+      {
+        "text": "{1}, {T}: Add {R}. When that mana is spent to cast a sorcery spell, copy that spell and you may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Draw a card. When that mana is spent to cast a red instant spell, copy that spell and you may choose new targets for the copy.",
+      "{T}: Add {R}. When that mana is spent to cast a red instant spell, copy that spell.",
+      "{T}: Add {R}. If that mana is spent to cast a red instant spell, copy that spell and you may choose new targets for the copy."
+    ]
+  }
+]

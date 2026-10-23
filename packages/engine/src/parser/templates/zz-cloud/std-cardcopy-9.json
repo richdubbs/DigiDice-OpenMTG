@@ -1,0 +1,102 @@
+[
+  {
+    "id": "eff.stdcardcopy9.choose.creatureCardExiledWith.last",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.2d",
+      "CR 608.2d"
+    ],
+    "pattern": "choose a creature card exiled with ~",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "zone": "exile",
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          }
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen",
+      "link": "lastChosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to one other target creature.\n{2}: Choose a creature card exiled with ~."
+      },
+      {
+        "text": "Whenever another creature dies, you may exile it.\n{1}{B}: Choose a creature card exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to one other target creature.\n{2}: Choose a creature card in your graveyard.",
+      "When ~ enters, exile up to one other target creature.\n{2}: Choose two creature cards exiled with ~."
+    ]
+  },
+  {
+    "id": "sta.stdcardcopy9.self.hasAllActivatedAndTriggered.lastChosen",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 607.2d",
+      "CR 604.1"
+    ],
+    "pattern": "~ has all activated and triggered abilities of the last chosen card",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": {
+                "ref": "linked",
+                "link": "lastChosen"
+              },
+              "alsoTriggered": true
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to one other target creature.\n{1}: Choose a creature card exiled with ~.\n~ has all activated and triggered abilities of the last chosen card."
+      },
+      {
+        "text": "Whenever another creature dies, you may exile it.\n{3}: Choose a creature card exiled with ~.\n~ has all activated and triggered abilities of the last chosen card."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Choose a creature card exiled with ~.\n~ has all activated abilities of the last chosen card and flying.",
+      "{1}: Choose a creature card exiled with ~.\n~ has all triggered abilities of the last chosen card."
+    ]
+  }
+]

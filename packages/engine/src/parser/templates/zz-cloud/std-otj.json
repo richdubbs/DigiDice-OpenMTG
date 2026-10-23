@@ -1,0 +1,543 @@
+[
+  {
+    "id": "eff.stdotj.pump.additional.foreach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets an additional {pt:PT} {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets -1/-1 until end of turn. That creature gets an additional -1/-1 until end of turn for each Swamp you control."
+      },
+      {
+        "text": "Target creature gets +2/+0 until end of turn. It gets an additional +1/+0 until end of turn for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets -1/-1 until end of turn. That creature gets an additional -1/-1 for each Swamp you control.",
+      "Target creature gets -1/-1 until end of turn. That creature gets an additional -1/-1 until end of turn if you control a Swamp.",
+      "Target creature gets -1/-1 until end of turn. Target creature gets an additional -1/-1 until end of turn for each Swamp you control."
+    ]
+  },
+  {
+    "id": "eff.stdotj.search.anycard.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23d",
+      "CR 701.24a",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for a card , then shuffle and put that card on top",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {},
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for a card, then shuffle and put that card on top. You gain 3 life."
+      },
+      {
+        "text": "Search your library for a card, then shuffle and put that card on top. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a card, then shuffle and put that card on the bottom.",
+      "Search your library for a card, reveal it, then shuffle and put that card on top.",
+      "Search your library for two cards, then shuffle and put those cards on top."
+    ]
+  },
+  {
+    "id": "eff.stdotj.sacrifice.half.theirChoice.up",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 107.1a",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} sacrifice[s] half the {f:Filter} of their choice , rounded up",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": "$f",
+      "count": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent sacrifices half the artifacts they control of their choice, rounded up."
+      },
+      {
+        "text": "Target player sacrifices half the lands they control of their choice, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent sacrifices half the artifacts they control of their choice, rounded down.",
+      "Target opponent sacrifices half the artifacts they control of their choice.",
+      "Target opponent sacrifices half the artifacts you control of their choice, rounded up."
+    ]
+  },
+  {
+    "id": "eff.stdotj.sacrifice.half.theirChoice.down",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 107.1a",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} sacrifice[s] half the {f:Filter} of their choice , rounded down",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": "$f",
+      "count": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent sacrifices half the artifacts they control of their choice, rounded down."
+      },
+      {
+        "text": "Target player sacrifices half the lands they control of their choice, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent sacrifices half the artifacts they control of their choice, rounded up.",
+      "Target opponent sacrifices half the artifacts they control of their choice.",
+      "Target opponent sacrifices half the artifacts you control of their choice, rounded down."
+    ]
+  },
+  {
+    "id": "eff.stdotj.discard.half.hand.up",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 107.1a"
+    ],
+    "pattern": "{p:Player} discard[s] half the cards in their hand , rounded up",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          {
+            "q": "zoneSize",
+            "zone": "hand",
+            "of": "$p"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent discards half the cards in their hand, rounded up."
+      },
+      {
+        "text": "Target player discards half the cards in their hand, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent discards half the cards in their hand, rounded down.",
+      "Target opponent discards half the cards in their hand.",
+      "Target opponent discards half the cards in your hand, rounded up."
+    ]
+  },
+  {
+    "id": "eff.stdotj.discard.half.hand.down",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 107.1a"
+    ],
+    "pattern": "{p:Player} discard[s] half the cards in their hand , rounded down",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          {
+            "q": "zoneSize",
+            "zone": "hand",
+            "of": "$p"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent discards half the cards in their hand, rounded down."
+      },
+      {
+        "text": "Target player discards half the cards in their hand, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent discards half the cards in their hand, rounded up.",
+      "Target opponent discards half the cards in their hand.",
+      "Target opponent discards half the cards in your hand, rounded down."
+    ]
+  },
+  {
+    "id": "eff.stdotj.pump.foreach.scaled.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets {pt:PT} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": -1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, up to one target creature gets +3/+3 for each Treasure you control."
+      },
+      {
+        "text": "Until end of turn, target creature gets +1/+2 for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +3/+3 for each Treasure you control.",
+      "Until end of turn, target creature gets +3/+3 for each Treasure you control unless it is blue.",
+      "Until end of turn, target creature gets +3/+3 for each Treasure you control and gains haste."
+    ]
+  },
+  {
+    "id": "eff.stdotj.mill.loselife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} mill[s] {n:Qty} card[s] and lose[s] {m:Qty} life",
+    "build": [
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player mills two cards and loses 3 life."
+      },
+      {
+        "text": "Each opponent mills a card and loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target player mills two cards and gains 3 life.",
+      "Target player mills two cards and loses 3 life unless they pay {1}.",
+      "Target player mills two cards and you lose 3 life."
+    ]
+  },
+  {
+    "id": "eff.stdotj.destroy.ifGreatestPower",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 208.1",
+      "CR 608.2b"
+    ],
+    "pattern": "destroy {o:Obj} if no other creature has greater power",
+    "build": {
+      "op": "destroy",
+      "what": "$o",
+      "guard": {
+        "cond": "compare",
+        "left": {
+          "q": "stat",
+          "stat": "power",
+          "of": "$o"
+        },
+        "op": ">=",
+        "right": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "agg": "max"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature if no other creature has greater power."
+      },
+      {
+        "text": "Destroy target creature an opponent controls if no other creature has greater power."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target creature if no other creature has lesser power.",
+      "Destroy target creature unless no other creature has greater power.",
+      "Destroy target creature if no other creature has greater toughness."
+    ]
+  },
+  {
+    "id": "eff.stdotj.milled.put.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "^ put ( a | an ) {f:Filter} card from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Mill four cards. Put a land card from among the milled cards into your hand."
+      },
+      {
+        "text": "Mill three cards. Put an artifact card from among them into your hand. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. You may put a land card from among the milled cards into your hand.",
+      "Mill four cards. Put a land card from among the milled cards onto the battlefield.",
+      "Look at the top four cards of your library. Put a land card from among them into your hand.",
+      "Mill four cards. Put two land cards from among the milled cards into your hand."
+    ]
+  }
+]

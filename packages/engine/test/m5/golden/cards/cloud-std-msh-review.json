@@ -1,0 +1,3464 @@
+[
+ {
+  "card": "Beast, Erudite Aerialist",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: the static ability's condition reads this turn's history of +1/+1 counters put on this object by you (a counter another player put does not count; a new object after a zone change has no history, CR 400.7), and while it holds he has flying (layer 6, CR 604.1, 611.3a, 613.1f); combat damage to a player draws a card (CR 510.2, 603.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "happened",
+       "event": {
+        "kind": "+1/+1",
+        "ev": "counters",
+        "by": "you",
+        "change": "put",
+        "on": {
+         "self": true
+        }
+       },
+       "scope": "turn"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "flying"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "combat": true,
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Captain Mar-Vell, Space-Born",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: flying, vigilance (CR 702.9a, 702.20a); Cosmic Awareness is an ability word (CR 207.2c); while an opponent has cast a spell this turn, you may cast spells as though they had flash (sta.stdmsh.aslong.flash): a permission to cast any spell any time you could cast an instant (CR 702.8a, 601.3e, 604.1, 611.3a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "vigilance"
+     },
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "happened",
+       "event": {
+        "ev": "cast",
+        "player": "opponent"
+       },
+       "scope": "turn",
+       "times": {
+        "op": ">=",
+        "value": 1
+       }
+      },
+      "effects": [
+       {
+        "s": "permit",
+        "action": "haveFlash",
+        "of": {
+         "stackKind": "spell",
+         "zone": "stack"
+        },
+        "who": {
+         "ref": "you"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Cosmic Cube",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: ward {2} (CR 702.21a); whenever you attack (one trigger for the attack, CR 508.1, 603.2) you look at the top six cards, may cast one nonland card among them whose mana value is at most the greatest power among attacking creatures you control, read as the ability resolves (eff.stdmsh.seen.cast.free.mvAtMost), free (CR 608.2g, 601.2, 118.9, 202.3; a land is never cast, CR 305.9), and every other looked-at card still in the library goes to the bottom in a random order (CR 401.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "keyword": "ward"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "look",
+         "at": {
+          "ref": "topCards",
+          "count": 6,
+          "player": {
+           "ref": "you"
+          }
+         },
+         "as": "them",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "cast",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "manaValue": {
+            "op": "<=",
+            "value": {
+             "q": "stat",
+             "agg": "max",
+             "of": {
+              "ref": "each",
+              "filter": {
+               "attacking": true,
+               "controller": "you",
+               "types": [
+                "Creature"
+               ]
+              }
+             },
+             "stat": "power"
+            }
+           },
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "library"
+          }
+         },
+         "max": 1,
+         "min": 0,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "cast",
+         "free": true,
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "random",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "bound",
+             "name": "cast"
+            }
+           },
+           "zone": "library"
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hawkeye, Young Avenger",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: reach (CR 702.17a); a replacement effect adds his power, read as it applies, to noncombat damage a source you control would deal to an opponent or a permanent an opponent controls (rep.stdmsh.damage.noncombat.opp.plus.insteadFirst.whereX; CR 614.1a, 120.3, 120.1a, 107.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "reach"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "replace",
+        "body": {
+         "b": "modify",
+         "amount": {
+          "add": {
+           "q": "stat",
+           "of": {
+            "ref": "self"
+           },
+           "stat": "power"
+          }
+         }
+        },
+        "replaces": {
+         "ev": "damage",
+         "combat": false,
+         "recipient": {
+          "object": {
+           "controller": "opponent"
+          },
+          "player": "opponent"
+         },
+         "source": {
+          "controller": "you"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "HYDRA Troopers",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: when it enters, if there are two or more creature cards in your graveyard as the ability resolves, you create a tapped 2/1 black Villain creature token with menace, and otherwise you mill two cards (eff.stdmsh.token.tapped.ifCond; the condition is checked on resolution and 'Otherwise' is its else branch, CR 608.2c, 111.1, 701.17a, 702.111a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "if",
+         "cond": {
+          "cond": "exists",
+          "atLeast": 2,
+          "of": {
+           "ref": "each",
+           "filter": {
+            "isCard": true,
+            "owner": "you",
+            "types": [
+             "Creature"
+            ],
+            "zone": "graveyard"
+           }
+          }
+         },
+         "else": [
+          {
+           "op": "mill",
+           "count": 2,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "then": [
+          {
+           "op": "createToken",
+           "count": 1,
+           "tapped": true,
+           "token": {
+            "colors": [
+             "B"
+            ],
+            "keywords": [
+             "menace"
+            ],
+            "power": 2,
+            "subtypes": [
+             "Villain"
+            ],
+            "toughness": 1,
+            "types": [
+             "Creature"
+            ]
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Justice, Vance Astrovik",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: flying (CR 702.9a); when it enters, up to one target nonland, nontoken permanent returns to its owner's hand (CR 115.1, 400.3); whenever another nonland permanent you control goes from the battlefield to its owner's hand (a leaves-the-battlefield trigger that looks back in time, CR 603.6c, 603.10a), it gets a +1/+1 counter (CR 122.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "notTypes": [
+           "Land"
+          ],
+          "token": false
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "+1/+1",
+         "op": "putCounters",
+         "count": 1,
+         "on": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "you",
+          "notTypes": [
+           "Land"
+          ],
+          "other": true
+         },
+         "to": "hand"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Klaw, Sonic Subjugator",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: Sonic Attack is an ability word (CR 207.2c); when it enters, the target player chooses and reveals that many cards from their hand, all of them if they have fewer (eff.stdmsh.player.reveals.cardsFromHand.equalTo; CR 701.20a, 402.3, 107.1), the count is one plus the creature cards in your graveyard as it resolves (CR 608.2h), you choose one of the revealed cards (eff.stdmsh.you.choose.oneOf; CR 608.2c, 608.2d), and that player discards it (CR 701.9a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "as": "picked",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "zone": "hand"
+          }
+         },
+         "max": {
+          "op": "+",
+          "q": "math",
+          "args": [
+           1,
+           {
+            "q": "count",
+            "of": {
+             "ref": "each",
+             "filter": {
+              "isCard": true,
+              "owner": "you",
+              "types": [
+               "Creature"
+              ],
+              "zone": "graveyard"
+             }
+            }
+           }
+          ]
+         },
+         "min": {
+          "op": "+",
+          "q": "math",
+          "args": [
+           1,
+           {
+            "q": "count",
+            "of": {
+             "ref": "each",
+             "filter": {
+              "isCard": true,
+              "owner": "you",
+              "types": [
+               "Creature"
+              ],
+              "zone": "graveyard"
+             }
+            }
+           }
+          ]
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "reveal",
+         "as": "them",
+         "what": {
+          "ref": "bound",
+          "name": "picked"
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "chosen",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "picked"
+           },
+           "zone": "any"
+          }
+         },
+         "max": 1,
+         "min": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "discard",
+         "count": 1,
+         "filter": {
+          "is": {
+           "ref": "bound",
+           "name": "chosen"
+          }
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mjölnir, Hammer of Thor",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: when it enters it deals 4 damage to up to one target creature (CR 115.1, 120.3); a replacement effect doubles all damage the equipped creature would deal (rep.stdmsh.damage.double.attached; CR 614.1a, 120.3, 301.5); Equip worthy {1} is an equip ability that targets only a worthy creature you control: a legendary non-Villain creature that is red, white or both, as the reminder text says (kw.stdmsh.equip.worthy; CR 702.6a, 702.6c, 205.4, 105.2, 207.2a); {2}{R}, discard it: it deals 2 damage to each creature, an ability that functions from the hand (CR 113.6, 602.1, 701.9a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "damage",
+         "amount": 4,
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "replace",
+        "body": {
+         "b": "modify",
+         "amount": {
+          "mul": 2
+         }
+        },
+        "replaces": {
+         "ev": "damage",
+         "source": {
+          "attachedToSource": true
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      },
+      "filter": {
+       "colors": [
+        "W",
+        "R"
+       ],
+       "controller": "you",
+       "notSubtypes": [
+        "Villain"
+       ],
+       "supertypes": [
+        "Legendary"
+       ],
+       "types": [
+        "Creature"
+       ]
+      },
+      "keyword": "equip"
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ],
+       "other": [
+        {
+         "kind": "discard",
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "damage",
+         "amount": 2,
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "zone": [
+       "hand"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mockingbird, Ace Agent",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: double strike (CR 702.4a); whenever you cast a spell that targets a creature you control, it gets a +1/+1 counter (CR 601.2c, 603.2, 115.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "double strike"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "+1/+1",
+         "op": "putCounters",
+         "count": 1,
+         "on": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "targets": {
+           "ref": "each",
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Moon Girl and Devil Dinosaur",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: whenever you draw your second card each turn, until end of turn its base power and toughness become 6/6 (layer 7b, CR 613.4b) and it gains trample (layer 6, CR 613.1f; one creature with a plural name: 'they'), (eff.stdmsh.basept.become.lead.gains; CR 611.2a, 121.1); whenever an artifact you control enters, draw a card, and this ability triggers only once each turn (CR 603.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": "7b",
+             "power": 6,
+             "toughness": 6
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "trample"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "draw",
+         "nth": 2,
+         "player": "you"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "limit": {
+       "max": 1,
+       "per": "turn"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "types": [
+           "Artifact"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Red Hulk",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: reach, trample (CR 702.17a, 702.19a); Enrage is an ability word (CR 207.2c); whenever it is dealt damage it gets a +1/+1 counter, and when you do, a reflexive triggered ability (CR 603.12) has it deal damage equal to its +1/+1 counters, counted on that ability's resolution, to any target other than itself (CR 115.4, 120.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "reach"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "trample"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "+1/+1",
+         "op": "putCounters",
+         "as": "did",
+         "count": 1,
+         "on": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "reflexive",
+         "do": [
+          {
+           "op": "damage",
+           "amount": {
+            "kind": "+1/+1",
+            "q": "counters",
+            "on": {
+             "ref": "self"
+            }
+           },
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ],
+         "targets": [
+          {
+           "kind": "anyTarget",
+           "filter": {
+            "other": true
+           },
+           "id": "t0",
+           "max": 1,
+           "min": 1
+          }
+         ],
+         "when": {
+          "did": "did"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "recipient": {
+          "object": {
+           "self": true
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ronin, Shadow Stalker",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: pay 2 life: a mana ability adds two mana of any one color, spendable only on Equipment spells or equip abilities, activated only once each turn (CR 605.1a, 106.6, 119.4, 602.5b); {T}, sacrifice an Equipment attached to it (CR 701.21a, 301.5): target creature gets -4/-4 until end of turn, activated only as a sorcery (layer 7c, CR 613.4c, 611.2a, 602.5d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "other": [
+        {
+         "kind": "payLife",
+         "amount": 2
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "dynamic": {
+          "kind": "anyOneColor",
+          "count": 2
+         },
+         "restriction": {
+          "abilities": {},
+          "abilityKeyword": "equip",
+          "spells": {
+           "subtypes": [
+            "Equipment"
+           ]
+          }
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "limit": {
+       "max": 1,
+       "per": "turn"
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "other": [
+        {
+         "kind": "sacrifice",
+         "count": 1,
+         "filter": {
+          "attachedToObject": {
+           "ref": "self"
+          },
+          "subtypes": [
+           "Equipment"
+          ]
+         }
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": -4,
+             "toughness": -4
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "sorcerySpeed": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Secret Invasion",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: enchant creature you control (CR 702.5a, 303.4a); when it enters, up to one target creature other than the enchanted creature is exiled until this Aura leaves the battlefield (CR 610.3), and the enchanted creature becomes a copy of that creature for the same duration (eff.stdmsh.becomeCopy.dur; layer 1, CR 707.2, 613.1a, 611.2b; the exiled creature's copiable values are its last known information, CR 608.2h; with no creature chosen it copies nothing); the enchanted creature has ward {2} (layer 6, CR 702.21a, 613.1f)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "filter": {
+       "controller": "you",
+       "types": [
+        "Creature"
+       ]
+      },
+      "keyword": "enchant"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "until": {
+          "d": "until",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "self": true
+           }
+          }
+         },
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "until",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "self": true
+           }
+          }
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "attachedTo"
+           },
+           "mods": [
+            {
+             "layer": "1a",
+             "copyOf": {
+              "ref": "target",
+              "id": "t0"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "attachedToSource": false,
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "cost": {
+             "mana": [
+              {
+               "kind": "generic",
+               "amount": 2
+              }
+             ]
+            },
+            "keyword": "ward"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Spider-Man, To the Rescue",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: flash, reach, vigilance (CR 702.8a, 702.17a, 702.20a); No One Dies! is an ability word (CR 207.2c); when it enters you may tap it, and when you do, a reflexive triggered ability (CR 603.12) gives another target nonattacking creature you control indestructible until end of turn (layer 6, CR 702.12a, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flash"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "reach"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "vigilance"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "may",
+         "as": "did",
+         "do": [
+          {
+           "op": "tap",
+           "what": {
+            "ref": "self"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "reflexive",
+         "do": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "mods": [
+              {
+               "layer": 6,
+               "add": [
+                {
+                 "kind": "keyword",
+                 "keyword": "indestructible"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ],
+         "targets": [
+          {
+           "kind": "object",
+           "filter": {
+            "attacking": false,
+            "controller": "you",
+            "other": true,
+            "types": [
+             "Creature"
+            ]
+           },
+           "id": "t0",
+           "max": 1,
+           "min": 1
+          }
+         ],
+         "when": {
+          "did": "did"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Spider-Woman, Secret Agent",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: flash (CR 702.8a); when it enters, tap target creature an opponent controls, and it can't become untapped for as long as you control Spider-Woman (eff.stdmsh.rst.cant.becomeUntapped; no rule or effect untaps it, not only its untap step, CR 701.26b, 502.3, 611.2b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flash"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "tap",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "whileSource",
+          "as": "controlled"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "action": "untap",
+           "mode": "cant",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "controller": "opponent",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Wakandan Royal Guard",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: vigilance (CR 702.20a); when it enters, target creature gets a +1/+1 counter, or two instead if, as the ability resolves, it is a Hero other than Wakandan Royal Guard (later text modifying earlier text of the same ability, CR 608.2c, 122.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "vigilance"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "other": true,
+           "subtypes": [
+            "Hero"
+           ]
+          },
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "else": [
+          {
+           "kind": "+1/+1",
+           "op": "putCounters",
+           "count": 1,
+           "on": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ],
+         "then": [
+          {
+           "kind": "+1/+1",
+           "op": "putCounters",
+           "count": 2,
+           "on": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Whiplash, Vengeful Engineer",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: it enters tapped (a replacement effect, CR 614.1c); whenever it attacks, if it is equipped, checked when it triggers and again on resolution (CR 603.4), each opponent loses X life and you gain X life, X the number of Equipment attached to it (CR 119.3, 301.5)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "replace",
+        "body": {
+         "b": "enters",
+         "tapped": true
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       }
+      ],
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "loseLife",
+         "amount": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "attachedToObject": {
+             "ref": "self"
+            },
+            "subtypes": [
+             "Equipment"
+            ]
+           }
+          }
+         },
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        },
+        {
+         "op": "gainLife",
+         "amount": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "attachedToObject": {
+             "ref": "self"
+            },
+            "subtypes": [
+             "Equipment"
+            ]
+           }
+          }
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "exists",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "attachedToObject": {
+          "ref": "self"
+         },
+         "subtypes": [
+          "Equipment"
+         ]
+        }
+       }
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Crowd of True Believers",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: {T}: target creature you control that's attacking alone (the only creature declared as an attacker, CR 506.5) gets +1/+0 until end of turn (layer 7c, CR 613.4c, 611.2a) and you gain 1 life (CR 119.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 0
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "gainLife",
+         "amount": 1,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "attackingAlone": true,
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Epic Fight",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: choose one or both (CR 700.2): double target creature's power and toughness until end of turn, i.e. it gets +X/+Y with X and Y its power and toughness as the spell resolves (eff.stdmsh.double.pt.possessive; CR 701.10a, 701.10b, 701.10c, 608.2h, 613.4c); target creature you control fights target creature an opponent controls (CR 701.14a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "modes": {
+        "max": 2,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "effect",
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "s": "continuous",
+               "affects": {
+                "ref": "target",
+                "id": "t0"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": {
+                  "q": "stat",
+                  "of": {
+                   "ref": "target",
+                   "id": "t0"
+                  },
+                  "stat": "power"
+                 },
+                 "toughness": {
+                  "q": "stat",
+                  "of": {
+                   "ref": "target",
+                   "id": "t0"
+                  },
+                  "stat": "toughness"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ],
+           "targets": [
+            {
+             "kind": "object",
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t0",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "fight",
+             "b": {
+              "ref": "target",
+              "id": "t2"
+             },
+             "a": {
+              "ref": "target",
+              "id": "t1"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "kind": "object",
+             "filter": {
+              "controller": "you",
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t1",
+             "max": 1,
+             "min": 1
+            },
+            {
+             "kind": "object",
+             "filter": {
+              "controller": "opponent",
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t2",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Evil's Thrall",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: you gain control of target creature until end of turn, or until the end of your next turn instead if, as it resolves, you control a Villain with greater mana value than that creature (CR 608.2c, 613.1b, 611.2a, 202.3); untap it (CR 701.26b) and it gains haste until end of turn (CR 702.10a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "if",
+         "cond": {
+          "cond": "exists",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "controller": "you",
+            "manaValue": {
+             "op": ">",
+             "value": {
+              "q": "stat",
+              "of": {
+               "ref": "target",
+               "id": "t0"
+              },
+              "stat": "manaValue"
+             }
+            },
+            "subtypes": [
+             "Villain"
+            ]
+           }
+          }
+         },
+         "else": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "mods": [
+              {
+               "layer": 2,
+               "controller": {
+                "ref": "you"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ],
+         "then": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfNextTurn",
+            "whose": {
+             "ref": "you"
+            }
+           },
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "mods": [
+              {
+               "layer": 2,
+               "controller": {
+                "ref": "you"
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "untap",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "haste"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Multiversal Incursion",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: for each nontoken creature you control as it resolves, you create a token that's a copy of that creature, except it isn't legendary (eff.stdmsh.forEach.filter.copy.notLegendary; CR 608.2f, 707.2, 707.9b, 111.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "forEach",
+         "as": "each",
+         "do": [
+          {
+           "op": "copy",
+           "except": [
+            {
+             "layer": 4,
+             "supertypes": {
+              "remove": [
+               "Legendary"
+              ]
+             }
+            }
+           ],
+           "result": "token",
+           "what": {
+            "ref": "bound",
+            "name": "each"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "over": {
+          "ref": "each",
+          "filter": {
+           "controller": "you",
+           "token": false,
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Scarlet Witch",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: instant and sorcery spells you cast with mana value 4 or greater cost {X} less, X her power as the cost is determined, reducing only generic mana and never below zero (cm.stdmsh.spells.less.you.manaValue.whereX; CR 601.2f, 118.7, 202.3, 107.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "costMod",
+        "applies": {
+         "caster": "you",
+         "spells": {
+          "manaValue": {
+           "op": ">=",
+           "value": 4
+          },
+          "stackKind": "spell",
+          "types": [
+           "Instant",
+           "Sorcery"
+          ],
+          "zone": "stack"
+         }
+        },
+        "change": {
+         "kind": "reduce",
+         "floor": "zero",
+         "generic": {
+          "q": "stat",
+          "of": {
+           "ref": "self"
+          },
+          "stat": "power"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Nylea's Colossus",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: Constellation is an ability word (CR 207.2c); whenever an enchantment you control enters (this enchantment creature or another one), target creature gets +X/+Y until end of turn with X and Y its power and toughness as the ability resolves (eff.stdmsh.double.pt.possessive; CR 701.10a, 701.10b, 701.10c, 608.2h, 613.4c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": {
+              "q": "stat",
+              "of": {
+               "ref": "target",
+               "id": "t0"
+              },
+              "stat": "power"
+             },
+             "toughness": {
+              "q": "stat",
+              "of": {
+               "ref": "target",
+               "id": "t0"
+              },
+              "stat": "toughness"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "types": [
+           "Enchantment"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Choose Your Weapon",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: choose one (CR 700.2; Two-Weapon Fighting and Archery are flavor words, CR 207.2d): double target creature's power and toughness until end of turn (eff.stdmsh.double.pt.possessive; CR 701.10a, 701.10b, 701.10c, 608.2h, 613.4c), or this spell deals 5 damage to target creature with flying (CR 120.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "effect",
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "s": "continuous",
+               "affects": {
+                "ref": "target",
+                "id": "t0"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": {
+                  "q": "stat",
+                  "of": {
+                   "ref": "target",
+                   "id": "t0"
+                  },
+                  "stat": "power"
+                 },
+                 "toughness": {
+                  "q": "stat",
+                  "of": {
+                   "ref": "target",
+                   "id": "t0"
+                  },
+                  "stat": "toughness"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ],
+           "targets": [
+            {
+             "kind": "object",
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t0",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "damage",
+             "amount": 5,
+             "source": {
+              "ref": "self"
+             },
+             "to": {
+              "ref": "target",
+              "id": "t1"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "kind": "object",
+             "filter": {
+              "keyword": "flying",
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t1",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Clone Legion",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: for each creature target player controls as it resolves, you create a token that's a copy of that creature (eff.stdmsh.forEach.filter.copy; CR 608.2f, 707.2, 111.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "forEach",
+         "as": "each",
+         "do": [
+          {
+           "op": "copy",
+           "result": "token",
+           "what": {
+            "ref": "bound",
+            "name": "each"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "over": {
+          "ref": "each",
+          "filter": {
+           "controller": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rhys the Redeemed",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: {2}{G/W}, {T}: create a 1/1 green and white Elf Warrior creature token (CR 111.1, 107.4e); {4}{G/W}{G/W}, {T}: for each creature token you control as it resolves, create a token that's a copy of it (eff.stdmsh.forEach.filter.copy; CR 608.2f, 707.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "hybrid",
+         "colors": [
+          "G",
+          "W"
+         ]
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "colors": [
+           "W",
+           "G"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Elf",
+           "Warrior"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 4
+        },
+        {
+         "kind": "hybrid",
+         "colors": [
+          "G",
+          "W"
+         ]
+        },
+        {
+         "kind": "hybrid",
+         "colors": [
+          "G",
+          "W"
+         ]
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "forEach",
+         "as": "each",
+         "do": [
+          {
+           "op": "copy",
+           "result": "token",
+           "what": {
+            "ref": "bound",
+            "name": "each"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "over": {
+          "ref": "each",
+          "filter": {
+           "controller": "you",
+           "token": true,
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ocelot Pride",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited (the card stays partial: ascend needs an engine feature, CR 702.131): first strike, lifelink (CR 702.7a, 702.15a); at the beginning of your end step, if you gained life this turn (CR 603.4), create a 1/1 white Cat creature token; then if you have the city's blessing (CR 702.131c), for each token you control that entered this turn, create a token that's a copy of it (eff.stdmsh.forEach.filter.copy; CR 608.2f, 707.2, 111.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "first strike"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "lifelink"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "ascend"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Cat"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "designation",
+          "what": "citysBlessing",
+          "who": {
+           "ref": "you"
+          }
+         },
+         "then": [
+          {
+           "op": "forEach",
+           "as": "each",
+           "do": [
+            {
+             "op": "copy",
+             "result": "token",
+             "what": {
+              "ref": "bound",
+              "name": "each"
+             },
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "over": {
+            "ref": "each",
+            "filter": {
+             "controller": "you",
+             "enteredThisTurn": true,
+             "token": true
+            }
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "life",
+        "change": "gain",
+        "player": "you"
+       },
+       "scope": "turn"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mire's Toll",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: target player chooses and reveals as many cards from their hand as the Swamps you control, all of them if they have fewer (eff.stdmsh.player.reveals.cardsFromHand.equalTo; CR 701.20a, 402.3, 107.1), you choose one of them (eff.stdmsh.you.choose.oneOf; CR 608.2c, 608.2d), and that player discards it (CR 701.9a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "as": "picked",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "zone": "hand"
+          }
+         },
+         "max": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "controller": "you",
+            "subtypes": [
+             "Swamp"
+            ]
+           }
+          }
+         },
+         "min": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "controller": "you",
+            "subtypes": [
+             "Swamp"
+            ]
+           }
+          }
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "reveal",
+         "as": "them",
+         "what": {
+          "ref": "bound",
+          "name": "picked"
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "chosen",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "picked"
+           },
+           "zone": "any"
+          }
+         },
+         "max": 1,
+         "min": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "discard",
+         "count": 1,
+         "filter": {
+          "is": {
+           "ref": "bound",
+           "name": "chosen"
+          }
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Disciple of Phenax",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: when it enters, target player chooses and reveals as many cards from their hand as your devotion to black (CR 700.5), all of them if they have fewer (eff.stdmsh.player.reveals.cardsFromHand.equalTo; CR 701.20a, 402.3), you choose one of them (eff.stdmsh.you.choose.oneOf; CR 608.2c, 608.2d), and that player discards it (CR 701.9a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "as": "picked",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "zone": "hand"
+          }
+         },
+         "max": {
+          "q": "devotion",
+          "of": {
+           "ref": "you"
+          },
+          "to": [
+           "B"
+          ]
+         },
+         "min": {
+          "q": "devotion",
+          "of": {
+           "ref": "you"
+          },
+          "to": [
+           "B"
+          ]
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "reveal",
+         "as": "them",
+         "what": {
+          "ref": "bound",
+          "name": "picked"
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "chosen",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "picked"
+           },
+           "zone": "any"
+          }
+         },
+         "max": 1,
+         "min": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "discard",
+         "count": 1,
+         "filter": {
+          "is": {
+           "ref": "bound",
+           "name": "chosen"
+          }
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Shapesharer",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: changeling (CR 702.73a); {2}{U}: target Shapeshifter becomes a copy of target creature until your next turn, the same object may be both targets (eff.stdmsh.becomeCopy.dur; layer 1, CR 707.2, 613.1a, 611.2b, 115.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "changeling"
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "untilNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "1a",
+             "copyOf": {
+              "ref": "target",
+              "id": "t1"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "subtypes": [
+           "Shapeshifter"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        },
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t1",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mirage Mirror",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: {2}: this artifact becomes a copy of target artifact, creature, enchantment, or land until end of turn (eff.stdmsh.becomeCopy.dur; layer 1, CR 707.2, 613.1a, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": "1a",
+             "copyOf": {
+              "ref": "target",
+              "id": "t0"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Artifact",
+           "Creature",
+           "Enchantment",
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Svella, Ice Shaper",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: {3}, {T}: create a colorless snow artifact token named Icy Manalith with a mana ability that adds one mana of any color (CR 111.1, 111.4, 605.1a); {6}{R}{G}, {T}: look at the top four cards, you may cast a nonland card among them without paying its mana cost (eff.stdmsh.seen.cast.free; CR 608.2g, 601.2, 118.9, 305.9), and every other looked-at card still in the library goes to the bottom in a random order (CR 401.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "abilities": [
+           {
+            "kind": "activated",
+            "cost": {
+             "tap": true
+            },
+            "effect": {
+             "steps": [
+              {
+               "op": "addMana",
+               "units": [
+                [
+                 "W",
+                 "U",
+                 "B",
+                 "R",
+                 "G"
+                ]
+               ],
+               "who": {
+                "ref": "you"
+               }
+              }
+             ],
+             "targets": []
+            },
+            "isMana": true
+           }
+          ],
+          "colors": [],
+          "name": "Icy Manalith",
+          "supertypes": [
+           "Snow"
+          ],
+          "types": [
+           "Artifact"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 6
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        },
+        {
+         "kind": "colored",
+         "color": "G"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "look",
+         "at": {
+          "ref": "topCards",
+          "count": 4,
+          "player": {
+           "ref": "you"
+          }
+         },
+         "as": "them",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "cast",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "library"
+          }
+         },
+         "max": 1,
+         "min": 0,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "cast",
+         "free": true,
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "random",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "bound",
+             "name": "cast"
+            }
+           },
+           "zone": "library"
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Perception Bobblehead",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: {T}: add one mana of any color (CR 605.1a); {3}, {T}: look at the top X cards, X the Bobbleheads you control as it resolves (CR 608.2h), you may cast a nonland card among them with mana value 3 or less without paying its mana cost (eff.stdmsh.seen.cast.free.mvOrLess; CR 608.2g, 601.2, 118.9, 202.3, 305.9), and the rest still in the library go to the bottom in a random order (CR 401.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "W",
+           "U",
+           "B",
+           "R",
+           "G"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "look",
+         "at": {
+          "ref": "topCards",
+          "count": {
+           "q": "count",
+           "of": {
+            "ref": "each",
+            "filter": {
+             "controller": "you",
+             "subtypes": [
+              "Bobblehead"
+             ]
+            }
+           }
+          },
+          "player": {
+           "ref": "you"
+          }
+         },
+         "as": "them",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "cast",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "manaValue": {
+            "op": "<=",
+            "value": 3
+           },
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "library"
+          }
+         },
+         "max": 1,
+         "min": 0,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "cast",
+         "free": true,
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "random",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "bound",
+             "name": "cast"
+            }
+           },
+           "zone": "library"
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Artist's Talent",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: a Class (CR 716.2a, 716.2b): level 1, whenever you cast a noncreature spell you may discard a card, and if you do, draw a card (CR 603.2, 608.2c); level 2 ({2}{R}), noncreature spells you cast cost {1} less (CR 601.2f); level 3 ({2}{R}), a replacement effect adds 2 to noncombat damage a source you control would deal to an opponent or a permanent an opponent controls (rep.stdmsh.damage.noncombat.opp.plus; CR 614.1a, 120.3, 120.1a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "classLevel",
+      "abilities": [
+       {
+        "kind": "triggered",
+        "effect": {
+         "steps": [
+          {
+           "op": "may",
+           "as": "did",
+           "do": [
+            {
+             "op": "discard",
+             "count": 1,
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "op": "if",
+           "cond": {
+            "cond": "did",
+            "step": "did"
+           },
+           "then": [
+            {
+             "op": "draw",
+             "count": 1,
+             "who": {
+              "ref": "you"
+             }
+            }
+           ]
+          }
+         ],
+         "targets": []
+        },
+        "trigger": {
+         "on": [
+          {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "notTypes": [
+             "Creature"
+            ]
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "level": 1
+     },
+     {
+      "kind": "classLevel",
+      "abilities": [
+       {
+        "kind": "static",
+        "effects": [
+         {
+          "s": "costMod",
+          "applies": {
+           "caster": "you",
+           "spells": {
+            "notTypes": [
+             "Creature"
+            ],
+            "stackKind": "spell",
+            "zone": "stack"
+           }
+          },
+          "change": {
+           "kind": "reduce",
+           "floor": "zero",
+           "generic": 1
+          }
+         }
+        ]
+       }
+      ],
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      },
+      "level": 2
+     },
+     {
+      "kind": "classLevel",
+      "abilities": [
+       {
+        "kind": "static",
+        "effects": [
+         {
+          "s": "replace",
+          "body": {
+           "b": "modify",
+           "amount": {
+            "add": 2
+           }
+          },
+          "replaces": {
+           "ev": "damage",
+           "combat": false,
+           "recipient": {
+            "object": {
+             "controller": "opponent"
+            },
+            "player": "opponent"
+           },
+           "source": {
+            "controller": "you"
+           }
+          }
+         }
+        ]
+       }
+      ],
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      },
+      "level": 3
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Far Fortune, End Boss",
+  "expect": "full",
+  "verified": "CLOUD std-msh review, by hand against the Oracle text and the rules cited: start your engines! (CR 702.179a); whenever you attack it deals 1 damage to each opponent (CR 508.1, 120.3); max speed: while you have max speed, it has the ability that adds 1 to damage a source you control would deal to an opponent or a permanent an opponent controls (rep.stddft.damage.plus.yourSource.toOpponentOrTheirPermanent, the same template as std-msh's rep.stdmsh.damage.opp.plus; CR 702.178a, 614.1a, 120.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "start your engines!"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "damage",
+         "amount": 1,
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "designation",
+       "what": "maxSpeed",
+       "who": {
+        "ref": "you"
+       }
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "static",
+            "effects": [
+             {
+              "s": "replace",
+              "body": {
+               "b": "modify",
+               "amount": {
+                "add": 1
+               }
+              },
+              "replaces": {
+               "ev": "damage",
+               "recipient": {
+                "object": {
+                 "controller": "opponent"
+                },
+                "player": "opponent"
+               },
+               "source": {
+                "controller": "you"
+               }
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ],
+      "keyword": "max speed"
+     }
+    ]
+   }
+  ]
+ }
+]

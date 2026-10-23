@@ -1,0 +1,14 @@
+# p2-exile-play-1 (Phase 2 lane p2-exile-play; test/cloud/p2-exile-play-1, golden p2-exile-play-1-review.json): "the exiled card" in a static ability (CR 607.2a),
+# free casts from among cards exiled with ~, cost reductions and cast bans by the exiled card, hideaway's damage condition, convoke for spells cast from exile
+Ashiok's Erasure
+Ixalan's Binding
+Exclusion Ritual
+Semblance Anvil
+Shell of the Last Kappa
+Jeleva, Nephalia's Scourge
+Kaho, Minamo Historian
+Spinerock Knoll
+Party Thrasher
+Theater of Horrors
+Pick Up the Pace
+Lightning Phoenix

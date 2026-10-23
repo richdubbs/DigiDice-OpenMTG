@@ -1,0 +1,18 @@
+# std-rx25 (wave 2, EDH lane rx25; test/cloud/std-rx25, golden cloud-std-rx25-review.json): the adamant condition "at least N <color> mana was spent
+# to cast ~"; "whenever you cycle another card"; "unless <player> pays {X}, where X is <Qty>"; "<player> draws X cards and loses X life, where X is <Qty>";
+# "two target players exchange life totals"; "~ or another artifact creature dies"
+Foreboding Fruit
+Silverflame Ritual
+Slaying Fire
+Unexplained Vision
+Flourishing Fox
+Drannith Stinger
+Spell Rupture
+Rethink
+Lilting Refrain
+Mausoleum Wanderer
+Eldritch Pact
+Pact of the Serpent
+Soul Conduit
+Axis of Mortality
+Dross Scorpion

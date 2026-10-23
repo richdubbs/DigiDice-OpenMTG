@@ -1,0 +1,303 @@
+[
+  {
+    "id": "eff.stdrx3.search.anyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 107.1"
+    ],
+    "pattern": "search your library for any number of {f:CardsDesc}",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "min": 0,
+      "max": "any",
+      "as": "search"
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Search your library for any number of Island cards, exile them, then shuffle."
+      },
+      {
+        "text": "Search your library for any number of enchantment cards, put them into your graveyard, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a number of Island cards, exile them, then shuffle.",
+      "Search your library for any number of Island cards and exile them unless it is red."
+    ]
+  },
+  {
+    "id": "eff.stdrx3.permit.free.cast.group.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , you may cast {o:Group} without paying their mana costs",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. Until end of turn, you may cast them without paying their mana costs."
+      },
+      {
+        "text": "Search your library for any number of artifact cards, exile them, then shuffle. Until end of turn, you may cast those cards without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. Until end of turn, you may cast them.",
+      "Exile the top two cards of your library. Until end of turn, you may cast them without paying their mana costs if you control a Wizard.",
+      "Exile the top two cards of your library. You may cast them without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.stdrx3.permit.free.play.group.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Group} without paying their mana costs",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Exile the top three cards of your library. Until end of turn, you may play them without paying their mana costs."
+      },
+      {
+        "text": "Exile the top two cards of target opponent's library. Until end of turn, you may play those cards without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top three cards of your library. Until end of turn, you may play them.",
+      "Exile the top three cards of your library. Until end of turn, you may play them without paying their mana costs and you lose 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdrx3.permit.free.cast.obj.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , you may cast {o:Obj} without paying its mana cost",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Exile the top card of your library. Until end of turn, you may cast that card without paying its mana cost."
+      },
+      {
+        "text": "Exile the top card of target opponent's library. Until end of turn, you may cast it without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of your library. Until end of turn, you may cast that card.",
+      "Exile the top card of your library. Until end of turn, you may cast that card without paying its mana cost if it's red."
+    ]
+  },
+  {
+    "id": "eff.stdrx3.permit.free.play.obj.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Obj} without paying its mana cost",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Exile the top card of your library. Until end of turn, you may play that card without paying its mana cost."
+      },
+      {
+        "text": "Exile the top card of target opponent's library. Until end of turn, you may play it without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of your library. Until end of turn, you may play that card.",
+      "Exile the top card of your library. Until end of turn, you may play that card without paying its mana cost and draw a card."
+    ]
+  },
+  {
+    "id": "eff.stdrx3.permit.free.cast.obj.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Exile target instant card from your graveyard. You may cast that card without paying its mana cost for as long as it remains exiled."
+      },
+      {
+        "text": "Exile the top card of your library. You may cast it without paying its mana cost until the end of your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile target instant card from your graveyard. You may cast that card for as long as it remains exiled.",
+      "Exile target instant card from your graveyard. You may cast that card without paying its mana cost."
+    ]
+  }
+]

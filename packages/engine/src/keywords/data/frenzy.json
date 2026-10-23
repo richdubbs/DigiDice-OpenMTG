@@ -1,0 +1,16 @@
+{
+  "name": "frenzy",
+  "rule": "702.68",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks and isn't blocked, it gets +{n}/+0 until end of turn.",
+  "multiple": "independent",
+  "status": "planned"
+}

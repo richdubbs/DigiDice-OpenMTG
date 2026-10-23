@@ -1,0 +1,11 @@
+{
+  "name": "living metal",
+  "rule": "702.161",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "During your turn, this Vehicle is also a creature.",
+  "multiple": "independent",
+  "status": "planned"
+}

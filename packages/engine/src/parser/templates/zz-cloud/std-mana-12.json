@@ -1,0 +1,146 @@
+[
+  {
+    "id": "cm.stdmana12.spells.less.you.colored",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} you cast cost {m:ColoredManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Spells you cast cost {W}{U} less to cast."
+      },
+      {
+        "text": "Elf spells you cast cost {1}{G} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Elf spells you cast cost {1}{G} more to cast.",
+      "Elf spells your opponents cast cost {1}{G} less to cast.",
+      "Elf spells you cast cost {1}{G} less to cast this turn."
+    ]
+  },
+  {
+    "id": "eff.stdmana12.becomesManaColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 106.1",
+      "CR 611.2a",
+      "CR 613.1e"
+    ],
+    "pattern": "{o:Obj} becomes that color {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "chosen": "@manaColor"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: Add one mana of any color. ~ becomes that color until end of turn."
+      },
+      {
+        "text": "{T}, Pay 1 life: Add one mana of any color. ~ becomes that color until end of turn. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Add {C}. ~ becomes that color until end of turn.",
+      "{2}: Add two mana of any one color. ~ becomes that color until end of turn.",
+      "{2}: Add one mana of any color. ~ becomes that color until your next turn."
+    ]
+  },
+  {
+    "id": "trg.stdmana12.youBendAny",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 701.65b",
+      "CR 701.66a",
+      "CR 701.67c",
+      "CR 702.189a"
+    ],
+    "pattern": "whenever you waterbend , earthbend , firebend , or airbend",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "waterbend",
+          "actor": "you"
+        },
+        {
+          "ev": "action",
+          "verb": "earthbend",
+          "actor": "you"
+        },
+        {
+          "ev": "action",
+          "verb": "firebend",
+          "actor": "you"
+        },
+        {
+          "ev": "action",
+          "verb": "airbend",
+          "actor": "you"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you waterbend, earthbend, firebend, or airbend, you gain 2 life."
+      },
+      {
+        "text": "Whenever you waterbend, earthbend, firebend, or airbend, scry 1. Then if you've done all four this turn, draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent waterbends, earthbends, firebends, or airbends, you gain 2 life.",
+      "Whenever you waterbend, earthbend, or airbend, you gain 2 life."
+    ]
+  }
+]

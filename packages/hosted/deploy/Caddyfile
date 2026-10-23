@@ -1,0 +1,26 @@
+# The development stack's reverse proxy (docker-compose.dev.yml; design 10.1, D7): TLS with Caddy's own local certificate authority, and only the
+# WebSocket path goes to the gateway. The metrics listener is never routed; /healthz and /readyz stay on the compose network too.
+{
+	# no ACME, no outside requests: a certificate from Caddy's local CA (the browser asks to trust it once, or use the desktop app)
+	local_certs
+	auto_https disable_redirects
+	admin off
+}
+
+https://localhost:8443 {
+	tls internal
+
+	handle /ws {
+		reverse_proxy hosted:8787
+	}
+
+	handle {
+		respond "Not found" 404
+	}
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+	}
+}

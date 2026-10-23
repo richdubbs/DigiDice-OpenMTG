@@ -1,0 +1,795 @@
+[
+  {
+    "id": "eff.stdspm.becomes.artifactcreature.basept.trail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 301.7b",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes an artifact creature with base power and toughness {pt:BasePT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target artifact you control becomes an artifact creature with base power and toughness 2/5 until end of turn."
+      },
+      {
+        "text": "Up to one target noncreature artifact becomes an artifact creature with base power and toughness 6/1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target artifact you control becomes an artifact creature with base power and toughness 2/5.",
+      "Target artifact you control becomes an enchantment creature with base power and toughness 2/5 until end of turn.",
+      "Target artifact you control becomes an artifact creature with base power and toughness +2/+5 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdspm.becomes.colorless",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1e",
+      "CR 105.2c"
+    ],
+    "pattern": "{o:Obj} becomes colorless {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}: ~ becomes colorless until end of turn."
+      },
+      {
+        "text": "Target creature an opponent controls becomes colorless until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes colorless.",
+      "{3}: ~ becomes colorless and blue until end of turn.",
+      "{3}: ~ becomes colorless until end of turn unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.stdspm.gains.becomes.colorless",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 105.2c"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} and becomes colorless {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": []
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}{U}: ~ gains shroud and becomes colorless until end of turn."
+      },
+      {
+        "text": "Target creature you control gains indestructible and becomes colorless until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}: ~ gains shroud and becomes colorless.",
+      "{1}{U}: ~ loses shroud and becomes colorless until end of turn.",
+      "{1}{U}: ~ gains shroud and becomes blue until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdspm.counters.double.eachKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10e",
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "double the number of each kind of counter on {o:Objs}",
+    "build": {
+      "op": "action",
+      "action": "doubleEachKind",
+      "subject": "$o",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "double",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{3}{G}, {T}: Double the number of each kind of counter on target artifact you control."
+      },
+      {
+        "text": "When ~ enters, double the number of each kind of counter on each creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{3}{G}, {T}: Double the number of +1/+1 counters on target artifact you control.",
+      "{3}{G}, {T}: Put a counter of each kind on target artifact you control.",
+      "{3}{G}, {T}: Double the number of each kind of counter on target artifact you control unless it is blue."
+    ]
+  },
+  {
+    "id": "sta.stdspm.damage.unpreventable",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.12",
+      "CR 604.1",
+      "CR 101.2"
+    ],
+    "pattern": "damage can't be prevented",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {}
+          },
+          "mode": "cant",
+          "action": "preventDamage"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "preventDamage"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Haste\nDamage can't be prevented."
+      },
+      {
+        "text": "Flying\nDamage can't be prevented."
+      }
+    ],
+    "counterExamples": [
+      "Damage can be prevented.",
+      "Noncombat damage can't be prevented.",
+      "Damage dealt to you can't be prevented."
+    ]
+  },
+  {
+    "id": "sta.stdspm.spellsAndAbilities.cantcounter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 701.6a",
+      "CR 113.3b",
+      "CR 113.3c",
+      "CR 604.1"
+    ],
+    "pattern": "spells and abilities can't be countered",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "zone": "stack"
+            }
+          },
+          "mode": "cant",
+          "action": "beCountered"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Trample\nSpells and abilities can't be countered."
+      },
+      {
+        "text": "Vigilance\nSpells and abilities can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "Spells and abilities can be countered.",
+      "Spells and abilities you control can't be countered.",
+      "Abilities can't be countered."
+    ]
+  },
+  {
+    "id": "eff.stdspm.eachMay.discard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.9a"
+    ],
+    "pattern": "each player may discard {n:Qty} card[s]",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player may discard two cards. Each player who doesn't loses 5 life."
+      },
+      {
+        "text": "Draw a card. Each player may discard a card. Each player who doesn't loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each player discards two cards. Each player who doesn't loses 5 life.",
+      "Each opponent may discard two cards. Each player who doesn't loses 5 life.",
+      "Each player may discard two cards at random. Each player who doesn't loses 5 life."
+    ]
+  },
+  {
+    "id": "rid.stdspm.eachWhoDoesnt.loseLife",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 119.3"
+    ],
+    "pattern": "each player who doesn't lose[s] {m:Qty} life",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "who.ref": "each",
+          "who.who": "player"
+        },
+        "otherwise": {
+          "@new": [
+            {
+              "op": "loseLife",
+              "who": {
+                "ref": "iterating"
+              },
+              "amount": "$m"
+            }
+          ]
+        }
+      }
+    },
+    "attachTo": "may",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player may discard two cards. Each player who doesn't loses 5 life."
+      },
+      {
+        "text": "Destroy target creature. Each player may discard a card. Each player who doesn't loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each player may discard two cards. Each player who does loses 5 life.",
+      "Draw a card. Each player who doesn't loses 5 life.",
+      "You may discard two cards. Each player who doesn't loses 5 life."
+    ]
+  },
+  {
+    "id": "eff.stdspm.exile.graveyards.targetPlayers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 404.1",
+      "CR 406.1",
+      "CR 601.2c"
+    ],
+    "pattern": "exile {p:Player} graveyards",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "graveyard",
+          "owner": "$p"
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile any number of target players' graveyards. Draw a card."
+      },
+      {
+        "text": "Exile up to two target opponents' graveyards."
+      }
+    ],
+    "counterExamples": [
+      "Exile any number of target players' libraries.",
+      "Exile any number of target players' graveyards unless they pay {2}.",
+      "Exile the top card of any number of target players' graveyards."
+    ]
+  },
+  {
+    "id": "trg.stdspm.enters.fromGraveyard",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 603.10a",
+      "CR 404.1"
+    ],
+    "pattern": "when ~ enter[s] from a graveyard",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "from": "graveyard",
+          "to": "battlefield"
+        }
+      ]
+    },
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters from a graveyard, you lose 3 life."
+      },
+      {
+        "text": "When ~ enters from a graveyard, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters from exile, you lose 3 life.",
+      "When ~ enters, you lose 3 life and draw a card.",
+      "When ~ enters from your graveyard, you lose 3 life."
+    ]
+  },
+  {
+    "id": "eff.stdspm.if.compound.whereX.then",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 107.3"
+    ],
+    "pattern": "if {c:Cond} , {a:Effects} , then {b:Effects} , where x is {q:Qty}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "lower": "whereX",
+          "value": "$q",
+          "steps": {
+            "$concat": [
+              "$a",
+              "$b"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may sacrifice another creature. If you do, draw X cards, then you gain X life, where X is the sacrificed creature's power."
+      },
+      {
+        "text": "When ~ enters, you may sacrifice another creature. If you do, you gain X life, then draw X cards, where X is the sacrificed creature's toughness."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may sacrifice another creature. If you do, draw X cards, then you gain X life, where Y is the sacrificed creature's power.",
+      "Whenever ~ attacks, you may sacrifice another creature. If you do, draw X cards, then you gain X life, unless X is the sacrificed creature's power.",
+      "Whenever ~ attacks, you may sacrifice another creature. Draw X cards, then you gain X life, where X is the sacrificed creature's power."
+    ]
+  },
+  {
+    "id": "eff.stdspm.if.compound.whereX.and",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 107.3"
+    ],
+    "pattern": "if {c:Cond} , {a:Effects} and {b:Effects} , where x is {q:Qty}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "lower": "whereX",
+          "value": "$q",
+          "steps": {
+            "$concat": [
+              "$a",
+              "$b"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may sacrifice another creature. If you do, draw X cards and you gain X life, where X is the sacrificed creature's power."
+      },
+      {
+        "text": "When ~ enters, you may sacrifice another creature. If you do, you gain X life and draw X cards, where X is the sacrificed creature's toughness."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may sacrifice another creature. If you do, draw X cards and you gain X life, where Y is the sacrificed creature's power.",
+      "Whenever ~ attacks, you may sacrifice another creature. If you do, draw X cards and you gain X life, unless X is the sacrificed creature's power.",
+      "Whenever ~ attacks, you may sacrifice another creature. Draw X cards and you gain X life, where X is the sacrificed creature's power."
+    ]
+  },
+  {
+    "id": "eff.stdspm.mayHave.connive",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.50a",
+      "CR 701.50b",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} connive",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "action",
+          "action": "connive",
+          "who": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "subject": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "needs": [
+      "action:connive"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another Villain you control enters, you may have it connive."
+      },
+      {
+        "text": "When ~ enters, you may have target creature you control connive."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another Villain you control enters, you may have it connive twice.",
+      "Whenever another Villain you control enters, have it connive.",
+      "Whenever another Villain you control enters, you may have it explore."
+    ]
+  },
+  {
+    "id": "eff.stdspm.exchange.lifeTotals.with",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.12a",
+      "CR 701.12c",
+      "CR 119.7",
+      "CR 119.8"
+    ],
+    "pattern": "exchange life totals with {p:Player}",
+    "build": {
+      "op": "exchange",
+      "a": {
+        "ref": "you"
+      },
+      "b": "$p",
+      "what": "life"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, you may exchange life totals with target opponent."
+      },
+      {
+        "text": "{T}, Sacrifice ~: Exchange life totals with target opponent."
+      },
+      {
+        "text": "Exchange life totals with target player. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Exchange life totals with each opponent.",
+      "Exchange life totals with two target players.",
+      "Exchange life with target opponent.",
+      "Exchange hands with target opponent."
+    ]
+  },
+  {
+    "id": "sta.stdspm.damageToSelf.prevent.then",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a"
+    ],
+    "pattern": "if damage would be dealt to ~ , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to ~, prevent that damage and put that many +1/+1 counters on ~."
+      },
+      {
+        "text": "If damage would be dealt to ~, prevent that damage and you gain that much life."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~, prevent that damage and put that many +1/+1 counters on ~ this turn.",
+      "If damage would be dealt to ~, prevent that damage or put that many +1/+1 counters on ~.",
+      "If damage would be dealt by ~, prevent that damage and put that many +1/+1 counters on ~."
+    ]
+  },
+  {
+    "id": "sta.stdspm.damageToYou.prevent.then",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a"
+    ],
+    "pattern": "if damage would be dealt to you , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to you, prevent that damage and draw that many cards."
+      },
+      {
+        "text": "If damage would be dealt to you, prevent that damage and put that many +1/+1 counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to you, prevent that damage and draw that many cards this turn.",
+      "If damage would be dealt to you, prevent that damage or draw that many cards.",
+      "If damage would be dealt to target player, prevent that damage and draw that many cards."
+    ]
+  },
+  {
+    "id": "sta.stdspm.combatDamageToSelf.prevent.then",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a",
+      "CR 120.2a"
+    ],
+    "pattern": "if combat damage would be dealt to ~ , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If combat damage would be dealt to ~, prevent that damage and you gain that much life."
+      },
+      {
+        "text": "If combat damage would be dealt to ~, prevent that damage and put that many +1/+1 counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "If combat damage would be dealt to ~, prevent that damage and you gain that much life this turn.",
+      "If combat damage would be dealt to ~, prevent that damage or you gain that much life.",
+      "If combat damage would be dealt by ~, prevent that damage and you gain that much life."
+    ]
+  }
+]

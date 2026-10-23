@@ -1,0 +1,11 @@
+// The browser-safe contract (@openmtg/hosted/api) compiled as the client compiles it: DOM, no Node types. A Node import in api.ts or api/* fails here.
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": []
+  },
+  "include": [],
+  "files": ["src/api.ts"]
+}

@@ -1,0 +1,374 @@
+[
+  {
+    "id": "sta.p2pr1.lose.cantHave",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{f:Filter} lose {k:Keyword} and can't have or gain {k2:Keyword}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "remove": [
+            "$k.keyword"
+          ],
+          "cantHave": [
+            "$k2.keyword"
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Artifact creatures lose reach and can't have or gain reach."
+      },
+      {
+        "text": "Elves your opponents control lose trample and can't have or gain trample."
+      }
+    ],
+    "counterExamples": [
+      "Artifact creatures lose reach.",
+      "Artifact creatures lose reach and can't gain reach.",
+      "Artifact creatures lose reach and can't have or gain reach until end of turn."
+    ]
+  },
+  {
+    "id": "eff.p2pr1.detain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.35a",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "detain {o:Targets}",
+    "build": {
+      "op": "action",
+      "action": "detain",
+      "who": {
+        "ref": "you"
+      },
+      "subject": "$o"
+    },
+    "subject": "none",
+    "needs": [
+      "action:detain"
+    ],
+    "examples": [
+      {
+        "text": "Detain target artifact."
+      },
+      {
+        "text": "When ~ enters, detain up to three target creatures an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Detain target player.",
+      "Detain target creature until end of turn.",
+      "Detain each creature your opponents control."
+    ]
+  },
+  {
+    "id": "eff.p2pr1.dur.costMore.opp",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 611.2a",
+      "CR 611.2b"
+    ],
+    "pattern": "{d:Dur} , {f:Filter} your opponents cast cost {m:ManaCost} more to cast",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "generic": "$m.0.amount"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, creature spells your opponents cast cost {2} more to cast."
+      },
+      {
+        "text": "Until end of turn, instant spells your opponents cast cost {3} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, creature spells your opponents cast cost {2} less to cast.",
+      "Until your next turn, creature spells you cast cost {2} more to cast.",
+      "Creature spells your opponents cast cost {2} more to cast."
+    ]
+  },
+  {
+    "id": "sta.p2pr1.cantDrawMoreThanOne",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 121.1",
+      "CR 604.1",
+      "CR 614.17"
+    ],
+    "pattern": "{p:Player} can't draw more than one card each turn",
+    "build": {
+      "s": "restrict",
+      "subject": "$p",
+      "mode": "cant",
+      "action": "draw",
+      "max": 1
+    },
+    "consumes": [
+      "each",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each other player can't draw more than one card each turn."
+      },
+      {
+        "text": "Each other player can't draw more than one card each turn. You have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Each other player can't draw more than two cards each turn.",
+      "Each other player can't draw more than one card this turn.",
+      "Each other player can't cast more than one spell each turn."
+    ]
+  },
+  {
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "id": "sta.p2pr1.untapLimit.players",
+    "pattern": "players can't untap more than {n:Qty} {f:Filter} during their untap steps",
+    "build": {
+      "s": "rule",
+      "rule": "untapLimit",
+      "player": {
+        "ref": "each",
+        "who": "player"
+      },
+      "value": "$n",
+      "of": "$f"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't untap more than one artifact creature during their untap steps."
+      },
+      {
+        "text": "Players can't untap more than three Swamps during their untap steps."
+      }
+    ],
+    "counterExamples": [
+      "Players can't untap more than one artifact creature during their upkeeps.",
+      "Players can't untap artifact creatures during their untap steps.",
+      "Players can untap more than three Swamps during their untap steps."
+    ]
+  },
+  {
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "id": "sta.p2pr1.untapLimit.you",
+    "pattern": "you can't untap more than {n:Qty} {f:Filter} during your untap step",
+    "build": {
+      "s": "rule",
+      "rule": "untapLimit",
+      "player": {
+        "ref": "you"
+      },
+      "value": "$n",
+      "of": "$f"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "You can't untap more than two Forests during your untap step."
+      },
+      {
+        "text": "You can't untap more than one artifact during your untap step. You have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "You can't untap more than two Forests during your next untap step.",
+      "You can't untap two Forests during your untap step.",
+      "You can untap more than two Forests during your untap step."
+    ]
+  },
+  {
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "id": "sta.p2pr1.untapLimit.asLong",
+    "pattern": "as long as {c:Cond} , players can't untap more than {n:Qty} {f:Filter} during their untap steps",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "untapLimit",
+          "player": {
+            "ref": "each",
+            "who": "player"
+          },
+          "value": "$n",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is untapped, players can't untap more than three creatures during their untap steps."
+      },
+      {
+        "text": "As long as you control an Island, players can't untap more than one land during their untap steps."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is tapped, players can't untap more than three creatures during their untap steps.",
+      "Unless you control an Island, players can't untap more than one land during their untap steps."
+    ]
+  },
+  {
+    "id": "sta.p2pr1.lifeTotalCantChange",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.7",
+      "CR 119.8",
+      "CR 119.5",
+      "CR 604.1"
+    ],
+    "pattern": "your life total can't change",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "you"
+        },
+        "mode": "cant",
+        "action": "gainLife"
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "you"
+        },
+        "mode": "cant",
+        "action": "loseLife"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Your life total can't change. You have hexproof."
+      },
+      {
+        "text": "Your life total can't change. You have shroud."
+      }
+    ],
+    "counterExamples": [
+      "Your life total can change.",
+      "Your life total can't change this turn.",
+      "Your life total can't increase."
+    ]
+  },
+  {
+    "id": "sta.p2pr1.cantCastMoreThanOne.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 601.2i",
+      "CR 604.1"
+    ],
+    "pattern": "{p:Player} can't cast more than one {f:Filter} each turn",
+    "build": {
+      "s": "restrict",
+      "subject": "$p",
+      "mode": "cant",
+      "action": "cast",
+      "other": "$f",
+      "max": 1
+    },
+    "consumes": [
+      "each",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each player can't cast more than one artifact spell each turn."
+      },
+      {
+        "text": "Each opponent can't cast more than one multicolored spell each turn."
+      }
+    ],
+    "counterExamples": [
+      "Each player can't cast more than two artifact spells each turn.",
+      "Each player can't cast more than one artifact spell this turn.",
+      "Each player can't cast artifact spells."
+    ],
+    "weak": 1
+  }
+]

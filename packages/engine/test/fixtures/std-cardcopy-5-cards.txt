@@ -1,0 +1,2 @@
+# std-cardcopy-5 (lane std-cardcopy): the round's golden cards (its golden entry: test/m5/golden/cards/cloud-r5-refs-review.json, updated)
+Kaya, Spirits' Justice

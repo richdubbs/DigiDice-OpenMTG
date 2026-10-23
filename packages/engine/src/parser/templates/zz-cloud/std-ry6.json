@@ -1,0 +1,88 @@
+[
+  {
+    "id": "sta.stdry6.self.cantAttackAlone",
+    "kind": "static",
+    "cr": [
+      "CR 506.5",
+      "CR 508.1c",
+      "CR 604.1"
+    ],
+    "pattern": "~ can't attack alone",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "alone": true
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "alone"
+    ],
+    "examples": [
+      {
+        "text": "Example Relic can't attack alone."
+      },
+      {
+        "text": "This permanent can't attack alone."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack alone unless it's tapped.",
+      "This permanent can't attack or block alone.",
+      "Enchanted creature can't attack alone."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdry6.self.cantBlockAlone",
+    "kind": "static",
+    "cr": [
+      "CR 506.5",
+      "CR 509.1b",
+      "CR 604.1"
+    ],
+    "pattern": "~ can't block alone",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "block",
+          "alone": true
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "alone"
+    ],
+    "examples": [
+      {
+        "text": "Example Relic can't block alone."
+      },
+      {
+        "text": "This permanent can't block alone."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block alone unless it's tapped.",
+      "This permanent can't attack or block alone.",
+      "Equipped creature can't block alone."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

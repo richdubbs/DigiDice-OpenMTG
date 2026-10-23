@@ -1,0 +1,5 @@
+# std-costs-2: the golden cards of the round (test/m5/golden/cards/std-costs-2-review.json)
+Close Encounter
+Celestial Reunion
+The Eagles Are Coming!
+Call Damage Control

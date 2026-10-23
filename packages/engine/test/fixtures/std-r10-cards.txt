@@ -1,0 +1,6 @@
+# ---- Standard round 10 (std-r10): "the next spell you cast this turn can't be countered" (op nextSpell, CR 601.2i, 611.2)
+Theorist's Proxy
+Mistrise Village
+Insist
+Biomantic Mastery
+Borrowing 100,000 Arrows

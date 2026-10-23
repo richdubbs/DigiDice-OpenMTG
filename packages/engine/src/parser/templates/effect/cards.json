@@ -1,0 +1,293 @@
+[
+  {
+    "id": "eff.draw.foreach.you",
+    "kind": "effect",
+    "cr": ["CR 121.1", "CR 121.2", "CR 608.2h", "CR 109.5"],
+    "pattern": "draw a card for each {f:Filter}",
+    "build": {"op": "draw", "who": {"ref": "you"}, "count": {"q": "count", "of": {"ref": "each", "filter": "$f"}}},
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [{"text": "Draw a card for each Wizard you control."}, {"text": "Draw a card for each enchantment you control."}],
+    "counterExamples": ["Draw a card for each Wizard you control unless it is blue.", "Draw three cards for each Wizard you control.", "When ~ enters, draw a card for each creature you control with power greater than its toughness."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.draw.equal.you",
+    "kind": "effect",
+    "cr": ["CR 121.1", "CR 121.2", "CR 608.2h", "CR 109.5"],
+    "pattern": "draw cards equal to {n:Qty}",
+    "build": {"op": "draw", "who": {"ref": "you"}, "count": "$n"},
+    "subject": "none",
+    "examples": [{"text": "Draw cards equal to the number of Wizards you control."}, {"text": "Draw cards equal to the number of lands you control."}],
+    "counterExamples": ["Draw cards equal to the number of Wizards you control unless it is blue.", "Draw cards equal to."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.discard",
+    "kind": "effect",
+    "cr": ["CR 701.9a", "CR 701.9b"],
+    "pattern": "{p:Player} discard[s] {n:Qty} card[s]",
+    "build": {"op": "discard", "who": "$p", "count": "$n"},
+    "subject": "player",
+    "examples": [{"text": "Target player discards five cards."}, {"text": "Each opponent discards a card."}],
+    "counterExamples": ["Target player discards three cards at random.", "Target player discards three lands."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.discard.you",
+    "kind": "effect",
+    "cr": ["CR 701.9a", "CR 701.9b", "CR 109.5"],
+    "pattern": "discard {n:Qty} card[s]",
+    "build": {"op": "discard", "who": {"ref": "you"}, "count": "$n"},
+    "subject": "none",
+    "examples": [{"text": "Discard four cards."}, {"text": "Draw five cards, then discard a card."}],
+    "counterExamples": ["Discard four cards at random.", "Discard four lands."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.discard.random",
+    "kind": "effect",
+    "cr": ["CR 701.9a", "CR 701.9b"],
+    "pattern": "{p:Player} discard[s] {n:Qty} card[s] at random",
+    "build": {"op": "discard", "who": "$p", "count": "$n", "mode": "random"},
+    "subject": "player",
+    "consumes": ["random"],
+    "examples": [{"text": "Target player discards four cards at random."}, {"text": "Each opponent discards a card at random."}],
+    "counterExamples": ["Target player discards four cards.", "Target player discards four lands at random."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.discard.random.you",
+    "kind": "effect",
+    "cr": ["CR 701.9a", "CR 701.9b", "CR 109.5"],
+    "pattern": "discard {n:Qty} card[s] at random",
+    "build": {"op": "discard", "who": {"ref": "you"}, "count": "$n", "mode": "random"},
+    "subject": "none",
+    "consumes": ["random"],
+    "examples": [{"text": "Discard a card at random."}, {"text": "Discard three cards at random."}],
+    "counterExamples": ["Discard a card.", "Discard a land at random."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.discard.hand",
+    "kind": "effect",
+    "cr": ["CR 701.9a"],
+    "pattern": "{p:Player} discard[s] their hand",
+    "build": {"op": "discard", "who": "$p", "count": "hand"},
+    "subject": "player",
+    "examples": [{"text": "Target player discards their hand. Scry 2."}, {"text": "Target opponent discards their hand."}],
+    "counterExamples": ["Each player discards their hand at random.", "Each player discards their library."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.discard.hand.you",
+    "kind": "effect",
+    "cr": ["CR 701.9a", "CR 109.5"],
+    "pattern": "discard your hand",
+    "build": {"op": "discard", "who": {"ref": "you"}, "count": "hand"},
+    "subject": "none",
+    "examples": [{"text": "Discard your hand, then draw four cards."}, {"text": "Discard your hand, then scry 2."}],
+    "counterExamples": ["Discard your library.", "Discard your hand unless it is blue."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mill",
+    "kind": "effect",
+    "cr": ["CR 701.17a"],
+    "pattern": "{p:Player} mill[s] {n:Qty} card[s]",
+    "build": {"op": "mill", "who": "$p", "count": "$n"},
+    "subject": "player",
+    "examples": [{"text": "Target player mills eleven cards."}, {"text": "Each opponent mills a card."}],
+    "counterExamples": ["Target player mills eleven lands.", "Target player mills eleven cards at random."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mill.you",
+    "kind": "effect",
+    "cr": ["CR 701.17a", "CR 109.5"],
+    "pattern": "mill {n:Qty} card[s]",
+    "build": {"op": "mill", "who": {"ref": "you"}, "count": "$n"},
+    "subject": "none",
+    "examples": [{"text": "Mill seven cards."}, {"text": "Mill a card."}],
+    "counterExamples": ["Mill seven lands.", "Mill seven cards unless it is blue."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.scry",
+    "kind": "effect",
+    "cr": ["CR 701.22a", "CR 109.5"],
+    "pattern": "scry {n:Qty}",
+    "build": {"op": "scry", "who": {"ref": "you"}, "count": "$n"},
+    "subject": "none",
+    "examples": [{"text": "Scry 7."}, {"text": "Scry 3, then draw a card."}],
+    "counterExamples": ["Scry 7 cards.", "Scry."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.surveil",
+    "kind": "effect",
+    "cr": ["CR 701.25a", "CR 109.5"],
+    "pattern": "surveil {n:Qty}",
+    "build": {"op": "surveil", "who": {"ref": "you"}, "count": "$n"},
+    "subject": "none",
+    "examples": [{"text": "Surveil 6."}, {"text": "Surveil 2, then draw a card."}],
+    "counterExamples": ["Surveil 6 cards.", "Surveil."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.reveal.top",
+    "kind": "effect",
+    "cr": ["CR 701.20a", "CR 401.2"],
+    "pattern": "reveal the top {n:Qty} cards of your library",
+    "build": {"op": "reveal", "who": {"ref": "you"}, "what": {"ref": "topCards", "player": {"ref": "you"}, "count": "$n"}},
+    "subject": "none",
+    "examples": [{"text": "Reveal the top six cards of your library."}, {"text": "Draw a card, then reveal the top two cards of your library."}],
+    "counterExamples": ["Reveal the bottom six cards of your library.", "Reveal the top six cards of your graveyard."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.reveal.topcard",
+    "kind": "effect",
+    "cr": ["CR 701.20a", "CR 401.2"],
+    "pattern": "reveal the top card of your library",
+    "build": {"op": "reveal", "who": {"ref": "you"}, "what": {"ref": "topCards", "player": {"ref": "you"}, "count": 1}},
+    "subject": "none",
+    "examples": [{"text": "Reveal the top card of your library."}, {"text": "Scry 2, then reveal the top card of your library."}],
+    "counterExamples": ["Reveal the bottom card of your library.", "Reveal the top card of your graveyard."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.reveal.hand",
+    "kind": "effect",
+    "cr": ["CR 701.20a", "CR 402.3"],
+    "pattern": "{p:Player} reveal[s] their hand",
+    "build": {"op": "reveal", "who": "$p", "what": {"ref": "each", "filter": {"zone": "hand", "owner": "$p"}}},
+    "subject": "player",
+    "examples": [{"text": "Target opponent reveals their hand."}, {"text": "Target player reveals their hand."}],
+    "counterExamples": ["Target opponent reveals their library.", "Target opponent reveals a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.look.top",
+    "kind": "effect",
+    "cr": ["CR 401.2", "CR 608.2c"],
+    "pattern": "look at the top {n:Qty} cards of your library",
+    "build": {"op": "look", "who": {"ref": "you"}, "at": {"ref": "topCards", "player": {"ref": "you"}, "count": "$n"}},
+    "subject": "none",
+    "examples": [{"text": "Look at the top seven cards of your library."}, {"text": "Scry 1, then look at the top four cards of your library."}],
+    "counterExamples": ["Look at the bottom seven cards of your library.", "Look at the top seven cards of your graveyard."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.look.topcard",
+    "kind": "effect",
+    "cr": ["CR 401.2", "CR 608.2c"],
+    "pattern": "look at the top card of your library",
+    "build": {"op": "look", "who": {"ref": "you"}, "at": {"ref": "topCards", "player": {"ref": "you"}, "count": 1}},
+    "subject": "none",
+    "examples": [{"text": "Look at the top card of your library."}, {"text": "Scry 1, then look at the top card of your library."}],
+    "counterExamples": ["Look at the bottom card of your library.", "Look at the top card of your hand."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.look.hand",
+    "kind": "effect",
+    "cr": ["CR 402.3", "CR 608.2c"],
+    "pattern": "look at {p:Player} 's hand",
+    "build": {"op": "look", "who": {"ref": "you"}, "at": {"ref": "each", "filter": {"zone": "hand", "owner": "$p"}}},
+    "subject": "none",
+    "examples": [{"text": "Look at target player's hand, then scry 2."}, {"text": "Look at target opponent's hand."}],
+    "counterExamples": ["Look at target player's library.", "Look at target player's hand unless it is blue."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.shuffle",
+    "kind": "effect",
+    "cr": ["CR 701.24a", "CR 109.5"],
+    "pattern": "shuffle [your library]",
+    "build": {"op": "shuffle", "who": {"ref": "you"}},
+    "subject": "none",
+    "examples": [{"text": "Draw a card, then shuffle."}, {"text": "Shuffle your library."}],
+    "counterExamples": ["Shuffle your graveyard.", "Shuffle your hand into your library."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.shuffle.player",
+    "kind": "effect",
+    "cr": ["CR 701.24a"],
+    "pattern": "{p:Player} shuffle[s] their library",
+    "build": {"op": "shuffle", "who": "$p"},
+    "subject": "player",
+    "examples": [{"text": "Target player shuffles their library."}, {"text": "Target opponent shuffles their library."}],
+    "counterExamples": ["Target player shuffles their graveyard.", "Target player shuffles their hand into their library."],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "eff.piles",
+    "kind": "effect",
+    "cr": ["CR 700.3a", "CR 700.3b"],
+    "pattern": "an opponent separates {c:Objs} into two piles",
+    "build": {"op": "piles", "cards": "$c", "separator": {"ref": "anOpponent"}, "chooser": {"ref": "you"}, "chosen": "keep", "other": "rest"},
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Reveal the top seven cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "Reveal the top four cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top seven cards of your library. Each opponent separates those cards into two piles. Put one pile into your hand and the other into your graveyard.",
+      "Reveal the top seven cards of your library. An opponent separates those cards into three piles. Put one pile into your hand and the other into your graveyard."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.piles.handgrave",
+    "kind": "effect",
+    "cr": ["CR 700.3", "CR 608.2c"],
+    "pattern": "put one pile into your hand and the other into your graveyard",
+    "build": [
+      {"op": "move", "what": {"ref": "bound", "name": "keep"}, "to": {"zone": "hand"}},
+      {"op": "move", "what": {"ref": "bound", "name": "rest"}, "to": {"zone": "graveyard"}}
+    ],
+    "subject": "none",
+    "consumes": ["other"],
+    "examples": [
+      {
+        "text": "Reveal the top six cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "Reveal the top three cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top six cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other on the bottom of your library.",
+      "Put one pile into your hand and the other into your graveyard."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

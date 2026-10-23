@@ -1,0 +1,54 @@
+{
+  "name": "web-slinging",
+  "rule": "702.188",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this spell for {cost} if you also return a tapped creature you control to its owner's hand.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Web-slinging {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "name": "web-slinging",
+          "cost": {
+            "$costAdd": {
+              "base": "$cost",
+              "other": [
+                {
+                  "kind": "returnToHand",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "tapped": true
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

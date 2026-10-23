@@ -1,0 +1,18 @@
+{
+  "name": "haste",
+  "rule": "702.10",
+  "params": [],
+  "mechanisms": [
+    "flag",
+    "hook"
+  ],
+  "reminder": "This creature can attack and {T} as soon as it comes under your control.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "hooks": [
+    "summoningSick"
+  ],
+  "readers": [
+    "rules/timing.ts#isSummoningSick"
+  ]
+}

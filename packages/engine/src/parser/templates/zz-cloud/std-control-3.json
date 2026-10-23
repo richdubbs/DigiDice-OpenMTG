@@ -1,0 +1,73 @@
+[
+  {
+    "id": "eff.stdcontrol3.controlPlayer.nextTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 723.1",
+      "CR 723.1b",
+      "CR 723.5"
+    ],
+    "pattern": "you control {p:Player} during their next turn",
+    "build": {
+      "op": "controlPlayer",
+      "who": "$p",
+      "during": "turn"
+    },
+    "subject": "none",
+    "consumes": [
+      "control"
+    ],
+    "examples": [
+      {
+        "text": "{8}, {T}, Sacrifice this artifact: You control target opponent during their next turn."
+      },
+      {
+        "text": "When this creature dies, you control target player during their next turn."
+      }
+    ],
+    "counterExamples": [
+      "You control target opponent during your next turn.",
+      "You control target creature during their next turn.",
+      "You control target opponent during their next upkeep.",
+      "Target opponent controls you during their next turn."
+    ]
+  },
+  {
+    "id": "eff.stdcontrol3.controlPlayer.nextCombat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 723.1",
+      "CR 723.5",
+      "CR 506.1",
+      "CR 500.5a"
+    ],
+    "pattern": "you control {p:Player} during their next combat phase",
+    "build": {
+      "op": "controlPlayer",
+      "who": "$p",
+      "during": "combat"
+    },
+    "subject": "none",
+    "consumes": [
+      "control"
+    ],
+    "examples": [
+      {
+        "text": "You control target opponent during their next combat phase. Draw a card."
+      },
+      {
+        "text": "{5}, {T}: You control target player during their next combat phase. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "You control target opponent during your next combat phase.",
+      "You control target opponent during their next combat damage step.",
+      "You control target opponent during combat.",
+      "Target opponent controls you during their next combat phase."
+    ]
+  }
+]

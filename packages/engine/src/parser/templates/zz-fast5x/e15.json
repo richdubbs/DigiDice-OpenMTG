@@ -1,0 +1,126 @@
+[
+  {
+    "id": "eff.e15.damage.whereX.greatestManaValue",
+    "kind": "effect",
+    "cr": ["CR 120.3", "CR 107.3", "CR 202.3", "CR 608.2h"],
+    "pattern": "{src:Obj} deal[s] x damage to {to:Recipient} , where x is the greatest mana value among {f:Filter}",
+    "build": {
+      "lower": "whereX",
+      "value": { "q": "stat", "stat": "manaValue", "of": { "ref": "each", "filter": "$f" }, "agg": "max" },
+      "steps": [{ "op": "damage", "source": "$src", "to": "$to", "amount": { "q": "X" } }]
+    },
+    "subject": "object",
+    "priority": 1,
+    "examples": [
+      { "text": "~ deals X damage to target opponent, where X is the greatest mana value among artifacts you control." },
+      { "text": "~ deals X damage to any target, where X is the greatest mana value among enchantments you control." }
+    ],
+    "counterExamples": [
+      "~ deals X damage to target opponent, where X is the total mana value of artifacts you control.",
+      "~ deals X damage to target opponent, where X is the greatest mana value among artifacts you control, unless that player pays {1}.",
+      "~ deals X damage to target opponent, where Y is the greatest mana value among artifacts you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e15.gainLife.whereX.greatestPower",
+    "kind": "effect",
+    "cr": ["CR 119.3", "CR 107.3", "CR 208.1", "CR 608.2h"],
+    "pattern": "{p:Player} gain[s] x life , where x is the greatest power among {f:Filter}",
+    "build": {
+      "lower": "whereX",
+      "value": { "q": "stat", "stat": "power", "of": { "ref": "each", "filter": "$f" }, "agg": "max" },
+      "steps": [{ "op": "gainLife", "who": "$p", "amount": { "q": "X" } }]
+    },
+    "subject": "player",
+    "examples": [
+      { "text": "When ~ enters, you gain X life, where X is the greatest power among Giants you control." },
+      { "text": "You gain X life, where X is the greatest power among creatures you control." }
+    ],
+    "counterExamples": [
+      "You gain X life, where X is the greatest toughness among creatures you control and Y is 2.",
+      "You gain X life, where X is the total power of creatures you control.",
+      "You gain X life for each creature you control, where X is the greatest power among creatures you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e15.self.pump.whereX.greatestManaValue",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 107.3", "CR 202.3"],
+    "pattern": "~ gets +x/+0 , where x is the greatest mana value among {f:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "self" },
+      "mods": [{ "layer": "7c", "power": { "q": "stat", "stat": "manaValue", "of": { "ref": "each", "filter": "$f" }, "agg": "max" }, "toughness": 0 }]
+    },
+    "examples": [
+      { "text": "~ gets +X/+0, where X is the greatest mana value among other artifacts you control." },
+      { "text": "Flying\n~ gets +X/+0, where X is the greatest mana value among enchantments you control." }
+    ],
+    "counterExamples": [
+      "~ gets +X/+0 until end of turn, where X is the greatest mana value among other artifacts you control.",
+      "~ gets +0/+X, where X is the greatest mana value among other artifacts you control.",
+      "~ gets +X/+0, where X is the total mana value of other artifacts you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e15.exile.choice.greatestManaValue",
+    "kind": "effect",
+    "cr": ["CR 406.1", "CR 109.4", "CR 202.3", "CR 608.2d"],
+    "pattern": "{p:Player} exile[s] ( a | an ) {f:Filter} they control with the greatest mana value among {g:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": ["$f"],
+            "controller": "$p",
+            "manaValue": { "op": ">=", "value": { "q": "stat", "stat": "manaValue", "of": { "ref": "each", "filter": "$g" }, "agg": "max" } }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiled"
+      },
+      { "op": "move", "what": { "ref": "bound", "name": "exiled" }, "to": { "zone": "exile" } }
+    ],
+    "subject": "player",
+    "examples": [
+      { "text": "Target opponent exiles a creature or planeswalker they control with the greatest mana value among creatures and planeswalkers they control." },
+      { "text": "Target opponent exiles an artifact they control with the greatest mana value among artifacts they control." }
+    ],
+    "counterExamples": [
+      "Target opponent exiles a creature they control with the greatest power among creatures they control.",
+      "Target opponent exiles a creature they control with the greatest mana value among creatures they control unless they pay {2}.",
+      "Target opponent exiles two creatures they control with the greatest mana value among creatures they control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "wrap.e15.then.payelse.manaEqual",
+    "kind": "effect",
+    "cr": ["CR 118.12", "CR 118.12a", "CR 107.3", "CR 608.2c", "CR 608.2h"],
+    "pattern": "then {e:Effects} unless {p:Player} pay[s] mana equal to {n:Qty}",
+    "build": { "op": "pay", "who": "$p", "cost": { "mana": [{ "kind": "generic", "amount": 1 }] }, "times": "$n", "else": "$e" },
+    "consumes": ["unless"],
+    "examples": [
+      { "text": "Put X +1/+1 counters on target creature you control. Then counter up to one target spell unless its controller pays mana equal to the greatest power among creatures you control." },
+      { "text": "Draw a card. Then counter target spell unless its controller pays mana equal to the number of cards in your hand." }
+    ],
+    "counterExamples": [
+      "Draw a card. Then counter target spell if its controller pays mana equal to the number of cards in your hand.",
+      "Draw a card. Then counter target spell unless its controller pays life equal to the number of cards in your hand.",
+      "Draw a card. Then counter target spell unless it is blue."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

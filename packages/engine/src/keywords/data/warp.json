@@ -1,0 +1,88 @@
+{
+  "name": "warp",
+  "rule": "702.185",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this card from your hand for its warp cost. Exile this creature at the beginning of the next end step, then you may cast it from exile on a later turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Warp {cost}",
+      "zone": [
+        "hand",
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "warp",
+          "delay": {
+            "when": {
+              "at": "step",
+              "step": "end",
+              "next": true
+            },
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "permanent"
+                },
+                "to": {
+                  "zone": "exile"
+                },
+                "as": "warped"
+              },
+              {
+                "op": "designateObject",
+                "what": {
+                  "ref": "bound",
+                  "name": "warped"
+                },
+                "designation": "warped"
+              },
+              {
+                "op": "effect",
+                "effects": [
+                  {
+                    "s": "permit",
+                    "action": "cast",
+                    "who": {
+                      "ref": "ownerOf",
+                      "object": {
+                        "ref": "bound",
+                        "name": "warped"
+                      }
+                    },
+                    "of": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "warped"
+                      }
+                    },
+                    "laterTurn": true
+                  }
+                ],
+                "duration": {
+                  "d": "permanent"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

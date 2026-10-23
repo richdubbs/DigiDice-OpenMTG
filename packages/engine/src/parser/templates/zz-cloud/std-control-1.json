@@ -1,0 +1,605 @@
+[
+  {
+    "id": "eff.stdcontrol1.speed.reduce.floor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.179",
+      "CR 608.2c"
+    ],
+    "pattern": "reduce {p:Player} 's speed by 1 . this effect can't reduce their speed below 1",
+    "build": {
+      "op": "designate",
+      "who": "$p",
+      "what": "speed",
+      "by": 1,
+      "decrease": true,
+      "floor": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, tap target creature an opponent controls. If that opponent's speed is greater than each other player's speed, reduce that opponent's speed by 1. This effect can't reduce their speed below 1."
+      },
+      {
+        "text": "Whenever this creature deals combat damage to a player, reduce that player's speed by 1. This effect can't reduce their speed below 1."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature deals combat damage to a player, reduce that player's speed by 1.",
+      "Whenever this creature deals combat damage to a player, reduce that player's speed by 2. This effect can't reduce their speed below 1.",
+      "Whenever this creature deals combat damage to a player, increase that player's speed by 1. This effect can't reduce their speed below 1."
+    ]
+  },
+  {
+    "id": "eff.stdcontrol1.extraTurn.thatTurn.cantActivate",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.7",
+      "CR 611.2a",
+      "CR 602.5",
+      "CR 702.193a"
+    ],
+    "pattern": "take an extra turn after this one . during that turn , power-up abilities can't be activated",
+    "build": [
+      {
+        "op": "extraTurn",
+        "who": {
+          "ref": "you"
+        },
+        "count": 1
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "duringNextTurn"
+        },
+        "effects": [
+          {
+            "s": "restrict",
+            "subject": {
+              "ref": "each",
+              "filter": {}
+            },
+            "mode": "cant",
+            "action": "activate",
+            "abilityKeyword": "power-up"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "extra",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Power-up — {4}{U}{U}: Draw two cards. Take an extra turn after this one. During that turn, power-up abilities can't be activated."
+      },
+      {
+        "text": "{7}{U}, {T}: Draw a card. Take an extra turn after this one. During that turn, power-up abilities can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Power-up — {4}{U}{U}: Draw two cards. Take an extra turn after this one. During that turn, exhaust abilities can't be activated.",
+      "Power-up — {4}{U}{U}: Draw two cards. Take an extra turn after this one. During that turn, power-up abilities can be activated.",
+      "Power-up — {4}{U}{U}: Draw two cards. Take an extra turn after this one. During your next turn, power-up abilities can't be activated."
+    ]
+  },
+  {
+    "id": "eff.stdcontrol1.forEachColor.counter.winIfFive",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.1",
+      "CR 608.2c",
+      "CR 122.6",
+      "CR 104.2b"
+    ],
+    "pattern": "for each color , put a +1/+1 counter on a dragon you control of that color . if you put +1/+1 counters on five dragons this way , you win the game",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Dragon"
+            ],
+            "controller": "you",
+            "colors": [
+              "W"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "dragonW"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dragonW"
+        },
+        "kind": "+1/+1",
+        "count": 1,
+        "as": "counteredW"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Dragon"
+            ],
+            "controller": "you",
+            "colors": [
+              "U"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "dragonU"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dragonU"
+        },
+        "kind": "+1/+1",
+        "count": 1,
+        "as": "counteredU"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Dragon"
+            ],
+            "controller": "you",
+            "colors": [
+              "B"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "dragonB"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dragonB"
+        },
+        "kind": "+1/+1",
+        "count": 1,
+        "as": "counteredB"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Dragon"
+            ],
+            "controller": "you",
+            "colors": [
+              "R"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "dragonR"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dragonR"
+        },
+        "kind": "+1/+1",
+        "count": 1,
+        "as": "counteredR"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Dragon"
+            ],
+            "controller": "you",
+            "colors": [
+              "G"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "dragonG"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dragonG"
+        },
+        "kind": "+1/+1",
+        "count": 1,
+        "as": "counteredG"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "count",
+            "of": {
+              "ref": "union",
+              "of": [
+                {
+                  "ref": "bound",
+                  "name": "counteredW"
+                },
+                {
+                  "ref": "bound",
+                  "name": "counteredU"
+                },
+                {
+                  "ref": "bound",
+                  "name": "counteredB"
+                },
+                {
+                  "ref": "bound",
+                  "name": "counteredR"
+                },
+                {
+                  "ref": "bound",
+                  "name": "counteredG"
+                }
+              ]
+            }
+          },
+          "op": ">=",
+          "right": 5
+        },
+        "then": [
+          {
+            "op": "winGame",
+            "who": {
+              "ref": "you"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, for each color, put a +1/+1 counter on a Dragon you control of that color. If you put +1/+1 counters on five Dragons this way, you win the game."
+      },
+      {
+        "text": "{5}, {T}: For each color, put a +1/+1 counter on a Dragon you control of that color. If you put +1/+1 counters on five Dragons this way, you win the game."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, for each color, put a +1/+1 counter on a Dragon you control of that color. If you put +1/+1 counters on four Dragons this way, you win the game.",
+      "At the beginning of your end step, for each color, put a +1/+1 counter on a Dragon you control of that color.",
+      "At the beginning of your end step, for each color, put a +1/+1 counter on a Dragon you control of that color. If you put +1/+1 counters on five Dragons this way, you lose the game."
+    ]
+  },
+  {
+    "id": "eff.stdcontrol1.choose.permanent.opponentControls",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 700.2a",
+      "CR 115.10"
+    ],
+    "pattern": "choose ( a | an ) {f:Filter} an opponent controls",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "opponent"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, choose a creature an opponent controls. Tap that creature."
+      },
+      {
+        "text": "Choose an artifact or enchantment an opponent controls. Destroy that permanent."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, choose target creature an opponent controls. Tap that creature.",
+      "When this creature enters, choose a creature you control. Tap that creature.",
+      "When this creature enters, choose two creatures an opponent controls. Tap those creatures."
+    ]
+  },
+  {
+    "id": "eff.stdcontrol1.pump.othersThanSelfAndChosen.eot",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2c"
+    ],
+    "pattern": "until end of turn , creatures other than ~ and the chosen creature get {pt:PT}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "not": {
+                "anyOf": [
+                  {
+                    "self": true
+                  },
+                  {
+                    "is": {
+                      "ref": "bound",
+                      "name": "",
+                      "$anaphor": {
+                        "sort": "object",
+                        "number": "singular",
+                        "head": "creature",
+                        "participle": "chosen",
+                        "text": "the chosen creature"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "other",
+      "and",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, choose a creature an opponent controls. Until end of turn, creatures other than this creature and the chosen creature get -1/-1."
+      },
+      {
+        "text": "When this creature enters, choose a creature you control. Until end of turn, creatures other than this creature and the chosen creature get +1/+0."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, choose a creature you control. Until end of turn, creatures other than the chosen creature get -1/-1.",
+      "When this creature enters, choose a creature you control. Creatures other than this creature and the chosen creature get -1/-1.",
+      "When this creature enters, choose a creature you control. Until end of turn, creatures other than this creature or the chosen creature get -1/-1."
+    ]
+  },
+  {
+    "id": "trg.stdcontrol1.chosenObject.leaves",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.6c",
+      "CR 603.10a",
+      "CR 607.2d",
+      "CR 400.7"
+    ],
+    "pattern": "when the chosen creature leaves the battlefield",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "is": {
+              "ref": "linked",
+              "link": "chosen"
+            }
+          },
+          "from": "battlefield"
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, choose a creature an opponent controls. Tap that creature.\nWhen the chosen creature leaves the battlefield, draw a card."
+      },
+      {
+        "text": "When this creature enters, choose a creature you control. Tap that creature.\nWhen the chosen creature leaves the battlefield, you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, choose a creature an opponent controls. Tap that creature.\nWhen the chosen creature dies, draw a card.",
+      "When this creature enters, choose a creature an opponent controls. Tap that creature.\nWhenever a creature leaves the battlefield, draw a card.",
+      "When the chosen creature leaves the battlefield, draw a card."
+    ]
+  },
+  {
+    "id": "sta.stdcontrol1.asTransforms.chooseOpponent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 712.20",
+      "CR 614.1e",
+      "CR 607.2d",
+      "CR 102.3"
+    ],
+    "pattern": "as ~ transforms into ~ , choose an opponent",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "becomes",
+            "what": "transformed",
+            "object": {
+              "self": true
+            }
+          },
+          "body": {
+            "b": "during",
+            "do": [
+              {
+                "op": "chooseValue",
+                "who": {
+                  "ref": "you"
+                },
+                "what": "opponent",
+                "as": "chosenOpponent",
+                "link": "opponent"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "needs": [
+      "body:during",
+      "feature:replace.on.transform"
+    ],
+    "consumes": [
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "When the chosen player loses the game, draw a card.\nAs this permanent transforms into ~, choose an opponent."
+      },
+      {
+        "text": "Flying\nWhen the chosen player loses the game, you gain 5 life.\nAs this permanent transforms into ~, choose an opponent."
+      }
+    ],
+    "counterExamples": [
+      "When the chosen player loses the game, draw a card.\nWhen this creature transforms into ~, choose an opponent.",
+      "When the chosen player loses the game, draw a card.\nAs this creature transforms into ~, choose a player.",
+      "When the chosen player loses the game, draw a card.\nAs this creature transforms into ~, choose two opponents."
+    ]
+  },
+  {
+    "id": "trg.stdcontrol1.chosenPlayer.losesGame",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 104.3",
+      "CR 607.2d",
+      "CR 800.4a"
+    ],
+    "pattern": "when the chosen player loses the game",
+    "build": {
+      "on": [
+        {
+          "ev": "loseGame",
+          "player": {
+            "ref": "linked",
+            "link": "opponent"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As this permanent enters, choose an opponent.\nWhen the chosen player loses the game, draw two cards."
+      },
+      {
+        "text": "As this permanent transforms into ~, choose an opponent.\nWhen the chosen player loses the game, you gain 5 life."
+      }
+    ],
+    "counterExamples": [
+      "As this permanent enters, choose an opponent.\nWhen the chosen player wins the game, draw two cards.",
+      "As this permanent enters, choose an opponent.\nWhenever a player loses the game, draw two cards.",
+      "When the chosen player loses the game, draw two cards."
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "name": "cleave",
+  "rule": "702.148",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may cast this spell for its cleave cost. If you do, remove the words in square brackets.",
+  "multiple": "independent",
+  "status": "planned"
+}

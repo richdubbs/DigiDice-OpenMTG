@@ -1,0 +1,751 @@
+[
+  {
+    "id": "eff.stdwoe.rider.if.damage.thatpermanent.instead",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "if {c:Cond} , ( it | ~ ) deals {n:Qty} damage to that permanent instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": "$n"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "~ deals 1 damage to target creature or planeswalker. If ~ was kicked, it deals 4 damage to that permanent instead."
+      },
+      {
+        "text": "~ deals 2 damage to target artifact or creature. If you control a Wizard, ~ deals 5 damage to that permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 1 damage to target creature or planeswalker. If ~ was kicked, it deals 4 damage to that permanent.",
+      "~ deals 1 damage to target player. If ~ was kicked, it deals 4 damage to that permanent instead.",
+      "~ deals 1 damage to target creature or planeswalker. If ~ was kicked, it deals 4 damage to any target instead."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdwoe.milled.put.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "^ then put ( a | an ) {f:Filter} card from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. Then put a land card from among the milled cards into your hand."
+      },
+      {
+        "text": "Mill five cards. Then put an artifact, creature, or Goblin card from among them into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill three cards. Then put a land card from among the milled cards onto the battlefield.",
+      "Look at the top three cards of your library. Then put a land card from among them into your hand.",
+      "Mill three cards. Then put two land cards from among the milled cards into your hand.",
+      "Mill three cards. Then put a land card from among the exiled cards into your hand.",
+      "Mill three cards. You may put a land card from among the milled cards onto the battlefield."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.stdwoe.rider.if.instead.damage.that.and",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 601.2c"
+    ],
+    "pattern": "if {c:Cond} , instead ( it | ~ ) deals {n:Qty} damage to that ( creature | permanent ) and [ you ] {e:Effects}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": {
+          "$concat": [
+            {
+              "op": "damage",
+              "source": "@previous.source",
+              "to": "@previous.to",
+              "amount": "$n"
+            },
+            "$e"
+          ]
+        },
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "~ deals 1 damage to target creature or planeswalker. If ~ was kicked, instead it deals 4 damage to that permanent and you gain 2 life."
+      },
+      {
+        "text": "~ deals 2 damage to target creature. If ~ was bargained, instead ~ deals 5 damage to that creature and you draw a card."
+      },
+      {
+        "text": "~ deals 1 damage to target creature. If ~ was kicked, instead ~ deals 3 damage to that creature and you scry 2."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 1 damage to target creature or planeswalker. If ~ was kicked, it deals 4 damage to that permanent and you gain 2 life.",
+      "~ deals 1 damage to target player. If ~ was kicked, instead it deals 4 damage to that permanent and you gain 2 life.",
+      "~ deals 1 damage to target creature or planeswalker. If ~ was kicked, instead it deals 4 damage to any target and you gain 2 life."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdwoe.shield.anyDies.dealtBySelf.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 700.4",
+      "CR 120.3",
+      "CR 611.2a"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} dealt damage by ~ would die this turn , exile it instead",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "anyOf": [
+                "$f"
+              ],
+              "dealtDamageBySourceThisTurn": true
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 3 damage to target creature. If a creature dealt damage by ~ would die this turn, exile it instead."
+      },
+      {
+        "text": "~ deals 1 damage to each creature. If a permanent dealt damage by ~ would die this turn, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to target creature. If a creature dealt damage by ~ would die this turn, return it to its owner's hand instead.",
+      "~ deals 3 damage to target creature. If a creature dealt damage by ~ would die, exile it instead.",
+      "~ deals 3 damage to target creature. If a creature dealt damage by ~ would die this turn, exile it."
+    ]
+  },
+  {
+    "id": "sta.stdwoe.aslong.self.is.subtype.basept.abilities",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , ~ is ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} , {a:Abilities} , and {b:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": {
+                "$concat": [
+                  "$a",
+                  "$b"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an artifact, ~ is a Golem with base power and toughness 5/5, trample, and \"{1}: ~ gets +1/+0 until end of turn.\""
+      },
+      {
+        "text": "As long as you have 10 or more life, ~ is an Angel with base power and toughness 3/3, flying, and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an artifact, ~ is a Golem with base power and toughness 5/5, trample, and \"{1}: ~ gets +1/+0 until end of turn\" in addition to its other types.",
+      "As long as you control an artifact, ~ is a Golem with power and toughness 5/5, trample, and \"{1}: ~ gets +1/+0 until end of turn.\"",
+      "As long as you control an artifact, ~ is a Golem with base power and toughness 5/5, trample, or \"{1}: ~ gets +1/+0 until end of turn.\""
+    ]
+  },
+  {
+    "id": "eff.stdwoe.return.choose.battlefield.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 110.5b"
+    ],
+    "pattern": "return {n:Qty} {f:Filter} to the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Mill two cards, then return a land card from your graveyard to the battlefield tapped."
+      },
+      {
+        "text": "Return two artifact cards from your graveyard to the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "Return a land card from your graveyard to the battlefield.",
+      "Return target land card from your graveyard to the battlefield tapped.",
+      "Return a land card from your graveyard to your hand tapped."
+    ]
+  },
+  {
+    "id": "sta.stdwoe.costmod.activated.abilities.of.less",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 605.1a",
+      "CR 118.7"
+    ],
+    "pattern": "activated abilities of {f:Filter} cost {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": "$f"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Activated abilities of artifacts you control cost {2} less to activate."
+      },
+      {
+        "text": "Activated abilities of Elves you control cost {1} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities of artifacts you control cost {2} more to activate.",
+      "Activated abilities of artifacts you control cost {2} less to activate during your turn.",
+      "Spells you cast cost {2} less to cast."
+    ]
+  },
+  {
+    "id": "eff.stdwoe.cm.spells.thisTurn.colors.less.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.2f",
+      "CR 611.2a",
+      "CR 608.2h",
+      "CR 105.2",
+      "CR 107.3"
+    ],
+    "pattern": "{f:Filter} you cast this turn that are {c1:Color} and/or {c2:Color} cost {x} less to cast , where x is {q:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                "$f"
+              ],
+              "colors": [
+                "$c1",
+                "$c2"
+              ]
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$q",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{2}: Spells you cast this turn that are green and/or white cost {X} less to cast, where X is the amount of life you gained this turn."
+      },
+      {
+        "text": "Creature spells you cast this turn that are red and/or blue cost {X} less to cast, where X is the amount of life you gained this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Spells you cast this turn that are green and/or white cost {X} more to cast, where X is the number of Elves you control.",
+      "{2}: Spells you cast this turn that are green and/or white cost {X} less to cast.",
+      "{2}: Spells your opponents cast this turn that are green and/or white cost {X} less to cast, where X is the number of Elves you control."
+    ]
+  },
+  {
+    "id": "eff.stdwoe.exile.n.fromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 406.1",
+      "CR 401.1",
+      "CR 608.2h"
+    ],
+    "pattern": "exile {n:Qty} card[s] from the top of your library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "topCards",
+        "player": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, exile that many cards from the top of your library. You may play those cards this turn."
+      },
+      {
+        "text": "Whenever you gain life, you may exile that many cards from the top of your library. You may play those cards this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, exile that many cards from the bottom of your library. You may play those cards this turn.",
+      "Whenever ~ deals combat damage to a player, exile that many cards from the top of target player's library. You may play those cards this turn.",
+      "Whenever ~ deals combat damage to a player, exile that many cards from your graveyard. You may play those cards this turn."
+    ]
+  },
+  {
+    "id": "eff.stdwoe.look.putBackUpTo.restGraveyard",
+    "kind": "effect",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4",
+      "CR 404.1"
+    ],
+    "pattern": "look at the top {m:Qty} cards of your library , then put up to {n:Qty} of them back on top of your library in any order and the rest into your graveyard",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$m"
+        },
+        "as": "seen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "seen"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "seen"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top four cards of your library, then put up to two of them back on top of your library in any order and the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top five cards of your library, then put up to one of them back on top of your library in any order and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top four cards of your library, then put up to two of them on the bottom of your library in any order and the rest into your graveyard.",
+      "Look at the top four cards of your library, then put up to two of them back on top of your library in any order and the rest into your hand.",
+      "Look at the top four cards of target player's library, then put up to two of them back on top of that library in any order and the rest into that player's graveyard."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdwoe.choose.anotherPlayer",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 102.1"
+    ],
+    "pattern": "choose another player",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "player",
+      "exclude": [
+        "you"
+      ],
+      "as": "chosenPlayer"
+    },
+    "subject": "none",
+    "consumes": [
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "{1}{W}, {T}: Choose another player. That player gains control of target Treasure you control."
+      },
+      {
+        "text": "{2}: Choose another player. That player gains control of target artifact you control. You draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Choose another target player.",
+      "Choose another color.",
+      "Choose two other players."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdwoe.choose.player",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 102.1"
+    ],
+    "pattern": "choose a player",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "player",
+      "as": "chosenPlayer"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}, {T}: Choose a player. That player gains control of target artifact you control."
+      },
+      {
+        "text": "{2}, {T}: Choose a player. That player gains control of target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Choose a player at random.",
+      "Choose a color.",
+      "Choose target player."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "eff.stdwoe.choose.opponent",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 102.3"
+    ],
+    "pattern": "choose an opponent",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "opponent",
+      "as": "chosenPlayer"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}, {T}: Choose an opponent. That player gains control of target artifact you control."
+      },
+      {
+        "text": "{2}, {T}: Choose an opponent. That player gains control of target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Choose an opponent at random.",
+      "Choose an option.",
+      "Choose target opponent."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "eff.stdwoe.player.gainControl",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 108.4"
+    ],
+    "pattern": "{p:Player} gains control of {o:Obj} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player gains control of target artifact you control."
+      },
+      {
+        "text": "Target opponent gains control of target enchantment you control."
+      },
+      {
+        "text": "{1}{W}, {T}: Choose another player. That player gains control of target Treasure you control."
+      }
+    ],
+    "counterExamples": [
+      "Target player gains control of target permanent you control unless that player pays {3}.",
+      "Target player loses control of target permanent you control.",
+      "Each opponent gains control of ~."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -1,0 +1,924 @@
+[
+ {
+  "card": "Seasoned Cryomancer",
+  "expect": "full",
+  "verified": "std-ra review (Standard, held-out half by the hash split of main 491cde1: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (r3-moved reading widened: parser/holes/moved.ts, lower/quantities.ts#movedReflexive): when it enters you draw two, then discard two; a reflexive trigger if one or more nonland cards were among the discarded ones, tapping up to that many target creatures (the count of the nonland cards discarded, not of every card) and putting a stun counter on each of them; {3}{U}{U}, exile it from your graveyard: draw two (CR 603.12, 608.2c, 608.2h, 701.8a, 122.1d, 602.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "as": "discard",
+         "count": 2,
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "do": [
+          {
+           "op": "tap",
+           "what": {
+            "id": "t0",
+            "ref": "target"
+           }
+          },
+          {
+           "count": 1,
+           "kind": "stun",
+           "on": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "op": "putCounters"
+          }
+         ],
+         "op": "reflexive",
+         "targets": [
+          {
+           "filter": {
+            "types": [
+             "Creature"
+            ]
+           },
+           "id": "t0",
+           "kind": "object",
+           "max": {
+            "q": "resultCount",
+            "step": "discard",
+            "which": {
+             "isCard": true,
+             "notTypes": [
+              "Land"
+             ],
+             "owner": "you"
+            }
+           },
+           "min": 0
+          }
+         ],
+         "when": {
+          "did": "discard",
+          "if": {
+           "cond": "did",
+           "step": "discard",
+           "which": {
+            "isCard": true,
+            "notTypes": [
+             "Land"
+            ],
+            "owner": "you"
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "kind": "exileFrom",
+         "self": true,
+         "zone": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated",
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Banner of Kinship",
+  "expect": "full",
+  "verified": "std-ra review (Standard, held-out half by the hash split of main 491cde1: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (sta.stdra.pump.group.foreach.counters.self): as it enters you choose a creature type and it enters with a fellowship counter for each creature of that type you control; creatures you control of the chosen type get +1/+1 for each fellowship counter on it (CR 614.1c, 614.12, 607.2a, 613.4c, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "choose": [
+          {
+           "link": "type",
+           "what": "creatureType"
+          }
+         ],
+         "counters": [
+          {
+           "count": {
+            "of": {
+             "filter": {
+              "chosen": {
+               "link": "type",
+               "quality": "creatureType"
+              },
+              "controller": "you",
+              "types": [
+               "Creature"
+              ]
+             },
+             "ref": "each"
+            },
+            "q": "count"
+           },
+           "kind": "fellowship"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "stack",
+       "battlefield"
+      ]
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "chosen": {
+           "link": "type",
+           "quality": "creatureType"
+          },
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "args": [
+            1,
+            {
+             "kind": "fellowship",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          },
+          "toughness": {
+           "args": [
+            1,
+            {
+             "kind": "fellowship",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Chitterspitter",
+  "expect": "full",
+  "verified": "std-ra review (tuning half by the hash split of main 491cde1, not Standard), by hand against the Oracle text and the rules cited (sta.stdra.pump.group.foreach.counters.self): Squirrels you control get +1/+1 for each acorn counter on it; the upkeep sacrifice of a token and the Squirrel-making ability as before (CR 613.4c, 122.1, 603.6; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "did",
+         "do": [
+          {
+           "count": 1,
+           "filter": {
+            "token": true
+           },
+           "op": "sacrificeChoice",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "op": "if",
+         "then": [
+          {
+           "count": 1,
+           "kind": "acorn",
+           "on": {
+            "ref": "self"
+           },
+           "op": "putCounters"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      }
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "subtypes": [
+           "Squirrel"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "args": [
+            1,
+            {
+             "kind": "acorn",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          },
+          "toughness": {
+           "args": [
+            1,
+            {
+             "kind": "acorn",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "G"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Squirrel"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Joraga Warcaller",
+  "expect": "full",
+  "verified": "std-ra review (tuning half by the hash split of main 491cde1, not Standard), by hand against the Oracle text and the rules cited (sta.stdra.pump.group.foreach.counters.self): multikicker; enters with a +1/+1 counter for each time it was kicked; other Elf creatures you control get +1/+1 for each +1/+1 counter on it (CR 702.33c, 614.1c, 613.4c, 122.1, 109.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "multikicker",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": {
+            "q": "kickCount"
+           },
+           "kind": "+1/+1"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "stack",
+       "battlefield"
+      ]
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "other": true,
+          "subtypes": [
+           "Elf"
+          ],
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "args": [
+            1,
+            {
+             "kind": "+1/+1",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          },
+          "toughness": {
+           "args": [
+            1,
+            {
+             "kind": "+1/+1",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sting, Bilbo's Sword",
+  "expect": "full",
+  "verified": "std-ra review (Standard, held-out half by the hash split of main 491cde1: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (render/steps-life.ts perForms, statics/hone.ts): flash; when it enters, a hone counter on it for each creature the target opponent controls, then attach it to up to one target creature you control; each hone counter on it gives the equipped creature +1/+0 (the engine rule of statics/hone.ts); equip {3} (CR 702.8a, 115.1, 122.1, 613.4c, 301.5, 702.6a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flash",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "of": {
+           "filter": {
+            "controller": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "types": [
+             "Creature"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "kind": "hone",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "op": "attach",
+         "to": {
+          "id": "t1",
+          "ref": "target"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        },
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t1",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        }
+       ]
+      },
+      "keyword": "equip",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Obsessive Pursuit",
+  "expect": "full",
+  "verified": "std-ra review (Standard, held-out half by the hash split of main 491cde1: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (render/qty.ts, render/fold.ts#whereXThenIfX): when it enters and at the beginning of your upkeep, you lose 1 life and create a Clue; whenever you attack, X +1/+1 counters on target attacking creature, X the number of permanents you sacrificed this turn, and if that number is 3 or more the creature gains lifelink until end of turn (CR 107.3, 608.2h, 508.1, 702.15; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": 1,
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Clue"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "event": {
+           "actor": "you",
+           "ev": "action",
+           "verb": "sacrifice"
+          },
+          "q": "happenedCount",
+          "scope": "turn"
+         },
+         "kind": "+1/+1",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        },
+        {
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "event": {
+            "actor": "you",
+            "ev": "action",
+            "verb": "sacrifice"
+           },
+           "q": "happenedCount",
+           "scope": "turn"
+          },
+          "op": ">=",
+          "right": 3
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "mods": [
+              {
+               "add": [
+                {
+                 "keyword": "lifelink",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "attacking": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dwalin, Weaponmaster",
+  "expect": "full",
+  "verified": "std-ra review (Standard, tuning half by the hash split of main 491cde1), by hand against the Oracle text and the rules cited (statics/hone.ts): first strike; whenever it enters or attacks, a hone counter on each Equipment you control, each of which gives the equipped creature +1/+0 (the engine rule this round adds; full on main before it with counters that did nothing) (CR 702.7a, 122.1, 613.4c, 301.5; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "first strike",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "hone",
+         "on": {
+          "filter": {
+           "controller": "you",
+           "subtypes": [
+            "Equipment"
+           ]
+          },
+          "ref": "each"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Call for Unity",
+  "expect": "full",
+  "verified": "std-ra review (tuning half by the hash split of main 491cde1, not Standard), by hand against the Oracle text and the rules cited (sta.stdra.pump.group.foreach.counters.self): revolt, at the beginning of your end step, if a permanent left the battlefield under your control this turn, a unity counter on it; creatures you control get +1/+1 for each unity counter on it (CR 603.4, 613.4c, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "unity",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "zoneChange",
+        "from": "battlefield",
+        "subject": {
+         "controller": "you"
+        }
+       },
+       "scope": "turn"
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "args": [
+            1,
+            {
+             "kind": "unity",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          },
+          "toughness": {
+           "args": [
+            1,
+            {
+             "kind": "unity",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ }
+]

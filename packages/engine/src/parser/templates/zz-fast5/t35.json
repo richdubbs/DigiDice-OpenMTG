@@ -1,0 +1,17 @@
+[
+  {
+    "id": "kw.t35.forMirrodin",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 702.163a"],
+    "pattern": "for mirrodin !",
+    "priority": 1,
+    "build": { "kind": "keyword", "keyword": "for mirrodin!" },
+    "examples": [
+      { "text": "For Mirrodin!", "expect": [{ "kind": "keyword", "keyword": "for mirrodin!" }] },
+      { "text": "Equip {2}\nFor Mirrodin!" }
+    ],
+    "counterExamples": ["For Mirrodin", "For Mirrodin! until end of turn"]
+  }
+]

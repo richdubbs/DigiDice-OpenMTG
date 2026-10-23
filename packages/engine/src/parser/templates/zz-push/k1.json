@@ -1,0 +1,100 @@
+[
+  {
+    "id": "cm.alternative",
+    "kind": "static",
+    "cr": ["CR 118.9", "CR 601.2b", "CR 601.2f"],
+    "pattern": "you may {c:Cost} rather than pay ~ 's mana cost",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "alternativeCost", "cost": "$c", "name": "alternative" }] },
+    "consumes": ["may", "rather than"],
+    "examples": [
+      { "text": "You may sacrifice two artifacts rather than pay ~'s mana cost." },
+      { "text": "You may pay 4 life and discard a card rather than pay ~'s mana cost." },
+      { "text": "You may exile a green card from your hand rather than pay ~'s mana cost." }
+    ],
+    "counterExamples": [
+      "You may sacrifice two artifacts in addition to paying ~'s mana cost.",
+      "You may sacrifice two artifacts rather than pay that spell's mana cost.",
+      "You may cast ~ without paying its mana cost.",
+      "Sacrifice two artifacts rather than pay ~'s mana cost."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.alternative.if",
+    "kind": "static",
+    "cr": ["CR 118.9", "CR 601.2b", "CR 601.2f"],
+    "pattern": "if {w:Cond} , you may {c:Cost} rather than pay ~ 's mana cost",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "alternativeCost", "cost": "$c", "name": "alternative", "when": "$w" }] },
+    "consumes": ["if", "may", "rather than"],
+    "examples": [
+      { "text": "If you control an Island, you may sacrifice a creature rather than pay ~'s mana cost." },
+      { "text": "If it's not your turn, you may pay 3 life rather than pay ~'s mana cost." }
+    ],
+    "counterExamples": [
+      "If you control an Island, you may sacrifice a creature in addition to paying ~'s mana cost.",
+      "If you control an Island, sacrifice a creature rather than pay ~'s mana cost.",
+      "Unless you control an Island, you may sacrifice a creature rather than pay ~'s mana cost."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.alternative.mana",
+    "kind": "static",
+    "cr": ["CR 118.9", "CR 601.2b", "CR 601.2f"],
+    "pattern": "you may pay {m:ManaCost} rather than pay ~ 's mana cost",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "alternativeCost", "cost": { "mana": "$m" }, "name": "alternative" }] },
+    "consumes": ["may", "rather than"],
+    "examples": [
+      { "text": "You may pay {3}{G}{G} rather than pay ~'s mana cost." },
+      { "text": "You may pay {1}{U} rather than pay ~'s mana cost." }
+    ],
+    "counterExamples": [
+      "You may pay {3}{G}{G} in addition to ~'s mana cost.",
+      "You may pay {3}{G}{G} rather than pay that spell's mana cost.",
+      "Pay {3}{G}{G} rather than pay ~'s mana cost.",
+      "You may pay {3}{G}{G} rather than pay ~'s mana cost if you control an Island."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.alternative.mana.if",
+    "kind": "static",
+    "cr": ["CR 118.9", "CR 601.2b", "CR 601.2f"],
+    "pattern": "if {w:Cond} , you may pay {m:ManaCost} rather than pay ~ 's mana cost",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "alternativeCost", "cost": { "mana": "$m" }, "name": "alternative", "when": "$w" }] },
+    "consumes": ["if", "may", "rather than"],
+    "examples": [
+      { "text": "If you control a Forest, you may pay {G} rather than pay ~'s mana cost." },
+      { "text": "If you have 5 or less life, you may pay {2}{R} rather than pay ~'s mana cost." }
+    ],
+    "counterExamples": [
+      "If you control a Forest, pay {G} rather than pay ~'s mana cost.",
+      "Unless you control a Forest, you may pay {G} rather than pay ~'s mana cost.",
+      "If you control a Forest, you may pay {G} in addition to ~'s mana cost."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.alternative.mana.and",
+    "kind": "static",
+    "cr": ["CR 118.9", "CR 601.2b", "CR 601.2f"],
+    "pattern": "you may pay {m:ManaCost} and {c:Cost} rather than pay ~ 's mana cost",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "alternativeCost", "cost": { "mana": "$m", "other": "$c.other" }, "name": "alternative" }] },
+    "consumes": ["may", "rather than"],
+    "examples": [
+      { "text": "You may pay {1} and sacrifice a creature rather than pay ~'s mana cost." },
+      { "text": "You may pay {2}{B} and discard two cards rather than pay ~'s mana cost." }
+    ],
+    "counterExamples": [
+      "You may pay {1} and sacrifice a creature in addition to ~'s mana cost.",
+      "Pay {1} and sacrifice a creature rather than pay ~'s mana cost.",
+      "You may pay {1} or sacrifice a creature rather than pay ~'s mana cost."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

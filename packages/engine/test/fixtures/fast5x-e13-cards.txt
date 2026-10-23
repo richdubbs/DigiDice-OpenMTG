@@ -1,0 +1,24 @@
+# FAST5X E13: craft (CR 702.167), "Exile ~" activation costs (CR 118.3, 602.2) and finality counters (CR 122.1h).
+# After editing: npm run cards -- fixtures
+
+# ---- Craft (CR 702.167a-c): one material, two materials, "one or more" with and without a quality
+Tithing Blade // Consuming Sepulcher
+Oteclan Landmark // Oteclan Levitator
+Visage of Dread // Dread Osseosaur
+Saheeli's Lattice // Mastercraft Raptor
+Sunbird Standard // Sunbird Effigy
+Waterlogged Hulk // Watertight Gondola
+
+# ---- "Exile ~" as an activation cost (CR 118.3, 602.2)
+Phoenix Down
+The Echoverse Fulcrum
+Feldon's Cane
+
+# ---- Finality counters (CR 122.1h, 614.1a)
+Soulcoil Viper
+Rite of the Moth
+Gastal Thrillroller
+Grim Repriser
+
+# ---- "Activate only if there are four or more card types among cards in your graveyard" (delirium, CR 205.2a, 602.5b)
+Resurrected Cultist

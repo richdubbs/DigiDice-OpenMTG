@@ -1,0 +1,202 @@
+[
+  {
+    "id": "eff.c6.forEach.cant",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.3",
+      "CR 608.2c",
+      "CR 608.2f"
+    ],
+    "pattern": "for each {p:WhoCant} , {e:Effects}",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "each",
+      "do": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent discards a card. For each opponent who can't, you gain 2 life."
+      },
+      {
+        "text": "Each opponent sacrifices an artifact of their choice. For each opponent who can't, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent who can't, you gain 2 life.",
+      "Each player discards a card. For each opponent who can't, you gain 2 life.",
+      "Each opponent discards two cards. For each opponent who can't, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.c6.player.investigates",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.16a",
+      "CR 111.10f",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} investigate[s]",
+    "build": {
+      "op": "action",
+      "action": "investigate",
+      "who": "$p"
+    },
+    "subject": "player",
+    "needs": [
+      "action:investigate"
+    ],
+    "examples": [
+      {
+        "text": "Each player who controls the most artifacts investigates."
+      },
+      {
+        "text": "Destroy target artifact. Its controller investigates."
+      }
+    ],
+    "counterExamples": [
+      "Each player who controls the most artifacts investigates twice a card.",
+      "Target creature investigates.",
+      "Each player investigates a creature."
+    ]
+  },
+  {
+    "id": "eff.c6.choose.perPlayer.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "for each player , ( choose | you choose ) ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "min": 1,
+      "max": 1,
+      "perPlayer": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "For each player, choose an artifact that player controls. Destroy those artifacts."
+      },
+      {
+        "text": "For each player, choose a creature with power 3 or greater that player controls. Then destroy all creatures except creatures chosen this way."
+      },
+      {
+        "text": "For each player, you choose an artifact that player controls. Destroy those artifacts."
+      }
+    ],
+    "counterExamples": [
+      "For each player, choose an artifact you control. Destroy those artifacts.",
+      "For each player, choose an artifact. Destroy those artifacts.",
+      "For each player, choose two artifacts that player controls. Destroy those artifacts."
+    ]
+  },
+  {
+    "id": "eff.c6.choose.perPlayer.opponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "for each opponent , choose ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "min": 1,
+      "max": 1,
+      "perPlayer": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "For each opponent, choose an artifact that player controls. Destroy those artifacts."
+      },
+      {
+        "text": "For each opponent, choose a creature with power 3 or greater that player controls. Then destroy all creatures except creatures chosen this way."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, choose an artifact you control. Destroy those artifacts.",
+      "For each opponent, choose an artifact. Destroy those artifacts.",
+      "For each opponent, choose two artifacts that player controls. Destroy those artifacts."
+    ]
+  },
+  {
+    "id": "eff.c6.player.sacrifice.all",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2e",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} sacrifice[s] all {f:Filter}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": "$f",
+      "count": 1,
+      "mode": "all"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "For each player, choose an artifact that player controls. Each player sacrifices all artifacts they control not chosen this way."
+      },
+      {
+        "text": "Each opponent sacrifices all tapped creatures they control."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices all tapped creatures they control of their choice.",
+      "Each opponent sacrifices all but one tapped creature they control.",
+      "Each opponent sacrifices all tapped creatures they control at random."
+    ],
+    "consumes": [
+      "all"
+    ]
+  }
+]

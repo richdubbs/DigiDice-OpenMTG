@@ -1,0 +1,8 @@
+# p2-refs-3 (Phase 2 lane p2-refs): the round's golden cards (test/m5/golden/cards/cloud-p2-refs-3-review.json)
+Meddling Mage
+Voidstone Gargoyle
+Shifting Sky
+Brallin, Skyshark Rider
+Gwenna, Eyes of Gaea
+Infernal Pet
+Answered Prayers

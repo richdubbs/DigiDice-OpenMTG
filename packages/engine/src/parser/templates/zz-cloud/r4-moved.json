@@ -1,0 +1,335 @@
+[
+  {
+    "id": "eff.moved.put.fromGraveyard.battlefieldTapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 110.2",
+      "CR 701.9a"
+    ],
+    "pattern": "put {o:Obj} from your graveyard onto the battlefield tapped",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": "$o",
+          "zone": "graveyard",
+          "owner": "you"
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, draw a card, then discard a card. If you discard an artifact card this way, put it from your graveyard onto the battlefield tapped."
+      },
+      {
+        "text": "{2}, {T}: Draw a card, then discard a card. If you discard a land card this way, put it from your graveyard onto the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, draw a card, then discard a card. If you discard an artifact card this way, put it from your graveyard onto the battlefield.",
+      "When ~ enters, draw a card, then discard a card. If you discard an artifact card this way, put it from your graveyard onto the battlefield tapped under its owner's control."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.moved.token.forEach.lead.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 110.5b",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {f:Filter} , [you] create ( a | an ) tapped {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      },
+      "token": "$t",
+      "tapped": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player mills four cards. For each land card put into a graveyard this way, you create a tapped 1/1 green Saproling creature token."
+      },
+      {
+        "text": "For each Forest you control, create a tapped 1/1 green Squirrel creature token."
+      }
+    ],
+    "counterExamples": [
+      "For each Forest you control, create two tapped 1/1 green Squirrel creature tokens.",
+      "For each Forest you control, target opponent creates a tapped 1/1 green Squirrel creature token.",
+      "For each Forest you control, create a tapped 1/1 green Squirrel creature token unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.moved.token.forEach.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.6a",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "create ( a | an ) {t:TokenDesc} for each {n:Qty}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Counter all spells your opponents control. Create a 1/1 green Saproling creature token for each spell and ability countered this way."
+      },
+      {
+        "text": "Counter all spells and all abilities your opponents control. Create a 2/2 black Zombie creature token for each spell and ability countered this way."
+      }
+    ],
+    "counterExamples": [
+      "Counter all spells your opponents control. Create a 1/1 green Saproling creature token for each spell and ability countered this turn.",
+      "Counter all spells your opponents control. Create two 1/1 green Saproling creature tokens for each spell and ability countered this way.",
+      "Counter all spells your opponents control. Target opponent creates a 1/1 green Saproling creature token for each spell and ability countered this way."
+    ]
+  },
+  {
+    "id": "eff.moved.forEach.opponent.didntDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2f",
+      "CR 608.2h",
+      "CR 701.9a"
+    ],
+    "pattern": "for each opponent who didn't discard {c:NotMoved} , {e:Effects}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "if",
+          "cond": "$c",
+          "then": "$e"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent discards three cards. For each opponent who didn't discard three creature cards this way, you draw a card."
+      },
+      {
+        "text": "Each opponent discards two cards. For each opponent who didn't discard two land cards this way, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent discards two cards. For each opponent who didn't discard two land cards this turn, you gain 2 life.",
+      "Each opponent discards two cards. For each opponent who didn't sacrifice two land cards this way, you gain 2 life.",
+      "Each opponent discards two cards. For each player who didn't discard two land cards this way, you gain 2 life."
+    ]
+  },
+  {
+    "id": "sta.moved.self.exiledWith.cardTypes.pump.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 205.2a",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as there are {n:Qty} or more card types among cards exiled with ~ , it gets {pt:PT} and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "distinct",
+          "what": "cardTypes",
+          "among": {
+            "ref": "linked",
+            "link": "exiled"
+          }
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{3}{B}, {T}: Exile target card from a graveyard.\nAs long as there are three or more card types among cards exiled with ~, it gets +2/+2 and has flying."
+      },
+      {
+        "text": "At the beginning of your end step, exile target card from a graveyard.\nAs long as there are five or more card types among cards exiled with ~, it gets +3/+3 and has haste."
+      }
+    ],
+    "counterExamples": [
+      "{3}{B}, {T}: Exile target card from a graveyard.\nAs long as there are three or more colors among cards exiled with ~, it gets +2/+2 and has flying.",
+      "{3}{B}, {T}: Exile target card from a graveyard.\nAs long as there are three or more card types among cards in your graveyard, it gets +2/+2 and has flying.",
+      "{3}{B}, {T}: Exile target card from a graveyard.\nAs long as there are three or more card types among cards exiled with ~, it gets +2/+2 and has flying until end of turn."
+    ]
+  },
+  {
+    "id": "sta.moved.turn.cast.graveyard.rider",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 611.3a",
+      "CR 614.1c",
+      "CR 608.2c"
+    ],
+    "pattern": "during your turn , you may cast {f:Filter} from your graveyard . if you cast a spell this way , that ( artifact | creature | permanent | spell ) enters with {r:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": "$r"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "this way",
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, you may cast artifact spells with mana value 2 or less from your graveyard. If you cast a spell this way, that artifact enters with a stun counter on it."
+      },
+      {
+        "text": "During your turn, you may cast creature spells with power 2 or less from your graveyard. If you cast a spell this way, that creature enters with a -1/-1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, you may cast creature spells with power 2 or less from your hand. If you cast a spell this way, that creature enters with a -1/-1 counter on it.",
+      "During your turn, you may cast creature spells with power 2 or less from your graveyard. If you cast a spell this way, that creature enters with two -1/-1 counters on it.",
+      "During your opponent's turn, you may cast creature spells with power 2 or less from your graveyard. If you cast a spell this way, that creature enters with a -1/-1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.moved.linked.exiled.toGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 400.3",
+      "CR 400.7"
+    ],
+    "pattern": "put each card exiled with ( it | ~ ) into its owner 's graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "graveyard"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile all creatures with power 1 or less until ~ leaves the battlefield.\n{5}{B}{B}: Put each card exiled with ~ into its owner's graveyard, then create a 1/1 black Rat creature token for each card put into a graveyard this way. Sacrifice ~."
+      },
+      {
+        "text": "{1}{B}, {T}: Exile target creature card from a graveyard.\n{4}, {T}: Put each card exiled with ~ into its owner's graveyard. You gain 1 life for each card put into a graveyard this way."
+      }
+    ],
+    "counterExamples": [
+      "{1}{B}, {T}: Exile target creature card from a graveyard.\n{4}, {T}: Put each card exiled with ~ into its owner's hand. You gain 1 life for each card put into a graveyard this way.",
+      "{1}{B}, {T}: Exile target creature card from a graveyard.\n{4}, {T}: Put each card exiled with ~ into its owner's library. You gain 1 life for each card put into a graveyard this way.",
+      "{1}{B}, {T}: Exile target creature card from a graveyard.\n{4}, {T}: Put a card exiled with ~ into its owner's graveyard. You gain 1 life for each card put into a graveyard this way."
+    ]
+  }
+]

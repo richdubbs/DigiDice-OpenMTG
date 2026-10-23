@@ -1,0 +1,42 @@
+{
+  "name": "outlast",
+  "rule": "702.107",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, {T}: Put a +1/+1 counter on this creature. Outlast only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{cost}, {T}: Put a +1/+1 counter on ~. Activate only as a sorcery.",
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "tap": true
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "+1/+1",
+            "count": 1
+          }
+        ]
+      },
+      "sorcerySpeed": true
+    }
+  ]
+}

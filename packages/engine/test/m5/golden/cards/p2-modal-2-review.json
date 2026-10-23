@@ -1,0 +1,231 @@
+[
+ {
+  "card": "Typhoid Mary, Fractured",
+  "expect": "full",
+  "verified": "p2-modal-2 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: whenever it attacks, one of three modes is picked at random (the game's random number generator), or chosen by its controller if they discarded a card this turn (read as the trigger is put on the stack): create a Treasure token; draw a card; each opponent loses 2 life and you gain 2 life. The modes' names are labels, the second one the card's own name (no template; lower/ability.ts#randomOrChosen, parser/segment.ts#bulletMode). (CR 700.2, 603.3c, 207.2d, 111.10a, 121.1, 119.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "op": "createToken",
+             "token": {
+              "predefined": "Treasure"
+             },
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "op": "draw",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "amount": 2,
+             "op": "loseLife",
+             "who": {
+              "ref": "each",
+              "who": "opponent"
+             }
+            },
+            {
+             "amount": 2,
+             "op": "gainLife",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         }
+        ],
+        "override": {
+         "chosen": true,
+         "max": 1,
+         "min": 1,
+         "when": {
+          "cond": "happened",
+          "event": {
+           "actor": "you",
+           "ev": "action",
+           "verb": "discard"
+          },
+          "scope": "turn"
+         }
+        },
+        "random": true
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Summon: Magus Sisters",
+  "expect": "full",
+  "verified": "p2-modal-2 review (lane p2-modal; tuning half, non-Standard), by hand against the Oracle text and the rules cited: a Saga creature with haste; chapters I, II and III each pick one mode at random among those that can be chosen: put three +1/+1 counters on target creature; put a shield counter on target creature and you gain 3 life; this creature fights up to one target creature an opponent controls (no template; lower/ability.ts#chapter with modes, ModeSpec.random). (CR 714.2, 700.2, 700.2a, 122.1, 701.14a, 702.10a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "chapters": [
+       1,
+       2,
+       3
+      ],
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 3,
+             "kind": "+1/+1",
+             "on": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "kind": "shield",
+             "on": {
+              "id": "t1",
+              "ref": "target"
+             },
+             "op": "putCounters"
+            },
+            {
+             "amount": 3,
+             "op": "gainLife",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "a": {
+              "ref": "self"
+             },
+             "b": {
+              "id": "t2",
+              "ref": "target"
+             },
+             "op": "fight"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "controller": "opponent",
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t2",
+             "kind": "object",
+             "max": 1,
+             "min": 0
+            }
+           ]
+          }
+         }
+        ],
+        "random": true
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "keyword": "haste",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,377 @@
+[
+  {
+    "id": "eff.e18.recruit",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 111.1",
+      "CR 608.2c"
+    ],
+    "pattern": "recruit",
+    "build": {
+      "op": "action",
+      "action": "recruit",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:recruit"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, recruit.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, recruit.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "recruit",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Scry 1, then recruit."
+      },
+      {
+        "text": "Whenever ~ attacks, recruit."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, recruit a creature.",
+      "When ~ enters, recruit 2.",
+      "When ~ enters, recruits."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e18.player.recruits",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 111.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} recruit[s]",
+    "build": {
+      "op": "action",
+      "action": "recruit",
+      "who": "$p"
+    },
+    "subject": "player",
+    "needs": [
+      "action:recruit"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent draws their second card each turn, you recruit.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "Whenever an opponent draws their second card each turn, you recruit."
+          }
+        ]
+      },
+      {
+        "text": "At the beginning of your end step, target player recruits."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, target creature recruits.",
+      "At the beginning of your end step, target player recruits 2."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e18.ifStatWasOrLess.recruit",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.5a"
+    ],
+    "pattern": "if {v:Qty} was {n:Qty} or less , recruit",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": "$v",
+        "op": "<=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "action",
+          "action": "recruit",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "subject": "none",
+    "needs": [
+      "action:recruit"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell. If that spell's mana value was 3 or less, recruit.",
+        "expect": [
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "object",
+                  "filter": {
+                    "zone": "stack",
+                    "stackKind": "spell"
+                  },
+                  "min": 1,
+                  "max": 1
+                }
+              ],
+              "steps": [
+                {
+                  "op": "counter",
+                  "what": {
+                    "ref": "target",
+                    "id": "t0"
+                  }
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "compare",
+                    "left": {
+                      "q": "stat",
+                      "stat": "manaValue",
+                      "of": {
+                        "ref": "target",
+                        "id": "t0"
+                      }
+                    },
+                    "op": "<=",
+                    "right": 3
+                  },
+                  "then": [
+                    {
+                      "op": "action",
+                      "action": "recruit",
+                      "who": {
+                        "ref": "you"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Destroy target creature. If that creature's power was 2 or less, recruit."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell. If that spell's mana value was 3 or less, recruit twice a card.",
+      "Counter target spell. If that spell's mana value was 3 or greater, recruit target player.",
+      "Counter target spell. If that spell's mana value was 3, recruit."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "abl.e18.aslong.grant.each",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as {c:Cond} , {f:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you have an enduring story, artifacts and creatures you control have ward {2}.",
+        "expect": [
+          {
+            "kind": "static",
+            "condition": {
+              "cond": "designation",
+              "who": {
+                "ref": "you"
+              },
+              "what": "enduringStory"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Artifact",
+                      "Creature"
+                    ],
+                    "controller": "you"
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "ward",
+                        "text": "ward {2}",
+                        "cost": {
+                          "mana": "{2}"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "As long as it's your turn, Elves you control have trample and haste."
+      },
+      {
+        "text": "As long as you control an Island, other Merfolk you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, creatures you control have haste until end of turn.",
+      "As long as it's your turn, creatures you control lose haste.",
+      "Until end of turn, creatures you control have haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rst.e18.untapstep.self.unless",
+    "kind": "static",
+    "cr": [
+      "CR 502.3",
+      "CR 611.3a",
+      "CR 604.1"
+    ],
+    "pattern": "~ doesn't untap during your untap step unless {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": "$c"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "consumes": [
+      "not",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ doesn't untap during your untap step unless you have an enduring story.",
+        "expect": [
+          {
+            "kind": "static",
+            "condition": {
+              "cond": "not",
+              "of": {
+                "cond": "designation",
+                "who": {
+                  "ref": "you"
+                },
+                "what": "enduringStory"
+              }
+            },
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "self"
+                },
+                "mode": "cant",
+                "action": "untapDuringUntapStep"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "~ doesn't untap during your untap step unless you control a Wizard."
+      }
+    ],
+    "counterExamples": [
+      "~ doesn't untap during your untap step if you control a Wizard.",
+      "~ doesn't untap during your untap step unless you pay {2}.",
+      "Target creature doesn't untap during its controller's untap step unless you control a Wizard."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

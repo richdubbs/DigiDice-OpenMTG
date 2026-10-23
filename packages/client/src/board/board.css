@@ -1,0 +1,2714 @@
+/*
+ * Game board (work package C4, laid out like MTG Arena in ui/arena). Theme colours come from the brand variables (theme.ts) and theme/styles.css; the mana and
+ * frame colours below are our own (no Wizards symbols or frames). The table is a size container: every card size follows the table's height and width, so
+ * both battlefields, both hands and the side rail (stack, log, turn, prompt) fit from about 1000x640 up (measured at 1098x698 and 1400x900).
+ *
+ * Card images (ARCHITECTURE.md "Card images"): nothing here changes or covers a card image. Highlights and depth are box shadows outside the frame,
+ * phased-out is a dashed outline outside it, hand cards overlap only while no Scryfall image can be on screen, rows never clip, and every state rule
+ * targets a slot's own frame (`.board-card.x > .board-card-image`), never an attachment's. Keyframes, container queries and the fx layer live in arena.css.
+ */
+.game-board {
+  --rail-w: clamp(256px, 25vw, 360px);
+  --ratio: 1.4;
+  --mana-w: #f4ecd2;
+  /* blue and green dark enough for white glyph text (WCAG 1.4.3: 5.8:1 and 5.4:1) */
+  --mana-u: #1f66b3;
+  --mana-b: #4a4152;
+  --mana-r: #d2452f;
+  --mana-g: #1f7a3a;
+  --mana-c: #a9a9b3;
+  --hl-playable: var(--accent);
+  /* A land playable from the graveyard, shown in the hand (Hand.tsx). */
+  --hl-graveyard: #c27bff;
+  --hl-select: var(--accent-2);
+  --danger: #ff6b6b;
+  /* Card depth: a thin dark edge under the frame and a soft shadow on the table. */
+  --card-depth: 0 1px 0 rgba(0, 0, 0, 0.7), 0 2px 0 rgba(2, 6, 16, 0.85), 0 3px 0 rgba(2, 6, 16, 0.7), 0 7px 8px -2px rgba(0, 0, 0, 0.7), 0 14px 22px rgba(0, 0, 0, 0.55);
+  --card-depth-lift: 0 1px 0 rgba(0, 0, 0, 0.7), 0 2px 0 rgba(2, 6, 16, 0.85), 0 16px 26px rgba(0, 0, 0, 0.62);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--rail-w);
+  grid-template-rows: minmax(0, 1fr);
+  /* The parent's height (the game screen's slot below its top bar); 100vh would push the rail below the window. */
+  height: 100%;
+  min-height: 520px;
+  overflow: hidden;
+  background: #02050c;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.game-board button {
+  min-width: 0;
+  padding: 4px 10px;
+  font-size: 12px;
+  --btn-depth: 3px;
+}
+
+/* ---- the table ------------------------------------------------------------------------------------------------------------------ */
+
+/* The zoom is positioned in here, so it never covers the side rail with the stack. */
+.board-main {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
+}
+
+/*
+ * Card widths from the table's size (the table is the size container; these are registered lengths in arena.css, so they are computed here, against the
+ * table, and inherited as pixels): the far side a little smaller than the near side, the hand largest. These are the creatures' widths; the row behind them is drawn a little smaller (`.bf-support`).
+ */
+.arena-stage {
+  /* less a fixed part: the labels, the band and the paddings take the same pixels on a short table, which leaves less room per card */
+  --cw-far: clamp(40px, min(calc(14cqh - 29px), 9.4cqw), 142px);
+  --cw-near: clamp(50px, min(calc(17.5cqh - 35px), 11.6cqw), 176px);
+  --cw-hand: clamp(70px, min(22cqh, 15cqw), 240px);
+  --disc: clamp(50px, 11cqh, 96px);
+  --pile-w: clamp(26px, 5cqh, 46px);
+  --back-w: clamp(22px, 4.6cqh, 40px);
+  --cw-s: var(--cw-near);
+  --cw-n: var(--cw-hand);
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 12px 2px;
+}
+
+.fx-under,
+.fx-arrows {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.fx-under {
+  z-index: 0;
+}
+
+.fx-arrows {
+  z-index: 1;
+  overflow: visible;
+}
+
+.board-top,
+.board-middle,
+.board-bottom {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+}
+
+.board-top {
+  flex: 1 1 0;
+  display: flex;
+  gap: 8px;
+  min-height: 0;
+}
+
+.board-top > .side {
+  flex: 1;
+}
+
+.board-middle {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 0;
+}
+
+.board-bottom {
+  flex: 1.22 1 0;
+  display: flex;
+  min-height: 0;
+}
+
+.board-bottom > .side {
+  flex: 1;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/*
+ * The strip with the hand, the identity disc and the piles: at the top edge for the opponents (hand of backs, then disc and piles at the right), along the
+ * bottom for the viewer (piles and disc at the left, then the hand across the rest).
+ */
+.side-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.side-top > .side-bar {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+/*
+ * The viewer's side: the battlefield across the whole width, and along the bottom edge the piles and the disc at the left, the
+ * hand in the middle (its cards never wider than its column: they overlap instead, Hand.tsx) and the prompt's action buttons at the right (`.table-actions`).
+ * The strip's box is dropped (`display: contents`) and its parts placed on this grid; the two side columns share the room equally, so the hand stays centred.
+ */
+.side-bottom {
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) minmax(0, 2.5fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.side-bottom > .battlefield {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.side-bottom > .side-bar {
+  display: contents;
+}
+
+.side-bottom .seat-cluster {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: end;
+}
+
+.side-bottom .hand {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/*
+ * The current prompt's action buttons (Pass, Auto pay, Attack with all, OK ...) on the table at the bottom right, Arena style: the prompt in the rail keeps
+ * its question and choices and sends its rows of buttons here (prompts/PromptActions.tsx, styled by prompts.css). The main action is the big button at
+ * the bottom.
+ */
+.table-actions {
+  grid-column: 3;
+  grid-row: 2;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 0 10px 8px;
+}
+
+.table-actions:empty {
+  padding: 0;
+}
+
+/*
+ * A decision drawn large over the table, Arena style (the opening hand, assigning combat damage): the prompt fills this layer
+ * (prompts/stage.tsx, styled in prompts.css). Over the cards and under the zoom, so a card on it can still be pointed at and read.
+ */
+.decision-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  container-type: size;
+  pointer-events: none;
+}
+
+/* Hidden, not removed: taking an absolutely positioned box in or out of the table (a size container) lays the whole table out and styles it again (perf,
+   see .board-side). */
+.decision-stage:empty {
+  visibility: hidden;
+}
+
+
+.seat-cluster {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: 0;
+  padding-bottom: 8px;
+}
+
+.side-top .seat-cluster {
+  align-items: flex-start;
+}
+
+/* At the top edge nothing is below the opponent's disc and piles but their battlefield, which needs the room. */
+.board-top .seat-cluster {
+  padding-bottom: 0;
+}
+
+/* Battlefield */
+.battlefield {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 2px;
+  min-height: 0;
+}
+
+.bf-far {
+  justify-content: space-evenly;
+}
+
+/*
+ * A row never clips or scrolls: its cards share its width (`--n` cards needing `--units` card widths, set by Battlefield.tsx) and shrink to fit; below
+ * 34px they wrap. So a lifted, attacking or animated card is never cut off at the row's edge.
+ */
+.bf-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 6px;
+  flex: none;
+  min-height: calc(var(--cw-row, var(--cw-near)) * var(--ratio) * 0.72);
+  padding: 2px 4px;
+  container-type: inline-size;
+}
+
+.side-top .bf-row {
+  --cw-row: var(--cw-far);
+  align-items: flex-start;
+}
+
+.side-bottom .bf-row {
+  --cw-row: var(--cw-near);
+}
+
+/* The row behind the creatures (lands, other permanents) at 0.78 of their width: both rows and the hand fit the table's height. */
+.board-bottom .bf-support > .bf-row {
+  --cw-row: calc(var(--cw-near) * 0.78);
+}
+
+.board-top .bf-support > .bf-row {
+  --cw-row: calc(var(--cw-far) * 0.78);
+}
+
+/* The main line: the creatures (with what is attached to them) hold the middle of the table. */
+.bf-creatures {
+  flex: 1 0 auto;
+}
+
+/*
+ * The row behind the main line, Arena style: the lands gather at the left, the other permanents (artifacts, enchantments, planeswalkers, battles) at the
+ * right. The others take the width their cards need, up to half the row; the lands take the rest. Each is a size container, so neither width comes from
+ * its content: the others' width is set from their card count (`--units`, `--n`).
+ */
+.bf-support {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex: none;
+  min-width: 0;
+}
+
+.side-top .bf-support {
+  align-items: flex-start;
+}
+
+.bf-lands {
+  flex: 1 1 0;
+  min-width: 0;
+  justify-content: flex-start;
+  padding-inline: 2% 4px;
+}
+
+.bf-others {
+  flex: 0 1 auto;
+  width: calc(var(--units, 1) * var(--cw-row, var(--cw-near)) + (var(--n, 1) - 1) * 6px + 8px);
+  max-width: 50%;
+  justify-content: flex-end;
+  padding-inline: 4px 2%;
+}
+
+.bf-others.is-empty {
+  width: 0;
+  padding: 0;
+}
+
+.bf-slot {
+  --row-cw: max(34px, min(var(--cw-row), calc((100cqw - (var(--n, 1) - 1) * 6px - 8px) / var(--units, 1))));
+  display: flex;
+}
+
+/* ---- cards ---------------------------------------------------------------------------------------------------------------------- */
+
+.board-card {
+  --lift-y: 0px;
+  --combat-y: 0px;
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-radius: 8px;
+  outline-offset: 2px;
+  translate: 0 calc(var(--lift-y) + var(--combat-y));
+  transition: translate 160ms cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+.board-card-image {
+  /* C2's public custom properties (cards.css header): its text frame scales with --card-w, the width of this box, and never goes below --card-min-font,
+     so names stay readable at board size (the zoom shows the whole card). Nothing here styles C2's own classes. */
+  container-type: inline-size;
+  --card-w: 100cqw;
+  --card-min-font: 7px;
+  --ring: 0 0 0 0 transparent;
+  position: relative;
+  flex: none;
+  border-radius: 6px;
+  box-shadow: var(--ring), var(--card-depth);
+  transition:
+    transform var(--anim-ms, 250ms) cubic-bezier(0.3, 1.35, 0.5, 1),
+    box-shadow 160ms ease;
+  line-height: 0;
+}
+
+.slot-small .board-card-image {
+  width: var(--row-cw, var(--cw-s));
+  height: calc(var(--row-cw, var(--cw-s)) * var(--ratio));
+}
+
+.slot-normal .board-card-image {
+  width: var(--cw-n);
+  height: calc(var(--cw-n) * var(--ratio));
+}
+
+.slot-small.is-tapped {
+  padding-inline: calc(var(--row-cw, var(--cw-s)) * (var(--ratio) - 1) / 2);
+}
+
+.slot-normal.is-tapped {
+  padding-inline: calc(var(--cw-n) * (var(--ratio) - 1) / 2);
+}
+
+/* CR 701.26a: tapped is turned sideways, with a small overshoot so the tap is felt. */
+.board-card.is-tapped > .board-card-image {
+  transform: rotate(90deg) scale(0.9);
+}
+
+/* Paying by hand (CR 601.2g-h): a mana source picked for the payment already turns, so it reads as tapped before the payment is sent. */
+.game-board[data-decision='payCost'] .board-card.hl-selected > .board-card-image {
+  transform: rotate(90deg) scale(0.9);
+}
+
+/* Phased out (CR 702.26): a dashed outline outside the image and the "Phased out" marker; the image itself is never dimmed. */
+.board-card.is-phased > .board-card-image {
+  outline-style: dashed;
+  outline-width: 2px;
+  outline-color: var(--text-muted);
+  outline-offset: 3px;
+}
+
+.game-board .is-clickable {
+  cursor: pointer;
+}
+
+/* Pointing at a card you can use lifts it off the table toward you. */
+.board-card.is-clickable:hover,
+.board-card:focus-visible {
+  --lift-y: -5px;
+}
+
+.board-card.is-clickable:hover > .board-card-image,
+.board-card:focus-visible > .board-card-image {
+  box-shadow: var(--ring), var(--card-depth-lift);
+}
+
+.board-card:focus-visible {
+  outline: 2px solid var(--focus, var(--accent-2));
+}
+
+/* The opponents' cards face the middle of the table: their status chips sit above the card, toward the far edge. */
+.side-top .board-card {
+  flex-direction: column-reverse;
+}
+
+/* Combat (CR 508.1, 509.1): attackers step toward the defender, blockers toward the attackers. */
+.side-bottom .board-card.is-attacking {
+  --combat-y: calc(var(--row-cw, var(--cw-s)) * -0.13);
+}
+
+.side-top .board-card.is-attacking {
+  --combat-y: calc(var(--row-cw, var(--cw-s)) * 0.13);
+}
+
+.side-bottom .board-card.is-blocking {
+  --combat-y: calc(var(--row-cw, var(--cw-s)) * -0.12);
+}
+
+.side-top .board-card.is-blocking {
+  --combat-y: calc(var(--row-cw, var(--cw-s)) * 0.12);
+}
+
+.board-card.is-attacking > .board-card-image {
+  --ring: 0 0 0 2px rgba(255, 140, 60, 0.95), 0 0 18px rgba(255, 110, 40, 0.65);
+}
+
+.board-card.is-blocking > .board-card-image {
+  --ring: 0 0 0 2px rgba(120, 170, 255, 0.95), 0 0 16px rgba(90, 150, 255, 0.6);
+}
+
+.board-card.hl-playable > .board-card-image {
+  --ring: 0 0 0 2px var(--hl-playable), 0 0 14px var(--hl-playable);
+}
+
+.board-card.hl-mana > .board-card-image {
+  --ring: 0 0 0 1px var(--hl-playable), 0 0 6px rgba(var(--neon-rgb), 0.45);
+}
+
+.board-card.hl-selectable > .board-card-image {
+  --ring: 0 0 0 2px var(--hl-select), 0 0 14px var(--hl-select);
+}
+
+/* FAST3 CL1: a permanent with nothing to do but a by-hand tool for its manual text: a quiet ring, never the playable glow. */
+.board-card.hl-byhand > .board-card-image {
+  --ring: 0 0 0 1px var(--hl-select), 0 0 6px rgba(255, 255, 255, 0.25);
+}
+
+.board-card.hl-selected > .board-card-image {
+  --ring: 0 0 0 3px var(--hl-select), 0 0 22px var(--hl-select);
+}
+
+.board-card.hl-targeted > .board-card-image {
+  --ring: 0 0 0 2px var(--danger), 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+.board-card.hl-focus > .board-card-image {
+  --ring: 0 0 0 3px var(--danger), 0 0 22px var(--danger);
+}
+
+.board-card-back {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  object-fit: contain;
+}
+
+/*
+ * A permanent with attachments (CR 301.5, 303.4), as at a real table: each attachment lies UNDER its host, moved up so its name
+ * bar shows above the host's top edge, the first attached furthest back (`--k` steps of `--peek`, CardSlot.tsx). The host's picture moves down by the room
+ * they need, so nothing reaches into the row or the half beyond. The attachments are positioned from the host's picture: from the top for our cards (the
+ * marker strip is below the picture), from the bottom for the opponents' (their strip is above it).
+ */
+.permanent-group {
+  --peek: calc(var(--row-cw, var(--cw-s)) * var(--ratio) * 0.17);
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.permanent-group > .board-card {
+  z-index: 1;
+  /* The host's box reaches up over its attachments' name bars (the picture's margin-top): only its picture and strip take the pointer, so pointing at an
+     attachment's bar zooms the attachment, not the host. */
+  pointer-events: none;
+}
+
+.permanent-group > .board-card > * {
+  pointer-events: auto;
+}
+
+.permanent-group > .board-card > .board-card-image {
+  margin-top: calc(var(--att-n, 0) * var(--peek));
+}
+
+.attachments {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.attachment {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc((var(--att-n, 1) - var(--k, 1)) * var(--peek));
+  display: flex;
+  justify-content: center;
+  transition: translate 160ms cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+.side-top .attachment {
+  top: auto;
+  bottom: calc(var(--k, 1) * var(--peek));
+}
+
+.attachment > .board-card {
+  pointer-events: auto;
+}
+
+/* The attachments go with their host when it attacks or blocks (the same steps as .board-card.is-attacking). */
+.side-bottom .permanent-group.is-attacking .attachment { translate: 0 calc(var(--row-cw, var(--cw-s)) * -0.13); }
+.side-top .permanent-group.is-attacking .attachment { translate: 0 calc(var(--row-cw, var(--cw-s)) * 0.13); }
+.side-bottom .permanent-group.is-blocking .attachment { translate: 0 calc(var(--row-cw, var(--cw-s)) * -0.12); }
+.side-top .permanent-group.is-blocking .attachment { translate: 0 calc(var(--row-cw, var(--cw-s)) * 0.12); }
+
+/* A token copy of a card (CardSlot.tsx, CR 111.10): its picture is the card's own, so a "Token" band sits across the top of the art, under the name bar. */
+.token-tag {
+  position: absolute;
+  left: 50%;
+  top: 12%;
+  translate: -50% 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid #f5d76e;
+  background: rgba(30, 22, 4, 0.92);
+  color: #f5d76e;
+  font-size: max(8px, 10cqw);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.zoom-token {
+  color: #f5d76e;
+  font-weight: 700;
+}
+
+/*
+ * On the card (CardOverlay.tsx): the current P/T on the card's own P/T corner, coloured when it differs from the printed one, and
+ * the counters as small icons with their numbers on the art's left edge. Sized from the card's width (the image box is an inline-size container); they
+ * turn with the card when it is tapped. Never over the artist and copyright line at the bottom edge.
+ */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.card-counters {
+  position: absolute;
+  left: 4%;
+  top: 22%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 1px 4px 1px 3px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: rgba(4, 10, 26, 0.9);
+  color: #fff;
+  font-size: max(9px, 11cqw);
+  font-weight: 800;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
+}
+
+.card-counter-icon {
+  color: var(--accent);
+}
+
+/* +1/+1 and -1/-1 counters (also in the P/T): the same green and red as the changed P/T. */
+.card-counter[data-counter='+1/+1'] { border-color: #2ecc71; }
+.card-counter[data-counter='+1/+1'] .card-counter-icon { color: #4ee88a; }
+.card-counter[data-counter='-1/-1'] { border-color: #ff5252; }
+.card-counter[data-counter='-1/-1'] .card-counter-icon { color: #ff7a7a; }
+
+.card-pt {
+  position: absolute;
+  right: 3%;
+  bottom: 4.5%;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #ffffff, #cfd6e6);
+  color: var(--brand-black, #111);
+  font-size: max(9px, 13cqw);
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  pointer-events: auto;
+}
+
+/* Changed from the printed value: the number itself in green (higher) or red (lower), and a glow round the plate. */
+.card-pt .pt-up { color: #0a8f36; }
+.card-pt .pt-down { color: #c62828; }
+.card-pt[data-tone='up'] { box-shadow: 0 0 0 2px #2ecc71, 0 0 10px rgba(46, 204, 113, 0.9); }
+.card-pt[data-tone='down'] { box-shadow: 0 0 0 2px #ff5252, 0 0 10px rgba(255, 82, 82, 0.85); }
+.card-pt[data-tone='mixed'] { box-shadow: 0 0 0 2px #f5c76b, 0 0 10px rgba(245, 199, 107, 0.85); }
+
+/* Loyalty (CR 306.5b) and defense (CR 310.4b): the same corner, dark like the printed shields. */
+.card-pt.card-loyalty,
+.card-pt.card-defense {
+  min-width: 1.6em;
+  text-align: center;
+  background: linear-gradient(180deg, #3a3a44, #121218);
+  color: #fff;
+}
+
+.card-pt.card-defense {
+  background: linear-gradient(180deg, #7a2a22, #2a0c08);
+}
+
+.card-pt.card-loyalty .pt-up,
+.card-pt.card-defense .pt-up { color: #6dff9e; }
+.card-pt.card-loyalty .pt-down,
+.card-pt.card-defense .pt-down { color: #ff8a80; }
+
+/* Our own placeholder frame (C2 replaces it on the game screen) */
+.placeholder-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border-radius: 6px;
+  border: 2px solid var(--frame, var(--mana-c));
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.35)), var(--brand-navy);
+  color: var(--text);
+  line-height: 1.15;
+  overflow: hidden;
+  text-align: left;
+}
+
+.placeholder-card.pc-small {
+  padding: 2px 3px;
+  font-size: 9px;
+}
+
+.placeholder-card.pc-normal {
+  font-size: 10px;
+}
+
+.placeholder-card.pc-large {
+  font-size: 14px;
+  padding: 10px;
+}
+
+.frame-w { --frame: var(--mana-w); }
+.frame-u { --frame: var(--mana-u); }
+.frame-b { --frame: #8a7b99; }
+.frame-r { --frame: var(--mana-r); }
+.frame-g { --frame: var(--mana-g); }
+.frame-multi { --frame: #d4af37; }
+.frame-colorless { --frame: var(--mana-c); }
+
+.pc-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  font-weight: 700;
+}
+
+.pc-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-type {
+  margin-top: 2px;
+  font-style: italic;
+  opacity: 0.85;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.pc-text {
+  flex: 1;
+  margin-top: 4px;
+  white-space: pre-wrap;
+  overflow: hidden;
+}
+
+.pc-pt {
+  margin-top: auto;
+  align-self: flex-end;
+  font-weight: 700;
+}
+
+/* Mana symbols: our own lettered circles */
+.board-mana-cost {
+  display: inline-flex;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.board-mana-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35em;
+  height: 1.35em;
+  padding: 0 2px;
+  border-radius: 999px;
+  font-size: 0.85em;
+  font-weight: 700;
+  line-height: 1;
+  color: #111;
+  background: var(--mana-c);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.mana-w { background: var(--mana-w); }
+.mana-u { background: var(--mana-u); color: #fff; }
+.mana-b { background: var(--mana-b); color: #fff; }
+.mana-r { background: var(--mana-r); color: #fff; }
+.mana-g { background: var(--mana-g); color: #fff; }
+.mana-hybrid { background: linear-gradient(135deg, var(--mana-w), var(--mana-g)); }
+.mana-generic { background: var(--mana-c); }
+
+/* Markers, always outside the card image: compact chips under the card */
+.marker-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  max-width: calc(var(--row-cw, var(--cw-s)) * 1.7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot-normal .marker-strip {
+  max-width: calc(var(--cw-n) * 1.4);
+}
+
+.marker {
+  padding: 0 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(var(--neon-rgb), 0.25);
+  background: rgba(4, 10, 26, 0.92);
+  font-size: 11px;
+  line-height: 1.4;
+  /* long markers ("Target of Ability of ...") wrap inside the strip's width instead of sticking out of the row */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+.marker-icon {
+  font-weight: 700;
+}
+
+.marker-icon + .marker-text {
+  margin-left: 3px;
+}
+
+.marker.is-compact {
+  padding: 0 3px;
+}
+
+.marker-damage { background: var(--danger); border-color: transparent; color: #111; font-weight: 800; }
+.marker-attacking { background: #e0a030; border-color: transparent; color: #111; font-weight: 700; }
+.marker-blocking { background: #8fb3ff; border-color: transparent; color: #111; font-weight: 700; }
+.marker-sick { opacity: 0.85; }
+/* Tapped is shown by the rotation; the marker stays for screen readers only. */
+.marker-tapped {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.marker-target { border: 1px solid var(--danger); }
+.marker-automation { border: 1px dashed var(--accent-2); }
+/* "Fully automated" is on almost every card: a quiet tick beside the other markers, not a chip of its own. */
+.marker-automation.is-compact {
+  border: 0;
+  background: transparent;
+  color: rgba(150, 225, 255, 0.7);
+  font-size: 9px;
+  padding: 0 1px;
+}
+/* The current decision's choice, not made yet (a pending attack or block, a click order): outlined, never filled like a declared one. */
+.marker-pending { border: 1px dashed var(--hl-select); color: var(--text); font-weight: 600; }
+/* M6-11: layout and double-faced states (face up, chapter, level, prototyped, prepared): an outlined chip, never a fill that reads as a counter */
+.marker-layout { border: 1px solid var(--accent-2); color: var(--text); }
+
+/* ---- identity discs ------------------------------------------------------------------------------------------------------------- */
+
+/* The disc with the name, badges, counters and mana pool under it (so the hand beside it keeps its width). */
+.player-panel {
+  --disc-c: var(--neon);
+  --disc-glow: var(--glow);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-width: 0;
+  border-radius: 999px;
+}
+
+.panel-top {
+  flex-direction: row-reverse;
+}
+
+.panel-top {
+  --disc-c: var(--neon-2);
+  --disc-glow: var(--glow-2);
+}
+
+.panel-top .avatar-disc {
+  width: calc(var(--disc) * 0.86);
+  height: calc(var(--disc) * 0.86);
+}
+
+.panel-top .stat-life {
+  font-size: calc(var(--disc) * 0.36);
+}
+
+.player-panel.hl-selectable,
+.player-panel.hl-selected {
+  cursor: pointer;
+}
+
+.avatar-disc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--disc);
+  height: var(--disc);
+  border-radius: 50%;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255, 255, 255, 0.22), transparent 40%),
+    radial-gradient(circle at 50% 62%, #143466 0%, #071636 55%, #02060f 100%);
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--disc-c) 75%, white),
+    0 0 26px var(--disc-glow),
+    inset 0 0 18px color-mix(in srgb, var(--disc-c) 40%, transparent),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.55),
+    0 14px 22px rgba(0, 0, 0, 0.65);
+  transition: box-shadow 200ms ease;
+}
+
+/* A bevelled metal rim in the player's colour, lit from above (a medallion standing on the table). */
+.avatar-disc::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--disc) * -0.075);
+  z-index: -1;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 210deg,
+    #0a1530,
+    color-mix(in srgb, var(--disc-c) 70%, white) 11%,
+    #0b1834 27%,
+    color-mix(in srgb, var(--disc-c) 50%, #0b1630) 46%,
+    #040a1a 64%,
+    color-mix(in srgb, var(--disc-c) 85%, white) 87%,
+    #0a1530
+  );
+  -webkit-mask: radial-gradient(circle, transparent calc(var(--disc) * 0.5 - 1px), #000 calc(var(--disc) * 0.5));
+  mask: radial-gradient(circle, transparent calc(var(--disc) * 0.5 - 1px), #000 calc(var(--disc) * 0.5));
+}
+
+/* The DigiDice mark behind the life total: a die turned on its corner, faint. */
+.avatar-disc::after {
+  content: '';
+  position: absolute;
+  inset: 24%;
+  z-index: -1;
+  border-radius: 20%;
+  border: 1px solid color-mix(in srgb, var(--disc-c) 45%, transparent);
+  background:
+    radial-gradient(circle at 26% 26%, var(--disc-c) 0 8%, transparent 9%),
+    radial-gradient(circle at 74% 26%, var(--disc-c) 0 8%, transparent 9%),
+    radial-gradient(circle at 50% 50%, var(--disc-c) 0 8%, transparent 9%),
+    radial-gradient(circle at 26% 74%, var(--disc-c) 0 8%, transparent 9%),
+    radial-gradient(circle at 74% 74%, var(--disc-c) 0 8%, transparent 9%);
+  opacity: 0.2;
+  rotate: 45deg;
+}
+
+.avatar-ring {
+  position: absolute;
+  inset: calc(var(--disc) * -0.17);
+  border-radius: 50%;
+  border: 2px dashed color-mix(in srgb, var(--disc-c) 55%, transparent);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.player-panel.is-active .avatar-ring {
+  opacity: 1;
+}
+
+.stat-life {
+  position: relative;
+  margin-top: -6%;
+  font-size: calc(var(--disc) * 0.4);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 10px var(--disc-glow), 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+
+.avatar-disc.is-low .stat-life {
+  color: #ffd27a;
+}
+
+.avatar-disc.is-critical .stat-life {
+  color: #ff6b6b;
+}
+
+.player-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+
+.player-meta:empty {
+  display: none;
+}
+
+/* The name sits inside the disc under the life total; the turn and priority badges hang on the disc's lower rim. */
+.player-id {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: 21%;
+  display: flex;
+  justify-content: center;
+  font-weight: 800;
+  font-size: max(7px, calc(var(--disc) * 0.125));
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+
+.disc-badges {
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  display: flex;
+  gap: 2px;
+  translate: -50% 0;
+  white-space: nowrap;
+}
+
+.disc-badges .badge {
+  padding: 0 5px;
+  font-size: 9px;
+  line-height: 1.5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+/* Whose turn it is shows in the disc's turning ring and the band across the table; the word stays for screen readers. */
+.disc-badges .badge-turn {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.player-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+}
+
+.player-id.is-clickable {
+  left: 6%;
+  right: 6%;
+  border-radius: 999px;
+  outline: 1px solid var(--hl-select);
+  background: rgba(var(--neon-2-rgb), 0.22);
+}
+
+.player-panel.hl-selectable .avatar-disc,
+.player-panel.hl-selected .avatar-disc {
+  box-shadow:
+    0 0 0 3px var(--hl-select),
+    0 0 0 6px rgba(2, 6, 15, 0.95),
+    0 0 0 7px var(--hl-select),
+    0 0 30px var(--glow-2),
+    inset 0 0 22px rgba(var(--neon-2-rgb), 0.5);
+}
+
+.player-panel.hl-targeted .avatar-disc,
+.player-panel.hl-focus .avatar-disc {
+  box-shadow:
+    0 0 0 3px var(--danger),
+    0 0 0 6px rgba(2, 6, 15, 0.95),
+    0 0 26px rgba(255, 107, 107, 0.6);
+}
+
+.player-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-stats .stat {
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--neon-rgb), 0.3);
+  background: rgba(4, 10, 26, 0.85);
+  font-size: 11px;
+}
+
+.stat-poison {
+  color: #9be37c;
+  font-weight: 700;
+}
+
+/* M11-2: combat damage from a commander, "N / 21" (CR 903.10a), brighter from 15 on. */
+.player-stats .stat-commander-damage {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  max-width: 100%;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.commander-damage-name {
+  max-width: 9em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+
+.player-stats .stat-commander-damage.is-high {
+  border-color: #ff7a3c;
+  color: #ffb08a;
+  font-weight: 700;
+  box-shadow: 0 0 8px rgba(255, 122, 60, 0.55);
+}
+
+/*
+ * M11-2: a player's commanders beside the piles (CommandZone.tsx): the card a little larger than a pile, where it is, its tax and the Cast button under it.
+ * In the seat's HUD cluster only (bottom left for the viewer, top for the other player): the right rail never changes.
+ */
+.command-zone {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex: none;
+}
+
+.side-top .command-zone {
+  align-items: flex-start;
+}
+
+.commander-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.command-card {
+  --row-cw: calc(var(--pile-w) * 1.3);
+  display: block;
+  line-height: 0;
+}
+
+.command-card-away {
+  display: block;
+  container-type: inline-size;
+  --card-w: 100cqw;
+  --card-min-font: 5px;
+  width: var(--row-cw);
+  height: calc(var(--row-cw) * var(--ratio));
+  border-radius: 4px;
+  /* Never dimmed or filtered (a Scryfall picture is shown as it is, ARCHITECTURE.md "Card images"): a dashed frame outside it says it is away. */
+  outline: 1px dashed rgba(var(--neon-rgb), 0.45);
+  outline-offset: 2px;
+}
+
+.commander-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  max-width: calc(var(--pile-w) * 2.4);
+  text-align: center;
+}
+
+.commander-where {
+  color: var(--text-muted);
+}
+
+.commander-tax {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* CMP1: a revealed companion (CompanionSlot.tsx): outside the game, so always in the dashed "away" frame, in the companion's own tint. */
+.companion-slot .companion-card {
+  outline-color: rgba(214, 160, 255, 0.55);
+}
+
+.game-board .commander-cast {
+  padding: 2px 6px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+.badge-turn {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--accent-text);
+}
+
+/* black on magenta: 6.2:1 (white was 2.8:1) */
+.badge-deciding {
+  background: var(--accent-2);
+  border-color: transparent;
+  color: var(--brand-black);
+}
+
+.badge-status {
+  background: #2b2b33;
+}
+
+.badge-top {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--accent-text);
+}
+
+.rule-chip {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--surface-strong);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+/* ---- piles ---------------------------------------------------------------------------------------------------------------------- */
+
+.piles {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex: none;
+}
+
+.side-top .piles {
+  align-items: flex-start;
+}
+
+.pile {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  justify-content: center;
+  align-items: baseline;
+  column-gap: 3px;
+  row-gap: 0;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.game-board .pile:hover,
+.game-board .pile:active {
+  background: none;
+  box-shadow: none;
+}
+
+.game-board .pile::after {
+  display: none;
+}
+
+.pile:hover .pile-art {
+  translate: 0 -3px;
+}
+
+.pile-art {
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin-bottom: 6px;
+  display: block;
+  container-type: inline-size;
+  --card-w: 100cqw;
+  --card-min-font: 5px;
+  width: var(--pile-w);
+  height: calc(var(--pile-w) * var(--ratio));
+  border-radius: 4px;
+  line-height: 0;
+  overflow: visible;
+  box-shadow:
+    2px 2px 0 rgba(1, 4, 12, 0.95),
+    3px 3px 0 rgba(var(--neon-rgb), 0.25),
+    5px 5px 0 rgba(1, 4, 12, 0.95),
+    0 8px 14px rgba(0, 0, 0, 0.6);
+  transition: translate 140ms ease;
+}
+
+.pile-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  border: 1px dashed rgba(var(--neon-rgb), 0.35);
+  box-shadow: none;
+}
+
+.pile-exile .pile-art {
+  box-shadow:
+    2px 2px 0 rgba(1, 4, 12, 0.95),
+    3px 3px 0 rgba(var(--neon-2-rgb), 0.35),
+    5px 5px 0 rgba(1, 4, 12, 0.95),
+    0 8px 14px rgba(0, 0, 0, 0.6);
+}
+
+.zone-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.game-board .count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* A pile's count is a small lit tag under it, readable at a glance. */
+.pile .count {
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--neon-rgb), 0.45);
+  background: rgba(3, 10, 28, 0.9);
+  color: #eaf7ff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.pile-hand-count {
+  align-self: center;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* The viewer's own hand is on screen: its count is for screen readers only. */
+.is-own .pile-hand-count {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.zone-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.zone-button .count {
+  margin-left: 4px;
+}
+
+/* Zone buttons say when the zone holds cards to use or pick (text, not colour alone) */
+.zone-flag {
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin-top: 2px;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.zone-button.has-playable .pile-art {
+  box-shadow: 0 0 0 2px var(--hl-playable), 0 0 12px var(--hl-playable);
+}
+
+.zone-button.has-playable .zone-flag {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+.zone-button.has-selectable .pile-art {
+  box-shadow: 0 0 0 2px var(--hl-select), 0 0 12px var(--hl-select);
+}
+
+.zone-button.has-selectable .zone-flag:last-child {
+  background: var(--accent-2);
+  color: var(--brand-black);
+}
+
+.mana-pool {
+  display: flex;
+  gap: 5px;
+}
+
+.pool-unit {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 5px 0 2px;
+  border-radius: 999px;
+  background: rgba(4, 10, 26, 0.9);
+  border: 1px solid rgba(var(--neon-rgb), 0.3);
+  font-size: 13px;
+}
+
+/* ---- hands ---------------------------------------------------------------------------------------------------------------------- */
+
+.hand {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+/*
+ * The own hand, Arena style, never wider than its column. Each card is as wide as the hand size or as the hand's width divided by
+ * the number of cards (`--hand-n`, set by Hand.tsx), whichever is smaller, down to 40px: edge to edge, never overlapping, while Scryfall images can be on
+ * screen (a card image is never covered). Otherwise (`data-overlap="yes"`) the cards keep the hand size and overlap just enough to fit. `safe center` keeps
+ * the first card reachable.
+ */
+.hand-own {
+  flex: 1;
+  justify-content: safe center;
+  gap: 0;
+  container-type: inline-size;
+  /* room for the arc and the raise on hover, so no card is cut off */
+  padding: 10px 4px 0;
+  overflow: visible;
+}
+
+.hand-card {
+  --hand-cw: max(40px, min(var(--cw-hand), calc((100cqw - 8px) / var(--hand-n, 1))));
+  position: relative;
+  flex: none;
+  /* the fan's arc (--arc-y, Hand.tsx) and, while another card is dragged along the hand, the room made for it (--shift-x) */
+  transform: translate(var(--shift-x, 0px), var(--arc-y, 0px));
+  transition: transform 180ms ease;
+  touch-action: none;
+}
+
+/* Overlap allowed: full-size cards, each pulled over the one before it by the share of the hand's width they lack (none while they fit). */
+.game-board[data-overlap='yes'] .hand-card {
+  --hand-cw: max(40px, min(var(--cw-hand), calc(100cqw - 8px)));
+}
+
+.game-board[data-overlap='yes'] .hand-card + .hand-card {
+  margin-left: min(0px, calc((100cqw - 8px - var(--hand-n, 1) * var(--hand-cw)) / max(1, var(--hand-n, 1) - 1)));
+}
+
+/* A card set down in a new place: the hand takes its new order at once, without sliding (Hand.tsx). */
+.hand-own.is-settling .hand-card {
+  transition: none;
+}
+
+.hand-own .board-card-image {
+  width: var(--hand-cw);
+  height: calc(var(--hand-cw) * var(--ratio));
+}
+
+.hand-own .marker-strip {
+  max-width: var(--hand-cw);
+}
+
+/* Raised while pointed at, or while the keyboard focus is on it (a card that was clicked or dragged must not stay up once the pointer
+   leaves it, so the focus a click leaves behind doesn't count: :focus-visible only). */
+.hand-card:hover,
+.hand-card:has(:focus-visible) {
+  z-index: 2;
+}
+
+/*
+ * The viewer's hand peeks up from the bottom edge, Arena style: the hand's box shows the top 48% of a full-size card (name and art; less than before, so
+ * the larger battlefield fits) and the cards hang past the table's lower edge (smaller cards, in a big hand, show whole). Pointing at a
+ * card, or focusing it, raises it fully into view.
+ */
+.side-bottom .hand-own {
+  align-items: flex-start;
+  height: calc(var(--cw-hand) * var(--ratio) * 0.48 + 10px);
+}
+
+.hand-card:hover .board-card,
+.hand-card:has(:focus-visible) .board-card {
+  --lift-y: calc(var(--hand-cw) * var(--ratio) * -0.52 - 4px);
+}
+
+.hand-card.is-draggable {
+  cursor: grab;
+}
+
+.hand-card.is-dragging {
+  z-index: 30;
+  cursor: grabbing;
+  transform: translate(var(--drag-x, 0px), var(--drag-y, 0px)) rotate(0deg) scale(1.08) !important;
+  transition: none;
+}
+
+.hand-card.is-dragging .board-card-image {
+  box-shadow: var(--ring), 0 26px 40px rgba(0, 0, 0, 0.7);
+}
+
+.hand-card.will-play .board-card-image {
+  --ring: 0 0 0 3px var(--neon), 0 0 34px var(--neon);
+}
+
+/*
+ * A land the player may play from their graveyard (Hand.tsx graveyardLandPlays): at the right end of the hand, glowing violet
+ * instead of the playable blue, with a "Graveyard" tag just above the card (outside the picture).
+ */
+.hand-card.is-from-graveyard {
+  --hl-playable: var(--hl-graveyard);
+}
+
+.hand-card.is-from-graveyard::before {
+  content: 'Graveyard';
+  position: absolute;
+  z-index: 3;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -3px);
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--hl-graveyard);
+  color: #14051f;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.hand-hidden {
+  flex: 1;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  padding-top: 2px;
+}
+
+/* Another player's hand: overlapping card backs (our own art, never a card face). */
+.hand-back {
+  margin-right: calc(var(--back-w) * -0.42);
+  transform-origin: 50% -80%;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+}
+
+/* A card of that hand the viewer has seen (Hand.tsx): face up in the fan, lifted a little so it reads as known. */
+.hand-back.is-known {
+  z-index: 1;
+  cursor: zoom-in;
+}
+
+.hand-known-card {
+  width: var(--back-w);
+  height: calc(var(--back-w) * var(--ratio));
+  container-type: inline-size;
+  --card-w: 100cqw;
+  --card-min-font: 5px;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px #f5d76e, 0 0 10px rgba(245, 215, 110, 0.55);
+}
+
+.hand-known-card > * {
+  width: 100%;
+  height: 100%;
+}
+
+.hand-back .board-card-back {
+  width: var(--back-w);
+  height: calc(var(--back-w) * var(--ratio));
+}
+
+.hand .more {
+  margin-left: calc(var(--back-w) * 0.6);
+  color: var(--text-muted);
+}
+
+/*
+ * RPL-2: another player's hand in a replay's open view (Hand.tsx OpenHand), face up in a row where their backs would be. Each card is a back's width
+ * (`--row-cw`, which sizes a small card), or the hand's width divided by the number of cards (`--hand-n`) when that is less, down to 16px: edge to
+ * edge, never overlapping, while Scryfall images can be on screen (a card image is never covered). Otherwise (`data-overlap="yes"`) the cards keep the
+ * back's width and overlap just enough to fit.
+ */
+.hand-open {
+  flex: 1;
+  justify-content: safe center;
+  align-items: flex-start;
+  gap: 0;
+  padding-top: 2px;
+  container-type: inline-size;
+}
+
+.open-hand-card {
+  --row-cw: max(16px, min(var(--back-w), calc((100cqw - 4px) / var(--hand-n, 1))));
+  position: relative;
+  flex: none;
+}
+
+.open-hand-card:hover,
+.open-hand-card:has(:focus-visible) {
+  z-index: 2;
+}
+
+.game-board[data-overlap='yes'] .open-hand-card {
+  --row-cw: var(--back-w);
+}
+
+.game-board[data-overlap='yes'] .open-hand-card + .open-hand-card {
+  margin-left: min(0px, calc((100cqw - 4px - var(--hand-n, 1) * var(--back-w)) / max(1, var(--hand-n, 1) - 1)));
+}
+
+/* ---- the band across the middle ------------------------------------------------------------------------------------------------- */
+
+.center-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(232, 232, 240, 0.72);
+}
+
+.center-line::before,
+.center-line::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--neon-rgb), 0.7));
+}
+
+.center-line::after {
+  background: linear-gradient(90deg, rgba(var(--neon-rgb), 0.7), transparent);
+}
+
+.center-line.is-theirs::before {
+  background: linear-gradient(90deg, transparent, rgba(var(--neon-2-rgb), 0.7));
+}
+
+.center-line.is-theirs::after {
+  background: linear-gradient(90deg, rgba(var(--neon-2-rgb), 0.7), transparent);
+}
+
+.center-step {
+  padding: 1px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--neon-rgb), 0.55);
+  background: rgba(2, 8, 22, 0.85);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 10px var(--glow);
+  box-shadow: 0 0 16px rgba(var(--neon-rgb), 0.25);
+}
+
+.center-line.is-theirs .center-step {
+  border-color: rgba(var(--neon-2-rgb), 0.6);
+  text-shadow: 0 0 10px var(--glow-2);
+  box-shadow: 0 0 16px rgba(var(--neon-2-rgb), 0.25);
+}
+
+.result-banner {
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--accent-2);
+  color: var(--brand-black);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 0 24px var(--glow-2);
+}
+
+/* ---- the side rail -------------------------------------------------------------------------------------------------------------- */
+
+/*
+ * The rail is positioned in its own grid column (out of flow) rather than laid out as a grid item: as an in-flow item, every change of its content (the
+ * stack filling or emptying, a new prompt, a log line) made the grid size its row again and lay out the table beside it, a size container (`.board-main`),
+ * whose whole subtree is then styled again for its container queries: about 20 ms, a dropped frame or two, at every step of the game (measured in Chrome,
+ * 2026-10-21). Out of flow, a change inside the rail stays inside it (under 1 ms). The column keeps its width (`--rail-w`, grid-template-columns above).
+ */
+.board-side {
+  position: absolute;
+  grid-column: 2;
+  grid-row: 1;
+  inset: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 8px 8px 10px;
+  overflow: hidden;
+  container-type: inline-size;
+  border-left: 1px solid rgba(var(--neon-rgb), 0.4);
+  background:
+    linear-gradient(180deg, rgba(var(--neon-rgb), 0.06), transparent 30%),
+    linear-gradient(180deg, #050c1e 0%, #030814 100%);
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.05),
+    -14px 0 34px rgba(0, 0, 0, 0.55);
+}
+
+.panel-title {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+.game-board .muted {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* Stack: a pile of cards whose top object sits in front at the bottom (Arena style) */
+.stack-panel {
+  /* almost twice the size it was */
+  --stack-cw: clamp(96px, 48cqw, 180px);
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+}
+
+.stack-panel.is-empty {
+  flex: none;
+}
+
+/*
+ * While something is on the stack it takes the room it needs, up to the rail's upper half; in a shorter half it shrinks no further than its top object's
+ * card needs and the older objects scroll inside the list, so the next to resolve is always in view.
+ */
+.stack-panel:not(.is-empty) {
+  flex-shrink: 1;
+  min-height: min(100%, calc(var(--stack-cw) * var(--ratio) + 52px));
+}
+
+/* With the pile on the table showing the cards, the rail's list of details may give up room to the prompt (it scrolls; two rows always show). */
+.game-board[data-overlap='yes'] .stack-panel:not(.is-empty) {
+  flex-shrink: 1;
+  min-height: 132px;
+}
+
+.stack-panel.is-empty .panel-title {
+  margin: 0;
+}
+
+.stack-empty {
+  display: none;
+}
+
+.stack-list {
+  display: flex;
+  flex-direction: column-reverse;
+  min-height: 0;
+  margin: 0;
+  padding: 4px 2px 6px;
+  list-style: none;
+  overflow-y: auto;
+  gap: 6px;
+}
+
+/* Where a newly cast spell or ability appears (the fx layer flies it there). */
+.stack-anchor {
+  height: 0;
+}
+
+.stack-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--stack-cw) minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  flex: none;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--neon-rgb), 0.3);
+  background: linear-gradient(100deg, #0d1d3c 0%, #071228 60%, #050c1e 100%);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  outline-offset: 2px;
+}
+
+.stack-item.is-theirs {
+  border-color: rgba(var(--neon-2-rgb), 0.42);
+  background: linear-gradient(100deg, #2a0b34 0%, #140822 60%, #0a0616 100%);
+}
+
+/* The older objects under the top one: compact rows (a small card beside its details), nothing covered; the pile on the table shows them as cards. */
+.stack-item:not(.is-top) {
+  grid-template-columns: calc(var(--stack-cw) * 0.5) minmax(0, 1fr);
+  padding: 4px 6px;
+}
+
+.stack-item:not(.is-top) .stack-card .board-card-image,
+.stack-item:not(.is-top) .ability-tile {
+  width: calc(var(--stack-cw) * 0.5);
+  height: calc(var(--stack-cw) * 0.5 * var(--ratio));
+}
+
+.stack-by {
+  display: none;
+}
+
+/*
+ * While the pile on the table shows the cards (data-overlap="yes"), the rail is a compact list of the details: one row per object, a small card, its name
+ * and who cast it on one line, then its targets (and an ability's text).
+ */
+.game-board[data-overlap='yes'] .stack-item {
+  grid-template-columns: minmax(0, 1fr);
+  padding: 5px 8px 5px 10px;
+  border-left-width: 3px;
+}
+
+/* the cards themselves are on the table: no thumbnail here */
+.game-board[data-overlap='yes'] .stack-item .stack-card {
+  display: none;
+}
+
+/* one line per object: [Top] name, an arrow to its targets, its automation mark, who cast it (an ability's text on a line of its own) */
+.game-board[data-overlap='yes'] .stack-item .stack-info {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  row-gap: 2px;
+}
+
+.game-board[data-overlap='yes'] .stack-item .stack-head {
+  display: contents;
+}
+
+.game-board[data-overlap='yes'] .stack-item .stack-name {
+  font-weight: 800;
+}
+
+.game-board[data-overlap='yes'] .stack-item .stack-targets {
+  order: 1;
+  font-size: 0;
+}
+
+.game-board[data-overlap='yes'] .stack-item .stack-targets::before {
+  content: '\2192';
+  margin-right: 3px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.game-board[data-overlap='yes'] .stack-item .target-chip {
+  font-size: 11px;
+}
+
+.game-board[data-overlap='yes'] .stack-item .marker-strip {
+  order: 2;
+}
+
+.game-board[data-overlap='yes'] .stack-item .stack-by {
+  order: 3;
+}
+
+.game-board[data-overlap='yes'] .stack-item .stack-text {
+  order: 4;
+  flex-basis: 100%;
+}
+
+.game-board[data-overlap='yes'] .stack-item .ability-kind,
+.game-board[data-overlap='yes'] .stack-item .stack-kind,
+.game-board[data-overlap='yes'] .stack-item .stack-meta {
+  display: none;
+}
+
+.game-board[data-overlap='yes'] .stack-item .ability-emblem {
+  font-size: 13px;
+}
+
+.game-board[data-overlap='yes'] .stack-by {
+  display: inline;
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/*
+ * ui/arena: the stack on the table, Arena style (StackPanel.tsx TableStack): a pile at the table's right edge on its middle line, the next to resolve in
+ * front and each older one a step higher behind it. Lit in its controller's colour (box shadows, outside the pictures). Its cards are twice as wide as the
+ * near side's creatures, never taller than about two fifths of the table; the steps between
+ * them grow with them, so each older one's title bar shows.
+ */
+.table-stack {
+  --ts-cw: min(calc(var(--cw-near) * 2), calc(42cqh / var(--ratio)));
+  --ts-dx: calc(var(--ts-cw) * 0.1);
+  --ts-dy: calc(var(--ts-cw) * 0.15);
+  position: absolute;
+  z-index: 6;
+  /* inboard of the play mats' corner marks */
+  right: calc(max(9%, 76px) + var(--ts-cw) * 0.5);
+  top: var(--midline, 47%);
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.table-stack-anchor,
+.table-stack-item {
+  position: absolute;
+  left: calc(var(--ts-cw) * -0.5 - var(--d, 0) * var(--ts-dx));
+  top: calc(var(--ts-cw) * var(--ratio) * -0.5 - var(--d, 0) * var(--ts-dy));
+  width: var(--ts-cw);
+  height: calc(var(--ts-cw) * var(--ratio));
+}
+
+.table-stack-anchor {
+  visibility: hidden;
+}
+
+.table-stack-item {
+  z-index: calc(10 - var(--d, 0));
+  border-radius: 8px;
+  pointer-events: auto;
+  cursor: zoom-in;
+  transition: translate 160ms ease;
+}
+
+.table-stack-item:hover {
+  translate: 0 -6px;
+}
+
+/* The older objects stand a little smaller behind, fanned up and turned (their title bars show above): the next to resolve reads as the one in front. */
+.table-stack-item:not(.is-top) {
+  scale: 0.9;
+  rotate: calc(var(--d, 0) * -3deg);
+  transform-origin: 50% 0;
+}
+
+/* The stack's own place on the table: a glass plate under the pile and its count. */
+.table-stack::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: calc(var(--ts-cw) * -0.5 - (var(--n, 1) - 1) * var(--ts-dx) - 18px);
+  top: calc(var(--ts-cw) * var(--ratio) * -0.5 - (var(--n, 1) - 1) * var(--ts-dy) - 42px);
+  width: calc(var(--ts-cw) + (var(--n, 1) - 1) * var(--ts-dx) + 36px);
+  height: calc(var(--ts-cw) * var(--ratio) + (var(--n, 1) - 1) * var(--ts-dy) + 58px);
+  border-radius: 14px;
+  border: 1px solid rgba(var(--neon-rgb), 0.4);
+  background: linear-gradient(180deg, rgba(10, 24, 52, 0.62), rgba(3, 10, 26, 0.78));
+  box-shadow:
+    0 0 26px rgba(var(--neon-rgb), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 18px 30px rgba(0, 0, 0, 0.45);
+}
+
+.table-stack.is-empty::before {
+  display: none;
+}
+
+/* How many objects are on the stack, above the pile. */
+.table-stack-count {
+  position: absolute;
+  left: calc((var(--n, 1) - 1) * var(--ts-dx) * -1);
+  top: calc(var(--ts-cw) * var(--ratio) * -0.5 - (var(--n, 1) - 1) * var(--ts-dy) - 28px);
+  translate: -50% 0;
+  padding: 1px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--neon);
+  background: rgba(3, 10, 28, 0.92);
+  color: #eaf7ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 0 14px rgba(var(--neon-rgb), 0.45);
+}
+
+.table-stack-item.hl-selectable,
+.table-stack-item.hl-selected {
+  cursor: pointer;
+}
+
+.table-stack-item > .board-card-image,
+.table-stack-item > .ability-tile {
+  width: 100%;
+  height: 100%;
+  border-radius: 7px;
+  box-shadow: 0 0 0 2px rgba(var(--neon-rgb), 0.5), var(--card-depth-lift);
+}
+
+/* An ability's tile on the pile is as large as a card: its emblem grows with it, and it names its source and says what it does. */
+.table-stack-item > .ability-tile {
+  --stack-cw: var(--ts-cw);
+  justify-content: flex-start;
+  padding: calc(var(--ts-cw) * 0.1) calc(var(--ts-cw) * 0.07) 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.table-stack-item > .ability-tile .ability-emblem {
+  font-size: calc(var(--ts-cw) * 0.22);
+}
+
+.table-stack-item > .ability-tile .ability-source,
+.table-stack-item > .ability-tile .ability-text {
+  display: block;
+}
+
+.table-stack-item.is-theirs > .board-card-image,
+.table-stack-item.is-theirs > .ability-tile {
+  box-shadow: 0 0 0 2px rgba(var(--neon-2-rgb), 0.5), var(--card-depth-lift);
+}
+
+.table-stack-item.is-top > .board-card-image,
+.table-stack-item.is-top > .ability-tile {
+  box-shadow: 0 0 0 2px var(--neon), 0 0 28px rgba(var(--neon-rgb), 0.6), 0 24px 34px rgba(0, 0, 0, 0.65);
+}
+
+.table-stack-item.is-top.is-theirs > .board-card-image,
+.table-stack-item.is-top.is-theirs > .ability-tile {
+  box-shadow: 0 0 0 2px var(--neon-2), 0 0 28px rgba(var(--neon-2-rgb), 0.6), 0 24px 34px rgba(0, 0, 0, 0.65);
+}
+
+.table-stack-item.hl-selectable > .board-card-image,
+.table-stack-item.hl-selectable > .ability-tile {
+  box-shadow: 0 0 0 3px var(--hl-select), 0 0 20px var(--hl-select), var(--card-depth-lift);
+}
+
+.table-stack-item.hl-selected > .board-card-image,
+.table-stack-item.hl-selected > .ability-tile {
+  box-shadow: 0 0 0 4px var(--hl-select), 0 0 28px var(--hl-select), var(--card-depth-lift);
+}
+
+.stack-item.is-top {
+  border-color: var(--neon);
+  box-shadow:
+    0 0 0 1px var(--neon),
+    0 0 24px rgba(var(--neon-rgb), 0.4),
+    0 14px 30px rgba(0, 0, 0, 0.7);
+}
+
+.stack-item.is-top.is-theirs {
+  border-color: var(--neon-2);
+  box-shadow:
+    0 0 0 1px var(--neon-2),
+    0 0 24px rgba(var(--neon-2-rgb), 0.4),
+    0 14px 30px rgba(0, 0, 0, 0.7);
+}
+
+.stack-item.is-focus {
+  border-color: var(--danger);
+}
+
+/* A spell or ability the prompt lets the player choose (CR 115.1): the whole entry is the button. */
+.stack-item.hl-selectable {
+  box-shadow: 0 0 0 2px var(--hl-select), 0 0 14px var(--hl-select);
+}
+
+.stack-item.hl-selected {
+  box-shadow: 0 0 0 3px var(--hl-select), 0 0 22px var(--hl-select);
+}
+
+.stack-card {
+  line-height: 0;
+}
+
+.stack-card .board-card-image {
+  width: var(--stack-cw);
+  height: calc(var(--stack-cw) * var(--ratio));
+}
+
+.stack-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.stack-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-weight: 800;
+}
+
+.stack-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stack-kind,
+.stack-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.stack-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stack-text {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.stack-targets {
+  font-size: 12px;
+}
+
+.target-chip {
+  display: inline-block;
+  margin: 1px 2px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid var(--danger);
+  background: rgba(255, 107, 107, 0.12);
+}
+
+/* An ability on the stack: a card-like tile of our own (no picture). */
+.ability-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: var(--stack-cw);
+  height: calc(var(--stack-cw) * var(--ratio));
+  border-radius: 8px;
+  border: 2px solid rgba(var(--neon-rgb), 0.8);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(127, 220, 255, 0.45), transparent 55%),
+    linear-gradient(170deg, #12305a, #061230 70%);
+  box-shadow: var(--card-depth), inset 0 0 18px rgba(var(--neon-rgb), 0.35);
+  line-height: 1.1;
+  color: #e9f8ff;
+}
+
+.ability-triggered {
+  border-color: rgba(255, 214, 110, 0.9);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255, 220, 130, 0.5), transparent 55%),
+    linear-gradient(170deg, #4a3410, #1d1206 70%);
+  box-shadow: var(--card-depth), inset 0 0 18px rgba(255, 200, 90, 0.35);
+  color: #fff6dc;
+}
+
+.ability-emblem {
+  font-size: calc(var(--stack-cw) * 0.36);
+  line-height: 1;
+  text-shadow: 0 0 14px currentColor;
+}
+
+.ability-kind {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* An ability drawn as its source's card (StackPanel.tsx AbilityTile): the picture fills the tile, with the band across its top. */
+.ability-tile.has-card {
+  position: relative;
+  display: block;
+  padding: 0;
+  border-width: 2px;
+  background: #000;
+  overflow: hidden;
+}
+
+.ability-tile.has-card > .ability-card-picture {
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+  --card-w: 100cqw;
+  --card-min-font: 7px;
+}
+
+.ability-tile.has-card > .ability-card-picture > * {
+  width: 100%;
+  height: 100%;
+}
+
+.ability-band {
+  position: absolute;
+  left: 50%;
+  top: 11%;
+  translate: -50% 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  background: rgba(4, 10, 26, 0.92);
+  color: #9fe6ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.ability-triggered .ability-band {
+  color: #ffd66e;
+}
+
+/* The ability's own text along the bottom of the card, on the table's pile only (the rail shows it beside the small card). */
+.ability-card-text {
+  display: none;
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 5%;
+  max-height: 45%;
+  overflow: hidden;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgba(4, 10, 26, 0.9);
+  color: #f2f8ff;
+  font-size: max(10px, calc(var(--stack-cw) * 0.06));
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.table-stack-item > .ability-tile.has-card {
+  padding: 0;
+}
+
+.table-stack-item > .ability-tile .ability-card-text {
+  display: block;
+}
+
+/* The source and the text show on the table's pile only (the rail lists them beside its small tile). */
+.ability-source,
+.ability-text {
+  display: none;
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.ability-source {
+  font-size: max(11px, calc(var(--stack-cw) * 0.075));
+  font-weight: 800;
+}
+
+.ability-text {
+  font-size: max(10px, calc(var(--stack-cw) * 0.06));
+  line-height: 1.3;
+  opacity: 0.92;
+}
+
+/*
+ * The rail's upper half (the Log button, the stack, reminders) and lower half (the prompt) have the same fixed share of the rail whatever they hold, so
+ * the turn structure between them never moves; each half scrolls inside itself.
+ */
+.rail-top {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.log-toggle {
+  flex: none;
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.log-toggle.is-open {
+  border-color: var(--neon, #1fb8ff);
+  box-shadow: 0 0 10px rgba(var(--neon-rgb), 0.45);
+}
+
+.log-count {
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* Turn structure (in the middle of the rail, between the stack and the prompt) */
+.phase-bar {
+  --phase-cols: 1.6em repeat(12, minmax(0, 1fr));
+  flex: none;
+  display: grid;
+  gap: 3px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--neon-rgb), 0.25);
+  background: rgba(3, 9, 22, 0.85);
+}
+
+.phase-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.phase-row,
+.stop-row {
+  display: grid;
+  grid-template-columns: var(--phase-cols);
+  align-items: center;
+  gap: 2px;
+}
+
+.phase-steps {
+  display: contents;
+  list-style: none;
+}
+
+.phase-turn,
+.stop-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phase-turn {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.phase-step {
+  padding: 3px 0;
+  border: 1px solid rgba(var(--neon-rgb), 0.14);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  background: rgba(232, 232, 240, 0.07);
+  color: var(--text-muted);
+}
+
+.phase-step .step-long {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.phase-step .step-short {
+  display: inline;
+}
+
+.phase-step.is-current {
+  background: linear-gradient(180deg, #8fe2ff, #1fb8ff);
+  color: #00121f;
+  box-shadow: 0 0 12px rgba(var(--neon-rgb), 0.7);
+}
+
+.phase-bar:not(.is-my-turn) .phase-step.is-current {
+  background: linear-gradient(180deg, #ff8cff, #f500f5);
+  color: #1a001a;
+  box-shadow: 0 0 12px rgba(var(--neon-2-rgb), 0.6);
+}
+
+.stop-cell {
+  display: flex;
+  justify-content: center;
+}
+
+/* An off stop is a 2px ring in the muted text colour (about 8:1 against the bar; WCAG 1.4.11 needs 3:1), also when disabled. */
+.game-board .stop-toggle {
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border-radius: 999px;
+  border: 2px solid var(--text-muted);
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.game-board .stop-toggle::after {
+  display: none;
+}
+
+.game-board .stop-toggle:hover {
+  border-color: var(--neon);
+  background: rgba(var(--neon-rgb), 0.2);
+  box-shadow: 0 0 8px var(--glow);
+  transform: none;
+}
+
+.game-board .stop-toggle.is-on {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  box-shadow: 0 0 8px var(--glow-2);
+}
+
+.stop-toggle:disabled {
+  cursor: default;
+}
+
+.full-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* The prompt: the bottom of the rail, with its big action button (Arena's Pass button corner). */
+.board-prompt {
+  /* The rail's lower half, its height fixed (see .rail-top): a long list of choices scrolls in its own box and the row of actions stays whole below it
+     (prompts.css); anything else too tall scrolls here, the actions pinned at the bottom edge. */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--neon-rgb), 0.45);
+  background: linear-gradient(180deg, rgba(10, 24, 50, 0.97), rgba(4, 10, 24, 0.98));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 26px rgba(var(--neon-rgb), 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* Reminders */
+.reminders {
+  flex: none;
+  max-height: 22%;
+  overflow-y: auto;
+}
+
+.reminders ul {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+}
+
+/* Log: a drawer over the table's right edge, opened by the rail's Log button; it never changes the rail's layout. */
+.game-log {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  width: min(420px, 46%);
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--neon-rgb), 0.45);
+  background: linear-gradient(180deg, rgba(8, 20, 44, 0.98), rgba(3, 8, 20, 0.98));
+  box-shadow: 0 0 26px rgba(var(--neon-rgb), 0.18), 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.log-close {
+  padding: 0 8px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.log-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.log-header .panel-title {
+  flex: 1;
+  margin: 0;
+}
+
+.log-filter select {
+  font: inherit;
+  font-size: 11px;
+  padding: 1px 4px;
+  color: var(--text);
+}
+
+.log-list {
+  flex: 1;
+  min-height: 0;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  font-size: 11.5px;
+}
+
+.log-entry {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(var(--neon-rgb), 0.08);
+}
+
+.log-turn {
+  margin-right: 4px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.log-warning .log-text,
+.log-manual .log-text {
+  color: #f5c76b;
+}
+
+.log-error .log-text {
+  color: var(--danger);
+}
+
+/*
+ * Zoom: an overlay over the table at the edge away from the pointed card (zoom-left / zoom-right), never over the side rail, so the stack with its
+ * controller and targets stays readable while the player decides (CR 405). Pointing at cards never moves anything; no filter touches the image.
+ */
+.zoom {
+  position: absolute;
+  top: 8px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  --cw-l: clamp(200px, 50cqh, 330px);
+  width: min(var(--cw-l), calc(60vh / var(--ratio)), 45%);
+  pointer-events: none;
+}
+
+.zoom-left {
+  left: 10px;
+}
+
+.zoom-right {
+  right: 10px;
+}
+
+.zoom-card {
+  container-type: inline-size;
+  --card-w: 100cqw;
+  width: 100%;
+  aspect-ratio: 1 / 1.4;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px rgba(var(--neon-rgb), 0.5), 0 0 30px rgba(var(--neon-rgb), 0.3), 0 18px 40px rgba(0, 0, 0, 0.8);
+}
+
+.zoom-card > * {
+  width: 100%;
+  height: 100%;
+}
+
+/* "Face down (only you can see it)": outside the image, above it */
+.zoom-label {
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-2);
+  background: var(--table-bg);
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* Hidden, not removed: the zoom opens and closes at every card the pointer crosses, and taking its box in or out of the table (a size container) cost
+   ~40 ms each time, a visible hitch (Chrome, 2026-10-21); hidden it costs ~2 ms. */
+.zoom-empty {
+  visibility: hidden;
+}
+
+/* M6-11: what the zoom says about the card, outside the image: a face-down creature's public facts, its layout states, the other face of a double-faced card */
+.zoom-note,
+.zoom-status {
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--table-bg);
+  color: var(--text);
+}
+
+.zoom-status {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+}
+
+.zoom-other {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 55%;
+}
+
+.zoom-other-label {
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--table-bg);
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* The Scryfall picture's artist under each picture in the zoom (cards/ArtistCredit.tsx), on the table's colour so it reads over the cards beneath. */
+.zoom-credit {
+  align-self: center;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--table-bg);
+}
+
+/* Under a card in a zone viewer: as wide as the card's picture, never wider (it does not widen the card). */
+.board-card-credit {
+  align-self: stretch;
+  width: 0;
+  min-width: 100%;
+  margin: 0;
+  font-size: 0.72rem;
+}
+
+/* Zone viewer: a modal over a backdrop */
+.zone-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 59;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.zone-viewer {
+  position: fixed;
+  inset: 8vh 10vw;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--neon-rgb), 0.45);
+  background: linear-gradient(180deg, #0a1832, #040a18);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--neon-rgb), 0.2), 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.zone-viewer-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zone-viewer-header h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+}
+
+.zone-viewer-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  overflow-y: auto;
+}
+
+/* Short windows (900px tall and less): a narrower rail and smaller type in it. */
+@media (max-height: 760px) {
+  .board-side {
+    gap: 6px;
+    padding: 6px 6px 6px 8px;
+  }
+
+  .phase-bar {
+    padding: 4px 6px;
+    gap: 2px;
+  }
+}
+
+/* Narrow windows: the rail narrows; the turn label shortens. */
+@media (max-width: 1199px) {
+  .game-board {
+    --rail-w: clamp(236px, 23.5vw, 272px);
+  }
+
+  .side-bar {
+    gap: 8px;
+  }
+}

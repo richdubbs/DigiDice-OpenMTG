@@ -1,0 +1,1085 @@
+[
+ {
+  "id": "sta.r5static.attackTax.you",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1"
+  ],
+  "pattern": "{f:Filter} can't attack you unless their controller pays {m:ManaCost} for each ( creature they control that's attacking you | of those creatures )",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "cost": {
+      "mana": "$m"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Green creatures can't attack you unless their controller pays {3} for each creature they control that's attacking you."
+   },
+   {
+    "text": "Creatures with power 3 or greater can't attack you unless their controller pays {1}{W} for each of those creatures."
+   }
+  ],
+  "counterExamples": [
+   "Green creatures can't attack you unless their controller sacrifices a land for each creature they control that's attacking you.",
+   "Green creatures can't block unless their controller pays {3} for each creature they control that's attacking you.",
+   "Green creatures can't attack you if their controller pays {3} for each creature they control that's attacking you."
+  ]
+ },
+ {
+  "id": "sta.r5static.attackTax.youOrPlaneswalkers",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1"
+  ],
+  "pattern": "{f:Filter} can't attack you or planeswalkers you control unless their controller pays {m:ManaCost} for each of those creatures",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "cost": {
+      "mana": "$m"
+     },
+     "defenders": "both"
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Creatures can't attack you or planeswalkers you control unless their controller pays {3} for each of those creatures."
+   },
+   {
+    "text": "Nongreen creatures can't attack you or planeswalkers you control unless their controller pays {W/P} for each of those creatures."
+   }
+  ],
+  "counterExamples": [
+   "Creatures can't attack you or planeswalkers you control unless their controller pays 3 life for each of those creatures.",
+   "Creatures can't attack you or artifacts you control unless their controller pays {3} for each of those creatures.",
+   "Creatures can't attack you or planeswalkers you control unless their controller pays {3} for each creature they control."
+  ]
+ },
+ {
+  "id": "sta.r5static.attackTax.planeswalkers",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1"
+  ],
+  "pattern": "{f:Filter} can't attack planeswalkers you control unless their controller pays {m:ManaCost} for each ( creature they control that's attacking a planeswalker you control | of those creatures )",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "cost": {
+      "mana": "$m"
+     },
+     "defenders": "planeswalkers"
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Creatures can't attack planeswalkers you control unless their controller pays {2}{W} for each creature they control that's attacking a planeswalker you control."
+   },
+   {
+    "text": "Red creatures can't attack planeswalkers you control unless their controller pays {3} for each of those creatures."
+   }
+  ],
+  "counterExamples": [
+   "Creatures can't attack planeswalkers you control unless their controller pays {2}{W} for each creature you control.",
+   "Creatures can't attack planeswalkers you control unless their controller pays 2 life for each of those creatures."
+  ]
+ },
+ {
+  "id": "sta.r5static.aslong.attackTax.you",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1"
+  ],
+  "pattern": "as long as {c:Cond} , {f:Filter} can't attack you unless their controller pays {m:ManaCost} for each ( creature they control that's attacking you | of those creatures )",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "cost": {
+      "mana": "$m"
+     }
+    }
+   ],
+   "condition": "$c"
+  },
+  "consumes": [
+   "as long as",
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "As long as ~ is untapped, green creatures can't attack you unless their controller pays {3} for each creature they control that's attacking you."
+   },
+   {
+    "text": "As long as ~ is untapped, creatures with power 3 or greater can't attack you unless their controller pays {1}{W} for each of those creatures."
+   }
+  ],
+  "counterExamples": [
+   "As long as ~ is untapped, green creatures can't attack you unless their controller sacrifices a land for each creature they control that's attacking you.",
+   "As long as ~ is untapped, green creatures can't block unless their controller pays {3} for each creature they control that's attacking you.",
+   "As long as ~ is untapped, green creatures can't attack you if their controller pays {3} for each creature they control that's attacking you."
+  ]
+ },
+ {
+  "id": "sta.r5static.aslong.attackTax.youOrPlaneswalkers",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1"
+  ],
+  "pattern": "as long as {c:Cond} , {f:Filter} can't attack you or planeswalkers you control unless their controller pays {m:ManaCost} for each of those creatures",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "cost": {
+      "mana": "$m"
+     },
+     "defenders": "both"
+    }
+   ],
+   "condition": "$c"
+  },
+  "consumes": [
+   "as long as",
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "As long as ~ is untapped, creatures can't attack you or planeswalkers you control unless their controller pays {3} for each of those creatures."
+   },
+   {
+    "text": "As long as ~ is untapped, nongreen creatures can't attack you or planeswalkers you control unless their controller pays {W/P} for each of those creatures."
+   }
+  ],
+  "counterExamples": [
+   "As long as ~ is untapped, creatures can't attack you or planeswalkers you control unless their controller pays 3 life for each of those creatures.",
+   "As long as ~ is untapped, creatures can't attack you or artifacts you control unless their controller pays {3} for each of those creatures.",
+   "As long as ~ is untapped, creatures can't attack you or planeswalkers you control unless their controller pays {3} for each creature they control."
+  ]
+ },
+ {
+  "id": "sta.r5static.aslong.blockTax",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 509.1c",
+   "CR 509.1d",
+   "CR 509.1e",
+   "CR 509.1f",
+   "CR 604.1"
+  ],
+  "pattern": "as long as {c:Cond} , {f:Filter} can't block unless their controller pays {m:ManaCost} for each ( of those creatures | blocking creature they control )",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "blockTax",
+     "of": "$f",
+     "cost": {
+      "mana": "$m"
+     }
+    }
+   ],
+   "condition": "$c"
+  },
+  "consumes": [
+   "as long as",
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "As long as ~ is untapped, creatures can't block unless their controller pays {2} for each of those creatures."
+   },
+   {
+    "text": "As long as ~ is untapped, creatures without flying can't block unless their controller pays {1}{R} for each blocking creature they control."
+   }
+  ],
+  "counterExamples": [
+   "As long as ~ is untapped, creatures can't block unless their controller pays 2 life for each of those creatures.",
+   "As long as ~ is untapped, creatures can't block unless their controller pays {2} for each attacking creature.",
+   "As long as ~ is untapped, creatures can block unless their controller pays {2} for each of those creatures."
+  ]
+ },
+ {
+  "id": "eff.r5static.attackTax.you.lasting",
+  "kind": "effect",
+  "since": 8,
+  "status": "experimental",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1",
+   "CR 611.2a"
+  ],
+  "pattern": "{d:Dur} , {f:Filter} can't attack you unless their controller pays {m:ManaCost} for each ( creature they control that's attacking you | of those creatures )",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "cost": {
+      "mana": "$m"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Draw a card. Until your next turn, green creatures can't attack you unless their controller pays {4} for each creature they control that's attacking you."
+   },
+   {
+    "text": "Draw a card. This turn, green creatures can't attack you unless their controller pays {4} for each creature they control that's attacking you."
+   }
+  ],
+  "counterExamples": [
+   "Draw a card. Until your next turn, green creatures can attack you unless their controller pays {4} for each creature they control that's attacking you.",
+   "Draw a card. Until your next turn, green creatures can't attack you if their controller pays {4} for each creature they control that's attacking you."
+  ],
+  "subject": "none"
+ },
+ {
+  "id": "eff.r5static.attackTax.youOrPlaneswalkers.lasting",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1",
+   "CR 611.2a"
+  ],
+  "pattern": "{d:Dur} , {f:Filter} can't attack you or planeswalkers you control unless their controller pays {m:ManaCost} for each of those creatures",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "defenders": "both",
+     "cost": {
+      "mana": "$m"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Draw a card. Until your next turn, creatures can't attack you or planeswalkers you control unless their controller pays {4} for each of those creatures."
+   },
+   {
+    "text": "Draw a card. This turn, creatures can't attack you or planeswalkers you control unless their controller pays {4} for each of those creatures."
+   }
+  ],
+  "counterExamples": [
+   "Draw a card. Until your next turn, creatures can attack you or planeswalkers you control unless their controller pays {4} for each of those creatures.",
+   "Draw a card. Until your next turn, creatures can't attack you or planeswalkers you control if their controller pays {4} for each of those creatures."
+  ],
+  "subject": "none"
+ },
+ {
+  "id": "eff.r5static.attackTax.youOrPlaneswalkers.life.lasting",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1",
+   "CR 611.2a"
+  ],
+  "pattern": "{d:Dur} , {f:Filter} can't attack you or planeswalkers you control unless their controller pays {n:Qty} life for each of those creatures",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "defenders": "both",
+     "cost": {
+      "other": [
+       {
+        "kind": "payLife",
+        "amount": "$n"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Draw a card. Until your next turn, creatures can't attack you or planeswalkers you control unless their controller pays 3 life for each of those creatures."
+   },
+   {
+    "text": "Draw a card. This turn, creatures can't attack you or planeswalkers you control unless their controller pays 3 life for each of those creatures."
+   }
+  ],
+  "counterExamples": [
+   "Draw a card. Until your next turn, creatures can attack you or planeswalkers you control unless their controller pays 3 life for each of those creatures.",
+   "Draw a card. Until your next turn, creatures can't attack you or planeswalkers you control if their controller pays 3 life for each of those creatures."
+  ],
+  "subject": "none"
+ },
+ {
+  "id": "sta.r5static.attackTax.youOrPlaneswalkers.whereX",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 508.1h",
+   "CR 508.1i",
+   "CR 508.1j",
+   "CR 604.1"
+  ],
+  "pattern": "{f:Filter} can't attack you or planeswalkers you control unless their controller pays {x} for each of those creatures , where x is {q:Qty}",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "attackTax",
+     "of": "$f",
+     "defenders": "both",
+     "value": "$q"
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Creatures can't attack you or planeswalkers you control unless their controller pays {X} for each of those creatures, where X is the number of Walls you control."
+   },
+   {
+    "text": "Creatures can't attack you or planeswalkers you control unless their controller pays {X} for each of those creatures, where X is the number of Plains you control."
+   }
+  ],
+  "counterExamples": [
+   "Creatures can attack you or planeswalkers you control unless their controller pays {X} for each of those creatures, where X is the number of Walls you control.",
+   "Creatures can't attack you or planeswalkers you control if their controller pays {X} for each of those creatures, where X is the number of Walls you control."
+  ]
+ },
+ {
+  "id": "sta.r5static.blockTax.blocking.life",
+  "kind": "static",
+  "since": 8,
+  "status": "experimental",
+  "cr": [
+   "CR 509.1c",
+   "CR 509.1d",
+   "CR 509.1e",
+   "CR 509.1f",
+   "CR 604.1"
+  ],
+  "pattern": "{f:Filter} can't block {g:Filter} unless their controller pays {n:Qty} life for each ( of those creatures | blocking creature they control )",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "rule",
+     "rule": "blockTax",
+     "of": "$f",
+     "blocking": "$g",
+     "cost": {
+      "other": [
+       {
+        "kind": "payLife",
+        "amount": "$n"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Red creatures can't block creatures you control unless their controller pays 3 life for each blocking creature they control."
+   },
+   {
+    "text": "White creatures can't block creatures you control unless their controller pays 4 life for each blocking creature they control."
+   }
+  ],
+  "counterExamples": [
+   "Red creatures can block creatures you control unless their controller pays 3 life for each blocking creature they control.",
+   "Red creatures can't block creatures you control if their controller pays 3 life for each blocking creature they control."
+  ]
+ },
+ {
+  "id": "sta.r5static.attached.grant.duringTurn.otherwise",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 604.1",
+   "CR 611.3a",
+   "CR 613.1f",
+   "CR 500.1"
+  ],
+  "pattern": "( equipped | enchanted ) creature has {a:Abilities} during your turn . otherwise , it has {b:Abilities}",
+  "build": {
+   "kind": "static",
+   "condition": {
+    "cond": "turnOf",
+    "whose": "you"
+   },
+   "effects": [
+    {
+     "s": "continuous",
+     "affects": {
+      "ref": "attachedTo"
+     },
+     "mods": [
+      {
+       "layer": 6,
+       "add": "$a"
+      }
+     ]
+    }
+   ],
+   "otherwise": [
+    {
+     "s": "continuous",
+     "affects": {
+      "ref": "attachedTo"
+     },
+     "mods": [
+      {
+       "layer": 6,
+       "add": "$b"
+      }
+     ]
+    }
+   ]
+  },
+  "consumes": [
+   "otherwise"
+  ],
+  "examples": [
+   {
+    "text": "Equipped creature has first strike during your turn. Otherwise, it has vigilance."
+   },
+   {
+    "text": "Enchanted creature has flying during your turn. Otherwise, it has defender."
+   }
+  ],
+  "counterExamples": [
+   "Equipped creature has first strike during your turn. Then, it has vigilance.",
+   "Equipped creature has first strike during your turn. Otherwise, it gets +1/+1.",
+   "Equipped creature has first strike during your turn. Otherwise, you have vigilance."
+  ]
+ },
+ {
+  "id": "sta.r5static.attached.pump.aslongIs.otherwise.base.cantBlock",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 604.1",
+   "CR 611.3a",
+   "CR 613.4b",
+   "CR 613.4c",
+   "CR 509.1b"
+  ],
+  "pattern": "enchanted creature gets {pt:PT} as long as it's ( a | an ) {f:Filter} . otherwise , it has base power and toughness {b:BasePT} and can't block {g:Filter}",
+  "build": {
+   "kind": "static",
+   "condition": {
+    "cond": "matches",
+    "object": {
+     "ref": "attachedTo"
+    },
+    "filter": "$f"
+   },
+   "effects": [
+    {
+     "s": "continuous",
+     "affects": {
+      "ref": "attachedTo"
+     },
+     "mods": [
+      {
+       "layer": "7c",
+       "power": "$pt.p",
+       "toughness": "$pt.t"
+      }
+     ]
+    }
+   ],
+   "otherwise": [
+    {
+     "s": "continuous",
+     "affects": {
+      "ref": "attachedTo"
+     },
+     "mods": [
+      {
+       "layer": "7b",
+       "power": "$b.p",
+       "toughness": "$b.t"
+      }
+     ]
+    },
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "attachedTo"
+     },
+     "mode": "cant",
+     "action": "block",
+     "other": "$g"
+    }
+   ]
+  },
+  "consumes": [
+   "as long as",
+   "otherwise",
+   "can't"
+  ],
+  "examples": [
+   {
+    "text": "Enchanted creature gets +3/+1 as long as it's a Knight you control. Otherwise, it has base power and toughness 0/1 and can't block Knights."
+   },
+   {
+    "text": "Enchanted creature gets +1/+1 as long as it's an Elf you control. Otherwise, it has base power and toughness 1/1 and can't block creatures with flying."
+   }
+  ],
+  "counterExamples": [
+   "Enchanted creature gets +3/+1 as long as it's a Knight you control. Then, it has base power and toughness 0/1 and can't block Knights.",
+   "Enchanted creature gets +3/+1 as long as it's a Knight you control. Otherwise, it has base power 0 and can't block Knights."
+  ]
+ },
+ {
+  "id": "sta.r5static.has.allActivatedOf",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 604.1",
+   "CR 613.1f"
+  ],
+  "pattern": "{o:Obj} has all activated abilities of [( all | each )] {f:Filter}",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "continuous",
+     "affects": "$o",
+     "mods": [
+      {
+       "layer": 6,
+       "addActivatedOf": {
+        "ref": "each",
+        "filter": "$f"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "consumes": [
+   "all",
+   "each",
+   "each other"
+  ],
+  "examples": [
+   {
+    "text": "~ has all activated abilities of all artifact cards in your graveyard."
+   },
+   {
+    "text": "~ has all activated abilities of Goblins you control."
+   },
+   {
+    "text": "~ has all activated abilities of each other artifact you control."
+   }
+  ],
+  "counterExamples": [
+   "~ has all triggered abilities of all artifact cards in your graveyard.",
+   "~ has all activated abilities of target creature.",
+   "~ has no activated abilities of Goblins you control."
+  ]
+ },
+ {
+  "id": "sta.r5static.limit.attack",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1c",
+   "CR 604.1",
+   "CR 101.2"
+  ],
+  "pattern": "no more than {n:Qty} creature[s] can attack each combat",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "each",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      }
+     },
+     "mode": "cant",
+     "max": "$n",
+     "action": "attack"
+    }
+   ]
+  },
+  "consumes": [
+   "no more than",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "No more than three creatures can attack each combat."
+   },
+   {
+    "text": "No more than four creatures can attack each combat."
+   }
+  ],
+  "counterExamples": [
+   "At least three creatures can attack each combat.",
+   "No more than three creatures can attack each turn."
+  ]
+ },
+ {
+  "id": "sta.r5static.limit.attackYou",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1b",
+   "CR 508.1c",
+   "CR 604.1",
+   "CR 101.2"
+  ],
+  "pattern": "no more than {n:Qty} creature[s] can attack you each combat",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "each",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      }
+     },
+     "mode": "cant",
+     "max": "$n",
+     "action": "attackPlayer",
+     "otherPlayer": {
+      "ref": "you"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "no more than",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "No more than three creatures can attack you each combat."
+   },
+   {
+    "text": "No more than four creatures can attack you each combat."
+   }
+  ],
+  "counterExamples": [
+   "At least three creatures can attack you each combat.",
+   "No more than three creatures can attack you each turn."
+  ]
+ },
+ {
+  "id": "sta.r5static.aslong.limit.attackYou",
+  "kind": "static",
+  "since": 8,
+  "status": "experimental",
+  "cr": [
+   "CR 508.1b",
+   "CR 508.1c",
+   "CR 604.1",
+   "CR 611.3a",
+   "CR 101.2"
+  ],
+  "pattern": "as long as {c:Cond} , no more than {n:Qty} creature[s] can attack you each combat",
+  "build": {
+   "kind": "static",
+   "condition": "$c",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "each",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      }
+     },
+     "mode": "cant",
+     "max": "$n",
+     "action": "attackPlayer",
+     "otherPlayer": {
+      "ref": "you"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "as long as",
+   "no more than",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "As long as ~ is untapped, no more than three creatures can attack you each combat."
+   },
+   {
+    "text": "As long as you control an artifact, no more than three creatures can attack you each combat."
+   }
+  ],
+  "counterExamples": [
+   "As long as ~ is untapped, at least three creatures can attack you each combat.",
+   "As long as ~ is untapped, no more than three creatures can attack you each turn."
+  ]
+ },
+ {
+  "id": "sta.r5static.limit.attackSelf",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1b",
+   "CR 508.1c",
+   "CR 604.1",
+   "CR 101.2"
+  ],
+  "pattern": "no more than {n:Qty} creature[s] can attack ~ each combat",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "each",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      }
+     },
+     "mode": "cant",
+     "max": "$n",
+     "action": "attack",
+     "other": {
+      "self": true
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "no more than",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "No more than two creatures can attack ~ each combat."
+   },
+   {
+    "text": "No more than four creatures can attack ~ each combat."
+   }
+  ],
+  "counterExamples": [
+   "At least two creatures can attack ~ each combat.",
+   "No more than two creatures can attack ~ each turn."
+  ]
+ },
+ {
+  "id": "sta.r5static.limit.block",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 509.1b",
+   "CR 604.1",
+   "CR 101.2"
+  ],
+  "pattern": "no more than {n:Qty} creature[s] can block each combat",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "each",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      }
+     },
+     "mode": "cant",
+     "max": "$n",
+     "action": "block"
+    }
+   ]
+  },
+  "consumes": [
+   "no more than",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "No more than three creatures can block each combat."
+   },
+   {
+    "text": "No more than four creatures can block each combat."
+   }
+  ],
+  "counterExamples": [
+   "At least three creatures can block each combat.",
+   "No more than three creatures can block each turn."
+  ]
+ },
+ {
+  "id": "sta.r5static.you.protection.opponents",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 702.16b",
+   "CR 702.16c",
+   "CR 702.16e",
+   "CR 604.1"
+  ],
+  "pattern": "you have protection from each of your opponents",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "you"
+     },
+     "mode": "cant",
+     "action": "receiveDamage",
+     "other": {
+      "controller": "opponent"
+     }
+    },
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "you"
+     },
+     "mode": "cant",
+     "action": "beTargeted",
+     "other": {
+      "controller": "opponent"
+     }
+    },
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "you"
+     },
+     "mode": "cant",
+     "action": "beEnchanted",
+     "other": {
+      "controller": "opponent"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Flying\nYou have protection from each of your opponents."
+   },
+   {
+    "text": "Vigilance\nYou have protection from each of your opponents."
+   }
+  ],
+  "counterExamples": [
+   "You have protection from each of your creatures.",
+   "You have hexproof from each of your opponents.",
+   "Your opponents have protection from each of your opponents."
+  ]
+ },
+ {
+  "id": "eff.r5static.lasting.attack.otherThanYou",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1d",
+   "CR 611.2a",
+   "CR 102.3"
+  ],
+  "pattern": "{d:Dur} , {o:Objs} attack[s] each combat if able and attack[s] a player other than you if able",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": "$o",
+     "mode": "mustIfAble",
+     "action": "attack"
+    },
+    {
+     "s": "restrict",
+     "subject": "$o",
+     "mode": "mustIfAble",
+     "action": "attack",
+     "otherPlayer": {
+      "ref": "each",
+      "who": "opponent"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "each",
+   "other",
+   "if",
+   "if able"
+  ],
+  "examples": [
+   {
+    "text": "Draw a card. Until your next turn, each Goblin attacks each combat if able and attacks a player other than you if able."
+   },
+   {
+    "text": "Draw a card. Until end of turn, creatures your opponents control with flying attack each combat if able and attack a player other than you if able."
+   }
+  ],
+  "counterExamples": [
+   "Draw a card. Until your next turn, each Goblin attacks each combat if able and attacks a player other than its controller if able.",
+   "Draw a card. Until your next turn, each Goblin blocks each combat if able and attacks a player other than you if able."
+  ],
+  "subject": "object"
+ }
+]

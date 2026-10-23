@@ -1,0 +1,1240 @@
+[
+ {
+  "card": "Echocasting Symposium",
+  "expect": "full",
+  "verified": "r3-copy review, by hand against the Oracle text and the rules cited (eff.r3copy.player.creates.copyToken): the target player creates the token, so it is theirs (CR 111.2), a copy of the target creature you control (CR 707.2); Paradigm is its keyword line, as parsed before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target player",
+         "players": {
+          "who": "any"
+         }
+        },
+        {
+         "id": "t1",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature you control",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "copy",
+         "what": {
+          "ref": "target",
+          "id": "t1"
+         },
+         "result": "token",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "paradigm",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "paradigm"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fleeting Reflection",
+  "expect": "full",
+  "verified": "r3-copy review, by hand against the Oracle text and the rules cited (eff.r3copy.dur.becomeCopy): hexproof until end of turn (CR 702.11), untap, then until end of turn the first target becomes a copy of up to one other target creature (CR 707.2, 707.4, 115.3: distinct from the first target, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature you control",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        },
+        {
+         "id": "t1",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one other target creature",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "distinctFrom": [
+          "t0"
+         ]
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "hexproof",
+               "text": "hexproof"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "untap",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "1a",
+             "copyOf": {
+              "ref": "target",
+              "id": "t1"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Oko, the Ringleader",
+  "expect": "full",
+  "verified": "r3-copy review, by hand against the Oracle text and the rules cited (eff.r3copy.becomeCopy.dur.exceptHas, eff.stdmsh.forEach.filter.copy): at the beginning of combat on your turn ~ becomes a copy of up to one target creature you control until end of turn with hexproof as a copy exception (CR 707.9a, 611.2a); -5 creates one token copy of each other nonland permanent you control (CR 608.2f, 707.2, 109.2); +1 and -1 as parsed before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target creature you control",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": "1a",
+             "copyOf": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "except": [
+              {
+               "layer": 6,
+               "add": [
+                {
+                 "kind": "keyword",
+                 "keyword": "hexproof",
+                 "text": "hexproof"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "loyalty": 1
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "happened",
+          "event": {
+           "ev": "action",
+           "verb": "commitCrime",
+           "actor": "you"
+          },
+          "scope": "turn"
+         },
+         "then": [
+          {
+           "op": "discard",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ],
+         "else": [
+          {
+           "op": "discard",
+           "who": {
+            "ref": "you"
+           },
+           "count": 2
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "loyalty": -1
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "colors": [
+           "G"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Elk"
+          ],
+          "power": 3,
+          "toughness": 3
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "src": [
+       3
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "loyalty": -5
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "each",
+          "filter": {
+           "other": true,
+           "notTypes": [
+            "Land"
+           ],
+           "controller": "you"
+          }
+         },
+         "as": "each",
+         "do": [
+          {
+           "op": "copy",
+           "what": {
+            "ref": "bound",
+            "name": "each"
+           },
+           "result": "token",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Niko, Light of Hope",
+  "expect": "full",
+  "verified": "r3-copy review, by hand against the Oracle text and the rules cited (eff.r3copy.filter.becomeCopies.dur): exile the target, the Shards you control (locked in, CR 611.2c) become copies of it until the next end step (CR 707.2, 611.2a; 'until the next end step' is untilNextStep end), and the delayed trigger returns the exiled card at the beginning of the next end step (CR 603.7)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2,
+         "token": {
+          "predefined": "Shard"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target nonlegendary creature you control",
+         "filter": {
+          "notSupertypes": [
+           "Legendary"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "moved"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "untilNextStep",
+          "step": "end"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "subtypes": [
+              "Shard"
+             ],
+             "controller": "you"
+            }
+           },
+           "mods": [
+            {
+             "layer": "1a",
+             "copyOf": {
+              "ref": "target",
+              "id": "t0"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "when": {
+          "at": "step",
+          "step": "end",
+          "next": true
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "moved"
+           },
+           "to": {
+            "zone": "battlefield",
+            "controller": "owner"
+           }
+          }
+         ],
+         "capture": [
+          "moved"
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Cloning of Shredder",
+  "expect": "full",
+  "verified": "r3-copy review, by hand against the Oracle text and the rules cited (eff.r3copy.copyToken.notLegendary.subtype, eff.r3copy.linked.copyToken.notLegendary.subtype): chapter I exiles the target card (linked, CR 607.2a) and creates a token copy of it, except not legendary and a Mutant in addition (CR 707.9b, 205.4a, 205.1b); chapters II and III choose one card exiled with this Saga and create such a copy (CR 607.2a, 608.2d, 714.2b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "chapter",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature card from your graveyard",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "moved",
+         "link": "exiled"
+        },
+        {
+         "op": "copy",
+         "what": {
+          "ref": "bound",
+          "name": "moved"
+         },
+         "result": "token",
+         "who": {
+          "ref": "you"
+         },
+         "except": [
+          {
+           "layer": 4,
+           "supertypes": {
+            "remove": [
+             "Legendary"
+            ]
+           }
+          },
+          {
+           "layer": 4,
+           "subtypes": {
+            "add": [
+             "Mutant"
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "chapter",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "chapters": [
+       2,
+       3
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           },
+           "zone": "any",
+           "isCard": true
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "copied"
+        },
+        {
+         "op": "copy",
+         "what": {
+          "ref": "bound",
+          "name": "copied"
+         },
+         "result": "token",
+         "who": {
+          "ref": "you"
+         },
+         "except": [
+          {
+           "layer": 4,
+           "supertypes": {
+            "remove": [
+             "Legendary"
+            ]
+           }
+          },
+          {
+           "layer": 4,
+           "subtypes": {
+            "add": [
+             "Mutant"
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Everflowing Well // The Myriad Pools",
+  "expect": "full",
+  "verified": "r3-copy review, by hand against the Oracle text and the rules cited (eff.stdmsh.becomeCopy.dur, with the r3-copy mention fix): 'that spell' is the cast permanent spell, never the target permanent (CR 110.1); up to one other target permanent you control becomes a copy of it until end of turn (CR 707.2, 707.4, 611.2a); the front face as parsed before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "mill",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "exists",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "types": [
+          "Artifact",
+          "Battle",
+          "Creature",
+          "Enchantment",
+          "Land",
+          "Planeswalker"
+         ],
+         "zone": "graveyard",
+         "owner": "you",
+         "isCard": true
+        }
+       },
+       "atLeast": 8
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "changeFace",
+         "what": {
+          "ref": "self"
+         },
+         "to": "transform"
+        }
+       ]
+      },
+      "label": "Descend 8"
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "units": [
+          [
+           "U"
+          ]
+         ]
+        }
+       ]
+      },
+      "isMana": true
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "types": [
+           "Artifact",
+           "Battle",
+           "Creature",
+           "Enchantment",
+           "Land",
+           "Planeswalker"
+          ]
+         },
+         "manaFromSelf": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one other target permanent you control",
+         "filter": {
+          "controller": "you",
+          "other": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "1a",
+             "copyOf": {
+              "ref": "event",
+              "role": "spell"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Apprentice's Folly",
+  "expect": "full",
+  "verified": "Standard round 9 review (std-r9), by hand against the Oracle text and the rules cited (eff.stdeoe.choose.targets, eff.r3copy.copyToken.notLegendary.subtype.has; one golden card, a 6.9 deviation named in the round record): chapters I and II: target nontoken creature you control that doesn't share a name with a token you control; create a token copy of it except it isn't legendary, is a Reflection in addition to its other types and has haste (CR 707.9b, 205.4a, 702.10, 111.10); chapter III sacrifices all Reflections you control (CR 714.2b, 701.21a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "chapter",
+      "text": "I, II -- Choose target nontoken creature you control that doesn't have the same name as a token you control. Create a token that's a copy of it, except it isn't legendary, is a Reflection in addition to its other types, and has haste.",
+      "chapters": [
+       1,
+       2
+      ],
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target nontoken creature you control that doesn't have the same name as a token you control",
+         "filter": {
+          "token": false,
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "not": {
+           "sharesWith": {
+            "with": {
+             "ref": "each",
+             "filter": {
+              "controller": "you",
+              "token": true
+             }
+            },
+            "quality": "name"
+           }
+          }
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "copy",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "result": "token",
+         "who": {
+          "ref": "you"
+         },
+         "except": [
+          {
+           "layer": 4,
+           "supertypes": {
+            "remove": [
+             "Legendary"
+            ]
+           }
+          },
+          {
+           "layer": 4,
+           "subtypes": {
+            "add": [
+             "Reflection"
+            ]
+           }
+          },
+          {
+           "layer": 6,
+           "add": [
+            {
+             "kind": "keyword",
+             "keyword": "haste",
+             "text": "haste"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "chapter",
+      "text": "III -- Sacrifice all Reflections you control.",
+      "chapters": [
+       3
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Reflection"
+             ]
+            }
+           ],
+           "controller": "you"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Abyssal Harvester",
+  "expect": "full",
+  "verified": "r3-copy evidence added by std-rx32 (Standard), by hand against the Oracle text and the rules cited (eff.r3copy.copyToken.subtype): {T}: exile target creature card from a graveyard that was put there this turn, create a token copy of it that is a Nightmare in addition to its other types, then exile all other Nightmare tokens you control (other than the token just made). (CR 707.9b, 205.1b, 109.2, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "as": "b1",
+         "except": [
+          {
+           "layer": 4,
+           "subtypes": {
+            "add": [
+             "Nightmare"
+            ]
+           }
+          }
+         ],
+         "op": "copy",
+         "result": "token",
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "filter": {
+           "controller": "you",
+           "not": {
+            "is": {
+             "name": "b1",
+             "ref": "bound"
+            }
+           },
+           "subtypes": [
+            "Nightmare"
+           ],
+           "token": true
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "isCard": true,
+          "putThereThisTurn": true,
+          "types": [
+           "Creature"
+          ],
+          "zone": "graveyard"
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Séance",
+  "expect": "full",
+  "verified": "r3-copy evidence added by std-rx32 (tuning half), by hand against the Oracle text and the rules cited (eff.r3copy.copyToken.subtype): at the beginning of each upkeep you may exile target creature card from your graveyard; if you do, a token copy of it that is a Spirit in addition to its other types, exiled at the beginning of the next end step. (CR 707.9b, 205.1b, 603.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "as": "b1",
+           "op": "move",
+           "to": {
+            "zone": "exile"
+           },
+           "what": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "b0"
+         },
+         "op": "if",
+         "then": [
+          {
+           "as": "b2",
+           "except": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Spirit"
+              ]
+             }
+            }
+           ],
+           "op": "copy",
+           "result": "token",
+           "what": {
+            "name": "b1",
+            "ref": "bound"
+           },
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "capture": [
+            "b2"
+           ],
+           "do": [
+            {
+             "op": "move",
+             "to": {
+              "zone": "exile"
+             },
+             "what": {
+              "name": "b2",
+              "ref": "bound"
+             }
+            }
+           ],
+           "op": "delay",
+           "when": {
+            "at": "step",
+            "next": true,
+            "step": "end"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "isCard": true,
+          "owner": "you",
+          "types": [
+           "Creature"
+          ],
+          "zone": "graveyard"
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+{"card":"Spider-Verse","expect":"full","verified":"std-copy-1 review, by hand against the Oracle text and the rules cited (rid.r3copy.ifYouDo.copy.newTargets, promoted on this one card, the only one that prints the wording: a 6.9 deviation named in the std-copy-1 record; also sta.r3static.legendRule.exempt.filter, golden card 3 of 3 with Cadric, Soul Kindler and Council of Reeds, and rid.stdcopy1.copy.gains.ifPermanent): the legend rule doesn't apply to Spiders you control (CR 704.5j, 604.1); whenever you cast a spell from anywhere other than your hand you may copy it, and if you do you may choose new targets for the copy (CR 707.10, 707.10c, 118.12); if the copy is a permanent spell it gains haste, with no duration, kept by the token it becomes (CR 110.4b, 611.2a, 707.10f, 400.7a); do this only once each turn: the optional copy is taken at most once per turn (CR 603.2h)","faces":[{"abilities":[{"effects":[{"of":{"controller":"you","subtypes":["Spider"]},"rule":"legendRuleExempt","s":"rule"}],"kind":"static"},{"effect":{"steps":[{"as":"b0","do":[{"gains":{"add":[{"keyword":"haste","kind":"keyword"}],"ifPermanent":true},"newTargets":"may","op":"copy","result":"spell","what":{"ref":"event","role":"spell"},"who":{"ref":"you"}}],"op":"may","who":{"ref":"you"}}],"targets":[]},"kind":"triggered","limit":{"action":true,"max":1,"per":"turn"},"trigger":{"on":[{"ev":"cast","player":"you","spell":{"not":{"castFrom":"hand"}}}]}}]}]}
+]

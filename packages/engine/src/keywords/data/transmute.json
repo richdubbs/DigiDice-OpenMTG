@@ -1,0 +1,81 @@
+{
+  "name": "transmute",
+  "rule": "702.53",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Discard this card: Search your library for a card with the same mana value as this card, reveal it, put it into your hand, then shuffle. Transmute only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{cost}, Discard ~: Search your library for a card with the same mana value as ~, reveal it, put it into your hand, then shuffle. Activate only as a sorcery.",
+      "zone": [
+        "hand"
+      ],
+      "sorcerySpeed": true,
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "discard",
+              "self": true,
+              "count": 1
+            }
+          ]
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": {
+              "manaValue": {
+                "op": "==",
+                "value": {
+                  "q": "stat",
+                  "stat": "manaValue",
+                  "of": {
+                    "ref": "self"
+                  }
+                }
+              }
+            },
+            "max": 1,
+            "reveal": true,
+            "as": "found"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "found"
+            },
+            "to": {
+              "zone": "hand"
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "you"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "name": "evolve",
+  "rule": "702.100",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever a creature you control enters, if that creature has greater power or toughness than this creature, put a +1/+1 counter on this creature.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever a creature you control enters, if that creature's power is greater than ~'s power and/or that creature's toughness is greater than ~'s toughness, put a +1/+1 counter on ~.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "any",
+        "of": [
+          {
+            "cond": "compare",
+            "left": {
+              "q": "stat",
+              "stat": "power",
+              "of": {
+                "ref": "event",
+                "role": "subject"
+              }
+            },
+            "op": ">",
+            "right": {
+              "q": "stat",
+              "stat": "power",
+              "of": {
+                "ref": "self"
+              }
+            }
+          },
+          {
+            "cond": "compare",
+            "left": {
+              "q": "stat",
+              "stat": "toughness",
+              "of": {
+                "ref": "event",
+                "role": "subject"
+              }
+            },
+            "op": ">",
+            "right": {
+              "q": "stat",
+              "stat": "toughness",
+              "of": {
+                "ref": "self"
+              }
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "+1/+1",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

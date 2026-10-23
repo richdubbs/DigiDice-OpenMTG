@@ -1,0 +1,233 @@
+[
+  {
+    "id": "sta.stdry8.exert.asAttacks",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.43a",
+      "CR 508.1",
+      "CR 604.1"
+    ],
+    "pattern": "you may exert ~ as ( it | he | she ) attacks",
+    "build": {
+      "s": "rule",
+      "rule": "mayExertAsAttacks"
+    },
+    "consumes": [
+      "may",
+      "exert",
+      "as"
+    ],
+    "examples": [
+      {
+        "text": "You may exert this permanent as it attacks."
+      },
+      {
+        "text": "{3}{W}, {T}: You gain 2 life and scry 2.\nYou may exert this permanent as it attacks."
+      }
+    ],
+    "counterExamples": [
+      "You may exert target creature as it attacks.",
+      "You may exert this permanent as it blocks.",
+      "You may exert this permanent."
+    ]
+  },
+  {
+    "id": "sta.stdry8.exert.asAttacks.whenYouDo",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.43a",
+      "CR 508.1",
+      "CR 603.12"
+    ],
+    "pattern": "you may exert ~ as ( it | he | she ) attacks . when you do , {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "mayExertAsAttacks",
+          "then": {
+            "as": "exerted",
+            "do": [
+              {
+                "op": "reflexive",
+                "when": {
+                  "did": "exerted"
+                },
+                "targets": [],
+                "do": "$e"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "exert",
+      "as",
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "You may exert this permanent as it attacks. When you do, draw two cards."
+      },
+      {
+        "text": "{3}{U}, {T}: You gain 2 life and scry 2.\nYou may exert this permanent as it attacks. When you do, you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "You may exert this permanent as it attacks. Draw a card.",
+      "You may exert this permanent as it blocks. When you do, draw a card.",
+      "You may exert this permanent as it attacks. When you don't, draw a card."
+    ]
+  },
+  {
+    "id": "sta.stdry8.enchantedLand.creature.stillLand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 303.4",
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "enchanted land is ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature . it's still a land",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted land is a 4/2 red Goblin creature. It's still a land."
+      },
+      {
+        "text": "Enchanted land is a 1/7 blue Wall creature. It's still a land.\n{3}{U}, {T}: You gain 2 life and scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted land is a 4/2 red Goblin creature.",
+      "Enchanted land is a 4/2 red Goblin creature. It's still a creature.",
+      "Enchanted creature is a 4/2 red Goblin creature. It's still a land."
+    ]
+  },
+  {
+    "id": "sta.stdry8.enchantedLand.creature.with.stillLand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 303.4",
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "enchanted land is ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature with {a:Abilities} . it's still a land",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted land is a 4/2 red Goblin creature with first strike. It's still a land."
+      },
+      {
+        "text": "Enchanted land is a 1/7 blue Wall creature with defender and reach. It's still a land."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted land is a 4/2 red Goblin creature with first strike.",
+      "Enchanted land is a 4/2 red Goblin creature without first strike. It's still a land.",
+      "Enchanted creature is a 4/2 red Goblin creature with first strike. It's still a land."
+    ]
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "name": "umbra armor",
+  "rule": "702.89",
+  "params": [],
+  "mechanisms": [
+    "replacement",
+    "expands"
+  ],
+  "reminder": "If enchanted creature would be destroyed, instead remove all damage from it and destroy this Aura.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "If enchanted permanent would be destroyed, instead remove all damage marked on it and destroy this Aura.",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "action",
+            "verb": "destroy",
+            "object": {
+              "attachedToSource": true
+            }
+          },
+          "body": {
+            "b": "umbraArmor"
+          }
+        }
+      ]
+    }
+  ]
+}

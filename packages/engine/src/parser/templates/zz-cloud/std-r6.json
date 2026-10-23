@@ -1,0 +1,55 @@
+[
+  {
+    "id": "rst.stdr6.players.cant.draw.gainlife",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 119.7",
+      "CR 101.2",
+      "CR 614.17"
+    ],
+    "pattern": "( players | each player ) can't draw cards or gain life",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "draw"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "gainLife"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each player can't draw cards or gain life."
+      },
+      {
+        "text": "Flying\nEach player can't draw cards or gain life."
+      }
+    ],
+    "counterExamples": [
+      "Each player can't draw cards and gain life.",
+      "Each player can't draw cards or lose life.",
+      "Each player can't draw cards or gain life this turn."
+    ]
+  }
+]

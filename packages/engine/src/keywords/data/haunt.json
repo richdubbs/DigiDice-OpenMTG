@@ -1,0 +1,11 @@
+{
+  "name": "haunt",
+  "rule": "702.55",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this creature dies, exile it haunting target creature.",
+  "multiple": "independent",
+  "status": "planned"
+}

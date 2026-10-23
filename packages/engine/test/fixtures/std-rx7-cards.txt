@@ -1,0 +1,11 @@
+# std-rx7 (card wave 2, slice s20; test/cloud/std-rx7, golden cloud-std-rx7-review.json): keyword casualty; "Each <spells> you cast has casualty N";
+# "that many" after a dies trigger that describes the creature by its counters
+Silverquill, the Disputant
+Shadow Urchin
+A Little Chat
+Cut Your Losses
+Flawless Forgery
+Illicit Shipment
+Join the Maestros
+Light 'Em Up
+Make Disappear

@@ -1,0 +1,1852 @@
+[
+ {
+  "card": "Swallowed by Leviathan",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.then.counterUnless.forEach): the spell is targeted as it is cast (CR 601.2c); as it resolves you surveil 2, then the target spell's controller may pay {1} for each card in your graveyard, counted after the surveil (CR 608.2c, 608.2h); if they don't, the spell is countered (CR 118.12a, 701.6a); \"unless\" scopes the counter only, the surveil happens either way",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "spell",
+         "min": 1,
+         "max": 1
+        }
+       ],
+       "steps": [
+        {
+         "op": "surveil",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2
+        },
+        {
+         "op": "pay",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           }
+          ]
+         },
+         "times": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+           }
+          }
+         },
+         "else": [
+          {
+           "op": "counter",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thunderous Debut",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.dig.mayReveal.upTo): bargain is the keyword; you look at the top twenty cards, you may choose up to two creature cards among them and reveal exactly those (CR 701.20a, 608.2d); \"the revealed cards\" go onto the battlefield under your control if the spell was bargained (the cast record, CR 702.166b), otherwise into your hand; then you shuffle (CR 701.24a); choosing none moves nothing",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "bargain"
+     },
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "look",
+         "who": {
+          "ref": "you"
+         },
+         "at": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 20
+         },
+         "as": "them"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "library"
+          }
+         },
+         "min": 0,
+         "max": 2,
+         "as": "chosen"
+        },
+        {
+         "op": "reveal",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "wasCast",
+          "kicked": "bargain"
+         },
+         "then": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "chosen"
+           },
+           "to": {
+            "zone": "battlefield",
+            "controller": {
+             "ref": "you"
+            }
+           }
+          }
+         ],
+         "else": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "chosen"
+           },
+           "to": {
+            "zone": "hand"
+           }
+          }
+         ]
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Riddles in the Dark",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.look.separate.faceDownFaceUpPiles, rid.r5dig.opponentChoosesPile, eff.r5dig.putThatPile.andOther): you look at the top four cards and separate them into a face-down and a face-up pile, a pile may be empty (CR 700.3a, 700.3d); an opponent chooses one pile seeing the face-up cards and the number of face-down ones (CR 608.2d); the chosen pile goes into your hand and the other into your graveyard (CR 400.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "look",
+         "who": {
+          "ref": "you"
+         },
+         "at": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 4
+         },
+         "as": "looked"
+        },
+        {
+         "op": "piles",
+         "cards": {
+          "ref": "bound",
+          "name": "looked"
+         },
+         "separator": {
+          "ref": "you"
+         },
+         "chosen": "chosenPile",
+         "other": "otherPile",
+         "faceDown": true,
+         "chooser": {
+          "ref": "anOpponent"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosenPile"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "otherPile"
+         },
+         "to": {
+          "zone": "graveyard"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Curator of Destinies",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.look.separate.faceDownFaceUpPiles, rid.r5dig.opponentChoosesPile, eff.r5dig.putThatPile.andOther): can't be countered (CR 101.2), flying; as it enters you look at the top five cards and separate them into a face-down and a face-up pile (CR 700.3a, 700.3d); an opponent chooses one of those piles (CR 608.2d); that pile goes into your hand and the other into your graveyard",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "zone": [
+       "stack"
+      ],
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "beCountered"
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "look",
+         "who": {
+          "ref": "you"
+         },
+         "at": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 5
+         },
+         "as": "looked"
+        },
+        {
+         "op": "piles",
+         "cards": {
+          "ref": "bound",
+          "name": "looked"
+         },
+         "separator": {
+          "ref": "you"
+         },
+         "chosen": "chosenPile",
+         "other": "otherPile",
+         "faceDown": true,
+         "chooser": {
+          "ref": "anOpponent"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosenPile"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "otherPile"
+         },
+         "to": {
+          "zone": "graveyard"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Elemental Teachings",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.search.differentNames.andReveal, eff.r5dig.opponentChooses.nOfFound, eff.r5dig.putChosen.graveyard.restBattlefieldTapped.shuffle): you search for up to four land cards with different names and reveal them (CR 701.23a, 201.2b); an opponent chooses two of them, all of them when fewer than two were found (CR 608.2d); the chosen cards go into your graveyard and the rest onto the battlefield tapped under your control; then you shuffle (CR 701.24a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library",
+         "filter": {
+          "types": [
+           "Land"
+          ]
+         },
+         "min": 0,
+         "max": 4,
+         "differentNames": true,
+         "reveal": true,
+         "as": "search"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "anOpponent"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "search"
+           },
+           "zone": "library"
+          }
+         },
+         "min": 2,
+         "max": 2,
+         "as": "chosen"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "to": {
+          "zone": "graveyard"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "search"
+           },
+           "not": {
+            "is": {
+             "ref": "bound",
+             "name": "chosen"
+            }
+           },
+           "zone": "library"
+          }
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          },
+          "tapped": true
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Waltz of Rage",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.damage.equal.eachOtherCreature): the target creature you control deals damage equal to its power, read as the spell resolves (CR 608.2h), to each creature other than itself (CR 120.3, 109.2); a delayed trigger that lasts until end of turn exiles the top card of your library each time a creature you control dies, and its second instruction lets you play that card until the end of your next turn (CR 603.7, 611.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "not": {
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           }
+          }
+         },
+         "amount": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        },
+        {
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "subject": {
+            "types": [
+             "Creature"
+            ],
+            "controller": "you"
+           },
+           "from": "battlefield",
+           "to": "graveyard"
+          }
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "topCards",
+            "player": {
+             "ref": "you"
+            },
+            "count": 1
+           },
+           "to": {
+            "zone": "exile"
+           },
+           "as": "impulse"
+          },
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfNextTurn",
+            "whose": {
+             "ref": "you"
+            }
+           },
+           "effects": [
+            {
+             "s": "permit",
+             "who": {
+              "ref": "you"
+             },
+             "action": "play",
+             "of": {
+              "is": {
+               "ref": "bound",
+               "name": "impulse"
+              }
+             }
+            }
+           ]
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Nibelheim Aflame",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.damage.equal.eachOtherCreature): the chosen target creature you control deals damage equal to its power to each other creature (CR 120.3, 109.2, 608.2h); if the spell was cast from a graveyard (flashback, CR 702.34a) you discard your hand and draw four cards",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "not": {
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           }
+          }
+         },
+         "amount": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "wasCast",
+          "from": "graveyard"
+         },
+         "then": [
+          {
+           "op": "discard",
+           "who": {
+            "ref": "you"
+           },
+           "count": "hand"
+          },
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 4
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flashback",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 5
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Nova Flame",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.damage.equal.eachOtherCreature): X +1/+1 counters go on the target creature you control, then it deals damage equal to its power, counted with those counters (CR 608.2h, 122.1), to each other creature (CR 120.3, 109.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "kind": "+1/+1",
+         "count": {
+          "q": "X"
+         }
+        },
+        {
+         "op": "damage",
+         "source": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "not": {
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           }
+          }
+         },
+         "amount": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Suspend Aggression",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.exile.objAndTopCard, eff.r5dig.forEachOfThose.ownerMayPlay.endOfTheirNextTurn): one instruction exiles the target nonland permanent and the top card of your library (CR 701.13a, 401.1); for each of those cards its owner, and only its owner, may play it until the end of that player's next turn (CR 608.2f, 611.2a, 108.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "notTypes": [
+           "Land"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "union",
+          "of": [
+           {
+            "ref": "target",
+            "id": "t0"
+           },
+           {
+            "ref": "topCards",
+            "player": {
+             "ref": "you"
+            },
+            "count": 1
+           }
+          ]
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "them"
+        },
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "bound",
+          "name": "them"
+         },
+         "as": "card",
+         "do": [
+          {
+           "op": "effect",
+           "effects": [
+            {
+             "s": "permit",
+             "who": {
+              "ref": "ownerOf",
+              "object": {
+               "ref": "bound",
+               "name": "card"
+              }
+             },
+             "action": "play",
+             "of": {
+              "is": {
+               "ref": "bound",
+               "name": "card"
+              }
+             }
+            }
+           ],
+           "duration": {
+            "d": "endOfNextTurn",
+            "whose": {
+             "ref": "ownerOf",
+             "object": {
+              "ref": "bound",
+              "name": "card"
+             }
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Superior Foes of Spider-Man",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (the duration untilExiledWith of parser/holes/dur.ts, through eff.e29.permit.play.obj.dur; the if-you-do impulse lowering of r5-dig): trample; whenever you cast a spell with mana value 4 or greater you may exile the top card of your library; if you do, you may play that card, not the spell, until an effect of this creature exiles another card (CR 611.2a, 607.2a, 400.7); declining the exile gives no permission",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "trample"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "manaValue": {
+           "op": ">=",
+           "value": 4
+          }
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "topCards",
+            "player": {
+             "ref": "you"
+            },
+            "count": 1
+           },
+           "to": {
+            "zone": "exile"
+           },
+           "as": "them"
+          }
+         ],
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "untilExiledWith"
+           },
+           "effects": [
+            {
+             "s": "permit",
+             "who": {
+              "ref": "you"
+             },
+             "action": "play",
+             "of": {
+              "is": {
+               "ref": "bound",
+               "name": "them"
+              }
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Balustrade Spy",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.player.revealUntil.putThoseGraveyard): flying; as it enters the target player reveals cards from the top of their own library until they reveal a land card (all of it when there is none, CR 701.20a), then every revealed card, the land included, goes into its owner's graveyard (CR 404.1, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "as": "revealer",
+         "do": [
+          {
+           "op": "revealUntil",
+           "who": {
+            "ref": "iterating"
+           },
+           "filter": {
+            "types": [
+             "Land"
+            ]
+           },
+           "as": "hit",
+           "revealed": "revealed"
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "each",
+            "filter": {
+             "is": {
+              "ref": "bound",
+              "name": "revealed"
+             },
+             "zone": "library"
+            }
+           },
+           "to": {
+            "zone": "graveyard"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mirko Vosk, Mind Drinker",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.player.revealUntilN.putThoseGraveyard): flying; whenever it deals combat damage to a player, that player reveals cards from the top of their library until they reveal four land cards, then puts every revealed card into their graveyard (CR 701.20a, 404.1, 510.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "source": {
+          "self": true
+         },
+         "combat": true,
+         "recipient": {
+          "player": "any"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "event",
+          "role": "recipient"
+         },
+         "as": "revealer",
+         "do": [
+          {
+           "op": "revealUntil",
+           "who": {
+            "ref": "iterating"
+           },
+           "filter": {
+            "types": [
+             "Land"
+            ]
+           },
+           "as": "hit",
+           "revealed": "revealed",
+           "count": 4
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "each",
+            "filter": {
+             "is": {
+              "ref": "bound",
+              "name": "revealed"
+             },
+             "zone": "library"
+            }
+           },
+           "to": {
+            "zone": "graveyard"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mosswood Dreadknight // Dread Whispers",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.permit.castFromGraveyard.asAdventure): trample; when it dies you may cast the card from your graveyard as Dread Whispers only (the Adventure face) until the end of your next turn (CR 715.3, 715.3a, 611.2a); the creature face is not cast by this permission; the Adventure resolves and goes on an adventure in exile, from where the creature may be cast (CR 715.3d); a graveyard permission that covers the creature face still allows it",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "trample"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "cast",
+           "of": {
+            "is": {
+             "ref": "event",
+             "role": "subject"
+            }
+           },
+           "asAdventure": true
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hildibrand Manderville // Gentleman's Rise",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.permit.castFromGraveyard.asAdventure): creature tokens you control get +1/+1 (CR 613.4c); when it dies you may cast the card from your graveyard as Gentleman's Rise only until the end of your next turn (CR 715.3, 715.3a, 611.2a); the Adventure creates a 2/2 black Zombie token and goes on an adventure",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "token": true
+         }
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "cast",
+           "of": {
+            "is": {
+             "ref": "event",
+             "role": "subject"
+            }
+           },
+           "asAdventure": true
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "colors": [
+           "B"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Zombie"
+          ],
+          "power": 2,
+          "toughness": 2
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Chandra, Flameshaper",
+  "expect": "full",
+  "verified": "r5-dig review, by hand against the Oracle text and the rules cited (eff.r5dig.chooseOne.ofThem.implicit): +2 adds {R}{R}{R}, exiles the top three cards of your library, you choose one of those cards (CR 608.2d) and may play that card, not the others, this turn (CR 611.2c, 400.7); +1 makes a token copy of the target creature you control with haste and a sacrifice-at-end-step trigger (CR 707.9); -4 deals 8 damage divided among any number of target creatures and planeswalkers (CR 601.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": 2
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "units": [
+          [
+           "R"
+          ],
+          [
+           "R"
+          ],
+          [
+           "R"
+          ]
+         ]
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 3
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "them"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "any"
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "chosen"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "play",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "chosen"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": 1
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "copy",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "result": "token",
+         "who": {
+          "ref": "you"
+         },
+         "except": [
+          {
+           "layer": 6,
+           "add": [
+            {
+             "kind": "keyword",
+             "keyword": "haste"
+            },
+            {
+             "kind": "triggered",
+             "trigger": {
+              "on": [
+               {
+                "ev": "step",
+                "step": "end"
+               }
+              ]
+             },
+             "effect": {
+              "targets": [],
+              "steps": [
+               {
+                "op": "sacrifice",
+                "what": {
+                 "ref": "self"
+                }
+               }
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": -4
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": "any",
+         "filter": {
+          "types": [
+           "Creature",
+           "Planeswalker"
+          ]
+         },
+         "divide": {
+          "what": "damage",
+          "total": 8
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": 8,
+         "divided": "announced"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Summon: Brynhildr",
+  "expect": "full",
+  "verified": "wave 8 combine (r5-dig with r5-refs), by hand against the Oracle text and the rules cited (eff.r5dig.permit.play.duringTurnLoreCounterOnSelf, promoted to stable on this merge; chapters II and III are r5-refs's eff.r5refs.next.cast.itGains.untilEot): chapter I exiles the top card of your library and lets you play it during any turn you put a lore counter on this Saga (a permission with no end, while the turn's history has a lore counter you put on this object; the Saga is fixed as the effect begins, so the permission holds in the turn it is sacrificed: CR 611.2c, 122.6, 714.3c, 400.7); chapters II and III give the next creature spell you cast this turn haste (CR 603.7b, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "chapter",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 1
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "impulse"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "play",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "impulse"
+            }
+           },
+           "while": {
+            "cond": "happened",
+            "event": {
+             "ev": "counters",
+             "change": "put",
+             "kind": "lore",
+             "on": {
+              "is": {
+               "ref": "self"
+              }
+             },
+             "by": "you"
+            },
+            "scope": "turn"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "chapter",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "chapters": [
+       2,
+       3
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Creature"
+            ]
+           }
+          }
+         },
+         "do": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "event",
+              "role": "spell"
+             },
+             "mods": [
+              {
+               "layer": 6,
+               "add": [
+                {
+                 "kind": "keyword",
+                 "keyword": "haste"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kellan, Planar Trailblazer",
+  "expect": "full",
+  "verified": "r5-dig evidence added by std-rx32 (Standard), by hand against the Oracle text and the rules cited (eff.r5dig.becomes.subtypes.gains.permanent, eff.r5dig.becomes.basePT.subtypes.gains.permanent; r5-fxb's self-granted quote, extended by std-rx32 to \"If ~ is a Scout, it becomes ... and gains\"): {1}{R}: if it's a Scout it becomes a Human Faerie Detective for good (its creature types replaced) and gains \"Whenever Kellan deals combat damage to a player, exile the top card of your library; you may play it this turn\"; {2}{R}: if it's a Detective it becomes a 3/2 Human Faerie Rogue with double strike. (CR 205.1b, 611.2a, 613.1d, 613.1f, 613.4b, 201.5a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "subtypes": [
+            "Scout"
+           ]
+          },
+          "object": {
+           "ref": "self"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "layer": 4,
+               "subtypes": {
+                "set": [
+                 "Detective",
+                 "Faerie",
+                 "Human"
+                ]
+               }
+              },
+              {
+               "add": [
+                {
+                 "effect": {
+                  "steps": [
+                   {
+                    "as": "b0",
+                    "op": "move",
+                    "to": {
+                     "zone": "exile"
+                    },
+                    "what": {
+                     "count": 1,
+                     "player": {
+                      "ref": "you"
+                     },
+                     "ref": "topCards"
+                    }
+                   },
+                   {
+                    "duration": {
+                     "d": "endOfTurn"
+                    },
+                    "effects": [
+                     {
+                      "action": "play",
+                      "of": {
+                       "is": {
+                        "name": "b0",
+                        "ref": "bound"
+                       }
+                      },
+                      "s": "permit",
+                      "who": {
+                       "ref": "you"
+                      }
+                     }
+                    ],
+                    "op": "effect"
+                   }
+                  ],
+                  "targets": []
+                 },
+                 "kind": "triggered",
+                 "trigger": {
+                  "on": [
+                   {
+                    "combat": true,
+                    "ev": "damage",
+                    "recipient": {
+                     "player": "any"
+                    },
+                    "source": {
+                     "self": true
+                    }
+                   }
+                  ]
+                 }
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "subtypes": [
+            "Detective"
+           ]
+          },
+          "object": {
+           "ref": "self"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "layer": 4,
+               "subtypes": {
+                "set": [
+                 "Faerie",
+                 "Human",
+                 "Rogue"
+                ]
+               }
+              },
+              {
+               "add": [
+                {
+                 "keyword": "double strike",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              },
+              {
+               "layer": "7b",
+               "power": 3,
+               "toughness": 2
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ }
+]

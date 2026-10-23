@@ -1,0 +1,79 @@
+{
+  "name": "flashback",
+  "rule": "702.34",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "replacement"
+  ],
+  "reminder": "You may cast this card from your graveyard for its flashback cost. Then exile it.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "actions/cast.ts#castCheck",
+    "core/resolve.ts#leaveStack"
+  ],
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Flashback {cost}",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "from": "graveyard",
+          "name": "flashback",
+          "when": {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "types": [
+                "Instant",
+                "Sorcery"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "kind": "static",
+      "text": "If the flashback cost was paid, exile this card instead of putting it anywhere else any time it would leave the stack.",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "stack"
+          },
+          "condition": {
+            "cond": "wasCast",
+            "via": "flashback"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

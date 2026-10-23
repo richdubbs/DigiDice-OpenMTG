@@ -1,0 +1,10 @@
+# p2-damage-2 (Phase 2 lane p2-damage; test/cloud/p2-damage-2, golden p2-damage-2-review.json): Curses attached to a player, creatures that didn't attack this turn,
+# cards a player has drawn this turn, damage unless that player sacrifices it, a target chosen at random, tokens that each fight a different creature, a fight after
+# "Choose target creature"
+Cerebral Vortex
+Curse of Thirst
+Enchanter's Bane
+Ezuri's Predation
+Kratos, God of War
+Scab-Clan Giant
+Time to Feed

@@ -1,0 +1,85 @@
+[
+  {
+    "id": "rst.stdr9.cast.self.firstThreeTurns",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 601.3", "CR 101.2", "CR 500.7", "CR 102.1"],
+    "pattern": "you can't cast ~ during your first , second , or third turns of the game",
+    "build": {
+      "kind": "static",
+      "zone": ["stack"],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": { "ref": "self" },
+          "mode": "cant",
+          "action": "cast",
+          "when": { "cond": "all", "of": [{ "cond": "turnOf", "whose": "you" }, { "cond": "compare", "left": { "q": "turnsBegun" }, "op": "<=", "right": 3 }] }
+        }
+      ]
+    },
+    "consumes": ["can't"],
+    "needs": ["q:turnsBegun"],
+    "examples": [
+      {
+        "text": "You can't cast this spell during your first, second, or third turns of the game.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "You can't cast ~ during your first, second, or third turns of the game.",
+            "zone": ["stack"],
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": { "ref": "self" },
+                "mode": "cant",
+                "action": "cast",
+                "when": { "cond": "all", "of": [{ "cond": "turnOf", "whose": "you" }, { "cond": "compare", "left": { "q": "turnsBegun" }, "op": "<=", "right": 3 }] }
+              }
+            ]
+          }
+        ]
+      },
+      { "text": "You can't cast this card during your first, second, or third turns of the game." }
+    ],
+    "counterExamples": [
+      "You can't cast this spell during your first, second, or third turns.",
+      "You can't cast this spell during your opponents' first, second, or third turns of the game.",
+      "You can't cast this spell during your first or second turns of the game.",
+      "You can't cast this spell during your first, second, or third main phases of the game.",
+      "Your opponents can't cast this spell during your first, second, or third turns of the game."
+    ]
+  },
+  {
+    "id": "eff.stdr9.nextAttack.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": ["CR 603.7", "CR 603.7b", "CR 603.2c", "CR 508.1"],
+    "pattern": "when you next attack this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": { "ev": "attacks", "attacker": { "controller": "you" }, "count": { "op": ">=", "value": 1 } }
+      },
+      "do": "$x",
+      "duration": { "d": "endOfTurn" },
+      "once": true,
+      "batch": true
+    },
+    "consumes": ["when", "next", "this turn"],
+    "examples": [
+      { "text": "Draw a card. When you next attack this turn, untap all lands you control." },
+      { "text": "Creatures you control get +1/+0 until end of turn. When you next attack this turn, you gain 3 life." }
+    ],
+    "counterExamples": [
+      "Draw a card. When you next attack, untap all lands you control.",
+      "Draw a card. Whenever you attack this turn, untap all lands you control.",
+      "Draw a card. When an opponent next attacks this turn, untap all lands you control.",
+      "Draw a card. When you next cast a creature spell this turn, untap all lands you control."
+    ]
+  }
+]

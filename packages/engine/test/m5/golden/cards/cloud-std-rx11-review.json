@@ -1,0 +1,338 @@
+[
+ {
+  "card": "Long River Lurker",
+  "expect": "full",
+  "verified": "std-rx11 review (card wave 2, slice s16; Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdrx11.whenever.thatCreature.combatDamage.any.thisTurn; parser/lower/anaphora.ts#resolveInDelay, Mention.forTarget; render/refs.ts RenderState.inOwnEnters): ward {1}; other Frogs you control have ward {1}; when it enters, target creature you control can't be blocked this turn, and until end of turn, whenever that creature deals combat damage (once per combat damage step, whatever it was dealt to), you may exile it, and if you do, the exiled card returns to the battlefield under its owner's control (the returned permanent is a new object, so the delayed trigger does not see it again) (CR 400.7, 509.1b, 510.2, 603.7c, 603.6a, 608.2c, 702.21a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        }
+       ]
+      },
+      "keyword": "ward",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "other": true,
+          "subtypes": [
+           "Frog"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "cost": {
+             "mana": [
+              {
+               "amount": 1,
+               "kind": "generic"
+              }
+             ]
+            },
+            "keyword": "ward",
+            "kind": "keyword"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "action": "beBlocked",
+           "mode": "cant",
+           "s": "restrict",
+           "subject": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "do": [
+          {
+           "as": "b0",
+           "do": [
+            {
+             "as": "b1",
+             "op": "move",
+             "to": {
+              "zone": "exile"
+             },
+             "what": {
+              "ref": "event",
+              "role": "source"
+             }
+            }
+           ],
+           "op": "may",
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "cond": {
+            "cond": "did",
+            "step": "b0"
+           },
+           "op": "if",
+           "then": [
+            {
+             "op": "move",
+             "to": {
+              "controller": "owner",
+              "zone": "battlefield"
+             },
+             "what": {
+              "name": "b1",
+              "ref": "bound"
+             }
+            }
+           ]
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "combat": true,
+           "ev": "damage",
+           "source": {
+            "is": {
+             "id": "t0",
+             "ref": "target"
+            }
+           }
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ms. Marvel, Elastic Ally",
+  "expect": "full",
+  "verified": "std-rx11 review (card wave 2, slice s16; not Standard, tuning half), by hand against the Oracle text and the rules cited (filter powerGreaterThanBase, rules/filter.ts): reach; when it enters, target creature gets +2/+0 until end of turn; whenever a creature you control with power greater than its base power deals combat damage to a player, draw a card, only once each turn (CR 208.1, 603.2h, 613.4a-c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "reach",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 0
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "limit": {
+       "max": 1,
+       "per": "turn"
+      },
+      "trigger": {
+       "on": [
+        {
+         "combat": true,
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "controller": "you",
+          "powerGreaterThanBase": true,
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Baird, Argivian Recruiter",
+  "expect": "full",
+  "verified": "std-rx11 review (card wave 2, slice s16; not Standard, tuning half), by hand against the Oracle text and the rules cited (filter powerGreaterThanBase, rules/filter.ts, read by triggers/cond.ts): at the beginning of your end step, if you control a creature with power greater than its base power, create a 1/1 white Soldier creature token; the intervening if is checked as the trigger would trigger and again on resolution (CR 208.1, 603.4, 613.4a-c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Soldier"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "exists",
+       "of": {
+        "filter": {
+         "controller": "you",
+         "powerGreaterThanBase": true,
+         "types": [
+          "Creature"
+         ]
+        },
+        "ref": "each"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,141 @@
+[
+  {
+    "id": "sta.p2refs3.cantCast.chosenName",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 607.2d",
+      "CR 201.3",
+      "CR 101.2"
+    ],
+    "pattern": "spells with ( the chosen name | that name ) can't be cast",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "cast",
+      "other": {
+        "chosen": {
+          "link": "cardName",
+          "quality": "cardName"
+        }
+      }
+    },
+    "consumes": [
+      "can't",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As this enchantment enters, choose any nonland card name.\nSpells with that name can't be cast."
+      },
+      {
+        "text": "As this enchantment enters, choose any card name.\nSpells with that name can't be cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells with that name can't be cast.",
+      "As this enchantment enters, choose any nonland card name.\nSpells with that name can't be countered.",
+      "When this enchantment enters, choose a color.\nSpells of the chosen color can't be cast."
+    ]
+  },
+  {
+    "id": "sta.p2refs3.cantActivate.chosenName",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 113.7",
+      "CR 201.3",
+      "CR 607.2d"
+    ],
+    "pattern": "activated abilities of sources with ( the chosen name | that name ) can't be activated",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "zone": "any",
+          "chosen": {
+            "link": "cardName",
+            "quality": "cardName"
+          }
+        }
+      },
+      "mode": "cant",
+      "action": "activate"
+    },
+    "consumes": [
+      "can't",
+      "chosen"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "As this enchantment enters, choose any nonland card name.\nActivated abilities of sources with that name can't be activated."
+      },
+      {
+        "text": "As this enchantment enters, choose any card name.\nActivated abilities of sources with that name can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities of sources with that name can't be activated.",
+      "As this enchantment enters, choose any nonland card name.\nActivated abilities of sources with that name can't be activated during your turn.",
+      "As this enchantment enters, choose any nonland card name.\nTriggered abilities of sources with that name can't be activated."
+    ]
+  },
+  {
+    "id": "sta.p2refs3.all.chosenColor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1e",
+      "CR 105.3",
+      "CR 607.2d"
+    ],
+    "pattern": "all {f:Filter} are the chosen color",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 5,
+          "colors": {
+            "chosen": "color"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When this enchantment enters, choose a color.\nAll creatures are the chosen color."
+      },
+      {
+        "text": "When this enchantment enters, choose a color.\nAll artifacts and lands are the chosen color."
+      }
+    ],
+    "counterExamples": [
+      "All creatures are the chosen color.",
+      "When this enchantment enters, choose a color.\nAll creatures are the chosen creature type.",
+      "When this enchantment enters, choose a color.\nAll creatures are every color."
+    ]
+  }
+]

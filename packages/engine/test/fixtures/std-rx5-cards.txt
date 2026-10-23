@@ -1,0 +1,7 @@
+# std-rx5 (wave-2 slice s22; test/cloud/std-rx5, golden cloud-std-rx5-review.json): "<cards> exiled with ~" as a filter (a replacement's exile as the
+# linked instruction); put onto the battlefield [tapped] under your control with N additional counters; "becomes a P/T <subtypes> artifact creature" with no
+# duration; "Remove any number of <kind> counters from ~" and "that many"; "As ~ enters, choose a number between N and M" and "the chosen number" of the face
+The Darkness Crystal
+Tezzeret, Cruel Captain
+The Astonishing Ant-Man
+Talion, the Kindly Lord

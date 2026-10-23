@@ -1,0 +1,5 @@
+# ---- Round std-rk (slot K, Commander precon cards, tuning half by the hash split of design 6.12): counted opponents, "historic permanents" (Skeleton Crew is in std-re-cards.txt)
+Darksteel Splicer
+Voice of Many
+Heidegger, Shinra Executive
+Banish to Another Universe

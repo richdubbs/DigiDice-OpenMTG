@@ -1,0 +1,15 @@
+{
+  "name": "start your engines!",
+  "rule": "702.179",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "If you have no speed, it starts at 1. It increases once on each of your turns when an opponent loses life. Max speed is 4.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "core/sba.ts#speedSba",
+    "core/designations.ts#speedEvents"
+  ]
+}

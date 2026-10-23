@@ -1,0 +1,2 @@
+# std-costs-6: the golden cards of the round (test/m5/golden/cards/std-costs-6-review.json)
+Too Evil to Stay Dead

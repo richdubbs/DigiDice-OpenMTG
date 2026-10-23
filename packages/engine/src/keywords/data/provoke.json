@@ -1,0 +1,85 @@
+{
+  "name": "provoke",
+  "rule": "702.39",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks, you may have target creature defending player controls untap and block it if able.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, you may have target creature defending player controls untap and block it this combat if able.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "object",
+            "min": 1,
+            "max": 1,
+            "text": "target creature defending player controls",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": {
+                "ref": "defending"
+              }
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "untap",
+                "what": {
+                  "ref": "target",
+                  "id": "t0"
+                }
+              },
+              {
+                "op": "effect",
+                "duration": {
+                  "d": "endOfCombat"
+                },
+                "effects": [
+                  {
+                    "s": "restrict",
+                    "subject": {
+                      "ref": "target",
+                      "id": "t0"
+                    },
+                    "mode": "mustIfAble",
+                    "action": "block",
+                    "other": {
+                      "is": {
+                        "ref": "self"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,1031 @@
+[
+ {
+  "card": "Foreboding Fruit",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand against the Oracle text and the rules cited (Cond reading \"at least N <color> mana was spent to cast ~\", parser/holes/cond.ts#adamant; cond.if, eff.t6.draw.loselife, eff.token.you): the target player draws two and loses 2 life; a Food for you only if at least three of the mana paid for the spell was black (CR 601.2h, 106.1, 608.2c); played in std-rx25-scenarios.test.ts.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "count": 2
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": 2
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "wasCast",
+          "spent": {
+           "color": "B",
+           "atLeast": 3
+          }
+         },
+         "then": [
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "predefined": "Food"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Silverflame Ritual",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (Cond reading adamant, parser/holes/cond.ts#adamant; cond.if, eff.counters.put, eff.cont.grant.each): a +1/+1 counter on each creature you control, then vigilance until end of turn for creatures you control if at least three white mana was spent (CR 601.2h, 122.1, 611.2c).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "controller": "you"
+          }
+         },
+         "kind": "+1/+1",
+         "count": 1
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "wasCast",
+          "spent": {
+           "color": "W",
+           "atLeast": 3
+          }
+         },
+         "then": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "each",
+              "filter": {
+               "types": [
+                "Creature"
+               ],
+               "controller": "you"
+              }
+             },
+             "mods": [
+              {
+               "layer": 6,
+               "add": [
+                {
+                 "kind": "keyword",
+                 "keyword": "vigilance"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Slaying Fire",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (Cond reading adamant, parser/holes/cond.ts#adamant; eff.damage, rid.m6.instead.damage): 3 damage to any target, 4 instead if at least three red mana was spent (CR 601.2h, 120.3, 608.2c).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "anyTarget",
+         "min": 1,
+         "max": 1
+        }
+       ],
+       "steps": [
+        {
+         "op": "if",
+         "cond": {
+          "cond": "wasCast",
+          "spent": {
+           "color": "R",
+           "atLeast": 3
+          }
+         },
+         "then": [
+          {
+           "op": "damage",
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "amount": 4
+          }
+         ],
+         "else": [
+          {
+           "op": "damage",
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "amount": 3
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Unexplained Vision",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (Cond reading adamant, parser/holes/cond.ts#adamant; cond.if, eff.draw.you, eff.scry): draw three, then scry 3 if at least three blue mana was spent (CR 601.2h, 121.1, 701.22a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 3
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "wasCast",
+          "spent": {
+           "color": "U",
+           "atLeast": 3
+          }
+         },
+         "then": [
+          {
+           "op": "scry",
+           "who": {
+            "ref": "you"
+           },
+           "count": 3
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Flourishing Fox",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (trg.stdrx25.you.cycle.another, eff.counters.put): a cycle by you of a card other than this one puts a +1/+1 counter on it (CR 702.29a, 603.2, 109.1); cycling {1} as keyword data; played in std-rx25-scenarios.test.ts.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "action",
+         "verb": "cycle",
+         "actor": "you",
+         "object": {
+          "other": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "cycling",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Drannith Stinger",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (trg.stdrx25.you.cycle.another, eff.damage): a cycle by you of another card makes it deal 1 damage to each opponent (CR 702.29a, 603.2, 120.3).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "action",
+         "verb": "cycle",
+         "actor": "you",
+         "object": {
+          "other": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "each",
+          "who": "opponent"
+         },
+         "amount": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "cycling",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Spell Rupture",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (wrap.stdrx25.payelse.xWhere, eff.counter): the target spell's controller may pay {1} as many times as the greatest power among creatures you control, read as the payment is made; if they don't, the spell is countered (CR 118.12a, 107.3a, 608.2h, 701.5a); played in std-rx25-scenarios.test.ts.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "spell",
+         "min": 1,
+         "max": 1
+        }
+       ],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           }
+          ]
+         },
+         "times": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "controller": "you"
+           }
+          },
+          "agg": "max"
+         },
+         "else": [
+          {
+           "op": "counter",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rethink",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (wrap.stdrx25.payelse.xWhere, eff.counter): X is the target spell's own mana value (\"its\"), paid by its controller or the spell is countered (CR 118.12a, 202.3, 608.2h).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "spell",
+         "min": 1,
+         "max": 1
+        }
+       ],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           }
+          ]
+         },
+         "times": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "else": [
+          {
+           "op": "counter",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lilting Refrain",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (wrap.stdrx25.payelse.xWhere, trg.at, ch.may, eff.counters.put, eff.counter): an optional verse counter each upkeep; sacrificing it counters the target spell unless its controller pays X, the verse counters it had as it last existed (CR 118.12a, 608.2h, 112.7a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "putCounters",
+           "on": {
+            "ref": "self"
+           },
+           "kind": "verse",
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "self": true
+         },
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "spell",
+         "min": 1,
+         "max": 1
+        }
+       ],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           }
+          ]
+         },
+         "times": {
+          "q": "counters",
+          "on": {
+           "ref": "self"
+          },
+          "kind": "verse"
+         },
+         "else": [
+          {
+           "op": "counter",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mausoleum Wanderer",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (wrap.stdrx25.payelse.xWhere, trg.when, eff.pump, eff.counter): flying; +1/+1 until end of turn when another Spirit you control enters; sacrificed, it counters target instant or sorcery spell unless its controller pays X, its last known power (CR 118.12a, 608.2h; the last-known power is played in std-rx25-scenarios.test.ts).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "subtypes": [
+           "Spirit"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 1
+            }
+           ]
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "self": true
+         },
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "spell",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           }
+          ]
+         },
+         "times": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "self"
+          }
+         },
+         "else": [
+          {
+           "op": "counter",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Eldritch Pact",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (eff.stdrx25.playerDrawsLoses.whereX): X, the number of cards in the TARGET player's graveyard, is fixed once (a let), then that player draws X and loses X life (CR 608.2h, 107.3, 121.1, 119.3); played in std-rx25-scenarios.test.ts.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "let",
+         "name": "whereX",
+         "value": {
+          "q": "zoneSize",
+          "zone": "graveyard",
+          "of": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "count": {
+          "q": "var",
+          "name": "whereX"
+         }
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": {
+          "q": "var",
+          "name": "whereX"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Pact of the Serpent",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (eff.stdrx25.playerDrawsLoses.whereX, eff.t67.choose.creatureType): you choose a creature type, then X is the number of creatures of that type the target player controls, fixed once; that player draws X and loses X life (CR 608.2h, 205.3m, 121.1, 119.3).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "chooseValue",
+         "who": {
+          "ref": "you"
+         },
+         "what": "creatureType",
+         "as": "chosenCreatureType",
+         "link": "chosenCreatureType"
+        },
+        {
+         "op": "let",
+         "name": "whereX",
+         "value": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "controller": {
+             "ref": "target",
+             "id": "t0"
+            },
+            "chosen": {
+             "link": "chosenCreatureType",
+             "quality": "creatureType"
+            }
+           }
+          }
+         }
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "count": {
+          "q": "var",
+          "name": "whereX"
+         }
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": {
+          "q": "var",
+          "name": "whereX"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Soul Conduit",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (eff.stdrx25.exchange.lifeTotals.twoTargets): {6}, {T}: two different target players exchange life totals, each gaining or losing the difference (CR 701.12c, 115.3, 119.7-8); played in std-rx25-scenarios.test.ts.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 6
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 2,
+         "max": 2,
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "exchange",
+         "a": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "b": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "what": "life"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Axis of Mortality",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (eff.stdrx25.may.have.exchange.lifeTotals, trg.at): at the beginning of your upkeep you may have two target players exchange life totals (CR 701.12c, 608.2d, 603.3d); played in std-rx25-scenarios.test.ts.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 2,
+         "max": 2,
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "exchange",
+           "a": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "b": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "what": "life"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dross Scorpion",
+  "expect": "full",
+  "verified": "std-rx25 review, by hand (trg.selfOrAnother.dies, ch.may, eff.untap; renderer render/evt.ts#selfOrAnother, family self-or-another): an artifact creature itself, so \"~ or another artifact creature\" is every artifact creature that dies; you may untap target artifact (CR 603.2, 700.4, 701.26b); played in std-rx25-scenarios.test.ts.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "allTypes": [
+           "Artifact",
+           "Creature"
+          ]
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Artifact"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "untap",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,6 @@
+# std-costs-1 (lane std-costs): the golden cards of test/m5/golden/cards/std-costs-1-review.json
+Incinerator of the Guilty
+Urgent Necropsy
+Deadly Cover-Up
+Fabrication Foundry
+Rottenmouth Viper

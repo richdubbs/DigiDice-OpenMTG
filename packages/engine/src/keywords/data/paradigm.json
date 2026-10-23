@@ -1,0 +1,64 @@
+{
+  "name": "paradigm",
+  "rule": "702.192",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Then exile this spell. After you first resolve a spell with this name, you may cast a copy of it from exile without paying its mana cost at the beginning of each of your first main phases.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "spell",
+      "text": "If this is the first time a spell you control with this spell's name has resolved this game, at the beginning of each of your precombat main phases for the rest of the game, create a copy of this object in exile. You may cast the copy without paying its mana cost. Exile this spell.",
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "if",
+            "cond": {
+              "cond": "firstNamedResolution"
+            },
+            "then": [
+              {
+                "op": "delay",
+                "when": {
+                  "at": "step",
+                  "step": "main1",
+                  "whose": "you"
+                },
+                "duration": {
+                  "d": "permanent"
+                },
+                "do": [
+                  {
+                    "op": "cast",
+                    "who": {
+                      "ref": "you"
+                    },
+                    "what": {
+                      "ref": "self"
+                    },
+                    "copyIn": "exile",
+                    "free": true,
+                    "optional": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "zone": "exile"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+[
+  {
+    "id": "sta.stdrx7.spells.cast.each.casualty",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.153a",
+      "CR 601.2b"
+    ],
+    "pattern": "each {f:Filter} you cast has casualty {n:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "casualty",
+              "amount": "$n",
+              "text": "casualty"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each instant spell you cast has casualty 2."
+      },
+      {
+        "text": "Each artifact and enchantment spell you cast has casualty 3."
+      }
+    ],
+    "counterExamples": [
+      "Each instant spell you control has casualty 2.",
+      "Each instant spell an opponent casts has casualty 2.",
+      "Each instant spell you cast has conspire 2."
+    ]
+  }
+]

@@ -1,0 +1,497 @@
+[
+  {
+    "id": "eff.t69.basepower.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 208.1"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} has base power {n:Qty} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$n"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, ~ has base power 5 and gains haste."
+      },
+      {
+        "text": "{2}: Until end of turn, target creature has base power 2 and gains flying."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, ~ has base power and toughness 5/5 and gains haste.",
+      "{2}: ~ has base power 5 and gains haste.",
+      "{2}: Until end of turn, ~ has base toughness 5 and gains haste.",
+      "{2}: Until end of turn, ~ has base power 5 and loses haste.",
+      "{2}: Until end of turn, ~ has base power 5 and gains haste until end of turn and gains flying."
+    ]
+  },
+  {
+    "id": "eff.t69.may.basept.become",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4b",
+      "CR 208.1"
+    ],
+    "pattern": "you may have {o:Obj} 's base power and toughness become {pt:BasePT} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a land you control enters, you may have ~'s base power and toughness become 6/1 until end of turn."
+      },
+      {
+        "text": "Whenever a land you control enters, you may have target creature's base power and toughness become 0/9 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a land you control enters, you may have ~'s base power and toughness become 6/1.",
+      "Whenever a land you control enters, you may have ~'s base power and toughness become +6/+1 until end of turn.",
+      "Whenever a land you control enters, ~'s base power and toughness become 6/1 until end of turn.",
+      "Whenever a land you control enters, you may have ~'s base power become 6 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t69.pump.pair.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3c",
+      "CR 608.2h",
+      "CR 115.1"
+    ],
+    "pattern": "{a:Objs} get[s] {pa:PT} until end of turn and {b:Objs} get[s] {pb:PT} until end of turn , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "endOfTurn"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$a",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pa.p",
+                  "toughness": "$pa.t"
+                }
+              ]
+            },
+            {
+              "s": "continuous",
+              "affects": "$b",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pb.p",
+                  "toughness": "$pb.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control gets +X/+0 until end of turn and up to one target creature an opponent controls gets -0/-X until end of turn, where X is the number of Elves you control plus the number of Elf cards in your graveyard."
+      },
+      {
+        "text": "Target creature you control gets +X/+X until end of turn and target creature an opponent controls gets -X/-X until end of turn, where X is the number of Goblins you control."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gets +X/+0 until end of turn and up to one target creature an opponent controls gets -0/-X until end of turn.",
+      "Target creature you control gets +X/+0 until end of turn and up to one target creature an opponent controls gets -0/-X, where X is the number of Elves you control.",
+      "Target creature you control gets +X/+0 until end of turn or up to one target creature an opponent controls gets -0/-X until end of turn, where X is the number of Elves you control.",
+      "Target creature you control gets +X/+0 until end of turn and up to one target creature an opponent controls gains flying until end of turn, where X is the number of Elves you control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "sta.t69.enchanted.loseall.becomes.named",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 201.2",
+      "CR 205.1a",
+      "CR 303.4a",
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "enchanted creature loses all abilities and is ( a | an ) {c1:Color} and {c2:Color} {st:Subtypes} creature with base power and toughness {pt:BasePT} named legitimate businessperson",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "set": "$st"
+          },
+          "named": "Legitimate Businessperson"
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c1",
+              "$c2"
+            ]
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "named"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature loses all abilities and is a black and white Rat creature with base power and toughness 3/2 named Legitimate Businessperson."
+      },
+      {
+        "text": "Enchant creature\nEnchanted creature loses all abilities and is a red and blue Goat creature with base power and toughness 2/3 named Legitimate Businessperson."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEnchanted creature loses all abilities and is a green and white Citizen creature with base power and toughness 1/1.",
+      "Enchant creature\nEnchanted creature loses all abilities and is a green and white Citizen creature with base power and toughness 1/1 named Someone Else.",
+      "Enchant creature\nEnchanted creature loses flying and is a green and white Citizen creature with base power and toughness 1/1 named Legitimate Businessperson.",
+      "Enchant creature\nEnchanted creature loses all abilities and is a green Citizen creature with base power and toughness 1/1 named Legitimate Businessperson."
+    ]
+  },
+  {
+    "id": "eff.t69.becomes.legendary.named.mileva",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 201.2",
+      "CR 205.4",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes a legendary creature named mileva , the stalwart , it has base power and toughness {pt:BasePT} , and it gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "supertypes": {
+                "add": [
+                  "Legendary"
+                ]
+              },
+              "named": "Mileva, the Stalwart"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "named"
+    ],
+    "examples": [
+      {
+        "text": "{2}: ~ becomes a legendary creature named Mileva, the Stalwart, it has base power and toughness 4/4, and it gains \"Other creatures you control have lifelink.\""
+      },
+      {
+        "text": "{2}: ~ becomes a legendary creature named Mileva, the Stalwart, it has base power and toughness 3/3, and it gains \"Other creatures you control have vigilance.\""
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ becomes a legendary creature named Mileva, the Stalwart, it has base power and toughness 5/5, and it gains \"Other creatures you control have indestructible.\" until end of turn.",
+      "{2}: ~ becomes a legendary creature named Someone Else, it has base power and toughness 5/5, and it gains \"Other creatures you control have indestructible.\"",
+      "{2}: ~ becomes a creature named Mileva, the Stalwart, it has base power and toughness 5/5, and it gains \"Other creatures you control have indestructible.\"",
+      "{2}: ~ becomes a legendary creature named Mileva, the Stalwart, it has base power and toughness 5/5, and it loses \"Other creatures you control have indestructible.\""
+    ]
+  },
+  {
+    "id": "eff.t69.itis.subtype.artifact.with.losesothers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:ItIs} ( a | an ) {st:Subtypes} artifact with {a:Abilities} and it loses all other card types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all",
+      "other",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from an opponent's graveyard to the battlefield under your control. It's a Gold artifact with \"Sacrifice this artifact: Add one mana of any color,\" and it loses all other card types."
+      },
+      {
+        "text": "Return target creature card from an opponent's graveyard to the battlefield under your control. It's a Clue artifact with \"{2}, Sacrifice this artifact: Draw a card,\" and it loses all other card types."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to the battlefield. It's a Treasure artifact with \"{T}, Sacrifice this artifact: Add one mana of any color,\" and it keeps all other card types.",
+      "Return target creature card from your graveyard to the battlefield. It's a Treasure artifact with \"{T}, Sacrifice this artifact: Add one mana of any color,\" and it loses all other card types until end of turn.",
+      "Return target creature card from your graveyard to the battlefield. It's a Treasure artifact and it loses all other card types.",
+      "Return target creature card from your graveyard to the battlefield. It's a Treasure artifact with \"{T}, Sacrifice this artifact: Add one mana of any color,\" and it loses all abilities."
+    ]
+  },
+  {
+    "id": "eff.t69.self.gains.quoted.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 113.3d"
+    ],
+    "pattern": "~ gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: ~ gains \"Whenever this creature deals combat damage to a player, that player loses the game.\""
+      },
+      {
+        "text": "{2}: ~ gains \"Whenever this creature deals combat damage to a player, you draw a card.\""
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ gains \"Whenever this creature deals combat damage to a player, that player loses the game.\" until end of turn.",
+      "{2}: Target creature gains \"Whenever this creature deals combat damage to a player, you draw a card.\"",
+      "{2}: ~ loses \"Whenever this creature deals combat damage to a player, you draw a card.\"",
+      "{2}: ~ gains \"Whenever this creature deals combat damage to a player, you draw a card.\" and gets +1/+1."
+    ]
+  },
+  {
+    "id": "eff.t69.damage.double.toPlayerOrPermanents.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 616.1",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "{d:Dur} , if a source would deal damage to {p:Player} or a permanent that player controls , it deals double that damage instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "$p",
+              "object": {
+                "controller": "$p"
+              }
+            }
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 2
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "double",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, until your next turn, if a source would deal damage to that player or a permanent that player controls, it deals double that damage instead."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, until end of turn, if a source would deal damage to that player or a permanent that player controls, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, until your next turn, if a source would deal damage to that player or a permanent that player controls, it deals triple that damage instead.",
+      "Whenever ~ deals combat damage to a player, if a source would deal damage to that player or a permanent that player controls, it deals double that damage instead.",
+      "Whenever ~ deals combat damage to a player, until your next turn, if a source would deal damage to that player or a creature that player controls, it deals double that damage instead.",
+      "Whenever ~ deals combat damage to a player, until your next turn, if a source you control would deal damage to that player or a permanent that player controls, it deals double that damage instead."
+    ]
+  }
+]

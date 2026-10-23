@@ -1,0 +1,40 @@
+{
+  "name": "undaunted",
+  "rule": "702.125",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "This spell costs {1} less to cast for each opponent.",
+  "multiple": "cumulative",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "This spell costs {1} less to cast for each opponent you have.",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "countPlayers",
+              "of": {
+                "ref": "each",
+                "who": "opponent"
+              }
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    }
+  ]
+}

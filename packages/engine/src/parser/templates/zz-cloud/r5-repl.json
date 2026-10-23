@@ -1,0 +1,322 @@
+[
+  {
+    "id": "sta.r5repl.combatDamage.unpreventable",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.12",
+      "CR 510.2",
+      "CR 604.1",
+      "CR 101.2"
+    ],
+    "pattern": "combat damage can't be prevented",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {}
+          },
+          "mode": "cant",
+          "action": "preventCombatDamage"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "preventCombatDamage"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Vigilance\nCombat damage can't be prevented."
+      },
+      {
+        "text": "Reach\nCombat damage can't be prevented."
+      }
+    ],
+    "counterExamples": [
+      "Combat damage can be prevented.",
+      "Noncombat damage can't be prevented.",
+      "Combat damage dealt to you can't be prevented."
+    ]
+  },
+  {
+    "id": "rep.r5repl.draw.exceptFirstInDrawStep.two",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 504.1",
+      "CR 121.2"
+    ],
+    "pattern": "if you would draw a card except the first one you draw in each of your draw steps , draw two cards instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "you",
+        "exceptFirstInDrawStep": true
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 2
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "except",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Flying\nIf you would draw a card except the first one you draw in each of your draw steps, draw two cards instead."
+      },
+      {
+        "text": "Defender\nIf you would draw a card except the first one you draw in each of your draw steps, draw two cards instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card except the first one you draw in each of your draw steps, draw three cards instead.",
+      "If you would draw a card except the first one you draw each turn, draw two cards instead.",
+      "If an opponent would draw a card except the first one they draw in each of their draw steps, draw two cards instead."
+    ]
+  },
+  {
+    "id": "rep.r5repl.graveyard.exile.opponent.notControlled",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 108.4",
+      "CR 108.4a",
+      "CR 400.3"
+    ],
+    "pattern": "if a card you didn't control would be put into an opponent 's graveyard from anywhere , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {
+          "isCard": true,
+          "owner": "opponent",
+          "not": {
+            "controller": "you"
+          }
+        },
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Defender\nIf a card you didn't control would be put into an opponent's graveyard from anywhere, exile it instead."
+      },
+      {
+        "text": "Menace\nIf a card you didn't control would be put into an opponent's graveyard from anywhere, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "If a card you didn't control would be put into your graveyard from anywhere, exile it instead.",
+      "If a card you controlled would be put into an opponent's graveyard from anywhere, exile it instead.",
+      "If a card you didn't control would be put into an opponent's graveyard from anywhere, put it on the bottom of its owner's library instead."
+    ]
+  },
+  {
+    "id": "rep.r5repl.damageToSelf.healOther",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3e",
+      "CR 704.5g"
+    ],
+    "pattern": "if damage would be dealt to ~ , instead that damage is dealt , but all other damage already dealt to ~ is healed",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "object": {
+            "self": true
+          }
+        }
+      },
+      "body": {
+        "b": "healFirst"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Trample\nIf damage would be dealt to ~, instead that damage is dealt, but all other damage already dealt to ~ is healed."
+      },
+      {
+        "text": "Defender\nIf damage would be dealt to ~, instead that damage is dealt, but all other damage already dealt to ~ is healed."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~, instead that damage is dealt, but all other damage already dealt to you is healed.",
+      "If damage would be dealt to you, instead that damage is dealt, but all other damage already dealt to ~ is healed.",
+      "If damage would be dealt to ~, prevent that damage."
+    ]
+  },
+  {
+    "id": "rep.r5repl.opponentDraw.exceptFirstInDrawStep.youDraw",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 504.1",
+      "CR 121.2"
+    ],
+    "pattern": "if an opponent would draw a card except the first one they draw in each of their draw steps , instead that player skips that draw and you draw a card",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "opponent",
+        "exceptFirstInDrawStep": true
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "except",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Defender\nIf an opponent would draw a card except the first one they draw in each of their draw steps, instead that player skips that draw and you draw a card."
+      },
+      {
+        "text": "Trample\nIf an opponent would draw a card except the first one they draw in each of their draw steps, instead that player skips that draw and you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would draw a card except the first one they draw in each of their draw steps, instead that player skips that draw and you draw two cards.",
+      "If an opponent would draw a card except the first one they draw each turn, instead that player skips that draw and you draw a card.",
+      "If an opponent would draw a card except the first one they draw in each of their draw steps, instead that player skips that draw and you gain 1 life."
+    ]
+  },
+  {
+    "id": "sta.r5repl.combatDamage.byYourCreatures.unpreventable",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.12",
+      "CR 510.2",
+      "CR 604.1",
+      "CR 101.2"
+    ],
+    "pattern": "combat damage that would be dealt by creatures you control can't be prevented",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {}
+          },
+          "mode": "cant",
+          "action": "preventCombatDamage",
+          "other": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "preventCombatDamage",
+          "other": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Defender\nCombat damage that would be dealt by creatures you control can't be prevented."
+      },
+      {
+        "text": "Flash\nCombat damage that would be dealt by creatures you control can't be prevented."
+      }
+    ],
+    "counterExamples": [
+      "Combat damage that would be dealt by creatures you control can be prevented.",
+      "Combat damage that would be dealt by creatures an opponent controls can't be prevented.",
+      "Damage that would be dealt by creatures you control can't be prevented."
+    ]
+  }
+]

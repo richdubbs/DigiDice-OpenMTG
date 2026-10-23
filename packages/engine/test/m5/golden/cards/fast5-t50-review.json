@@ -1,0 +1,1511 @@
+[
+ {
+  "card": "Mistway Spy",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.untilEot.whenever): CR 603.7, 603.7b, 603.7c, 510.2, 701.16a: the turned-face-up trigger creates a delayed triggered ability that lasts until end of turn and triggers for each creature its controller controls that deals combat damage to a player (a trigger naming both sides triggers once per creature, triggers/occurrences.ts), each time investigating",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        }
+       ]
+      },
+      "keyword": "disguise"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "action",
+           "action": "investigate",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "damage",
+           "combat": true,
+           "recipient": {
+            "player": "any"
+           },
+           "source": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "turnedFaceUp"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lyra, Tolarian Archangel",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.untilEot.whenever): CR 603.7, 603.7b, 602.2, 510.2: the activated ability creates a delayed triggered ability until end of turn for the source itself (`self`: the delayed trigger's source is the ability's source) that draws two cards each time that creature deals combat damage to a player; the other lines are the end-step trigger with its intervening if and flying",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "colors": [
+           "U"
+          ],
+          "keywords": [
+           "flying"
+          ],
+          "power": 3,
+          "subtypes": [
+           "Angel"
+          ],
+          "toughness": 3,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "op": ">=",
+       "cond": "compare",
+       "left": {
+        "q": "cardsDrawnThisTurn"
+       },
+       "right": 3
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "draw",
+           "count": 2,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "damage",
+           "combat": true,
+           "recipient": {
+            "player": "any"
+           },
+           "source": {
+            "self": true
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "High Tide",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.untilEot.whenever): CR 603.7b, 605.1b, 605.4a, 106.12: a delayed triggered mana ability until end of turn: each time a player activates a mana ability of an Island (tapping it for mana) that player adds one more blue mana, at once (it is a mana ability, resolved without the stack)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "addMana",
+           "units": [
+            [
+             "U"
+            ]
+           ],
+           "who": {
+            "ref": "event",
+            "role": "player"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "activate",
+           "manaAbility": true,
+           "player": "any",
+           "source": {
+            "subtypes": [
+             "Island"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mountain Titan",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.untilEot.whenever): CR 603.7, 603.7b, 122.1: until end of turn, each black spell its controller casts puts a +1/+1 counter on the source (`self`)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "kind": "+1/+1",
+           "op": "putCounters",
+           "count": 1,
+           "on": {
+            "ref": "self"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "colors": [
+             "B"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Benefactor's Draught",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.untilEot.whenever): CR 603.7, 603.7b, 509.1, 701.26a: untap all creatures; until end of turn each time a creature an opponent controls blocks, its controller (this spell's controller) draws a card; then the spell's own draw",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "draw",
+           "count": 1,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "blocks",
+           "blocker": {
+            "controller": "opponent",
+            "types": [
+             "Creature"
+            ]
+           }
+          }
+         }
+        },
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gnawing Crescendo",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenever.thisTurn): CR 603.7, 603.7b, 603.10a, 111.1, 113.7a: the anthem is a continuous effect until end of turn; the delayed trigger waits for a nontoken creature its controller controls to die this turn (looks back, so the creature's controller as it died counts) and creates a Rat token with a granted \"this token can't block\"",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 0
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "createToken",
+           "count": 1,
+           "token": {
+            "abilities": [
+             {
+              "kind": "static",
+              "effects": [
+               {
+                "s": "restrict",
+                "action": "block",
+                "mode": "cant",
+                "subject": {
+                 "ref": "self"
+                }
+               }
+              ]
+             }
+            ],
+            "colors": [
+             "B"
+            ],
+            "power": 1,
+            "subtypes": [
+             "Rat"
+            ],
+            "toughness": 1,
+            "types": [
+             "Creature"
+            ]
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "controller": "you",
+            "token": false,
+            "types": [
+             "Creature"
+            ]
+           },
+           "to": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Glimpse of Nature",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenever.thisTurn): CR 603.7, 603.7b, 601.2i: each creature spell its controller casts this turn draws a card (triggers on being cast, before it resolves)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "draw",
+           "count": 1,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Creature"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Death Frenzy",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenever.thisTurn): CR 603.7, 603.7b, 603.10a, 700.4: all creatures get -2/-2 until end of turn; each creature that dies this turn (any controller) gains its spell's controller 1 life; the creatures that die from the -2/-2 itself trigger it too (the delayed trigger is created first)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": -2,
+             "toughness": -2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "gainLife",
+           "amount": 1,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "types": [
+             "Creature"
+            ]
+           },
+           "to": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Noxious Assault",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenever.thisTurn): CR 603.7, 603.7c, 509.1, 122.1b: each creature that blocks this turn gives its controller (read from the event's blocker) a poison counter; the anthem is a continuous effect until end of turn",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "kind": "poison",
+           "op": "putCounters",
+           "count": 1,
+           "on": {
+            "ref": "controllerOf",
+            "object": {
+             "ref": "event",
+             "role": "blocker"
+            }
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "blocks",
+           "blocker": {
+            "types": [
+             "Creature"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rite of Harmony",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenever.thisTurn): CR 603.7, 603.7b, 603.6a: each creature or enchantment its controller controls that enters this turn draws a card; flashback is the keyword line",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "draw",
+           "count": 1,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "subject": {
+            "controller": "you",
+            "types": [
+             "Creature",
+             "Enchantment"
+            ]
+           },
+           "to": "battlefield"
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "G"
+        },
+        {
+         "kind": "colored",
+         "color": "W"
+        }
+       ]
+      },
+      "keyword": "flashback"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thunder of Unity",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenever.thisTurn.drain): CR 603.7, 603.7b, 119.3, 120.3: chapter II and III each create a delayed triggered ability until end of turn: for each creature entering under its controller's control each opponent loses 1 life and the controller gains 1 life, the two instructions of one delayed trigger",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "chapter",
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 2,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "loseLife",
+         "amount": 2,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      }
+     },
+     {
+      "kind": "chapter",
+      "chapters": [
+       2,
+       3
+      ],
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "loseLife",
+           "amount": 1,
+           "who": {
+            "ref": "each",
+            "who": "opponent"
+           }
+          },
+          {
+           "op": "gainLife",
+           "amount": 1,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "subject": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           },
+           "to": "battlefield"
+          }
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Turn Inside Out",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenIt.dies.thisTurn): CR 603.7, 603.7c, 603.10a, 701.62a, 700.4: the pump is a continuous effect until end of turn; when THAT creature (the target, fixed as the delayed trigger is created) dies this turn, its controller manifests dread, once",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 3,
+             "toughness": 0
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "action",
+           "action": "manifestDread",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           },
+           "to": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Blessed Defiance",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenIt.dies.thisTurn): CR 603.7, 603.7c, 603.10a, 111.1: pump and lifelink until end of turn on the target; when that creature dies this turn a 1/1 white Spirit with flying is created for the delayed trigger's controller",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 0
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "lifelink"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "createToken",
+           "count": 1,
+           "token": {
+            "colors": [
+             "W"
+            ],
+            "keywords": [
+             "flying"
+            ],
+            "power": 1,
+            "subtypes": [
+             "Spirit"
+            ],
+            "toughness": 1,
+            "types": [
+             "Creature"
+            ]
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           },
+           "to": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Felonious Rage",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenIt.dies.thisTurn): CR 603.7, 603.7c, 603.10a, 702.10a: +2/+0 and haste until end of turn on the target; when it dies this turn a 2/2 Detective token (white and blue) is created",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 0
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "haste"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "createToken",
+           "count": 1,
+           "token": {
+            "colors": [
+             "W",
+             "U"
+            ],
+            "power": 2,
+            "subtypes": [
+             "Detective"
+            ],
+            "toughness": 2,
+            "types": [
+             "Creature"
+            ]
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           },
+           "to": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "A Good Day to Die",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenIt.dies.thisTurn): CR 603.7, 603.7c, 603.10a: +2/+0 until end of turn on the target; when that creature dies this turn its spell's controller draws a card",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 0
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "draw",
+           "count": 1,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           },
+           "to": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Desperate Measures",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.whenIt.dies.underYourControl.thisTurn): CR 603.7, 603.7c, 603.10a, 700.4: +1/-1 until end of turn on the target; when it dies this turn and was controlled by the delayed trigger's controller as it died (last known information: the filter `controller: you` on the referenced object) its controller draws two cards; if it died under another player's control, nothing",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": -1
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "draw",
+           "count": 2,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "controller": "you",
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           },
+           "to": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mysterio, Master of Illusion",
+  "expect": "full",
+  "verified": "FAST5 T50 review, by hand against the Oracle text and the rules cited below (eff.t50.exile.thoseWhenLeaves): CR 603.7, 603.7a, 603.7c, 111.1, 603.10a: the enters trigger creates the tokens (one for each nontoken Villain) and a delayed triggered ability, with no duration, that exiles exactly those tokens (captured by name, CR 603.7c) when the source leaves the battlefield, once",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "as": "token",
+         "count": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "controller": "you",
+            "subtypes": [
+             "Villain"
+            ],
+            "token": false
+           }
+          }
+         },
+         "token": {
+          "colors": [
+           "U"
+          ],
+          "power": 3,
+          "subtypes": [
+           "Illusion",
+           "Villain"
+          ],
+          "toughness": 3,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "delay",
+         "capture": [
+          "token"
+         ],
+         "do": [
+          {
+           "op": "move",
+           "to": {
+            "zone": "exile"
+           },
+           "what": {
+            "ref": "bound",
+            "name": "token"
+           }
+          }
+         ],
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "self": true
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Captain Howler, Sea Scourge",
+  "expect": "full",
+  "verified": "Standard round std-rq review (card wave 2, slice s1; Standard-legal), by hand against the Oracle text and the rules cited (eff.t50.whenever.thatCreature.combatDamage.thisTurn, eff.stdrq.pump.dur.forEach.scaled): ward, pay 2 life; whenever you discard one or more cards, target creature gets +2/+0 until end of turn for each card discarded in that discard (the trigger's own event amount), and a delayed trigger until end of turn: whenever that creature deals combat damage to a player, you draw a card (CR 702.21a, 603.2c, 608.2c, 611.2a, 603.7, 510.2; cites from memory, unverified). Promotes the T50 template on this one card (CARD_AUTOMATION.md section 5, narrow wordings; deviation named in the std-rq record)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ],
+       "other": [
+        {
+         "amount": 2,
+         "kind": "payLife"
+        }
+       ]
+      },
+      "keyword": "ward",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": {
+              "args": [
+               2,
+               {
+                "q": "eventAmount"
+               }
+              ],
+              "op": "*",
+              "q": "math"
+             },
+             "toughness": {
+              "args": [
+               0,
+               {
+                "q": "eventAmount"
+               }
+              ],
+              "op": "*",
+              "q": "math"
+             }
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "do": [
+          {
+           "count": 1,
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "combat": true,
+           "ev": "damage",
+           "recipient": {
+            "player": "any"
+           },
+           "source": {
+            "is": {
+             "id": "t0",
+             "ref": "target"
+            }
+           }
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "actor": "you",
+         "ev": "action",
+         "verb": "discard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

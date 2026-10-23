@@ -1,0 +1,66 @@
+[
+  {
+    "id": "static.m6.entersPrepared",
+    "kind": "static",
+    "cr": ["CR 722.3a", "CR 722.3c", "CR 614.1c"],
+    "pattern": "~ enters prepared",
+    "build": {"kind": "static", "zone": ["stack", "battlefield"], "effects": [{"s": "replace", "replaces": {"ev": "zoneChange", "subject": {"self": true}, "to": "battlefield"}, "body": {"b": "enters", "prepared": true}}]},
+    "needs": ["body:enters.prepared"],
+    "examples": [
+      {"text": "This creature enters prepared.", "expect": [{"kind": "static", "text": "~ enters prepared.", "zone": ["stack", "battlefield"], "effects": [{"s": "replace", "replaces": {"ev": "zoneChange", "subject": {"self": true}, "to": "battlefield"}, "body": {"b": "enters", "prepared": true}}]}]},
+      {"text": "~ enters prepared."}
+    ],
+    "counterExamples": ["~ enters tapped.", "~ enters prepared and tapped.", "Each creature enters prepared."],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.m6.becomePrepared",
+    "kind": "effect",
+    "cr": ["CR 722.3a", "CR 722.3c"],
+    "pattern": "{o:Obj} becomes prepared",
+    "build": {"op": "designateObject", "what": "$o", "designation": "prepared"},
+    "subject": "object",
+    "needs": ["op:designateObject.prepared"],
+    "examples": [
+      {"text": "Whenever this creature attacks, it becomes prepared.", "expect": [{"kind": "triggered", "text": "Whenever ~ attacks, it becomes prepared.", "trigger": {"on": [{"ev": "attacks", "attacker": {"self": true}}]}, "effect": {"targets": [], "steps": [{"op": "designateObject", "what": {"ref": "self"}, "designation": "prepared"}]}}]},
+      {"text": "{2}{U}: ~ becomes prepared. Activate only as a sorcery."},
+      {"text": "Target creature you control becomes prepared."}
+    ],
+    "counterExamples": ["~ becomes tapped.", "Target creature becomes unprepared.", "~ becomes prepared until end of turn."],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.m6.becomeUnprepared",
+    "kind": "effect",
+    "cr": ["CR 722.3b"],
+    "pattern": "{o:Obj} becomes unprepared",
+    "build": {"op": "designateObject", "what": "$o", "designation": "unprepared"},
+    "subject": "object",
+    "needs": ["op:designateObject.unprepared"],
+    "examples": [
+      {"text": "Target creature becomes unprepared."},
+      {"text": "When this creature dies, target creature an opponent controls becomes unprepared."}
+    ],
+    "counterExamples": ["Target creature becomes prepared.", "Target creature becomes unprepared until end of turn."],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "trg.m6.classLevel",
+    "kind": "trigger",
+    "cr": ["CR 716.2a", "CR 603.2"],
+    "pattern": "when ~ becomes level {n:Qty}",
+    "build": {"on": [{"ev": "becomes", "what": "classLevel", "object": {"self": true}, "level": "$n"}]},
+    "needs": ["feature:ev.becomes.classLevel"],
+    "consumes": ["when"],
+    "examples": [
+      {"text": "When ~ becomes level 2, draw a card.", "expect": [{"kind": "triggered", "text": "When ~ becomes level 2, draw a card.", "trigger": {"on": [{"ev": "becomes", "what": "classLevel", "object": {"self": true}, "level": 2}]}, "effect": {"targets": [], "steps": [{"op": "draw", "who": {"ref": "you"}, "count": 1}]}}]},
+      {"text": "When ~ becomes level 3, you gain 4 life."}
+    ],
+    "counterExamples": ["When ~ becomes tapped, draw a card.", "Whenever ~ becomes level 2 or greater, draw a card."],
+    "status": "stable",
+    "since": 5
+  }
+]

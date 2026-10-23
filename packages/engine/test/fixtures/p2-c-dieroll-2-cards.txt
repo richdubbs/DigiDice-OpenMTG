@@ -1,0 +1,7 @@
+# p2-c-dieroll-2 (Phase 2 lane p2-c-dieroll): the golden cards of the round (p2-c-dieroll-2-review.json; the six-sided promotion evidence in p2-c-dieroll-1-review.json)
+Vegetation Abomination
+Velukan Dragon
+Dissatisfied Customer
+Non-Human Cannonball
+Scion of Stygia
+Aberrant Mind Sorcerer

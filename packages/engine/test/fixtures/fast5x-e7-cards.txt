@@ -1,0 +1,15 @@
+# FAST5X E7: sneak (CR 702.190) and web-slinging (CR 702.188), alternative costs that return a creature (CR 118.9, 601.2b, 601.2f-h).
+# After editing: npm run cards -- fixtures
+
+# ---- Sneak permanents and spells (CR 702.190a-b, 506.3a, 508.4, 508.4d)
+Foot Ninjas
+Splinter, Hamato Yoshi
+Leonardo, Leader in Blue
+Donatello's Technique
+Jennika's Technique
+The Last Ronin's Technique
+
+# ---- Web-slinging (CR 702.188a)
+Spider-Man, Web-Slinger
+Spiders-Man, Heroic Horde
+Spider-UK

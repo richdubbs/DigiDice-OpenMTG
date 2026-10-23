@@ -1,0 +1,209 @@
+[
+  {
+    "id": "sta.p2dig1.revealTop.you",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.2",
+      "CR 401.5",
+      "CR 604.1",
+      "CR 609.4"
+    ],
+    "pattern": "play with the top card of your library revealed",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "revealTop"
+    },
+    "examples": [
+      {
+        "text": "Play with the top card of your library revealed. Creatures you control get +1/+1."
+      },
+      {
+        "text": "Play with the top card of your library revealed. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Play with the top two cards of your library revealed. Creatures you control get +1/+1.",
+      "Play with the bottom card of your library revealed. Creatures you control get +1/+1.",
+      "Play with your hand revealed. Creatures you control get +1/+1."
+    ]
+  },
+  {
+    "id": "sta.p2dig1.revealTop.players",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.2",
+      "CR 401.5",
+      "CR 604.1",
+      "CR 609.4"
+    ],
+    "pattern": "players play with the top card of their libraries revealed",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "action": "revealTop"
+    },
+    "examples": [
+      {
+        "text": "Players play with the top card of their libraries revealed. Creatures you control get +1/+1."
+      },
+      {
+        "text": "Players play with the top card of their libraries revealed. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Players play with the top two cards of their libraries revealed. Creatures you control get +1/+1.",
+      "Opponents play with the top card of their libraries revealed. Creatures you control get +1/+1.",
+      "Players play with their hands revealed. Creatures you control get +1/+1."
+    ]
+  },
+  {
+    "id": "eff.p2dig1.look.topN.player.putBack.anyOrder",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 701.20e",
+      "CR 608.2d"
+    ],
+    "pattern": "look at the top {n:Qty} cards of {p:Player} 's library , then put them back in any order",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": "$n"
+        },
+        "as": "looked"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "looked"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen",
+          "arrangedBy": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top four cards of target player's library, then put them back in any order."
+      },
+      {
+        "text": "{2}, {T}: Look at the top two cards of target opponent's library, then put them back in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top four cards of target player's library, then put them on the bottom in any order.",
+      "Look at the top four cards of target player's library, then put them back in a random order.",
+      "Look at the top four cards of your library, then put them back in any order."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.p2dig1.may.haveShuffle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.24a"
+    ],
+    "pattern": "you may have {p:Player} shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "shuffle",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top four cards of target player's library, then put them back in any order. You may have that player shuffle."
+      },
+      {
+        "text": "Whenever ~ attacks, you may have target opponent shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, target opponent may shuffle.",
+      "Whenever ~ attacks, you may have target opponent shuffle their graveyard into their library.",
+      "Whenever ~ attacks, you may have target opponent draw a card."
+    ]
+  },
+  {
+    "id": "eff.p2dig1.player.discard.thenMill",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} discard[s] {n:Qty} card[s] , then mill[s] {m:Qty} card[s]",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$m"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent discards two cards, then mills four cards."
+      },
+      {
+        "text": "{3}, {T}: Target player discards a card, then mills two cards."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent discards two cards, then draws four cards.",
+      "When ~ enters, each opponent discards two cards at random, then mills four cards.",
+      "When ~ enters, each opponent mills two cards, then discards four cards."
+    ],
+    "consumes": [
+      "then"
+    ]
+  }
+]

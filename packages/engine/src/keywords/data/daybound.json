@@ -1,0 +1,49 @@
+{
+  "name": "daybound",
+  "rule": "702.145",
+  "params": [],
+  "mechanisms": [
+    "replacement",
+    "structural"
+  ],
+  "reminder": "If a player casts no spells during their own turn, it becomes night next turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "readers": [
+    "core/day-night.ts#immediateCheck",
+    "effects/proposal-kinds/transform.ts#TRANSFORM_KIND"
+  ],
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Daybound",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "designation",
+        "who": {
+          "ref": "you"
+        },
+        "what": "night"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "transformed": true
+          }
+        }
+      ]
+    }
+  ]
+}

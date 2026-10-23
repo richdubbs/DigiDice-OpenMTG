@@ -1,0 +1,144 @@
+[
+  {
+    "id": "eff.stdcopy6.copy.thenExileSpellCast.timeCounters.gainsSuspend",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 608.2c",
+      "CR 122.1",
+      "CR 702.62a",
+      "CR 702.62b",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "copy {o:Obj} , then exile the spell you cast with {n:Qty} time counters on it . if it doesn't have suspend , it gains suspend",
+    "build": [
+      {
+        "op": "copy",
+        "what": "$o",
+        "result": "spell",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "event",
+          "role": "spell"
+        },
+        "to": {
+          "zone": "exile",
+          "counters": [
+            {
+              "kind": "time",
+              "count": "$n"
+            }
+          ]
+        },
+        "as": "exiled"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "not",
+          "of": {
+            "cond": "matches",
+            "object": {
+              "ref": "bound",
+              "name": "exiled"
+            },
+            "filter": {
+              "keyword": "suspend"
+            }
+          }
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "bound",
+                  "name": "exiled"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "suspend",
+                        "text": "suspend"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast your third spell each turn, copy it, then exile the spell you cast with two time counters on it. If it doesn't have suspend, it gains suspend."
+      },
+      {
+        "text": "Whenever you cast an instant spell, copy it, then exile the spell you cast with three time counters on it. If it doesn't have suspend, it gains suspend."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell, copy it, then exile the spell you cast with three time counters on it. If it doesn't have suspend, it gains flying.",
+      "Whenever you cast an instant spell, copy it, then exile the spell you cast with three time counters on it. It gains suspend.",
+      "Whenever you cast an instant spell, copy it, then exile it with three time counters on it. If it doesn't have suspend, it gains suspend."
+    ]
+  },
+  {
+    "id": "trg.stdcopy6.attackingCausesTrigger",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.3b",
+      "CR 508.1m"
+    ],
+    "pattern": "whenever a {f:Filter} attacking causes a triggered ability of that creature to trigger",
+    "build": {
+      "on": [
+        {
+          "ev": "abilityTriggered",
+          "of": "$f",
+          "causedBy": "attacking"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control attacking causes a triggered ability of that creature to trigger, you gain 1 life."
+      },
+      {
+        "text": "Whenever a Soldier creature you control attacking causes a triggered ability of that creature to trigger, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control attacking causes a triggered ability of a creature to trigger, you gain 1 life.",
+      "Whenever a creature you control blocking causes a triggered ability of that creature to trigger, you gain 1 life."
+    ]
+  }
+]

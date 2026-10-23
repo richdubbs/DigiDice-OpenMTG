@@ -1,0 +1,12 @@
+# p2-replace-events-2 (Phase 2 lane p2-replace-events): the golden cards of the round (golden/cards/p2-replace-events-2-review.json)
+Gruesome Encore
+Isareth the Awakener
+Geth, Thane of Contracts
+Harmonious Emergence
+Crackling Emergence
+Kalitas, Traitor of Ghet
+Obstinate Familiar
+Words of Wilding
+Words of Waste
+Tekuthal, Inquiry Dominus
+Pulmonic Sliver

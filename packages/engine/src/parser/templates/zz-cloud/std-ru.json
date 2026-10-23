@@ -1,0 +1,181 @@
+[
+  {
+    "id": "eff.stdru.may.put.bf.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "^ you may put {o:Obj} onto the battlefield if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "you"
+          },
+          "do": [
+            {
+              "op": "move",
+              "what": "$o",
+              "to": {
+                "zone": "battlefield",
+                "controller": {
+                  "ref": "you"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top four cards of your library. You may reveal a land card from among them. You may put it onto the battlefield if it's your turn. If you don't put it onto the battlefield, put it into your hand. Put the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "Search your library for an enchantment card and reveal it. You may put it onto the battlefield if you control a Forest. If you don't put it onto the battlefield, put it into your hand. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an enchantment card and reveal it. You may put it onto the battlefield unless you control a Forest. If you don't put it onto the battlefield, put it into your hand. Then shuffle.",
+      "Search your library for an enchantment card and reveal it. You may put it onto the battlefield tapped if you control a Forest. If you don't put it onto the battlefield, put it into your hand. Then shuffle.",
+      "Search your library for an enchantment card and reveal it. You may put it into your hand if you control a Forest. Then shuffle."
+    ]
+  },
+  {
+    "id": "sta.stdru.aslong.cantBeAttacked.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as {c:Cond} , ~ can't be attacked and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "self": true
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is attached to a creature, ~ can't be attacked and has hexproof."
+      },
+      {
+        "text": "As long as you control a Knight, ~ can't be attacked and has \"At the beginning of your upkeep, put a loyalty counter on ~.\""
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is attached to a creature, ~ can't be blocked and has hexproof.",
+      "As long as you control a Knight, ~ can't attack and has hexproof.",
+      "~ can't be attacked and has hexproof."
+    ]
+  },
+  {
+    "id": "sta.stdru.duringYourTurn.play.linked.lifeCost",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 611.3a",
+      "CR 118.9",
+      "CR 202.3"
+    ],
+    "pattern": "during your turn , you may play ( cards exiled with ~ | lands and cast spells from among cards exiled with ~ ) . if you cast a spell this way , pay life equal to its mana value rather than ( pay | paying ) its mana cost",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "costChange": {
+            "kind": "set",
+            "life": "manaValue"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "this way",
+      "rather than",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top three cards of target opponent's library.\nDuring your turn, you may play cards exiled with ~. If you cast a spell this way, pay life equal to its mana value rather than paying its mana cost."
+      },
+      {
+        "text": "{2}, {T}: Exile the top card of each player's library.\nDuring your turn, you may play lands and cast spells from among cards exiled with ~. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top three cards of target opponent's library.\nDuring your turn, you may play cards exiled with ~. If you cast a spell this way, pay life equal to its power rather than pay its mana cost.",
+      "When ~ enters, exile the top three cards of target opponent's library.\nDuring your turn, you may play cards exiled with ~. If you cast a spell this way, you lose life equal to its mana value.",
+      "When ~ enters, exile the top three cards of target opponent's library.\nDuring your turn, you may play cards exiled with ~. If you cast a spell this way, pay {2} rather than pay its mana cost."
+    ]
+  }
+]

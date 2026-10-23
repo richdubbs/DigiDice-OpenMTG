@@ -1,0 +1,46 @@
+{
+  "name": "spectacle",
+  "rule": "702.137",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this spell for its spectacle cost rather than its mana cost if an opponent lost life this turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Spectacle {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "spectacle",
+          "when": {
+            "cond": "happened",
+            "event": {
+              "ev": "life",
+              "change": "loss",
+              "player": "opponent"
+            },
+            "scope": "turn"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "name": "afterlife",
+  "rule": "702.135",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this permanent dies, create {n} 1/1 white and black Spirit creature tokens with flying.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ dies, create {n} 1/1 white and black Spirit creature tokens with flying.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": "$amount",
+            "token": {
+              "colors": [
+                "W",
+                "B"
+              ],
+              "types": [
+                "Creature"
+              ],
+              "subtypes": [
+                "Spirit"
+              ],
+              "power": 1,
+              "toughness": 1,
+              "keywords": [
+                "flying"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

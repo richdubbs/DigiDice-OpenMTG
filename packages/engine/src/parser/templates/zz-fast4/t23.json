@@ -1,0 +1,198 @@
+[
+  {
+    "id": "trg.t23.cast.colorOrEnters",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 603.6a",
+      "CR 105.2"
+    ],
+    "pattern": "whenever you cast a {c:Color} spell or {f:Filter} enters",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "colors": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "ev": "zoneChange",
+          "subject": "$f",
+          "to": "battlefield"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a white spell or an Elf you control enters, draw a card."
+      },
+      {
+        "text": "Whenever you cast a red spell or a Golem you control enters, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent casts a white spell or an Elf you control enters, draw a card.",
+      "Whenever you cast a white spell or an Elf you control dies, draw a card.",
+      "Whenever you cast a white spell and an Elf you control enters, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t23.cast.bothColors",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 105.2"
+    ],
+    "pattern": "whenever you cast a spell that's both {a:Color} and {b:Color}",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "colors": [
+              "$a"
+            ],
+            "anyOf": [
+              {
+                "colors": [
+                  "$b"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "both",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell that's both red and white, draw a card."
+      },
+      {
+        "text": "Whenever you cast a spell that's both black and green, ~ gets +2/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell that's red or white, draw a card.",
+      "Whenever an opponent casts a spell that's both red and white, draw a card.",
+      "Whenever you cast a spell that's both red and white and blue, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.t23.cast.chosenColor",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 607.2a",
+      "CR 105.2"
+    ],
+    "pattern": "whenever you cast a spell of the chosen color",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "chosen": {
+              "link": "color",
+              "quality": "color"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a color.\nWhenever you cast a spell of the chosen color, draw a card."
+      },
+      {
+        "text": "As ~ enters, choose a color.\nWhenever you cast a spell of the chosen color, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a color.\nWhenever an opponent casts a spell of the chosen color, draw a card.",
+      "As ~ enters, choose a creature type.\nWhenever you cast a spell of the chosen color, draw a card.",
+      "Whenever you cast a spell of the chosen color, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.t23.cont.base.grant",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 514.2"
+    ],
+    "pattern": "{o:Obj} has base power and toughness {pt:BasePT} until end of turn and gains {a:Abilities} until end of turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: ~ has base power and toughness 4/4 until end of turn and gains flying until end of turn."
+      },
+      {
+        "text": "{1}{G}: Target creature has base power and toughness 2/6 until end of turn and gains reach until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ has base power and toughness 4/4 until end of turn and gains flying.",
+      "{2}: ~ has base power and toughness 4/4 until end of turn and loses flying until end of turn.",
+      "{2}: ~ gets +4/+4 until end of turn and gains flying until end of turn."
+    ],
+    "status": "stable",
+    "since": 7,
+    "consumes": [
+      "until",
+      "and"
+    ]
+  }
+]

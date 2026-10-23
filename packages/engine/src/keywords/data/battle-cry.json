@@ -1,0 +1,60 @@
+{
+  "name": "battle cry",
+  "rule": "702.91",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks, each other attacking creature gets +1/+0 until end of turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, each other attacking creature gets +1/+0 until end of turn.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "other": true,
+                    "attacking": true,
+                    "types": [
+                      "Creature"
+                    ]
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 1,
+                    "toughness": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

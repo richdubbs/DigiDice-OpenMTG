@@ -1,0 +1,11 @@
+{
+  "name": "gravestorm",
+  "rule": "702.69",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When you cast this spell, copy it for each permanent put into a graveyard from the battlefield this turn. You may choose new targets for the copies.",
+  "multiple": "independent",
+  "status": "planned"
+}

@@ -1,0 +1,314 @@
+[
+  {
+    "id": "eff.exile",
+    "kind": "effect",
+    "cr": ["CR 701.13a", "CR 406.1", "CR 400.7"],
+    "pattern": "exile {o:Objs}",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "exile" } },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile target nongreen creature.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "Exile target nongreen creature.",
+            "effect": {
+              "targets": [{ "id": "t0", "kind": "object", "min": 1, "max": 1, "text": "target nongreen creature", "filter": { "types": ["Creature"], "notColors": ["G"] } }],
+              "steps": [{ "op": "move", "what": { "ref": "target", "id": "t0" }, "to": { "zone": "exile" } }]
+            }
+          }
+        ]
+      },
+      { "text": "Exile target enchantment you control." },
+      { "text": "Exile all tapped artifacts." }
+    ],
+    "counterExamples": ["Exile target creature at random.", "Exile target creature face down.", "Exile target player's graveyard."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.exile.until",
+    "kind": "effect",
+    "cr": ["CR 701.13a", "CR 610.3", "CR 610.3c"],
+    "pattern": "exile {o:Objs} {d:Dur}",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "exile" }, "until": "$d" },
+    "subject": "none",
+    "consumes": ["until"],
+    "examples": [
+      { "text": "Exile target nonblue creature an opponent controls until ~ leaves the battlefield." },
+      { "text": "Exile target tapped artifact until ~ leaves the battlefield." }
+    ],
+    "counterExamples": ["Exile target creature unless ~ leaves the battlefield.", "Exile target creature until ~ attacks or blocks."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.return.hand",
+    "kind": "effect",
+    "cr": ["CR 400.3", "CR 400.7", "CR 402.1"],
+    "pattern": "return {o:Objs} to ( its owner 's hand | their owners' hands | their owner 's hand | your hand )",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "hand" } },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return target nonblue creature to its owner's hand.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "Return target nonblue creature to its owner's hand.",
+            "effect": {
+              "targets": [{ "id": "t0", "kind": "object", "min": 1, "max": 1, "text": "target nonblue creature", "filter": { "types": ["Creature"], "notColors": ["U"] } }],
+              "steps": [{ "op": "move", "what": { "ref": "target", "id": "t0" }, "to": { "zone": "hand" } }]
+            }
+          }
+        ]
+      },
+      { "text": "Return target enchantment card from your graveyard to your hand." },
+      { "text": "Return all tapped creatures to their owners' hands." }
+    ],
+    "counterExamples": ["Return target creature to its owner's hand unless its controller pays {3}.", "Return target creature to its controller's hand.", "Return target creature to its owner's library."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.put.hand",
+    "kind": "effect",
+    "cr": ["CR 400.3", "CR 400.7", "CR 402.1"],
+    "pattern": "put {o:Objs} into ( its owner 's hand | their owners' hands | their owner 's hand | your hand )",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "hand" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put target artifact card from your graveyard into your hand." },
+      { "text": "Put target tapped creature into its owner's hand." }
+    ],
+    "counterExamples": ["Put target creature into an opponent's hand.", "Put target creature into its owner's hand at random."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.return.bf",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 403.1"],
+    "pattern": "return {o:Objs} to the battlefield [under your control]",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" } } },
+    "subject": "none",
+    "examples": [
+      { "text": "Return target nonblue artifact card from your graveyard to the battlefield." },
+      { "text": "Return target nonwhite creature card from a graveyard to the battlefield under your control." }
+    ],
+    "counterExamples": ["Return target creature card from a graveyard to the battlefield under its owner's control.", "Return target creature card from your graveyard to the battlefield tapped."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.return.bf.tapped",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 403.1", "CR 614.1c"],
+    "pattern": "return {o:Objs} to the battlefield tapped [under your control]",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true } },
+    "subject": "none",
+    "examples": [
+      { "text": "Return target land card from your graveyard to the battlefield tapped." },
+      { "text": "Return target red creature card from a graveyard to the battlefield tapped under your control." }
+    ],
+    "counterExamples": ["Return target creature card from your graveyard to the battlefield.", "Return target creature card from your graveyard to the battlefield tapped and attacking."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.return.bf.counters",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 122.6", "CR 400.7", "CR 614.1c"],
+    "pattern": "return {o:Objs} to the battlefield with {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" }, "counters": [{ "kind": "$k", "count": "$n" }] } },
+    "subject": "none",
+    "examples": [
+      { "text": "Return target black creature card from your graveyard to the battlefield with three +1/+1 counters on it." },
+      { "text": "Return target artifact card from your graveyard to the battlefield with a charge counter on it." }
+    ],
+    "counterExamples": ["Return target creature card from your graveyard to the battlefield with an additional +1/+1 counter on it.", "Return target creature card from your graveyard to the battlefield with a +1/+1 counter on each creature you control."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.return.bf.owner",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 403.1"],
+    "pattern": "return {o:Objs} to the battlefield under ( its owner 's | their owners' | their owner 's ) control",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": "owner" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Return target creature card in exile to the battlefield under its owner's control." },
+      { "text": "Return ~ to the battlefield under its owner's control." }
+    ],
+    "counterExamples": ["Return ~ to the battlefield under your control.", "Return ~ to the battlefield under its owner's control tapped."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.return.bf.owner.tapped",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 403.1", "CR 614.1c"],
+    "pattern": "return {o:Objs} to the battlefield tapped under ( its owner 's | their owners' | their owner 's ) control",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": "owner", "tapped": true } },
+    "subject": "none",
+    "examples": [
+      { "text": "Return ~ to the battlefield tapped under its owner's control." },
+      { "text": "Return target Spirit card from a graveyard to the battlefield tapped under its owner's control." }
+    ],
+    "counterExamples": ["Return ~ to the battlefield tapped under your control.", "Return ~ to the battlefield untapped under its owner's control."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.put.bf",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 403.1"],
+    "pattern": "put {o:Objs} onto the battlefield [under your control]",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" } } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put target artifact card from a graveyard onto the battlefield under your control." },
+      { "text": "Put target nonblack creature card from your graveyard onto the battlefield." }
+    ],
+    "counterExamples": ["Put target creature card from a graveyard onto the battlefield under its owner's control.", "Put target creature card from your graveyard onto the battlefield face down."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.put.bf.tapped",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 403.1", "CR 614.1c"],
+    "pattern": "put {o:Objs} onto the battlefield tapped [under your control]",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put target land card from your graveyard onto the battlefield tapped." },
+      { "text": "Put target artifact card from a graveyard onto the battlefield tapped under your control." }
+    ],
+    "counterExamples": ["Put target land card from your graveyard onto the battlefield.", "Put target land card from your graveyard onto the battlefield tapped under its owner's control."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.return.bf.attacking",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 508.4"],
+    "pattern": "return {o:Objs} to the battlefield tapped and attacking",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true, "attacking": true } },
+    "subject": "none",
+    "examples": [
+      { "text": "Return target Warrior card from your graveyard to the battlefield tapped and attacking." },
+      { "text": "Return target nongreen Warrior card from your graveyard to the battlefield tapped and attacking." }
+    ],
+    "counterExamples": ["Return target creature card from your graveyard to the battlefield tapped and blocking.", "Return target creature card from your graveyard to the battlefield attacking target opponent."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.put.bf.attacking",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 508.4"],
+    "pattern": "put {o:Objs} onto the battlefield tapped and attacking",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true, "attacking": true } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put target Zombie card from your graveyard onto the battlefield tapped and attacking." },
+      { "text": "Put target Ninja card from your graveyard onto the battlefield tapped and attacking." }
+    ],
+    "counterExamples": ["Put target creature card from your graveyard onto the battlefield tapped and blocking.", "Put target creature card from your graveyard onto the battlefield attacking target opponent."],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "eff.put.bf.owner",
+    "kind": "effect",
+    "cr": ["CR 110.2", "CR 400.7", "CR 403.1"],
+    "pattern": "put {o:Objs} onto the battlefield under ( its owner 's | their owners' | their owner 's ) control",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": "owner" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put target creature card from a graveyard onto the battlefield under its owner's control." },
+      { "text": "Put target nonblue creature card from a graveyard onto the battlefield under its owner's control." }
+    ],
+    "counterExamples": ["Put target creature card from a graveyard onto the battlefield under your control.", "Put target creature card from a graveyard onto the battlefield under its controller's control."],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "eff.put.gy",
+    "kind": "effect",
+    "cr": ["CR 400.3", "CR 400.7", "CR 404.1"],
+    "pattern": "put {o:Objs} into ( its owner 's graveyard | their owners' graveyards | their owner 's graveyard | your graveyard )",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "graveyard" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put target tapped creature into its owner's graveyard." },
+      { "text": "Put all attacking creatures into their owners' graveyards." }
+    ],
+    "counterExamples": ["Put target creature into its owner's library.", "Put target creature into an opponent's graveyard."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.put.lib.top",
+    "kind": "effect",
+    "cr": ["CR 400.3", "CR 401.4", "CR 400.7"],
+    "pattern": "put {o:Objs} on top of ( its owner 's library | their owners' libraries | their owner 's library | your library )",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "library", "position": "top" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put target attacking creature on top of its owner's library." },
+      { "text": "Put target sorcery card from your graveyard on top of your library." }
+    ],
+    "counterExamples": ["Put target creature on top of its owner's library in a random order.", "Put target creature second from the top of its owner's library."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.put.lib.bottom",
+    "kind": "effect",
+    "cr": ["CR 400.3", "CR 401.4", "CR 400.7"],
+    "pattern": "put {o:Objs} on the bottom of ( its owner 's library | their owners' libraries | their owner 's library | your library )",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "library", "position": "bottom" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put target blocking creature on the bottom of its owner's library." },
+      { "text": "Put target land card from your graveyard on the bottom of your library." }
+    ],
+    "counterExamples": ["Put target creature on the bottom of its owner's library in a random order.", "Put target creature on the bottom of its owner's graveyard."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.put.lib.top.anyorder",
+    "kind": "effect",
+    "cr": ["CR 400.3", "CR 401.4", "CR 400.7"],
+    "pattern": "put {o:Objs} on top of ( your library | their owners' libraries | its owner 's library | their owner 's library ) in any order",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "library", "position": "top", "order": "chosen" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put up to three target instant cards from your graveyard on top of your library in any order." },
+      { "text": "Put all artifact cards from your graveyard on top of your library in any order." }
+    ],
+    "counterExamples": ["Put all artifact cards from your graveyard on top of your library in a random order.", "Put all artifact cards from your graveyard on the bottom of your library in any order."],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "eff.put.lib.bottom.anyorder",
+    "kind": "effect",
+    "cr": ["CR 400.3", "CR 401.4", "CR 400.7"],
+    "pattern": "put {o:Objs} on the bottom of ( your library | their owners' libraries | its owner 's library | their owner 's library ) in any order",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "library", "position": "bottom", "order": "chosen" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Put all land cards from your graveyard on the bottom of your library in any order." },
+      { "text": "Put up to two target creature cards from your graveyard on the bottom of your library in any order." }
+    ],
+    "counterExamples": ["Put all land cards from your graveyard on the bottom of your library in a random order.", "Put all land cards from your graveyard on top of your library in any order."],
+    "status": "experimental",
+    "since": 1
+  }
+]

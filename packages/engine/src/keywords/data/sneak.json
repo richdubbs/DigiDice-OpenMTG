@@ -1,0 +1,62 @@
+{
+  "name": "sneak",
+  "rule": "702.190",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this spell for {cost} if you also return an unblocked attacker you control to hand during the declare blockers step.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Sneak {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "name": "sneak",
+          "cost": {
+            "$costAdd": {
+              "base": "$cost",
+              "other": [
+                {
+                  "kind": "returnToHand",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "attacking": true,
+                    "blocked": false
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          },
+          "when": {
+            "cond": "turnOf",
+            "whose": "you",
+            "step": "declareBlockers"
+          },
+          "instantSpeed": true,
+          "entersAttacking": "returned"
+        }
+      ]
+    }
+  ]
+}

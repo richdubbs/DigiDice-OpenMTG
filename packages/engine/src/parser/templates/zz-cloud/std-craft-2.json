@@ -1,0 +1,96 @@
+[
+  {
+    "id": "sta.stdcraft2.has.eachActivatedOf.onceEachTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.167c",
+      "CR 613.1f",
+      "CR 602.5b",
+      "CR 607.2a"
+    ],
+    "pattern": "~ has each activated ability of {o:Obj} . you may activate each of those abilities only once each turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": "$o",
+              "activatedOfLimit": {
+                "per": "turn",
+                "max": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may",
+      "only"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "~ has each activated ability of the exiled card used to craft it. You may activate each of those abilities only once each turn."
+      },
+      {
+        "text": "~ has each activated ability of the exiled cards used to craft ~. You may activate each of those abilities only once each turn."
+      }
+    ],
+    "counterExamples": [
+      "~ has each activated ability of the exiled cards used to craft it.",
+      "~ has each activated ability of the exiled cards used to craft it. You may activate each of those abilities only twice each turn.",
+      "~ has each activated ability of creatures you control. You may activate each of those abilities only once each turn."
+    ]
+  },
+  {
+    "id": "kw.stdcraft2.craft.orMore.nonlandsActivated",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.167a",
+      "CR 702.167b",
+      "CR 601.2b",
+      "CR 602.1"
+    ],
+    "pattern": "craft with {n:Qty} or more nonlands with activated abilities {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "craft",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "notTypes": [
+          "Land"
+        ],
+        "hasAbility": "activated"
+      },
+      "amount": "$n",
+      "quality": "or more"
+    },
+    "examples": [
+      {
+        "text": "Craft with two or more nonlands with activated abilities {3}{U}"
+      },
+      {
+        "text": "Craft with three or more nonlands with activated abilities {5}"
+      }
+    ],
+    "counterExamples": [
+      "Craft with two or more nonlands with activated abilities",
+      "Craft with two or more lands with activated abilities {3}",
+      "Craft with two or more nonlands with triggered abilities {3}"
+    ]
+  }
+]

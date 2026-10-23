@@ -1,0 +1,186 @@
+[
+  {
+    "id": "eff.stdrx14.removeCounter.eachOfAnyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "remove ( a | an ) {k:CounterKind} counter from each of any number of {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "removeFromChosen"
+      },
+      {
+        "op": "removeCounters",
+        "from": {
+          "ref": "bound",
+          "name": "removeFromChosen"
+        },
+        "kind": "$k",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may remove a charge counter from each of any number of artifacts you control. Draw a card for each charge counter removed this way."
+      },
+      {
+        "text": "{2}, {T}: Remove a charge counter from each of any number of permanents you control."
+      }
+    ],
+    "counterExamples": [
+      "Remove a charge counter from each permanent you control.",
+      "Remove two charge counters from each of any number of permanents you control.",
+      "Remove a charge counter from any number of permanents you control."
+    ]
+  },
+  {
+    "id": "eff.stdrx14.flicker.objAndUpToOne",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 400.7",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "exile {o:Obj} and up to one {f:Filter} , then return those cards to the battlefield under their owner 's control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "flickerAlso"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            "$o",
+            {
+              "ref": "bound",
+              "name": "flickerAlso"
+            }
+          ]
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "flickeredBoth"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "flickeredBoth"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target artifact and up to one creature you control, then return those cards to the battlefield under their owner's control."
+      },
+      {
+        "text": "Whenever ~ attacks, at end of combat, exile it and up to one other creature you control, then return those cards to the battlefield under their owner's control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target artifact and up to two creatures you control, then return those cards to the battlefield under their owner's control.",
+      "When ~ enters, exile target artifact and up to one creature you control, then return those cards to the battlefield under your control.",
+      "When ~ enters, exile target artifact and up to one creature you control."
+    ]
+  },
+  {
+    "id": "eff.stdrx14.counter.forEachOtherEnteredThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 603.6a",
+      "CR 400.7",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {o:Obj} for each other {f:Filter} that entered the battlefield under your control this turn",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you",
+            "not": {
+              "is": "$o"
+            }
+          },
+          "to": "battlefield"
+        },
+        "scope": "turn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an Elf you control enters, put a +1/+1 counter on it for each other Elf that entered the battlefield under your control this turn."
+      },
+      {
+        "text": "Whenever an artifact creature you control enters, put a +1/+1 counter on that creature for each other artifact creature that entered the battlefield under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an Elf you control enters, put a +1/+1 counter on it for each other Elf that left the battlefield under your control this turn.",
+      "Whenever an Elf you control enters, put a +1/+1 counter on it for each other Elf that entered the battlefield under an opponent's control this turn.",
+      "Whenever an Elf you control enters, put two +1/+1 counters on it for each other Elf that entered the battlefield under your control this turn."
+    ]
+  }
+]

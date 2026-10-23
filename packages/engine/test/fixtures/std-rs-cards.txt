@@ -1,0 +1,6 @@
+# ---- Standard round S (std-rs, card wave 2 slice s3): another player's exile-until and "a card exiled with ~", a static linked cast permission with mana of any type, face-down exile with "look at and play", a token copy that is a N/N artifact creature
+Krang & Shredder
+Null Summoner
+Outrageous Robbery
+Nexus of Becoming
+Decadent Dragon // Expensive Taste

@@ -1,0 +1,275 @@
+[
+  {
+    "id": "rst.t36.cast.self.declareAttackersAttacked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 506.3",
+      "CR 508.1",
+      "CR 603.4"
+    ],
+    "pattern": "cast ~ only during the declare attackers step and only if you've been attacked this step",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "all",
+            "of": [
+              {
+                "cond": "turnOf",
+                "whose": "any",
+                "step": [
+                  "declareAttackers"
+                ]
+              },
+              {
+                "cond": "happened",
+                "event": {
+                  "ev": "attacks",
+                  "defender": "you"
+                },
+                "scope": "combat"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Cast ~ only during the declare attackers step and only if you've been attacked this step."
+      },
+      {
+        "text": "Cast ~ only during the declare attackers step and only if you've been attacked this step.\nTarget creature gets +1/+3 until end of turn. Untap that creature."
+      }
+    ],
+    "counterExamples": [
+      "Cast ~ only during the declare attackers step.",
+      "Cast ~ only during the declare attackers step and only if you've attacked this turn.",
+      "Cast ~ only during the declare attackers step and only if an opponent has been attacked this step.",
+      "Cast ~ only during the declare blockers step and only if you've been attacked this step."
+    ]
+  },
+  {
+    "id": "eff.t36.prevent.nextSourceOfChoice.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 609.7b",
+      "CR 615.1",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 615.9",
+      "CR 608.2d"
+    ],
+    "pattern": "the next time ( a | an ) {c:Color} source of your choice would deal damage to you {d:Dur} , prevent that damage",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ],
+            "colors": [
+              "$c"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                },
+                "colors": [
+                  "$c"
+                ]
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: The next time a blue source of your choice would deal damage to you this turn, prevent that damage."
+      },
+      {
+        "text": "{G}{G}, {T}: The next time a black source of your choice would deal damage to you this turn, prevent that damage.\nFlying"
+      },
+      {
+        "text": "{R}: The next time a white source of your choice would deal damage to you this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "{2}: The next time a red source of your choice would deal damage to you, prevent that damage.",
+      "{2}: The next time a red source of your choice would deal damage to target player this turn, prevent that damage.",
+      "{2}: The next time a red source of an opponent's choice would deal damage to you this turn, prevent that damage.",
+      "{2}: The next time a red source of your choice would deal damage to you this turn, prevent half that damage.",
+      "{2}: The next time a red source of your choice would deal damage to you this turn, prevent that damage. You gain life equal to the damage prevented this way.",
+      "{2}: The next time a source of your choice would deal damage to you this turn, prevent that damage.",
+      "{2}: The next time an Elf source of your choice would deal damage to you this turn, prevent that damage."
+    ]
+  },
+  {
+    "id": "dl.t36.thatTurnEnd.loseGame",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.7",
+      "CR 603.7a",
+      "CR 603.7b",
+      "CR 104.3a"
+    ],
+    "pattern": "at the beginning of that turn 's end step , you lose the game",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "next": true,
+        "turn": "next"
+      },
+      "do": [
+        {
+          "op": "loseGame",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "that"
+    ],
+    "examples": [
+      {
+        "text": "Take an extra turn after this one. At the beginning of that turn's end step, you lose the game."
+      },
+      {
+        "text": "Creatures you control gain indestructible until end of turn. Take an extra turn after this one. At the beginning of that turn's end step, you lose the game."
+      }
+    ],
+    "counterExamples": [
+      "Take an extra turn after this one. At the beginning of that turn's end step, you win the game.",
+      "Take an extra turn after this one. At the beginning of that turn's end step, target player loses the game.",
+      "Take an extra turn after this one. At the beginning of that turn's upkeep, you lose the game.",
+      "Take an extra turn after this one. At the beginning of the next end step, you lose the game."
+    ]
+  },
+  {
+    "id": "rep.t36.self.discardedByOpponent.battlefield",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 400.3",
+      "CR 113.6b"
+    ],
+    "pattern": "if a spell or ability an opponent controls causes you to discard ~ , put it onto the battlefield instead of putting it into your graveyard",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "hand",
+            "to": "graveyard",
+            "cause": "discard",
+            "byOpponent": true
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "battlefield",
+              "controller": "owner"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a spell or ability an opponent controls causes you to discard ~, put it onto the battlefield instead of putting it into your graveyard.\nTrample"
+      },
+      {
+        "text": "Flying\nIf a spell or ability an opponent controls causes you to discard ~, put it onto the battlefield instead of putting it into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "If a spell or ability you control causes you to discard ~, put it onto the battlefield instead of putting it into your graveyard.",
+      "If a spell or ability an opponent controls causes you to discard ~, put it onto the battlefield tapped instead of putting it into your graveyard.",
+      "If a spell or ability an opponent controls causes you to discard ~, exile it instead of putting it into your graveyard.",
+      "If a spell or ability an opponent controls causes you to discard a card, put it onto the battlefield instead of putting it into your graveyard."
+    ]
+  }
+]

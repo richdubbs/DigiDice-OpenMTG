@@ -1,0 +1,7 @@
+# p2-promote-2: the golden cards of the round (t5-review.json, t3-review.json, push-t1-review.json, m6-5-review.json, cloud-p2-promote-2-review.json)
+Gelid Shackles
+Dense Canopy
+Step Through
+Lightkeeper of Emeria
+Vodalian Mindsinger
+Essence Symbiote

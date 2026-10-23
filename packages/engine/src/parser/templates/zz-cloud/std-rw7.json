@@ -1,0 +1,188 @@
+[
+  {
+    "id": "eff.stdrw7.cast.fromHand.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from your hand without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast an instant spell with mana value 2 or less from your hand without paying its mana cost."
+      },
+      {
+        "text": "Draw a card. You may cast a creature spell with mana value 3 or less from your hand without paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ attacks, you may cast a sorcery spell from your hand without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may cast a sorcery spell from your graveyard without paying its mana cost.",
+      "Whenever ~ attacks, you may cast two sorcery spells from your hand without paying their mana costs.",
+      "Whenever ~ attacks, you may cast a sorcery spell from your hand."
+    ]
+  },
+  {
+    "id": "eff.stdrw7.cast.fromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 305.9",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may cast an instant spell from your graveyard."
+      },
+      {
+        "text": "When ~ enters, you may cast a sorcery spell with mana value 3 or less from your graveyard."
+      },
+      {
+        "text": "Whenever ~ attacks, you may cast an artifact or creature spell from your graveyard. If that spell would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may cast an instant spell from an opponent's graveyard.",
+      "Whenever ~ attacks, you may cast an instant spell from your library.",
+      "Whenever ~ attacks, you may cast two instant spells from your graveyard."
+    ]
+  },
+  {
+    "id": "rid.stdrw7.cast.typed.exileInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 205.2a"
+    ],
+    "pattern": "if ( a | an ) {t:TypeChoices} spell cast this way would be put into your graveyard , exile it instead",
+    "build": {
+      "$patchPrevious": {
+        "graveyardInstead": {
+          "@new": {
+            "to": {
+              "zone": "exile"
+            },
+            "yours": true,
+            "types": "$t"
+          }
+        }
+      }
+    },
+    "attachTo": "cast",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may cast an artifact or instant spell from your graveyard. If an instant or sorcery spell cast this way would be put into your graveyard, exile it instead."
+      },
+      {
+        "text": "When ~ enters, you may cast target instant or sorcery card from your graveyard. If an instant or sorcery spell cast this way would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may cast an artifact or instant spell from your graveyard. If an instant or sorcery spell cast this way would be put into your graveyard, exile it.",
+      "Whenever ~ attacks, you may cast an artifact or instant spell from your graveyard. If an instant or sorcery spell cast this way would be put into a graveyard, exile it instead.",
+      "When ~ enters, destroy target artifact. If an instant or sorcery spell cast this way would be put into your graveyard, exile it instead."
+    ]
+  }
+]

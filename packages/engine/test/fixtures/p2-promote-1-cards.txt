@@ -1,0 +1,12 @@
+# p2-promote-1: the golden cards of the round (test/m5/golden/cards/cloud-std-mana-1-review.json, cloud-std-spm-review.json, cloud-std-misc-review.json,
+# fast1-t4-review.json; Elderwood Scion's entry is FAST4 T21's, fast4-t21-review.json)
+Arena of Glory
+Generator Servant
+Disciple of Freyalise // Garden of Freyalise
+Nyla, Shirshu Sleuth
+Gloom Surgeon
+Tawnos, the Toymaker
+Elderwood Scion
+Regal Behemoth
+Market Festival
+Dawn's Reflection

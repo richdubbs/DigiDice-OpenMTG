@@ -1,0 +1,4 @@
+# p2-coinflip-2: the golden cards of the round (test/m5/golden/cards/cloud-p2-coinflip-2-review.json), and Mirror Entity (cloud-std-ecl-review.json)
+Noggle Ransacker
+Singe-Mind Ogre
+Mirror Entity

@@ -1,0 +1,64 @@
+[
+  {
+    "id": "eff.p2cm3.pump.forEachFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {n:Qty} , {o:Obj} gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  "$n"
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  "$n"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "{X}{B}: Remove up to X counters from target artifact. For each counter removed this way, ~ gets +1/+0 until end of turn."
+      },
+      {
+        "text": "Destroy target artifact. For each creature in your party, target creature you control gets +0/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{X}{B}: Remove up to X counters from target artifact. For each counter removed this way, ~ gets +1/+0.",
+      "For each creature in your party, target creature you control gains flying until end of turn.",
+      "{X}{B}: Remove up to X counters from target artifact. For each counter removed this way, ~ gets +1/+0 until end of turn unless it is red."
+    ]
+  }
+]

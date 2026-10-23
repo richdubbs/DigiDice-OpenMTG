@@ -1,0 +1,108 @@
+[
+  {
+    "id": "cm.p2cst1.self.less.forEachQty",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 604.5",
+      "CR 118.7",
+      "CR 113.6"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast for each {n:Qty}",
+    "priority": -1,
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                "$n"
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {3} less to cast for each creature that died this turn."
+      },
+      {
+        "text": "~ costs {2} less to cast for each spell your opponents have cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {3} more to cast for each creature that died this turn.",
+      "~ costs {3} less to activate for each creature that died this turn.",
+      "~ costs {3} less to cast if a Zombie died this turn."
+    ]
+  },
+  {
+    "id": "cm.p2cst1.spells.pair.more.any",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} and {g:Filter} cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ]
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "generic": "$m.0.amount"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Blue instant spells and black instant spells cost {1} more to cast."
+      },
+      {
+        "text": "White artifact spells and green artifact spells cost {2} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Blue instant spells and black instant spells cost {1} less to cast.",
+      "Blue instant spells and black instant spells you cast cost {1} more to cast.",
+      "Blue instant spells and black instant spells cost {1} more to activate."
+    ]
+  }
+]

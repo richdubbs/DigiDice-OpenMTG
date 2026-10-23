@@ -1,0 +1,172 @@
+{
+  "name": "suspend",
+  "rule": "702.62",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number",
+      "optional": true
+    },
+    {
+      "name": "cost",
+      "type": "cost",
+      "optional": true
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "structural",
+    "expands"
+  ],
+  "reminder": "Rather than cast this card from your hand, you may pay {cost} and exile it with {n} time counters on it. At the beginning of your upkeep, remove a time counter. When the last is removed, you may play it without paying its mana cost.",
+  "multiple": "independent",
+  "status": "implemented",
+  "readers": [
+    "core/special/suspend.ts#SUSPEND_HANDLERS"
+  ],
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "At the beginning of your upkeep, if this card is suspended, remove a time counter from it.",
+      "zone": [
+        "exile"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "step",
+            "step": "upkeep",
+            "whose": "you"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": {
+            "ref": "self"
+          },
+          "kind": "time"
+        },
+        "op": ">=",
+        "right": 1
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "removeCounters",
+            "from": {
+              "ref": "self"
+            },
+            "kind": "time",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "kind": "triggered",
+      "text": "When the last time counter is removed from this card, if it's exiled, you may play it without paying its mana cost. If you cast a creature spell this way, it gains haste until you lose control of the spell or the permanent it becomes.",
+      "zone": [
+        "exile"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "counters",
+            "change": "removed",
+            "kind": "time",
+            "on": {
+              "self": true
+            }
+          }
+        ],
+        "while": {
+          "cond": "compare",
+          "left": {
+            "q": "counters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "time"
+          },
+          "op": "==",
+          "right": 0
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "cast",
+            "who": {
+              "ref": "you"
+            },
+            "what": {
+              "ref": "self"
+            },
+            "costChange": {
+              "kind": "set",
+              "cost": {},
+              "name": "suspend"
+            },
+            "optional": true,
+            "as": "suspendCast",
+            "play": true
+          },
+          {
+            "op": "if",
+            "cond": {
+              "cond": "matches",
+              "object": {
+                "ref": "bound",
+                "name": "suspendCast"
+              },
+              "filter": {
+                "types": [
+                  "Creature"
+                ]
+              }
+            },
+            "then": [
+              {
+                "op": "effect",
+                "effects": [
+                  {
+                    "s": "continuous",
+                    "affects": {
+                      "ref": "bound",
+                      "name": "suspendCast"
+                    },
+                    "mods": [
+                      {
+                        "layer": 6,
+                        "add": [
+                          {
+                            "kind": "keyword",
+                            "keyword": "haste",
+                            "text": "haste"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "duration": {
+                  "d": "whileObject",
+                  "object": {
+                    "ref": "bound",
+                    "name": "suspendCast"
+                  },
+                  "as": "kept"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

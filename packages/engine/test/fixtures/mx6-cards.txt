@@ -1,0 +1,14 @@
+# FAST5 MX6: endure (CR 701.63), earthbend (CR 701.66), empower Jace N, firebending (CR 702.189); the golden review cards (test/m5/golden/cards/fast5-mx6-review.json)
+Sandskitter Outrider
+Fortress Kin-Guard
+Krumar Initiate
+Anafenza, Unyielding Lineage
+Earth Village Ruffians
+Earthbending Lesson
+Rockalanche
+Protege's Awakening
+Mindseeker Oculus
+Repurposed Enforcer
+Fire Sages
+Vindictive Warden
+Uncle Iroh

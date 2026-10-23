@@ -1,0 +1,1022 @@
+[
+ {
+  "card": "Balthier and Fran",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: \"a Vehicle crewed by ~ this turn\" is filter crewedBySourceThisTurn, read from the crewCostPaid history entries (CR 702.122c); the first combat phase (CR 500.8, 505.1a); the anthem of Vehicles (CR 613.4c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "reach"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Vehicle"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         },
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "reach"
+           },
+           {
+            "kind": "keyword",
+            "keyword": "vigilance"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "subtypes": [
+           "Vehicle"
+          ],
+          "crewedBySourceThisTurn": true
+         }
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "firstCombat"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "you"
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           },
+           {
+            "kind": "colored",
+            "color": "R"
+           },
+           {
+            "kind": "colored",
+            "color": "G"
+           }
+          ]
+         },
+         "then": [
+          {
+           "op": "extraPhase",
+           "phase": "combat"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Canyon Vaulter",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: (trg.r5trig.duringYourMainPhase) \"~ saddles a Mount or crews a Vehicle\" is the Mount's / Vehicle's cost paid by tapping ~ (CR 702.171c, 702.122b), judged as it happens during either main phase of your turn (CR 603.2, 505.1); \"that Mount or Vehicle\" is that permanent",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "what": "saddleCostPaid",
+         "object": {
+          "subtypes": [
+           "Mount"
+          ]
+         },
+         "by": {
+          "self": true
+         }
+        },
+        {
+         "ev": "becomes",
+         "what": "crewCostPaid",
+         "object": {
+          "subtypes": [
+           "Vehicle"
+          ]
+         },
+         "by": {
+          "self": true
+         }
+        }
+       ],
+       "while": {
+        "cond": "turnOf",
+        "whose": "you",
+        "step": [
+         "main1",
+         "main2"
+        ]
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "event",
+            "role": "subject"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "flying"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Captain America, Living Legend",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: cond firstTime, every becomes-tapped event of the turn about that creature is one batch (CR 603.4, 603.2c), checked again as it resolves; vigilance (CR 702.20)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "vigilance"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "what": "tapped",
+         "object": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "while": {
+        "cond": "turnOf",
+        "whose": "you"
+       }
+      },
+      "interveningIf": {
+       "cond": "firstTime",
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       },
+       "event": {
+        "ev": "becomes",
+        "what": "tapped",
+        "object": {}
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Invisible Woman, Sue Storm",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: \"you put one or more +1/+1 counters on one or more other Heroes you control\" is one trigger for everything put at once (TriggerDef.wholeBatch, CR 603.2c, 122.6); a 0/4 colorless Wall token with defender (CR 111.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "lifelink"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "counters",
+         "change": "put",
+         "kind": "+1/+1",
+         "on": {
+          "other": true,
+          "subtypes": [
+           "Hero"
+          ],
+          "controller": "you"
+         },
+         "by": "you"
+        }
+       ],
+       "batch": true,
+       "wholeBatch": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "colors": [],
+            "types": [
+             "Creature"
+            ],
+            "subtypes": [
+             "Wall"
+            ],
+            "power": 0,
+            "toughness": 4,
+            "keywords": [
+             "defender"
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Namor the Sub-Mariner",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: filter manaSymbols and quantity manaSymbols, the blue mana symbols of that spell's mana cost, a hybrid symbol counted as devotion counts it (CR 107.4, 202.1, 700.5); the power CDA (CR 604.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "cda": true,
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7a",
+          "power": {
+           "q": "count",
+           "of": {
+            "ref": "each",
+            "filter": {
+             "subtypes": [
+              "Merfolk"
+             ],
+             "controller": "you"
+            }
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "notTypes": [
+           "Creature"
+          ],
+          "manaSymbols": {
+           "color": "U",
+           "cmp": {
+            "op": ">=",
+            "value": 1
+           }
+          }
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "manaSymbols",
+          "of": {
+           "ref": "event",
+           "role": "spell"
+          },
+          "color": "U"
+         },
+         "token": {
+          "colors": [
+           "U"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Merfolk"
+          ],
+          "power": 1,
+          "toughness": 1
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Reckless Velocitaur",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: (trg.r5trig.duringYourMainPhase) as Canyon Vaulter (CR 702.171c, 702.122b; CR 603.2, 505.1); +2/+0 and trample until end of turn (CR 613.4c, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "what": "saddleCostPaid",
+         "object": {
+          "subtypes": [
+           "Mount"
+          ]
+         },
+         "by": {
+          "self": true
+         }
+        },
+        {
+         "ev": "becomes",
+         "what": "crewCostPaid",
+         "object": {
+          "subtypes": [
+           "Vehicle"
+          ]
+         },
+         "by": {
+          "self": true
+         }
+        }
+       ],
+       "while": {
+        "cond": "turnOf",
+        "whose": "you",
+        "step": [
+         "main1",
+         "main2"
+        ]
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "event",
+            "role": "subject"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 0
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "trample"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Satoru, the Infiltrator",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: \"~ and/or one or more other nontoken creatures you control enter\" is one batch trigger (CR 603.2c, 603.6a); every one of them was not cast or was cast with no mana spent (filter castWithMana false, CR 601.2h, 400.7d), checked again as it resolves (CR 603.4); menace (CR 702.111)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "menace"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "other": true,
+          "token": false,
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "to": "battlefield"
+        }
+       ],
+       "batch": true
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       },
+       "filter": {
+        "castWithMana": false
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sidequest: Play Blitzball // World Champion, Celestial Weapon",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: (eff.r5trig.attachToChosen) \"at end of combat on your turn\" (CR 511.1, 511.2); \"a player was dealt 6 or more combat damage this turn\" is the most combat damage one player was dealt this turn, added up (happenedCount sum per player, CR 120.1, 510.2, 603.4); transform it, then attach it to a creature you control chosen as it resolves (CR 701.27, 701.3a, 608.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 0
+            }
+           ]
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "endCombat",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "q": "happenedCount",
+        "event": {
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "combat": true
+        },
+        "scope": "turn",
+        "per": "player",
+        "sum": "amount"
+       },
+       "op": ">=",
+       "right": 6
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "changeFace",
+         "what": {
+          "ref": "self"
+         },
+         "to": "transform"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "controller": "you"
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "attachHost"
+        },
+        {
+         "op": "attach",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "bound",
+          "name": "attachHost"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "double strike"
+           }
+          ]
+         },
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 0
+         }
+        ]
+       }
+      ],
+      "label": "Double Overdrive"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Stalwart Successor",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: \"one or more counters are put on a creature you control\" is one occurrence per creature (CR 603.2c, 122.1); cond firstTime, every counters event of the turn on that creature is one batch (a +1/+1 counter and a flying counter put at once are one time; CR 603.4); its own counter is a second time; menace (CR 702.111)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "menace"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "counters",
+         "change": "put",
+         "on": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "batch": true
+      },
+      "interveningIf": {
+       "cond": "firstTime",
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       },
+       "event": {
+        "ev": "counters",
+        "change": "put",
+        "on": {}
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "event",
+          "role": "subject"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Millennium Calendar",
+  "expect": "full",
+  "verified": "r5-trig review, by hand against the Oracle text and the rules cited: \"you untap one or more permanents during your untap step\" is one batch of the untap step's untaps of your permanents, \"that many\" how many untapped (CR 502.3, 603.2c); \"1,000\" is one number; the state trigger (CR 603.8) sacrifices it and each opponent loses 1,000 life (CR 119.3); doubling counters (CR 701.10e)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "what": "untapped",
+         "object": {
+          "controller": "you"
+         },
+         "untapStep": true
+        }
+       ],
+       "batch": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "time",
+         "count": {
+          "q": "eventAmount"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "action",
+         "action": "doubleCounters",
+         "subject": {
+          "ref": "self"
+         },
+         "who": {
+          "ref": "you"
+         },
+         "arg": "time"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "state",
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "q": "counters",
+           "on": {
+            "ref": "self"
+           },
+           "kind": "time"
+          },
+          "op": ">=",
+          "right": 1000
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         },
+         "amount": 1000
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Geralf, the Fleshwright",
+  "expect": "full",
+  "verified": "std-rx14 review (Standard, held-out half: both halves open), by hand against the Oracle text and the rules cited (trg.r5trig.cast.notFirstDuringYourTurn, promoted by std-rx14, with eff.token.you; trg.when and eff.stdrx14.counter.forEachOtherEnteredThisTurn): whenever you cast a spell during your turn that is your second or later spell that turn, create a 2/2 blue and black Zombie Rogue creature token (CR 601.2i, 603.2, 111.1); whenever a Zombie you control enters, put a +1/+1 counter on it (the Zombie of the event) for each other Zombie that entered the battlefield under your control this turn, counted from the turn's history as each one entered, never the triggering one itself (CR 603.6a, 400.7, 122.1, 608.2c, 608.2h; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "colors": [
+           "U",
+           "B"
+          ],
+          "power": 2,
+          "subtypes": [
+           "Rogue",
+           "Zombie"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "nthMin": 2,
+         "player": "you"
+        }
+       ],
+       "while": {
+        "cond": "turnOf",
+        "whose": "you"
+       }
+      }
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "+1/+1",
+         "op": "putCounters",
+         "count": {
+          "q": "happenedCount",
+          "event": {
+           "ev": "zoneChange",
+           "subject": {
+            "anyOf": [
+             {
+              "subtypes": [
+               "Zombie"
+              ]
+             }
+            ],
+            "controller": "you",
+            "not": {
+             "is": {
+              "ref": "event",
+              "role": "subject"
+             }
+            }
+           },
+           "to": "battlefield"
+          },
+          "scope": "turn"
+         },
+         "on": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "subtypes": [
+           "Zombie"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

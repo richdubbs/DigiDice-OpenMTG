@@ -1,0 +1,59 @@
+[
+  {
+    "id": "eff.mx4.venture",
+    "kind": "effect",
+    "cr": ["CR 701.49a", "CR 701.49b", "CR 701.49c"],
+    "pattern": "venture into the dungeon",
+    "build": {"op": "action", "action": "venture", "who": {"ref": "you"}},
+    "subject": "none",
+    "needs": ["action:venture"],
+    "examples": [
+      {"text": "When this creature enters, venture into the dungeon.", "expect": {"kind": "triggered", "effect": {"targets": [], "steps": [{"op": "action", "action": "venture", "who": {"ref": "you"}}]}}},
+      {"text": "{4}{U}: Venture into the dungeon. Activate only as a sorcery."},
+      {"text": "Whenever this creature deals combat damage to a player, venture into the dungeon."}
+    ],
+    "counterExamples": [
+      "Venture into the dungeon twice.",
+      "Each opponent ventures into the dungeon.",
+      "Venture into Undercity."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx4.initiative",
+    "kind": "effect",
+    "cr": ["CR 726.1", "CR 726.3"],
+    "pattern": "{p:Player} take[s] the initiative",
+    "build": {"op": "designate", "who": "$p", "what": "initiative"},
+    "subject": "player",
+    "examples": [
+      {"text": "When this creature enters, you take the initiative.", "expect": {"kind": "triggered", "effect": {"targets": [], "steps": [{"op": "designate", "who": {"ref": "you"}, "what": "initiative"}]}}},
+      {"text": "Target player takes the initiative."}
+    ],
+    "counterExamples": [
+      "You take the initiative unless an opponent pays {3}.",
+      "You take the initiative instead."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "trg.mx4.completeDungeon",
+    "kind": "trigger",
+    "cr": ["CR 309.7"],
+    "pattern": "whenever you complete a dungeon",
+    "build": {"on": [{"ev": "action", "verb": "completeDungeon", "actor": "you"}]},
+    "consumes": ["whenever"],
+    "examples": [
+      {"text": "Whenever you complete a dungeon, create a 2/2 green Wolf creature token.", "expect": {"on": [{"ev": "action", "verb": "completeDungeon", "actor": "you"}]}},
+      {"text": "Whenever you complete a dungeon, draw a card."}
+    ],
+    "counterExamples": [
+      "Whenever you complete two dungeons, draw a card.",
+      "Whenever an opponent completes a dungeon, draw a card."
+    ],
+    "status": "stable",
+    "since": 7
+  }
+]

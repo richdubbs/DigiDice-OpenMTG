@@ -1,0 +1,23 @@
+[
+  {
+    "id": "sta.gy1.graveyard.lands",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 305.1", "CR 305.2", "CR 305.9", "CR 116.2a", "CR 404.1"],
+    "pattern": "you may play lands from your graveyard",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "play", "of": { "types": ["Land"] }, "from": "graveyard" },
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may play lands from your graveyard." },
+      { "text": "Trample\nYou may play lands from your graveyard." }
+    ],
+    "counterExamples": [
+      "You may play lands from the top of your library.",
+      "You may play lands and cast spells from your graveyard.",
+      "Each player may play lands from their graveyard.",
+      "You may cast creature spells from your graveyard.",
+      "You may play lands from your exile."
+    ]
+  }
+]

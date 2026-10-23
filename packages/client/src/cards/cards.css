@@ -1,0 +1,809 @@
+/*
+ * Cards (work package C2): our own placeholder frame, our own mana glyphs, card images, tapped rotation, hover zoom.
+ * Card proportions 63 x 88. Nothing is drawn over a card's picture: badges and markers sit in .card-meta below it.
+ *
+ * Public custom properties (the only way another package sizes C2's picture; it never styles C2's classes): `--card-w`, the width the text frame scales
+ * its text with, and `--card-min-font`, a floor under that text (default none). The board sets both on its own image box (board.css).
+ */
+
+.card {
+  --card-w: 146px;
+  --card-h: calc(var(--card-w) * 88 / 63);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  position: relative;
+  vertical-align: top;
+}
+
+.card-small {
+  --card-w: 88px;
+}
+
+.card-large {
+  --card-w: 280px;
+}
+
+.card.is-clickable {
+  cursor: pointer;
+}
+
+.card-slot {
+  position: relative;
+  width: var(--card-w);
+  height: var(--card-h);
+  transition: width 0.15s ease, height 0.15s ease;
+}
+
+.card.is-tapped .card-slot {
+  width: var(--card-h);
+  height: var(--card-w);
+}
+
+/* The outline is outside the picture's rectangle (outline-offset), never on the image itself. */
+.card.is-selected .card-slot,
+.card.is-clickable:focus-visible .card-slot {
+  outline: 3px solid var(--accent-2, #f500f5);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.card:focus-visible {
+  outline: none;
+}
+
+.card-box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--card-w);
+  height: var(--card-h);
+  transition: transform 0.15s ease;
+}
+
+/* Scryfall images: whole image, aspect ratio kept, no crop, filter, tint or blur. */
+.card-image,
+.card-back {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.card-back {
+  border-radius: 4.5% / 3.2%;
+}
+
+/* A sleeve: the still card back with its moving lights laid exactly over it (branding/sleeves.ts). */
+.card-back-sleeve {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.card-back-tracers {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-back-tracers {
+    display: none;
+  }
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  max-width: max(var(--card-w), 100%);
+  font-size: 0.7rem;
+}
+
+.card-face-toggle {
+  min-width: 0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+}
+
+/* Automation badges (design 10) */
+.automation-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.automation-full {
+  background: #1f6f43;
+  color: #ffffff;
+}
+
+.automation-partial {
+  background: #8a6a12;
+  color: #ffffff;
+}
+
+.automation-manual {
+  background: #8b2b2b;
+  color: #ffffff;
+}
+
+/*
+ * Our own frame (no Wizards frames, mana or set symbols): a toned, bevelled border; a name bar with the mana cost as glossy orbs; a procedural art box
+ * (CardArt.tsx); a type line bar with the type emblem; a rules text box; a P/T plate overlapping its corner. Everything scales with the card width
+ * (font-size from --card-w) and switches to a small mode through a container query on the frame:
+ *   medium and large (frame wider than 119px): everything shown;
+ *   small (119px and less): name + cost, a big art box with the type emblem, and the P/T plate; the type line and the rules text stay in the DOM for
+ *   screen readers and tests but are visually hidden;
+ *   tiny (63px and less): the name and the P/T plate; the cost is visually hidden too.
+ */
+.card-frame {
+  --tone: #9a958e;
+  --tone-bright: #cfcac3;
+  --tone-dark: #55514b;
+  --tone-light: #e9e6e1;
+  --ink: #16161a;
+  --ink-soft: #46464e;
+  container: card-frame / inline-size;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.55em 0.55em 0.6em;
+  border-radius: 4.5% / 3.2%;
+  background:
+    radial-gradient(120% 60% at 20% 0%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(165deg, var(--tone-bright) 0%, var(--tone) 38%, var(--tone-dark) 100%);
+  border: max(1px, 0.14em) solid #0c0b0e;
+  box-shadow:
+    inset 0 0 0 max(1px, 0.06em) rgba(255, 255, 255, 0.3),
+    inset 0 0.14em 0.2em rgba(255, 255, 255, 0.3),
+    inset 0 -0.16em 0.3em rgba(0, 0, 0, 0.45);
+  color: var(--ink);
+  font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', 'Times New Roman', serif;
+  font-size: max(var(--card-min-font, 0px), calc(var(--card-w) / 15));
+  line-height: 1.2;
+  overflow: hidden;
+  text-align: left;
+}
+
+.tone-W { --tone: #d3c79f; --tone-bright: #f1ead2; --tone-dark: #7d704a; --tone-light: #f8f3e3; }
+.tone-U { --tone: #3a73b4; --tone-bright: #78aadf; --tone-dark: #1b3d6a; --tone-light: #e3edf8; }
+.tone-B { --tone: #4a3f55; --tone-bright: #7b6a8a; --tone-dark: #1a1520; --tone-light: #e4dfe9; }
+.tone-R { --tone: #b84a32; --tone-bright: #ec8f68; --tone-dark: #65200f; --tone-light: #f8e6df; }
+.tone-G { --tone: #2f7a4a; --tone-bright: #69b581; --tone-dark: #123b22; --tone-light: #e1f1e5; }
+.tone-multi { --tone: #c9a23c; --tone-bright: #f3dd90; --tone-dark: #6e5516; --tone-light: #f7f0d9; }
+.tone-artifact { --tone: #7f8d99; --tone-bright: #bac6d0; --tone-dark: #38424b; --tone-light: #eaeff3; }
+.tone-land { --tone: #97805f; --tone-bright: #c8ae87; --tone-dark: #4d3c27; --tone-light: #f0e9de; }
+.tone-colorless { --tone: #a29d96; --tone-bright: #d2cdc6; --tone-dark: #55514b; --tone-light: #efedea; }
+
+.frame-face {
+  /* How the room between the bars is shared by the art and the rules text: cards with little text get more art. */
+  --art-grow: 11;
+  --text-grow: 8;
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28em;
+}
+
+.frame-face[data-len='none'] { --art-grow: 15; --text-grow: 2; }
+.frame-face[data-len='short'] { --art-grow: 13.5; --text-grow: 4.5; }
+.frame-face[data-len='mid'] { --art-grow: 11; --text-grow: 8; }
+.frame-face[data-len='long'] { --art-grow: 9; --text-grow: 9.5; }
+.frame-face[data-len='xl'] { --art-grow: 7.5; --text-grow: 10.5; }
+
+/* The name bar and the type line bar. */
+.frame-title,
+.frame-type {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3em;
+  padding: 0.14em 0.55em;
+  border-radius: 0.55em;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tone-light) 55%, #fff) 0%,
+    var(--tone-light) 55%,
+    color-mix(in srgb, var(--tone-light) 78%, var(--tone)) 100%
+  );
+  border: max(1px, 0.07em) solid var(--tone-dark);
+  box-shadow:
+    0 0.1em 0.16em rgba(0, 0, 0, 0.45),
+    inset 0 0.07em 0 rgba(255, 255, 255, 0.75);
+}
+
+.frame-title {
+  position: relative;
+  z-index: 1;
+  min-height: 1.75em;
+}
+
+.frame-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.98em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frame-type {
+  min-height: 1.5em;
+  font-size: 0.82em;
+  font-weight: 700;
+}
+
+.frame-type-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A fixed dark chip (as for loyalty), readable on every tone (WCAG 1.4.3). */
+.frame-tag {
+  flex: none;
+  padding: 0 0.4em;
+  border-radius: 0.3em;
+  background: #2b2b33;
+  color: #ffffff;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* The art box: a CSS sky with an SVG scene on it (CardArt.tsx), ringed like the art window of a printed card. */
+.frame-art {
+  position: relative;
+  flex: var(--art-grow, 11) 1 0;
+  min-height: 2.4em;
+  overflow: hidden;
+  border-radius: 0.25em;
+  border: max(1px, 0.07em) solid rgba(0, 0, 0, 0.75);
+  box-shadow:
+    0 0 0 max(1px, 0.1em) var(--tone-bright),
+    0 0.12em 0.25em 0.05em rgba(0, 0, 0, 0.45);
+  background: var(--tone-dark);
+}
+
+.frame-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 26%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0) 36%);
+  box-shadow: inset 0 0 1.2em rgba(0, 0, 0, 0.5);
+}
+
+.art-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.type-emblem {
+  display: block;
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+  fill: currentColor;
+}
+
+/* On a printed card the set symbol sits at the right end of the type line. */
+.type-medal {
+  color: var(--tone-dark);
+}
+
+/* The emblem in the corner of the art box: only where the type line is hidden (small mode). */
+.art-emblem {
+  display: none;
+  position: absolute;
+  left: 0.4em;
+  bottom: 0.4em;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 2.2em;
+  height: 2.2em;
+  padding: 0.38em;
+  border-radius: 50%;
+  background: rgba(12, 12, 18, 0.8);
+  color: #ffffff;
+  border: max(1px, 0.07em) solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0.1em 0.25em rgba(0, 0, 0, 0.6);
+}
+
+/* The rules text box. */
+.frame-text {
+  flex: var(--text-grow, 8) 1 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.3em 0.5em;
+  border-radius: 0.3em;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tone-light) 55%, #fff) 0%, color-mix(in srgb, var(--tone-light) 92%, #fff) 100%);
+  border: max(1px, 0.07em) solid var(--tone-dark);
+  box-shadow:
+    inset 0 0 0.6em rgba(110, 90, 50, 0.18),
+    0 0.1em 0.16em rgba(0, 0, 0, 0.35);
+  color: var(--ink);
+  font-size: 0.78em;
+  line-height: 1.18;
+}
+
+.frame-text[data-len='mid'] { font-size: 0.72em; }
+.frame-text[data-len='long'] { font-size: 0.64em; }
+.frame-text[data-len='xl'] { font-size: 0.57em; }
+
+/* A face with a P/T plate keeps its text clear of the plate. */
+.frame-face:has(.frame-bottom:not(:empty)) .frame-text {
+  padding-bottom: 0.85em;
+}
+
+.frame-line {
+  margin: 0 0 0.35em;
+}
+
+.text-reminder {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
+/* Manual text is painted (design 10.5): players resolve it by hand. */
+.text-manual {
+  background: rgba(var(--neon-2-rgb), 0.16);
+  text-decoration: underline dotted rgba(140, 0, 140, 0.9);
+  text-underline-offset: 2px;
+}
+
+.loyalty-line,
+.saga-chapter {
+  display: flex;
+  gap: 0.4em;
+  align-items: flex-start;
+}
+
+.loyalty-cost {
+  flex: none;
+  min-width: 2.4em;
+  padding: 0 0.3em;
+  border-radius: 0.4em;
+  background: linear-gradient(180deg, #3a3a45, #1f1f27);
+  border: max(1px, 0.06em) solid #b99a4a;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+}
+
+.saga-marks {
+  flex: none;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.saga-mark {
+  min-width: 1.8em;
+  padding: 0 2px;
+  border-radius: 0.3em;
+  background: linear-gradient(180deg, #3a3a45, #1f1f27);
+  border: max(1px, 0.06em) solid #b99a4a;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  font-size: 0.85em;
+}
+
+.class-level,
+.level-band {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1px 3px;
+  border-top: 1px solid color-mix(in srgb, var(--tone) 60%, #000);
+  font-weight: 700;
+}
+
+.level-pt {
+  font-weight: 700;
+  text-align: right;
+}
+
+/* The bottom row holds the P/T plate (or loyalty, or defense), pulled up over the corner of the rules text box. */
+.frame-bottom {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  min-height: 1.7em;
+  margin: -0.8em 0.15em 0 0;
+  pointer-events: none;
+}
+
+.frame-bottom:empty {
+  display: none;
+}
+
+.frame-stat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.8em;
+  padding: 0.1em 0.5em;
+  border-radius: 0.55em;
+  background: linear-gradient(180deg, #ffffff 0%, var(--tone-light) 45%, color-mix(in srgb, var(--tone-light) 72%, var(--tone)) 100%);
+  border: max(1px, 0.1em) solid var(--tone-dark);
+  box-shadow:
+    0 0.12em 0.25em rgba(0, 0, 0, 0.6),
+    inset 0 0.08em 0 #ffffff;
+  color: var(--ink);
+  font-size: 1.2em;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+}
+
+.frame-loyalty {
+  background: linear-gradient(180deg, #3d3d4a 0%, #1c1c24 100%);
+  border-color: #c9a64f;
+  border-radius: 0.6em 0.6em 50% 50% / 0.6em 0.6em 75% 75%;
+  box-shadow:
+    0 0.12em 0.25em rgba(0, 0, 0, 0.6),
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.frame-defense {
+  background: linear-gradient(180deg, #8c2a2a 0%, #561515 100%);
+  border-color: #d3a15b;
+  box-shadow:
+    0 0.12em 0.25em rgba(0, 0, 0, 0.6),
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.frame-split,
+.frame-flip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  flex: 1;
+  min-height: 0;
+}
+
+.frame-half {
+  flex: 5 1 0;
+  min-height: 0;
+}
+
+/* The art band shared by the halves of a split card (on top) or a flip card (between the halves). */
+.frame-split > .frame-art {
+  flex: 3 1 0;
+}
+
+.frame-flip > .frame-art {
+  flex: 2.4 1 0;
+}
+
+.frame-upside-down {
+  transform: rotate(180deg);
+}
+
+.frame-inset-row {
+  flex: var(--text-grow, 8) 1 0;
+  min-height: 0;
+  display: flex;
+  gap: 0.25em;
+}
+
+.frame-inset-row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.frame-inset {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  padding: 0.2em;
+  border-radius: 0.4em;
+  background: color-mix(in srgb, var(--tone) 35%, #fff);
+  border: max(1px, 0.06em) solid var(--tone-dark);
+  font-size: 0.85em;
+}
+
+.frame-inset .frame-title,
+.frame-inset .frame-type {
+  min-height: 0;
+  border-radius: 0.4em;
+}
+
+.frame-inset .frame-text {
+  font-size: 0.9em;
+}
+
+.frame-other-side {
+  margin: 0;
+  padding: 0.1em 0.55em;
+  border-radius: 0.4em;
+  background: var(--tone-light);
+  border: max(1px, 0.06em) solid var(--tone-dark);
+  color: var(--ink);
+  font-size: 0.72em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mana glyphs: our own lettered orbs. The fill and the text color come from ManaGlyph.tsx; the gloss and the shading are drawn here. */
+.mana-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.06em;
+  flex: none;
+}
+
+.mana-glyph {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 1.32em;
+  height: 1.32em;
+  border-radius: 50%;
+  border: max(1px, 0.06em) solid rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0 0.1em 0.16em rgba(0, 0, 0, 0.55),
+    inset 0 -0.2em 0.28em rgba(0, 0, 0, 0.36),
+    inset 0 0.1em 0.12em rgba(255, 255, 255, 0.5);
+  font-family: system-ui, 'Segoe UI', sans-serif;
+  font-size: 0.85em;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: 0 0.05em 0.08em rgba(0, 0, 0, 0.35);
+  vertical-align: -0.2em;
+  margin: 0 0.04em;
+}
+
+.mana-glyph::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 62% 38% at 40% 22%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0)),
+    radial-gradient(circle at 50% 46%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.32) 100%);
+}
+
+/* A hybrid symbol: split fill, white text outlined in black so it reads on both halves. */
+.mana-glyph-split {
+  text-shadow:
+    0 0 0.12em #000,
+    0 0 0.12em #000,
+    0 0 0.2em #000;
+}
+
+.frame-text .mana-glyph {
+  font-size: 0.8em;
+}
+
+/* CR 107.18: the pawprint marks a mode; it is not mana, so it is not drawn as a solid mana orb. */
+.mana-glyph[data-symbol='P'] {
+  border-style: dashed;
+}
+
+.mana-glyph-long {
+  font-size: 0.68em;
+  width: 2.15em;
+  height: 2.15em;
+  letter-spacing: -0.04em;
+}
+
+.mana-glyph-p {
+  position: absolute;
+  right: -0.35em;
+  bottom: -0.3em;
+  font-size: 0.6em;
+  padding: 0 0.15em;
+  border-radius: 2px;
+  background: #111;
+  color: #fff;
+}
+
+/*
+ * Small mode (the frame is 119px wide or less, the battlefield and most of the hand): the type line and the rules text are hidden visually but stay in the
+ * DOM, so screen readers and tests still reach them. The art box takes their room and carries the type emblem; the P/T plate sits on its corner.
+ */
+@container card-frame (max-width: 119px) {
+  .frame-type,
+  .frame-text,
+  .frame-inset-row,
+  .frame-other-side {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .frame-art {
+    flex: 1 1 0;
+  }
+
+  .art-emblem {
+    display: block;
+  }
+
+  .frame-half {
+    flex: 0 0 auto;
+  }
+
+  .frame-split > .frame-art,
+  .frame-flip > .frame-art {
+    flex: 1 1 0;
+  }
+
+  .frame-title {
+    min-height: 1.5em;
+    padding: 0.1em 0.4em;
+    border-radius: 0.45em;
+  }
+
+  .frame-bottom {
+    min-height: 1.5em;
+    margin: -1.35em 0.3em 0 0;
+  }
+
+  .frame-stat {
+    min-width: 2.2em;
+    padding: 0.05em 0.3em;
+    font-size: 1.1em;
+  }
+
+  .mana-glyph {
+    font-size: 0.8em;
+  }
+}
+
+/* Tiny (battlefield cards): the name and the art; the cost is hidden too. */
+@container card-frame (max-width: 63px) {
+  .frame-title .mana-cost {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .art-emblem {
+    width: 1.8em;
+    height: 1.8em;
+    padding: 0.3em;
+  }
+}
+
+/*
+ * Artist credit (ArtistCredit.tsx): "Illustrated by <artist>" under a Scryfall picture, never on it. The same line everywhere: the
+ * deckbuilder's preview, the zooms, the stage overlays, the zone viewers and the own-draw reveal; each place only sets its spacing and width.
+ */
+.artist-credit {
+  margin: 6px 0 0;
+  color: var(--text-muted, rgba(232, 232, 240, 0.72));
+  font-size: 0.8rem;
+  font-style: italic;
+  line-height: 1.25;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Under a card component's picture (Card `credit`): as wide as the card at most. */
+.card-credit {
+  margin: 2px 0 0;
+  max-width: var(--card-w);
+}
+
+/* Hover zoom */
+.card-zoom {
+  position: fixed;
+  top: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: hidden;
+  padding: 12px;
+  border: 1px solid var(--border, rgba(var(--neon-rgb), 0.35));
+  border-radius: 10px;
+  background: rgba(5, 11, 24, 0.96);
+  color: var(--text, #e8e8f0);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.card-zoom-right {
+  right: 16px;
+}
+
+.card-zoom-left {
+  left: 16px;
+}
+
+.card-zoom-pictures {
+  display: flex;
+  gap: 8px;
+}
+
+/* As wide as fits: 280px at most, its share of the room beside the card (--zoom-room-card, set by CardZoom), and short enough for the window. */
+.card-zoom-picture {
+  --card-w: max(96px, min(280px, 40vw, calc((100vh - 220px) * 63 / 88), var(--zoom-room-card, 280px)));
+  width: var(--card-w);
+  height: calc(var(--card-w) * 88 / 63);
+}
+
+.card-zoom-picture.is-flipped {
+  transform: rotate(180deg);
+}
+
+/* One side in the zoom: its picture and, under it, its artist's credit (as wide as the picture: the line wraps). */
+.card-zoom-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min-content;
+}
+
+.card-zoom-face .artist-credit {
+  margin-top: 4px;
+}
+
+.card-zoom-info {
+  max-width: 576px;
+  font-size: 0.85rem;
+}
+
+.card-zoom-info p {
+  margin: 0 0 4px;
+}
+
+.card-zoom-manual ul {
+  margin: 0;
+  padding-left: 18px;
+}

@@ -1,0 +1,60 @@
+{
+  "name": "dethrone",
+  "rule": "702.105",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks the player with the most life or tied for most life, put a +1/+1 counter on it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks the player with the most life or tied for most life, put a +1/+1 counter on ~.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            },
+            "defender": "any"
+          }
+        ],
+        "while": {
+          "cond": "compare",
+          "left": {
+            "q": "countPlayers",
+            "of": {
+              "ref": "each",
+              "who": "player"
+            },
+            "lifeVs": {
+              "op": ">",
+              "than": {
+                "ref": "event",
+                "role": "defender"
+              }
+            }
+          },
+          "op": "==",
+          "right": 0
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "+1/+1",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

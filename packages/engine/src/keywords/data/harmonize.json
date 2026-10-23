@@ -1,0 +1,35 @@
+{
+  "name": "harmonize",
+  "rule": "702.180",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may cast this card from your graveyard for its harmonize cost. You may tap a creature you control to reduce that cost by {X}, where X is its power. Then exile this spell.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Harmonize {cost}",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "from": "graveyard",
+          "name": "harmonize",
+          "tapReduces": "power",
+          "exileOnLeave": true
+        }
+      ]
+    }
+  ]
+}

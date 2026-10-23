@@ -1,0 +1,703 @@
+[
+  {
+    "id": "sta.p2pt2.each.pump.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control that's a Bird or a Bat gets +1/+1 and has flying."
+      },
+      {
+        "text": "Each other creature you control that's a Fox, Otter, Rabbit, or Mouse gets +1/+0 and has first strike."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control that's a Bird or a Bat gets +1/+1 and has flying until end of turn.",
+      "Each creature you control that's a Bird or a Bat gets +1/+1 and loses flying.",
+      "Each creature you control that's a Bird or a Bat gets +1/+1."
+    ]
+  },
+  {
+    "id": "sta.p2pt2.all.pump.foreach.otherThanSubject",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 109.4"
+    ],
+    "pattern": "all {f:Filter} get {pt:PT} for each other {g:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      "$g"
+                    ],
+                    "not": {
+                      "is": {
+                        "ref": "subject"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      "$g"
+                    ],
+                    "not": {
+                      "is": {
+                        "ref": "subject"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "All Elf creatures get +1/+1 for each other Elf on the battlefield."
+      },
+      {
+        "text": "All Wizard creatures get +1/+0 for each other Wizard you control."
+      }
+    ],
+    "counterExamples": [
+      "All Elf creatures get +1/+1 for each Elf on the battlefield.",
+      "All Elf creatures get +1/+1 for each other Elf on the battlefield until end of turn.",
+      "All Elf creatures get +1/+1 for each other Elf card in your graveyard and have vigilance."
+    ]
+  },
+  {
+    "id": "sta.p2pt2.each.pump.foreach.otherThanSubject",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 109.4"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} for each other {g:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      "$g"
+                    ],
+                    "not": {
+                      "is": {
+                        "ref": "subject"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      "$g"
+                    ],
+                    "not": {
+                      "is": {
+                        "ref": "subject"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each legendary creature you control gets +1/+0 for each other legendary creature you control."
+      },
+      {
+        "text": "Each Knight you control gets +1/+1 for each other Knight you control."
+      }
+    ],
+    "counterExamples": [
+      "Each Knight you control gets +1/+1 for each Knight you control.",
+      "Each Knight you control gets +1/+1 for each other Knight you control until end of turn.",
+      "Each Knight you control gets +1/+1 for each other creature card in your graveyard and has vigilance."
+    ]
+  },
+  {
+    "id": "sta.p2pt2.attached.pump.foreach.equipment.attached",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each equipment attached to it",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": [
+                      "Equipment"
+                    ],
+                    "attachedToObject": {
+                      "ref": "attachedTo"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": [
+                      "Equipment"
+                    ],
+                    "attachedToObject": {
+                      "ref": "attachedTo"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+0 for each Equipment attached to it."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1 for each Equipment attached to it."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+0 for each Aura attached to it.",
+      "Equipped creature gets +2/+0 for each Equipment you control.",
+      "Equipped creature gets +2/+0 for each Equipment attached to it until end of turn."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "sta.p2pt2.enchanted.pump.foreach.aura.attached.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 301.5",
+      "CR 303.4",
+      "CR 613.1f"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each aura attached to it and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": [
+                      "Aura"
+                    ],
+                    "attachedToObject": {
+                      "ref": "attachedTo"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": [
+                      "Aura"
+                    ],
+                    "attachedToObject": {
+                      "ref": "attachedTo"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1 for each Aura attached to it and has trample."
+      },
+      {
+        "text": "Enchanted creature gets +2/+0 for each Aura attached to it and has flying and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+1 for each Aura attached to it and loses trample.",
+      "Enchanted creature gets +1/+1 for each Equipment attached to it and has trample.",
+      "Enchanted creature gets +1/+1 for each Aura you control and has trample."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "sta.p2pt2.each.pump.foreach.equipment.attached",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} for each equipment attached to it",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": [
+                      "Equipment"
+                    ],
+                    "attachedToObject": {
+                      "ref": "subject"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": [
+                      "Equipment"
+                    ],
+                    "attachedToObject": {
+                      "ref": "subject"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control gets +1/+1 for each Equipment attached to it."
+      },
+      {
+        "text": "Each Dwarf you control gets +2/+0 for each Equipment attached to it."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control gets +1/+1 for each Aura attached to it.",
+      "Each creature you control gets +1/+1 for each Equipment you control.",
+      "Each creature you control gets +1/+1 for each Equipment attached to it until end of turn."
+    ]
+  },
+  {
+    "id": "sta.p2pt2.each.pump.foreach.counter.onIt",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 122.1"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} for each {k:CounterKind} counter on it",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "subject"
+                },
+                "kind": "$k"
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "subject"
+                },
+                "kind": "$k"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control gets +1/+0 for each +1/+1 counter on it."
+      },
+      {
+        "text": "Each other Rogue you control gets +1/+1 for each stun counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control gets +1/+0 for each +1/+1 counter on ~.",
+      "Each creature you control gets +1/+0 for each +1/+1 counter you have.",
+      "Each creature you control gets +1/+0 for each +1/+1 counter on it until end of turn."
+    ]
+  },
+  {
+    "id": "eff.p2pt2.dur.gains.and.gets.foreach.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 608.2h"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gains {a:Abilities} and gets {pt:PT} for each {n:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  "$n"
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  "$n"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature gains haste and gets +1/+0 for each card you've drawn this turn."
+      },
+      {
+        "text": "Until end of turn, target creature you control gains vigilance and gets +1/+1 for each spell you've cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature loses haste and gets +1/+0 for each card you've drawn this turn.",
+      "Target creature gains haste and gets +1/+0 for each card you've drawn this turn.",
+      "Until end of turn, target creature gains haste and gets +1/+0."
+    ]
+  },
+  {
+    "id": "eff.p2pt2.dur.group.get.foreach.and.gain",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 608.2h"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} get {pt:PT} for each {f:Filter} and gain {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, creatures you control get +1/+1 for each Island you control and gain flying."
+      },
+      {
+        "text": "Until end of turn, creatures you control get +1/+0 for each artifact you control and gain menace."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, creatures you control get +1/+1 for each Island you control and lose flying.",
+      "Creatures you control get +1/+1 for each Island you control and gain flying.",
+      "Until end of turn, creatures you control get +1/+1 and gain flying."
+    ]
+  }
+]

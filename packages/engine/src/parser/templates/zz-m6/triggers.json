@@ -1,0 +1,92 @@
+[
+  {
+    "id": "sta.m6.triggerMod.entering",
+    "kind": "static",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.6a"
+    ],
+    "pattern": "if {f:Filter} entering causes a triggered ability of a permanent you control to trigger , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "abilitiesOf": {
+            "controller": "you"
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If an enchantment or land entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      },
+      {
+        "text": "If a Goblin you control entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If an enchantment dying causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If an enchantment entering causes a triggered ability of a permanent an opponent controls to trigger, that ability triggers an additional time.",
+      "If an enchantment entering causes a triggered ability of a permanent you control to trigger, that ability triggers two additional times."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "sta.m6.triggerMod.enteringTheBattlefield",
+    "kind": "static",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.6a"
+    ],
+    "pattern": "if {f:Filter} entering the battlefield causes a triggered ability of a permanent you control to trigger , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "abilitiesOf": {
+            "controller": "you"
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If an enchantment or land entering the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      },
+      {
+        "text": "If another Goblin entering the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If an enchantment leaving the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If an enchantment entering the battlefield causes a triggered ability of a permanent an opponent controls to trigger, that ability triggers an additional time.",
+      "If an enchantment entering the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers twice."
+    ],
+    "status": "stable",
+    "since": 6
+  }
+]

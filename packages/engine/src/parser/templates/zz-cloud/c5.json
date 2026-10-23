@@ -1,0 +1,230 @@
+[
+  {
+    "id": "eff.c5.choose.color",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 105.1",
+      "CR 607.2d"
+    ],
+    "pattern": "choose a color",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "color",
+      "as": "chosenColor",
+      "link": "color"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose a color. Destroy all creatures of the chosen color."
+      },
+      {
+        "text": "Choose a color. Artifact creatures you control gain protection from the chosen color until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose a color other than white.",
+      "Target opponent chooses a color.",
+      "Choose two colors."
+    ]
+  },
+  {
+    "id": "sta.c5.spells.you.chosen.less",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 607.2d",
+      "CR 205.3m",
+      "CR 105.2"
+    ],
+    "pattern": "{f:Filter} you cast {c:Chosen} cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                "$f"
+              ],
+              "chosen": "$c"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\nCreature spells you cast of the chosen type cost {1} less to cast."
+      },
+      {
+        "text": "As ~ enters, choose a card type.\nSpells you cast of the chosen type cost {1} less to cast."
+      },
+      {
+        "text": "As ~ enters, choose a color.\nSpells you cast of the chosen color cost {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.\nCreature spells you cast of the chosen type cost {1} more to cast.",
+      "As ~ enters, choose a creature type.\nCreature spells your opponents cast of the chosen type cost {1} less to cast.",
+      "Artifact spells you cast of the chosen type cost {2} less to cast."
+    ]
+  },
+  {
+    "id": "sta.c5.opponents.cantCast.chosen",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 607.2d",
+      "CR 105.2",
+      "CR 101.2"
+    ],
+    "pattern": "your opponents can't cast spells {c:Chosen}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "mode": "cant",
+      "action": "cast",
+      "other": {
+        "chosen": "$c"
+      }
+    },
+    "consumes": [
+      "can't",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a color.\nYour opponents can't cast spells of the chosen color."
+      },
+      {
+        "text": "Flying\nAs ~ enters, choose a color.\nYour opponents can't cast spells of the chosen color."
+      }
+    ],
+    "counterExamples": [
+      "Your opponents can't cast spells of the chosen type.",
+      "As ~ enters, choose a color.\nYour opponents can't cast spells of the chosen color this turn.",
+      "As ~ enters, choose a creature type.\nYour opponents can't cast spells of the chosen color."
+    ]
+  },
+  {
+    "id": "sta.c5.self.chosenType.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 607.2d",
+      "CR 613.1d"
+    ],
+    "pattern": "~ is the chosen type in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "chosen": "type"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\n~ is the chosen type in addition to its other types."
+      },
+      {
+        "text": "As ~ enters, choose a creature type.\n~ is the chosen type in addition to its other types.\nOther creatures you control of the chosen type get +1/+1."
+      }
+    ],
+    "counterExamples": [
+      "~ is the chosen color in addition to its other colors.",
+      "As ~ enters, choose a creature type.\n~ is the chosen type.",
+      "As ~ enters, choose a creature type.\n~ is the chosen type in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.c5.each.chosenType.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 607.2d",
+      "CR 613.1d"
+    ],
+    "pattern": "each {f:Filter} is the chosen type in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "chosen": "type"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "chosen",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\nEach creature you control is the chosen type in addition to its other types."
+      },
+      {
+        "text": "As ~ enters, choose a creature type.\nEach other creature you control is the chosen type in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Each artifact you control is the chosen type in addition to its other types.",
+      "As ~ enters, choose a creature type.\nEach creature you control is the chosen type.",
+      "As ~ enters, choose a color.\nEach creature you control is the chosen type in addition to its other types."
+    ]
+  }
+]

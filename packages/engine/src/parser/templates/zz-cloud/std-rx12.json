@@ -1,0 +1,63 @@
+[
+  {
+    "id": "sta.stdrx12.self.has.whileNoDamageYet",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 120.1",
+      "CR 400.7"
+    ],
+    "pattern": "~ has {a:Abilities} as long as ( it hasn't | they haven't ) dealt damage yet",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "happened",
+          "event": {
+            "ev": "damage",
+            "source": {
+              "self": true
+            }
+          },
+          "scope": "game"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "~ has shroud as long as it hasn't dealt damage yet."
+      },
+      {
+        "text": "~ has indestructible and menace as long as it hasn't dealt damage yet."
+      }
+    ],
+    "counterExamples": [
+      "~ has shroud as long as it hasn't dealt damage.",
+      "~ has shroud as long as it has dealt damage yet.",
+      "~ has shroud as long as it hasn't dealt combat damage yet.",
+      "~ has shroud as long as it hasn't dealt damage this turn."
+    ]
+  }
+]

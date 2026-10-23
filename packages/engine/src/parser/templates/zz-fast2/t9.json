@@ -1,0 +1,1681 @@
+[
+  {
+    "id": "eff.t9.becomes.artifactcreature",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 301.7b"
+    ],
+    "pattern": "{o:Obj} becomes an artifact creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: ~ becomes an artifact creature until end of turn."
+      },
+      {
+        "text": "{4}{U}: Target Vehicle becomes an artifact creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ becomes an artifact creature.",
+      "{2}: ~ becomes an enchantment creature until end of turn.",
+      "{2}: ~ becomes an artifact creature until end of turn unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t9.becomes.subtype.artifactcreature",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}: ~ becomes a 3/5 Golem artifact creature until end of turn."
+      },
+      {
+        "text": "{1}{G}: ~ becomes an 8/8 Elephant Beast artifact creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes a 3/5 Golem artifact creature.",
+      "{3}: ~ becomes a 3/5 Golem creature until end of turn.",
+      "{3}: ~ becomes a 3/5 Golem artifact creature with flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t9.becomes.colors.subtype.artifactcreature.with",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c1:Color} and {c2:Color} {st:Subtypes} artifact creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}{R}{W}: ~ becomes a 3/1 red and white Cat artifact creature with first strike until end of turn."
+      },
+      {
+        "text": "{2}{G}{U}: ~ becomes a 5/5 green and blue Elemental artifact creature with reach and trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{R}{W}: ~ becomes a 3/1 red and white Cat artifact creature with first strike.",
+      "{1}{R}{W}: ~ becomes a 3/1 red Cat artifact creature with first strike until end of turn.",
+      "{1}{R}{W}: ~ becomes a 3/1 red and white Cat creature with first strike until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t9.becomes.subtype.creature.permanent",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}{W}: ~ becomes a 4/2 Knight creature."
+      },
+      {
+        "text": "{1}{U}, {T}: Target artifact becomes a 1/3 Bird Scout creature."
+      }
+    ],
+    "counterExamples": [
+      "{2}{W}: ~ becomes a 4/2 Knight creature until end of turn.",
+      "{2}{W}: ~ becomes a 4/2 Knight artifact creature.",
+      "{2}{W}: ~ becomes a 4/2 Knight creature with flying."
+    ]
+  },
+  {
+    "id": "eff.t9.becomes.subtype.creature.with.permanent",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}{W}: ~ becomes a 3/3 Cat creature with vigilance."
+      },
+      {
+        "text": "{1}{B}, {T}: Target artifact becomes a 2/2 Bat creature with flying and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "{2}{W}: ~ becomes a 3/3 Cat creature with vigilance until end of turn.",
+      "{2}{W}: ~ becomes a 3/3 Cat creature.",
+      "{2}{W}: ~ becomes a 3/3 Cat artifact creature with vigilance."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.cantbeblocked",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 514.2"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} and can't be blocked this turn",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: ~ gets +2/+0 until end of turn and can't be blocked this turn."
+      },
+      {
+        "text": "{1}: Target creature gets -1/-0 until end of turn and can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}{U}: ~ gets +2/+0 until end of turn and can't block this turn.",
+      "{2}{U}: ~ gets +2/+0 until end of turn and can't be blocked.",
+      "{2}{U}: ~ gets +2/+0 until your next turn and can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "eff.t9.attack.nodefender",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 609.4",
+      "CR 702.3b",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "~ can attack this turn as though it didn't have defender",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "{2}: ~ can attack this turn as though it didn't have defender."
+      },
+      {
+        "text": "{U}{R}: ~ can attack this turn as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ can block this turn as though it didn't have defender.",
+      "{2}: ~ can attack this turn as though it didn't have flying.",
+      "{2}: Target creature can attack this turn as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.attack.nodefender",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 609.4",
+      "CR 702.3b",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 514.2"
+    ],
+    "pattern": "~ gets {pt:PT} {d:Dur} and can attack this turn as though it didn't have defender",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "{2}: ~ gets +2/-2 until end of turn and can attack this turn as though it didn't have defender."
+      },
+      {
+        "text": "{1}{R}: ~ gets +3/+0 until end of turn and can attack this turn as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ gets +2/-2 until end of turn and can block this turn as though it didn't have defender.",
+      "{2}: ~ gets +2/-2 until end of turn and can attack this turn as though it didn't have flying.",
+      "{2}: Target creature gets +2/-2 until end of turn and can attack this turn as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.whereX",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} , where X is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature gets +X/+X until end of turn, where X is the number of Elves you control."
+      },
+      {
+        "text": "Target creature gets -X/-0 until end of turn, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets -X/+X until end of turn.",
+      "Target creature gets +X/+X, where X is the number of Elves you control.",
+      "Each creature gets +X/+X until end of turn, where X is the number of Elves you control."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.foreach.other.1.0",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 109.2"
+    ],
+    "pattern": "{o:Obj} gets +1/+0 {d:Dur} for each other {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "other": true,
+                    "attacking": "$f.attacking",
+                    "blocking": "$f.blocking",
+                    "tapped": "$f.tapped",
+                    "token": "$f.token",
+                    "types": "$f.types",
+                    "allTypes": "$f.allTypes",
+                    "notTypes": "$f.notTypes",
+                    "subtypes": "$f.subtypes",
+                    "notSubtypes": "$f.notSubtypes",
+                    "supertypes": "$f.supertypes",
+                    "colors": "$f.colors",
+                    "notColors": "$f.notColors",
+                    "keyword": "$f.keyword",
+                    "controller": "$f.controller"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": 1,
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{1}: ~ gets +1/+0 until end of turn for each other attacking Golem."
+      },
+      {
+        "text": "{T}: ~ gets +1/+0 until end of turn for each other artifact creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}: ~ gets +1/+0 for each other attacking Golem.",
+      "{1}: ~ gets +1/+0 until end of turn for each attacking Golem.",
+      "{1}: ~ gets +1/+0 until end of turn for each other attacking Golem unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.foreach.other.1.1",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 109.2"
+    ],
+    "pattern": "{o:Obj} gets +1/+1 {d:Dur} for each other {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "other": true,
+                    "attacking": "$f.attacking",
+                    "blocking": "$f.blocking",
+                    "tapped": "$f.tapped",
+                    "token": "$f.token",
+                    "types": "$f.types",
+                    "allTypes": "$f.allTypes",
+                    "notTypes": "$f.notTypes",
+                    "subtypes": "$f.subtypes",
+                    "notSubtypes": "$f.notSubtypes",
+                    "supertypes": "$f.supertypes",
+                    "colors": "$f.colors",
+                    "notColors": "$f.notColors",
+                    "keyword": "$f.keyword",
+                    "controller": "$f.controller"
+                  }
+                }
+              },
+              "toughness": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "other": true,
+                    "attacking": "$f.attacking",
+                    "blocking": "$f.blocking",
+                    "tapped": "$f.tapped",
+                    "token": "$f.token",
+                    "types": "$f.types",
+                    "allTypes": "$f.allTypes",
+                    "notTypes": "$f.notTypes",
+                    "subtypes": "$f.subtypes",
+                    "notSubtypes": "$f.notSubtypes",
+                    "supertypes": "$f.supertypes",
+                    "colors": "$f.colors",
+                    "notColors": "$f.notColors",
+                    "keyword": "$f.keyword",
+                    "controller": "$f.controller"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": 1,
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{1}: ~ gets +1/+1 until end of turn for each other attacking Golem."
+      },
+      {
+        "text": "{T}: ~ gets +1/+1 until end of turn for each other artifact creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}: ~ gets +1/+1 for each other attacking Golem.",
+      "{1}: ~ gets +1/+1 until end of turn for each attacking Golem.",
+      "{1}: ~ gets +1/+1 until end of turn for each other attacking Golem unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.foreach.other.2.0",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 109.2"
+    ],
+    "pattern": "{o:Obj} gets +2/+0 {d:Dur} for each other {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  2,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": {
+                        "other": true,
+                        "attacking": "$f.attacking",
+                        "blocking": "$f.blocking",
+                        "tapped": "$f.tapped",
+                        "token": "$f.token",
+                        "types": "$f.types",
+                        "allTypes": "$f.allTypes",
+                        "notTypes": "$f.notTypes",
+                        "subtypes": "$f.subtypes",
+                        "notSubtypes": "$f.notSubtypes",
+                        "supertypes": "$f.supertypes",
+                        "colors": "$f.colors",
+                        "notColors": "$f.notColors",
+                        "keyword": "$f.keyword",
+                        "controller": "$f.controller"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": 1,
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{1}: ~ gets +2/+0 until end of turn for each other attacking Golem."
+      },
+      {
+        "text": "{T}: ~ gets +2/+0 until end of turn for each other artifact creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}: ~ gets +2/+0 for each other attacking Golem.",
+      "{1}: ~ gets +2/+0 until end of turn for each attacking Golem.",
+      "{1}: ~ gets +2/+0 until end of turn for each other attacking Golem unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.foreach.other.3.0",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 109.2"
+    ],
+    "pattern": "{o:Obj} gets +3/+0 {d:Dur} for each other {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  3,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": {
+                        "other": true,
+                        "attacking": "$f.attacking",
+                        "blocking": "$f.blocking",
+                        "tapped": "$f.tapped",
+                        "token": "$f.token",
+                        "types": "$f.types",
+                        "allTypes": "$f.allTypes",
+                        "notTypes": "$f.notTypes",
+                        "subtypes": "$f.subtypes",
+                        "notSubtypes": "$f.notSubtypes",
+                        "supertypes": "$f.supertypes",
+                        "colors": "$f.colors",
+                        "notColors": "$f.notColors",
+                        "keyword": "$f.keyword",
+                        "controller": "$f.controller"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": 1,
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{1}: ~ gets +3/+0 until end of turn for each other attacking Golem."
+      },
+      {
+        "text": "{T}: ~ gets +3/+0 until end of turn for each other artifact creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}: ~ gets +3/+0 for each other attacking Golem.",
+      "{1}: ~ gets +3/+0 until end of turn for each attacking Golem.",
+      "{1}: ~ gets +3/+0 until end of turn for each other attacking Golem unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.foreach.other.2.2",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 109.2"
+    ],
+    "pattern": "{o:Obj} gets +2/+2 {d:Dur} for each other {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  2,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": {
+                        "other": true,
+                        "attacking": "$f.attacking",
+                        "blocking": "$f.blocking",
+                        "tapped": "$f.tapped",
+                        "token": "$f.token",
+                        "types": "$f.types",
+                        "allTypes": "$f.allTypes",
+                        "notTypes": "$f.notTypes",
+                        "subtypes": "$f.subtypes",
+                        "notSubtypes": "$f.notSubtypes",
+                        "supertypes": "$f.supertypes",
+                        "colors": "$f.colors",
+                        "notColors": "$f.notColors",
+                        "keyword": "$f.keyword",
+                        "controller": "$f.controller"
+                      }
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  2,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": {
+                        "other": true,
+                        "attacking": "$f.attacking",
+                        "blocking": "$f.blocking",
+                        "tapped": "$f.tapped",
+                        "token": "$f.token",
+                        "types": "$f.types",
+                        "allTypes": "$f.allTypes",
+                        "notTypes": "$f.notTypes",
+                        "subtypes": "$f.subtypes",
+                        "notSubtypes": "$f.notSubtypes",
+                        "supertypes": "$f.supertypes",
+                        "colors": "$f.colors",
+                        "notColors": "$f.notColors",
+                        "keyword": "$f.keyword",
+                        "controller": "$f.controller"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": 1,
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{1}: ~ gets +2/+2 until end of turn for each other attacking Golem."
+      },
+      {
+        "text": "{T}: ~ gets +2/+2 until end of turn for each other artifact creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}: ~ gets +2/+2 for each other attacking Golem.",
+      "{1}: ~ gets +2/+2 until end of turn for each attacking Golem.",
+      "{1}: ~ gets +2/+2 until end of turn for each other attacking Golem unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.whereX.ownpower",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 208.1"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} , where X is its power",
+    "build": {
+      "lower": "whereX",
+      "value": {
+        "q": "stat",
+        "stat": "power",
+        "of": "$o"
+      },
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{2}{G}: ~ gets +X/+X until end of turn, where X is its power."
+      },
+      {
+        "text": "{R}: Target creature gets +X/+0 until end of turn, where X is its power."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: ~ gets +X/+X until end of turn, where X is its toughness.",
+      "{2}{G}: ~ gets +X/+X, where X is its power.",
+      "{2}{G}: ~ gets +X/+X until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t9.pump.each.targets",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 115.1"
+    ],
+    "pattern": "{o:Objs} each get {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Up to three target creatures each get +1/+2 until end of turn."
+      },
+      {
+        "text": "Two target creatures each get -2/-2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Up to three target creatures each get +1/+2.",
+      "Up to three target creatures each gain +1/+2 until end of turn.",
+      "Up to three target creatures each get +1/+2 until end of turn for each Elf you control."
+    ]
+  },
+  {
+    "id": "eff.t9.pumpgrant.each.targets",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 115.1"
+    ],
+    "pattern": "{o:Objs} each get {pt:PT} and gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Up to three target creatures each get +1/+0 and gain menace until end of turn."
+      },
+      {
+        "text": "Two target creatures each get +3/+3 and gain vigilance and reach until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Up to three target creatures each get +1/+0 and gain menace.",
+      "Up to three target creatures each get +1/+0 and lose menace until end of turn.",
+      "Up to three target creatures each get +1/+0 and gain menace until your next turn unless they are blue."
+    ]
+  },
+  {
+    "id": "eff.t9.may.have.pump",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 603.5",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "you may have {o:Obj} get {pt:PT} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may have target creature get -3/-1 until end of turn."
+      },
+      {
+        "text": "{T}: You may have target creature get +4/+0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You may have target creature get -3/-1.",
+      "You may have target creature gain -3/-1 until end of turn.",
+      "You have target creature get -3/-1 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t9.lose.keyword",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{o:Obj} loses {k:Keyword} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature loses reach until end of turn."
+      },
+      {
+        "text": "{1}: ~ loses defender until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses reach.",
+      "Target creature gains reach until end of turn.",
+      "Target creature loses all abilities until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t9.color.each",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 105.3",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1e"
+    ],
+    "pattern": "{o:Objs} become {c:Color} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Three target creatures become blue until end of turn."
+      },
+      {
+        "text": "Two target creatures become black until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Three target creatures become blue.",
+      "Three target creatures become blue and black until end of turn.",
+      "Target creature becomes blue until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t9.cantblock.self",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "{o:Obj} can't block ~ {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "block",
+          "other": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{4}{R}{R}: Target creature can't block ~ this turn."
+      },
+      {
+        "text": "{2}, {T}: Target creature an opponent controls can't block ~ this turn."
+      }
+    ],
+    "counterExamples": [
+      "{4}{R}{R}: Target creature can't block ~.",
+      "{4}{R}{R}: Target creature can't attack ~ this turn.",
+      "{4}{R}{R}: Target creature can block ~ this turn."
+    ]
+  },
+  {
+    "id": "sta.t9.chosen.anthem",
+    "kind": "static",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 607.2d",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "creatures you control of the chosen type get {pt:PT}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "controller": "you",
+          "chosen": {
+            "link": "type",
+            "quality": "creatureType"
+          }
+        }
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\nCreatures you control of the chosen type get +2/+1."
+      },
+      {
+        "text": "As ~ enters, choose a creature type.\nCreatures you control of the chosen type get +0/+3."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.\nCreatures you control of the chosen type get +2/+1 until end of turn.",
+      "As ~ enters, choose a creature type.\nCreatures you control of the chosen type have flying.",
+      "As ~ enters, choose a creature type.\nCreatures of the chosen type get +2/+1."
+    ],
+    "priority": 1,
+    "consumes": [
+      "chosen"
+    ]
+  },
+  {
+    "id": "eff.t9.self.protection.choice",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 105.1"
+    ],
+    "pattern": "~ gains protection from the color of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "protectionColor",
+        "link": "protectionColor"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "W"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:W",
+                        "text": "protection from white"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "U"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:U",
+                        "text": "protection from blue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "B"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:B",
+                        "text": "protection from black"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "R"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:R",
+                        "text": "protection from red"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "G"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:G",
+                        "text": "protection from green"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "text": "{1}{W}: ~ gains protection from the color of your choice until end of turn."
+      },
+      {
+        "text": "{3}, {T}: ~ gains protection from the color of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{W}: ~ gains protection from the color of your choice.",
+      "{1}{W}: Target creature gains protection from the color of your choice until end of turn.",
+      "{1}{W}: ~ gains protection from the color of your choice until end of turn unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t9.self.keyword.choice3",
+    "kind": "effect",
+    "since": 4,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "~ gains your choice of {k1:Keyword} , {k2:Keyword} , or {k3:Keyword} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "keywordChoice",
+        "link": "keywordChoice",
+        "options": [
+          "$k1.text",
+          "$k2.text",
+          "$k3.text"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k1.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k2.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k3.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k3"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "text": "{2}: ~ gains your choice of reach, menace, or first strike until end of turn."
+      },
+      {
+        "text": "{1}{G}{G}: ~ gains your choice of flying, vigilance, or deathtouch until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ gains your choice of reach, menace, or first strike.",
+      "{2}: ~ gains reach, menace, and first strike until end of turn.",
+      "{2}: Target creature gains your choice of reach, menace, or first strike until end of turn."
+    ]
+  }
+]

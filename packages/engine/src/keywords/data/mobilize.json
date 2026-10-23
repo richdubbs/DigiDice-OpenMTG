@@ -1,0 +1,80 @@
+{
+  "name": "mobilize",
+  "rule": "702.181",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks, create {n} tapped and attacking 1/1 red Warrior creature tokens. Sacrifice them at the beginning of the next end step.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, create {n} 1/1 red Warrior creature tokens that are tapped and attacking. Sacrifice them at the beginning of the next end step.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": "$amount",
+            "token": {
+              "colors": [
+                "R"
+              ],
+              "types": [
+                "Creature"
+              ],
+              "subtypes": [
+                "Warrior"
+              ],
+              "power": 1,
+              "toughness": 1
+            },
+            "tapped": true,
+            "attacking": true,
+            "as": "mobilized"
+          },
+          {
+            "op": "delay",
+            "when": {
+              "at": "step",
+              "step": "end",
+              "next": true
+            },
+            "capture": [
+              "mobilized"
+            ],
+            "do": [
+              {
+                "op": "sacrifice",
+                "what": {
+                  "ref": "bound",
+                  "name": "mobilized"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

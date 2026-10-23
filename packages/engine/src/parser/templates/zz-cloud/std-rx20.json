@@ -1,0 +1,166 @@
+[
+  {
+    "id": "eff.stdrx20.search.desc",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for {f:SearchDesc}",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "as": "search"
+    },
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Search your library for an enchantment card with mana value 2 or less, put it onto the battlefield, then shuffle."
+      },
+      {
+        "text": "When ~ enters, search your library for a creature card with toughness 2 or less, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for two enchantment cards with mana value 2 or less, put them onto the battlefield, then shuffle.",
+      "Search target player's library for an enchantment card with mana value 2 or less, put it onto the battlefield, then shuffle.",
+      "Search your graveyard for an enchantment card with mana value 2 or less, put it onto the battlefield."
+    ]
+  },
+  {
+    "id": "rep.stdrx20.enters.tappedIf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12"
+    ],
+    "pattern": "if {c:Cond} , ~ enters tapped",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "tappedUnless": {
+              "cond": "not",
+              "of": "$c"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "If you control three or more other lands, ~ enters tapped."
+      },
+      {
+        "text": "If you control two or more other artifacts, ~ enters tapped."
+      }
+    ],
+    "counterExamples": [
+      "If you control three or more other lands, ~ enters untapped.",
+      "Unless you control three or more other lands, ~ enters tapped.",
+      "If you control three or more other lands, ~ enters tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.stdrx20.scry.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.22a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "scry x , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "scry",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Scry X, where X is the number of enchantments you control. Then draw two cards."
+      },
+      {
+        "text": "When ~ enters, scry X, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Scry X. Then draw two cards.",
+      "Surveil X, where X is the number of enchantments you control. Then draw two cards.",
+      "Scry X, where Y is the number of enchantments you control. Then draw two cards."
+    ]
+  },
+  {
+    "id": "eff.stdrx20.player.adds.units",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} adds {u:ManaUnits}",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "units": "$u"
+    },
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player adds {R}{R}."
+      },
+      {
+        "text": "Whenever a player casts an artifact spell, that player adds {C}."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's upkeep, that player adds {R}{R} for each artifact they control.",
+      "At the beginning of each player's upkeep, that player gains {R}{R}.",
+      "Whenever a player casts an artifact spell, that player adds two mana."
+    ]
+  }
+]

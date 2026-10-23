@@ -1,0 +1,357 @@
+[
+  {
+    "id": "eff.stdrx33.damage.recipientAndEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 115.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and {m:Qty} damage to each {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{2}{R}, {T}: ~ deals 2 damage to target opponent and 1 damage to each creature that player controls."
+      },
+      {
+        "text": "{2}{R}, {T}: ~ deals 5 damage to target player and 2 damage to each artifact creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "{2}{R}, {T}: ~ deals 2 damage to target opponent and 1 damage to target creature that player controls.",
+      "{2}{R}, {T}: ~ deals 2 damage to target opponent or 1 damage to each creature that player controls.",
+      "{2}{R}, {T}: ~ deals 2 damage to each creature that player controls and 1 damage to target opponent."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.stdrx33.damage.recipientAndEach.same",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 115.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and each {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{2}{R}, {T}: ~ deals 4 damage to target opponent and each creature that player controls."
+      },
+      {
+        "text": "{2}{R}, {T}: ~ deals 6 damage to target player and each artifact creature they control."
+      }
+    ],
+    "counterExamples": [
+      "{2}{R}, {T}: ~ deals 4 damage to target opponent and target creature that player controls.",
+      "{2}{R}, {T}: ~ deals 4 damage to target opponent or each creature that player controls.",
+      "{2}{R}, {T}: ~ deals 4 damage to each creature that player controls and target opponent."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.stdrx33.each.opponent.sacrifice.unless.they.pay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 701.21a",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent sacrifices ( a | an ) {f:Filter} [of their choice] unless they pay {c:Cost}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": "$c",
+          "else": [
+            {
+              "op": "sacrificeChoice",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "filter": "$f",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent sacrifices a creature of their choice unless they pay {3}."
+      },
+      {
+        "text": "At the beginning of your upkeep, each opponent sacrifices a land unless they pay {1}."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent sacrifices a creature unless you pay {3}.",
+      "When ~ enters, each opponent sacrifices two creatures unless they pay {3}.",
+      "When ~ enters, each opponent sacrifices a creature if they pay {3}."
+    ]
+  },
+  {
+    "id": "sta.stdrx33.attached.extrablock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 604.1",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature can block an additional creature each combat",
+    "build": {
+      "s": "rule",
+      "rule": "extraBlockers",
+      "value": 1,
+      "of": {
+        "is": {
+          "ref": "attachedTo"
+        }
+      }
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Enchant Elf\nEnchanted creature can block an additional creature each combat."
+      },
+      {
+        "text": "Enchant Goblin\nEnchanted creature can block an additional creature each combat."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature can block two additional creatures each combat.",
+      "Equipped creature can block an additional creature this turn.",
+      "Equipped creature can block any number of creatures."
+    ]
+  },
+  {
+    "id": "sta.stdrx33.self.extrablock.aslong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ can block an additional creature each combat as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "extraBlockers",
+          "value": 1,
+          "of": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ can block an additional creature each combat as long as you control an artifact."
+      },
+      {
+        "text": "~ can block an additional creature each combat as long as you have 10 or more life."
+      }
+    ],
+    "counterExamples": [
+      "~ can block two additional creatures each combat as long as you control an artifact.",
+      "~ can block an additional creature this turn as long as you control an artifact.",
+      "~ can block an additional creature each combat unless you control an artifact."
+    ]
+  },
+  {
+    "id": "sta.stdrx33.attached.pump.has.extrablock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , has {a:Abilities} , and can block an additional creature each combat",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "rule",
+          "rule": "extraBlockers",
+          "value": 1,
+          "of": {
+            "is": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Enchant Elf\nEnchanted creature gets +1/+3, has reach, and can block an additional creature each combat."
+      },
+      {
+        "text": "Equip {2}{G}\nEquipped creature gets +0/+2, has first strike, and can block an additional creature each combat."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+3, has reach, and can block two additional creatures each combat.",
+      "Enchanted creature gets +1/+3, has reach, and can't block.",
+      "Enchanted creature gets +1/+3 and can block an additional creature this turn."
+    ]
+  },
+  {
+    "id": "sta.stdrx33.attached.pump.cantBeBlockedBy",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 604.1",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and can't be blocked by {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchant Elf\nEnchanted creature gets +1/+1 and can't be blocked by creatures with reach."
+      },
+      {
+        "text": "Equip {2}{G}\nEquipped creature gets +2/+0 and can't be blocked by Walls."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+1 and can't block creatures with reach.",
+      "Enchanted creature gets +1/+1 and can be blocked by creatures with reach.",
+      "Enchanted creature gets +1/+1 and can't be blocked this turn."
+    ]
+  }
+]

@@ -1,0 +1,403 @@
+[
+  {
+    "id": "eff.cmd2.copy.forEachCommanderCast",
+    "kind": "effect",
+    "cr": [
+      "CR 903.8",
+      "CR 707.10",
+      "CR 707.10c"
+    ],
+    "pattern": "copy {o:Obj} for each time you've cast ( your | a ) commander from the command zone this game",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "commanderCasts"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each time",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast an instant spell, copy that spell for each time you've cast your commander from the command zone this game."
+      },
+      {
+        "text": "Copy target sorcery spell for each time you've cast a commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "Copy target sorcery spell for each time you've cast a commander this game.",
+      "Copy target sorcery spell for each time you've cast a commander from the command zone this turn.",
+      "Copy target sorcery spell for each time an opponent has cast a commander from the command zone this game."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cmd2.next.cast.copy.forEachCommanderCast",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10",
+      "CR 903.8"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , copy ( that spell | it ) for each time you've cast ( your | a ) commander from the command zone this game",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "commanderCasts"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "each time",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast a creature spell this turn, copy that spell for each time you've cast your commander from the command zone this game."
+      },
+      {
+        "text": "{1}, {T}: When you next cast an artifact or enchantment spell this turn, copy it for each time you've cast a commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast a creature spell, copy that spell for each time you've cast your commander from the command zone this game.",
+      "When you next cast a creature spell this turn, copy that spell for each time you've cast your commander this game."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "kw.cmd2.equip.commander",
+    "kind": "ability",
+    "cr": [
+      "CR 702.6a",
+      "CR 702.6c",
+      "CR 903.3d"
+    ],
+    "pattern": "equip commander {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "commander": true,
+        "controller": "you"
+      }
+    },
+    "examples": [
+      {
+        "text": "Equip commander {1}"
+      },
+      {
+        "text": "Equip commander {2}{W}"
+      }
+    ],
+    "counterExamples": [
+      "Equip commander",
+      "Equip commanders {2}",
+      "Equip noncommander {2}"
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "sta.cmd2.aslong.pump.andAnthemGrant",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 903.3d"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] {pt:PT} and {f:Filter} get {pt2:PT} and have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt2.p",
+              "toughness": "$pt2.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Forest, ~ gets +1/+1 and other Elves you control get +1/+1 and have reach."
+      },
+      {
+        "text": "As long as you control your commander, ~ gets +3/+3 and other creatures you control get +1/+0 and have menace."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Forest, ~ gets +1/+1 and other Elves you control get +1/+1 and have reach until end of turn.",
+      "As long as you control a Forest, ~ gets +1/+1 and other Elves you control get +1/+1 and lose reach."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "sta.cmd2.aslong.pump.andGroupGrant",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 903.3d"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] {pt:PT} and {f:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an Island, ~ gets +1/+0 and creatures you control have ward {1}."
+      },
+      {
+        "text": "As long as you control your commander, ~ gets +2/+2 and other Soldiers you control have first strike."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an Island, ~ gets +1/+0 and creatures you control have ward {1} until end of turn.",
+      "As long as you control an Island, ~ gets +1/+0 and creatures you control lose flying."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "eff.cmd2.destroy.all.exceptCommanders",
+    "kind": "effect",
+    "cr": [
+      "CR 701.8a",
+      "CR 903.3"
+    ],
+    "pattern": "destroy all {f:Filter} except for commanders",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "not": {
+            "commander": true
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all artifacts and creatures except for commanders."
+      },
+      {
+        "text": "Destroy all nonland permanents except for commanders."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all artifacts and creatures except for commanders you control.",
+      "Destroy all artifacts and creatures except for tokens.",
+      "Destroy target creature except for commanders."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "eff.cmd2.draw.xPlusTheirCommanderCasts",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 107.3",
+      "CR 903.8"
+    ],
+    "pattern": "{p:Player} draw[s] x cards plus an additional card for each time they've cast a commander from the command zone this game",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          {
+            "q": "X"
+          },
+          {
+            "q": "commanderCasts",
+            "of": "$p"
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each time",
+      "additional",
+      "each"
+    ],
+    "needs": [
+      "feature:q.commanderCasts.of"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent draws X cards plus an additional card for each time they've cast a commander from the command zone this game."
+      },
+      {
+        "text": "{X}, {T}: Target player draws X cards plus an additional card for each time they've cast a commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws X cards plus an additional card for each time they've cast a commander this game.",
+      "Target player draws X cards plus an additional card for each time you've cast a commander from the command zone this game.",
+      "Target player draws X cards for each time they've cast a commander from the command zone this game.",
+      "Each player draws X cards plus an additional card for each time they've cast a commander from the command zone this game."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "sta.cmd2.commanderTax.asLife",
+    "kind": "static",
+    "cr": [
+      "CR 903.8",
+      "CR 119.4",
+      "CR 601.2f"
+    ],
+    "pattern": "rather than pay {2} for each previous time you've cast ~ from the command zone this game , pay {n:Qty} life that many times",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "commanderTaxAsLife",
+          "value": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "rather than",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Rather than pay {2} for each previous time you've cast this spell from the command zone this game, pay 3 life that many times."
+      },
+      {
+        "text": "Rather than pay {2} for each previous time you've cast ~ from the command zone this game, pay 1 life that many times."
+      }
+    ],
+    "counterExamples": [
+      "Rather than pay {2} for each previous time you've cast ~ from your hand this game, pay 2 life that many times.",
+      "Rather than pay {2} for each previous time you've cast ~ from the command zone this game, pay 2 life.",
+      "Rather than pay {3} for each previous time you've cast ~ from the command zone this game, pay 2 life that many times."
+    ],
+    "status": "experimental",
+    "since": 8
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "name": "boast",
+  "rule": "702.142",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Activate only if this creature attacked this turn and only once each turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "modifies": {
+    "kind": "activated",
+    "limit": {
+      "per": "turn",
+      "max": 1
+    },
+    "onlyIf": {
+      "cond": "happened",
+      "event": {
+        "ev": "attacks",
+        "attacker": {
+          "self": true
+        }
+      },
+      "scope": "turn"
+    }
+  }
+}

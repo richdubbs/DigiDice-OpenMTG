@@ -1,0 +1,627 @@
+[
+  {
+    "id": "eff.t77.becomes.subtype.inaddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 613.1d",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Tap target creature you control. It becomes a Bear in addition to its other types."
+      },
+      {
+        "text": "Untap target creature you control. That creature becomes a Mutant in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Tap target creature you control. It becomes a Bear.",
+      "Tap target creature you control. It becomes a Bear in addition to its other types until end of turn.",
+      "Tap target creature you control. It becomes a Bear artifact in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.t77.is.subtype.inaddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 613.1d",
+      "CR 611.2a",
+      "CR 400.7"
+    ],
+    "pattern": "( {o:ItIs} | {o:Obj} is ) ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. It's a Zombie in addition to its other types."
+      },
+      {
+        "text": "Return target creature card with mana value 3 or less from your graveyard to the battlefield. It's an Elf in addition to its other types."
+      },
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. That creature is a Hero in addition to its other types."
+      },
+      {
+        "text": "Return target creature card with mana value 3 or less from your graveyard to the battlefield. That creature is an Elf in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "It's a Zombie in addition to its other types.",
+      "Return target creature card from your graveyard to the battlefield. It's a Zombie.",
+      "Return target creature card from your graveyard to the battlefield. It's a Zombie in addition to its other types until end of turn.",
+      "Return target creature card from your graveyard to the battlefield. It's a Zombie artifact in addition to its other types.",
+      "Return target creature card from your graveyard to the battlefield. That creature is a Hero.",
+      "Return target creature card from your graveyard to the battlefield. That creature is a Hero in addition to its other types until end of turn.",
+      "Return target creature card from your graveyard to the battlefield. That creature is a Hero artifact in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.t77.they.are.basept.subtype.types.inaddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 400.7"
+    ],
+    "pattern": "{o:They} are {pt:BasePT} {st:Subtypes} {ty:CardTypes} in addition to their other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": "$ty"
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Return up to one target artifact card and up to one target land card from your graveyard to the battlefield. They are 3/3 Golem creatures in addition to their other types."
+      },
+      {
+        "text": "Return up to two target artifact cards from your graveyard to the battlefield. They are 1/1 Insect creatures in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Return up to two target artifact cards from your graveyard to the battlefield. They are 1/1 Insect creatures.",
+      "Return up to two target artifact cards from your graveyard to the battlefield. They are 1/1 Insect creatures in addition to their other types until end of turn.",
+      "Return up to two target artifact cards from your graveyard to the battlefield. They are +1/+1 Insect creatures in addition to their other types."
+    ]
+  },
+  {
+    "id": "eff.t77.becomes.subtype.artifactcreature.inaddition.trail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 613.1d",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} artifact creature in addition to its other types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Tap target artifact you control. It becomes a Spirit artifact creature in addition to its other types until end of turn."
+      },
+      {
+        "text": "Untap ~. It becomes an Elemental artifact creature in addition to its other types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Untap ~. It becomes a Spirit artifact creature in addition to its other types.",
+      "Untap ~. It becomes a Spirit artifact creature until end of turn.",
+      "Untap ~. It becomes a Spirit creature in addition to its other types until end of turn.",
+      "Untap ~. Until end of turn, it becomes a Spirit artifact creature in addition to its other types."
+    ]
+  },
+  {
+    "id": "sta.t77.enchanted.subtype.creature.basept.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted ( permanent | artifact | land | enchantment ) is ( a | an ) {st:Subtypes} creature with base power and toughness {pt:BasePT} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted permanent is a Construct creature with base power and toughness 4/4 in addition to its other types."
+      },
+      {
+        "text": "Enchanted artifact is a Golem creature with base power and toughness 5/3 in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted permanent is a Construct creature with base power and toughness 4/4.",
+      "Enchanted permanent is a Construct creature with base power and toughness 4/4 in addition to its other types until end of turn.",
+      "Enchanted permanent is a Construct creature with base power 4 in addition to its other types.",
+      "Enchanted creature is a Construct creature with base power and toughness 4/4 in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.t77.becomes.subtype.creature.inaddition.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} creature in addition to its other types and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "~ becomes a Bear creature in addition to its other types and gains \"~'s power and toughness are each equal to the number of lands you control.\""
+      },
+      {
+        "text": "~ becomes a Golem creature in addition to its other types and gains flying and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "~ becomes a Bear creature and gains flying.",
+      "~ becomes a Bear creature in addition to its other types and gains flying until end of turn.",
+      "~ becomes a Bear artifact creature in addition to its other types and gains flying.",
+      "~ becomes a Bear creature in addition to its other types and loses flying."
+    ]
+  },
+  {
+    "id": "sta.t77.each.allcolors",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1e",
+      "CR 105.2c"
+    ],
+    "pattern": "each {f:Filter} is all colors",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "W",
+              "U",
+              "B",
+              "R",
+              "G"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact you control is all colors."
+      },
+      {
+        "text": "Each creature you control is all colors."
+      }
+    ],
+    "counterExamples": [
+      "Each artifact you control is colorless.",
+      "Each artifact you control is all colors until end of turn.",
+      "Each artifact you control is all creature types.",
+      "Each artifact you control is red."
+    ]
+  },
+  {
+    "id": "sta.t77.are.everybasiclandtype.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.3i",
+      "CR 305.6",
+      "CR 305.7"
+    ],
+    "pattern": "{f:Filter} are every basic land type in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": [
+              "Plains",
+              "Island",
+              "Swamp",
+              "Mountain",
+              "Forest"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "every",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Forests you control are every basic land type in addition to their other types."
+      },
+      {
+        "text": "Nonbasic lands your opponents control are every basic land type in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Forests you control are every basic land type.",
+      "Forests you control are every basic land type in addition to their other types until end of turn.",
+      "Forests you control are every creature type in addition to their other types.",
+      "Forests you control are the chosen basic land type in addition to their other types."
+    ]
+  },
+  {
+    "id": "eff.t77.becomes.land.gains.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.3d",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes a land and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Land"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "becomes"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, ~ becomes a land and gains \"{T}: Add {G}.\""
+      },
+      {
+        "text": "Until end of turn, target artifact you control becomes a land and gains \"{T}: Add {C}.\""
+      }
+    ],
+    "counterExamples": [
+      "~ becomes a land and gains \"{T}: Add {G}.\"",
+      "Until your next turn, ~ becomes a land in addition to its other types and gains \"{T}: Add {G}.\"",
+      "Until your next turn, ~ becomes a land and loses \"{T}: Add {G}.\"",
+      "Until your next turn, ~ becomes a land creature and gains \"{T}: Add {G}.\""
+    ]
+  },
+  {
+    "id": "sta.t77.attached.pump.addtype.quoted",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 205.1b",
+      "CR 113.3d",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , is ( a | an ) {st:Subtypes} in addition to its other types , and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+1, is a Ninja in addition to its other types, and has \"Whenever this creature deals combat damage to a player, you gain 2 life.\""
+      },
+      {
+        "text": "Enchanted creature gets +2/+0, is a Knight in addition to its other types, and has \"Whenever this creature attacks, you gain 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+1, is a Ninja, and has \"Whenever this creature attacks, you gain 1 life.\"",
+      "Equipped creature gets +1/+1, is a Ninja in addition to its other types, and loses flying.",
+      "Equipped creature gets +1/+1, is a Ninja in addition to its other types, and has \"Whenever this creature attacks, you gain 1 life\" until end of turn.",
+      "Equipped land gets +1/+1, is a Ninja in addition to its other types, and has \"Whenever this creature attacks, you gain 1 life.\""
+    ]
+  },
+  {
+    "id": "sta.t77.attached.addtype.quoted.lead",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b",
+      "CR 113.3d",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature is ( a | an ) {st:Subtypes} in addition to its other types and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature is a Shaman in addition to its other types and has \"Whenever this creature attacks, you gain 1 life.\""
+      },
+      {
+        "text": "Enchanted creature is an Archer in addition to its other types and has reach."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature is a Shaman and has \"Whenever this creature attacks, you gain 1 life.\"",
+      "Equipped creature is a Shaman in addition to its other types and loses flying.",
+      "Equipped creature is a Shaman in addition to its other types and has \"Whenever this creature attacks, you gain 1 life\" until end of turn.",
+      "Equipped land is a Shaman in addition to its other types and has \"Whenever this creature attacks, you gain 1 life.\""
+    ]
+  }
+]

@@ -1,0 +1,74 @@
+{
+  "name": "typecycling",
+  "rule": "702.29",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    },
+    {
+      "name": "filter",
+      "type": "filter"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Discard this card: Search your library for a {quality} card, reveal it, put it into your hand, then shuffle.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{printed}",
+      "zone": [
+        "hand"
+      ],
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "discard",
+              "self": true,
+              "count": 1
+            }
+          ]
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": "$filter",
+            "max": 1,
+            "reveal": true,
+            "as": "found"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "found"
+            },
+            "to": {
+              "zone": "hand"
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "you"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "family": "cycling"
+}

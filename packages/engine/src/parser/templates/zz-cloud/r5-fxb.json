@@ -1,0 +1,937 @@
+[
+  {
+    "id": "eff.r5fxb.group.alsoGain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Objs} also gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control get +1/+1 until end of turn. Goblin creatures you control also gain haste until end of turn."
+      },
+      {
+        "text": "When ~ enters, creatures you control get +0/+1 until end of turn. Elves you control also gain reach until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+1 until end of turn. Goblin creatures you control also gain haste.",
+      "Creatures you control get +1/+1 until end of turn. Goblin creatures you control also lose haste until end of turn.",
+      "Creatures you control get +1/+1 until end of turn. Goblin creatures you control also get haste until end of turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.r5fxb.becomesPlotted",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.170c",
+      "CR 702.170d",
+      "CR 400.7"
+    ],
+    "pattern": "{o:Obj} becomes plotted",
+    "build": {
+      "op": "designateObject",
+      "what": "$o",
+      "designation": "plotted"
+    },
+    "subject": "object",
+    "needs": [
+      "op:designateObject.plotted"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature spell. It becomes plotted."
+      },
+      {
+        "text": "When ~ enters, exile target instant spell. It becomes plotted."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature spell. It becomes plotted until end of turn.",
+      "Exile target creature spell. It becomes prepared.",
+      "Exile target creature spell. It becomes suspected."
+    ]
+  },
+  {
+    "id": "eff.r5fxb.enters.untapped.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1d",
+      "CR 614.12",
+      "CR 616.1"
+    ],
+    "pattern": "{f:Filter} enter untapped",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "untapped": true
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Artifacts you control enter untapped."
+      },
+      {
+        "text": "Creatures you control enter untapped."
+      }
+    ],
+    "counterExamples": [
+      "Artifacts you control enter tapped.",
+      "Artifacts you control enter untapped and attacking.",
+      "Each artifact you control enters untapped."
+    ]
+  },
+  {
+    "id": "eff.r5fxb.untapSelf.andTransformIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 701.27a",
+      "CR 712.2"
+    ],
+    "pattern": "untap ~ and transform it",
+    "build": [
+      {
+        "op": "untap",
+        "what": {
+          "ref": "self"
+        }
+      },
+      {
+        "op": "changeFace",
+        "what": {
+          "ref": "self"
+        },
+        "to": "transform"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, untap ~ and transform it."
+      },
+      {
+        "text": "{2}: Untap ~ and transform it. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, tap ~ and transform it.",
+      "Whenever ~ attacks, untap ~ and transform target creature.",
+      "Whenever ~ attacks, untap ~ and exile it."
+    ],
+    "priority": 2
+  },
+  {
+    "id": "eff.r5fxb.durFirst.becomesChosenColor.hexproofFromIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.3",
+      "CR 702.11d",
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1e",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes the color of your choice and gains hexproof from that color",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "hexproofColor",
+        "link": "hexproofColor"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "hexproofColor",
+          "equals": "W"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "W"
+                      ]
+                    }
+                  },
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "hexproof",
+                        "quality": "color:W",
+                        "text": "hexproof from white"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "hexproofColor",
+          "equals": "U"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "U"
+                      ]
+                    }
+                  },
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "hexproof",
+                        "quality": "color:U",
+                        "text": "hexproof from blue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "hexproofColor",
+          "equals": "B"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "B"
+                      ]
+                    }
+                  },
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "hexproof",
+                        "quality": "color:B",
+                        "text": "hexproof from black"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "hexproofColor",
+          "equals": "R"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "R"
+                      ]
+                    }
+                  },
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "hexproof",
+                        "quality": "color:R",
+                        "text": "hexproof from red"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "hexproofColor",
+          "equals": "G"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "G"
+                      ]
+                    }
+                  },
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "hexproof",
+                        "quality": "color:G",
+                        "text": "hexproof from green"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, ~ becomes the color of your choice and gains hexproof from that color."
+      },
+      {
+        "text": "When ~ enters, until end of turn, target creature you control becomes the color of your choice and gains hexproof from that color."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, ~ becomes the color of your choice and gains protection from that color.",
+      "{2}: Until end of turn, ~ becomes the color of your choice and gains hexproof.",
+      "{2}: Until end of turn, ~ becomes all colors and gains hexproof from that color."
+    ]
+  },
+  {
+    "id": "eff.r5fxb.delay.yourNextMain.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 505.1"
+    ],
+    "pattern": "at the beginning of your next main phase , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "main1",
+        "whose": "you",
+        "next": true,
+        "anyMain": true
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. At the beginning of your next main phase, add {R}{R}."
+      },
+      {
+        "text": "When ~ enters, at the beginning of your next main phase, add {C}{C}."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. At the beginning of your next upkeep, add {G}{G}.",
+      "Draw a card. At the beginning of the next main phase, add {R}{R}.",
+      "Draw a card. At the beginning of your next main phase this turn, add {R}{R}."
+    ]
+  },
+  {
+    "id": "eff.r5fxb.delay.yourNextMain.tail",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 505.1"
+    ],
+    "pattern": "{e:Effects} at the beginning of your next main phase",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "main1",
+        "whose": "you",
+        "next": true,
+        "anyMain": true
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. Add {R}{R} at the beginning of your next main phase."
+      },
+      {
+        "text": "When ~ enters, add an amount of {C} equal to ~'s power at the beginning of your next main phase."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Add {G}{G} at the beginning of your next upkeep.",
+      "Draw a card. Add {R}{R} at the beginning of the next main phase.",
+      "Draw a card. Add {R}{R} at the beginning of your next main phase this turn."
+    ]
+  },
+  {
+    "id": "eff.r5fxb.ifCond.delayedMana.yourNextMain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 505.1",
+      "CR 106.4"
+    ],
+    "pattern": "if {c:Cond} , add an amount of {C} equal to {q:Qty} at the beginning of your next main phase",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "let",
+          "name": "delayedMana",
+          "value": "$q"
+        },
+        {
+          "op": "delay",
+          "when": {
+            "at": "step",
+            "step": "main1",
+            "whose": "you",
+            "next": true,
+            "anyMain": true
+          },
+          "do": [
+            {
+              "op": "addMana",
+              "who": {
+                "ref": "you"
+              },
+              "dynamic": {
+                "kind": "ofType",
+                "type": "C",
+                "count": {
+                  "q": "var",
+                  "name": "delayedMana"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell. If you control an Elf, add an amount of {C} equal to that spell's mana value at the beginning of your next main phase."
+      },
+      {
+        "text": "Draw a card. If you have no cards in hand, add an amount of {C} equal to the number of lands you control at the beginning of your next main phase."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell. If you control an Elf, add an amount of {C} equal to that spell's mana value at the beginning of your next upkeep.",
+      "Counter target spell. If you control an Elf, add an amount of {G} equal to that spell's mana value at the beginning of your next main phase.",
+      "Counter target spell. If you control an Elf, add an amount of {C} equal to that spell's mana value at the beginning of the next main phase."
+    ]
+  },
+  {
+    "id": "eff.r5fxb.forEachPlayer.destroy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 701.8a"
+    ],
+    "pattern": "for each player , destroy {o:PlayerTarget}",
+    "build": {
+      "op": "destroy",
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, for each player, destroy up to one target creature that player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, for each player, destroy up to one target artifact that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each player, destroy up to one target creature you control.",
+      "When ~ enters, for each player, destroy all creatures that player controls.",
+      "When ~ enters, for each player, exile up to one target creature that player controls."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxb.forEachPlayer.exile.until",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 610.3"
+    ],
+    "pattern": "for each player , exile {o:PlayerTarget} {d:Dur}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      },
+      "until": "$d"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, for each player, exile up to one target artifact that player controls until ~ leaves the battlefield."
+      },
+      {
+        "text": "Whenever ~ attacks, for each player, exile up to one target enchantment that player controls until ~ leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each player, exile up to one target artifact you control until ~ leaves the battlefield.",
+      "When ~ enters, for each player, destroy up to one target artifact that player controls until ~ leaves the battlefield.",
+      "When ~ enters, for each opponent, exile up to one target artifact you control until ~ leaves the battlefield."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxb.forEachPlayer.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 406.2"
+    ],
+    "pattern": "for each player , exile {o:PlayerTarget}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, for each player, exile up to one target creature that player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, for each player, exile up to one target nonland permanent that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each player, exile up to one target creature you control.",
+      "When ~ enters, for each player, exile all creatures that player controls.",
+      "When ~ enters, for each player, sacrifice up to one target creature that player controls."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxb.forEachPlayer.counters",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 122.1",
+      "CR 122.6"
+    ],
+    "pattern": "for each player , put {n:Qty} {k:CounterKind} counter[s] on {o:PlayerTarget}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, for each player, put a +1/+1 counter on up to one target creature that player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, for each player, put two -1/-1 counters on up to one target creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each player, put a +1/+1 counter on up to one target creature you control.",
+      "When ~ enters, for each player, remove a +1/+1 counter from up to one target creature that player controls.",
+      "When ~ enters, for each player, put a +1/+1 counter on each creature that player controls."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxb.forEachOpponent.counters",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 122.1",
+      "CR 122.6"
+    ],
+    "pattern": "for each opponent , put {n:Qty} {k:CounterKind} counter[s] on {o:OppTarget}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, put a +1/+1 counter on up to one target creature that player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, put two -1/-1 counters on up to one target creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each opponent, put a +1/+1 counter on up to one target creature you control.",
+      "When ~ enters, for each opponent, remove a +1/+1 counter from up to one target creature that player controls.",
+      "When ~ enters, for each opponent, put a +1/+1 counter on each creature that player controls."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxb.forEachOpponent.gainControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 613.1b",
+      "CR 611.2a"
+    ],
+    "pattern": "for each opponent , gain control of {o:OppTarget} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, gain control of up to one target creature that player controls until end of turn."
+      },
+      {
+        "text": "When ~ enters, for each opponent, gain control of up to one target artifact that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each opponent, gain control of up to one target creature you control until end of turn.",
+      "When ~ enters, for each opponent, gain control of all creatures that player controls until end of turn.",
+      "When ~ enters, for each opponent, exchange control of up to one target creature that player controls."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxb.forEachOpponent.goad",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 701.15a"
+    ],
+    "pattern": "for each opponent , goad {o:OppTarget}",
+    "build": {
+      "op": "action",
+      "action": "goad",
+      "who": {
+        "ref": "you"
+      },
+      "subject": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, goad up to one target creature that player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, goad target creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each opponent, goad up to one target creature you control.",
+      "When ~ enters, for each opponent, tap and goad up to one target creature that player controls.",
+      "When ~ enters, for each opponent, goad each creature that player controls."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxb.forEachOpponent.damage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 120.3"
+    ],
+    "pattern": "for each opponent , {src:Obj} deal[s] {n:Qty} damage to {o:OppTarget}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$o",
+      "amount": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, ~ deals 3 damage to up to one target creature that player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, ~ deals 1 damage to target creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each opponent, ~ deals 3 damage to up to one target creature you control.",
+      "When ~ enters, for each opponent, ~ deals 3 damage to each creature that player controls.",
+      "When ~ enters, for each opponent, ~ deals 3 damage to that player."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxb.delayedMana.yourNextMain.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 505.1",
+      "CR 106.4"
+    ],
+    "pattern": "at the beginning of your next main phase , add an amount of {C} equal to {q:Qty}",
+    "build": [
+      {
+        "op": "let",
+        "name": "delayedMana",
+        "value": "$q"
+      },
+      {
+        "op": "delay",
+        "when": {
+          "at": "step",
+          "step": "main1",
+          "whose": "you",
+          "next": true,
+          "anyMain": true
+        },
+        "do": [
+          {
+            "op": "addMana",
+            "who": {
+              "ref": "you"
+            },
+            "dynamic": {
+              "kind": "ofType",
+              "type": "C",
+              "count": {
+                "q": "var",
+                "name": "delayedMana"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Counter target spell. At the beginning of your next main phase, add an amount of {C} equal to that spell's power."
+      },
+      {
+        "text": "Draw a card. At the beginning of your next main phase, add an amount of {C} equal to the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell. At the beginning of your next upkeep, add an amount of {C} equal to that spell's power.",
+      "Counter target spell. At the beginning of your next main phase, add an amount of {R} equal to that spell's power.",
+      "Counter target spell. At the beginning of the next main phase, add an amount of {C} equal to that spell's power."
+    ]
+  }
+]

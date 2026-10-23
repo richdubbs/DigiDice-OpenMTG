@@ -1,0 +1,196 @@
+[
+  {
+    "id": "eff.p2cm1.counters.move.anyKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.5",
+      "CR 608.2d"
+    ],
+    "pattern": "move {n:Qty} counter[s] from {a:Obj} ( onto | to ) [a second] {b:Obj}",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": "$b",
+      "kind": "any",
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "second"
+    ],
+    "needs": [
+      "op:moveCounters.anyKind"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card, then move a counter from target artifact you control onto a second target artifact."
+      },
+      {
+        "text": "Move two counters from target creature onto another target creature."
+      }
+    ],
+    "counterExamples": [
+      "Move a counter from target artifact you control onto each creature you control.",
+      "Move a counter from target artifact onto another target creature for each Elf you control.",
+      "Move a +1/+1 counter from target artifact onto another target creature."
+    ]
+  },
+  {
+    "id": "eff.p2cm1.counters.move.all",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.5"
+    ],
+    "pattern": "move all counters from {a:Obj} ( onto | to ) [a second] {b:Obj}",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": "$b",
+      "kind": "any",
+      "count": "all"
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "second"
+    ],
+    "needs": [
+      "op:moveCounters.every"
+    ],
+    "examples": [
+      {
+        "text": "Move all counters from target artifact onto another target artifact."
+      },
+      {
+        "text": "You gain 2 life, then move all counters from target creature you control onto another target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Move all counters from target artifact onto each artifact you control.",
+      "Move all but one counter from target artifact onto another target artifact.",
+      "Move all +1/+1 counters from target artifact onto another target artifact."
+    ]
+  },
+  {
+    "id": "eff.p2cm1.counters.move.anyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.5",
+      "CR 608.2d"
+    ],
+    "pattern": "move any number of counters from {a:Obj} ( onto | to ) [a second] {b:Obj}",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": "$b",
+      "kind": "any",
+      "count": "all",
+      "upTo": true
+    },
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "second"
+    ],
+    "needs": [
+      "op:moveCounters.upTo"
+    ],
+    "examples": [
+      {
+        "text": "Move any number of counters from target artifact you control onto a second target artifact you control."
+      },
+      {
+        "text": "Destroy target enchantment. Move any number of counters from target creature onto another target creature."
+      }
+    ],
+    "counterExamples": [
+      "Move any number of counters from target artifact onto other artifacts you control.",
+      "Move any number of counters from target artifact onto each other artifact.",
+      "Move any number of +1/+1 counters from target artifact onto another target artifact."
+    ]
+  },
+  {
+    "id": "eff.p2cm1.proliferate.times",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.34a",
+      "CR 107.3a"
+    ],
+    "pattern": "proliferate {n:Qty} times",
+    "build": {
+      "op": "action",
+      "action": "proliferate",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n"
+    },
+    "subject": "none",
+    "needs": [
+      "action:proliferate"
+    ],
+    "examples": [
+      {
+        "text": "{X}, {T}: Proliferate X times, then draw a card."
+      },
+      {
+        "text": "You gain 3 life, then proliferate three times."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: Proliferate X cards.",
+      "{X}, {T}: Investigate X times, then draw a card.",
+      "{X}, {T}: Proliferate X times for each Elf you control."
+    ]
+  },
+  {
+    "id": "eff.p2cm1.proliferate.again",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.34a"
+    ],
+    "pattern": "proliferate , then proliferate again",
+    "build": {
+      "op": "action",
+      "action": "proliferate",
+      "who": {
+        "ref": "you"
+      },
+      "n": 2
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "again"
+    ],
+    "needs": [
+      "action:proliferate"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, proliferate, then proliferate again."
+      },
+      {
+        "text": "Draw a card. Proliferate, then proliferate again."
+      }
+    ],
+    "counterExamples": [
+      "Proliferate, then investigate again.",
+      "Proliferate, then proliferate twice.",
+      "Proliferate, then proliferate again for each Elf you control."
+    ]
+  }
+]

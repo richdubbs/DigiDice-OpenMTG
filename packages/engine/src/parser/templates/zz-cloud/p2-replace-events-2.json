@@ -1,0 +1,430 @@
+[
+  {
+    "id": "rep.p2re2.leave.exileInsteadAnywhere.obj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 611.2a",
+      "CR 400.7"
+    ],
+    "pattern": "if {o:Obj} would leave the battlefield , exile ( it | them ) instead of putting ( it | them ) anywhere else",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": "$o"
+            },
+            "from": "battlefield"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "else"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. If that creature would leave the battlefield, exile it instead of putting it anywhere else."
+      },
+      {
+        "text": "Put target artifact card from a graveyard onto the battlefield under your control. If it would leave the battlefield, exile it instead of putting it anywhere else."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to the battlefield. If that creature would leave the battlefield, return it instead of putting it anywhere else.",
+      "Return target creature card from your graveyard to the battlefield. If that creature would die, exile it instead of putting it anywhere else.",
+      "Return target creature card from your graveyard to the battlefield. If that creature would leave the battlefield, exile it instead."
+    ]
+  },
+  {
+    "id": "rep.p2re2.leave.exileInsteadAnywhere.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 113.1c"
+    ],
+    "pattern": "if ~ would leave the battlefield , exile it instead of putting it anywhere else",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {
+          "self": true
+        },
+        "from": "battlefield"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "else"
+    ],
+    "examples": [
+      {
+        "text": "{2}{B}, {T}: Return target creature card from your graveyard to the battlefield. It gains \"If this creature would leave the battlefield, exile it instead of putting it anywhere else.\""
+      },
+      {
+        "text": "{4}: Return target artifact card from your graveyard to the battlefield. It gains \"If this artifact would leave the battlefield, exile it instead of putting it anywhere else.\" Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{2}{B}, {T}: Return target creature card from your graveyard to the battlefield. It gains \"If this creature would leave the battlefield, return it to its owner's hand instead of putting it anywhere else.\"",
+      "{2}{B}, {T}: Return target creature card from your graveyard to the battlefield. It gains \"If this creature would die, exile it instead of putting it anywhere else.\"",
+      "{2}{B}, {T}: Return target creature card from your graveyard to the battlefield. It gains \"If this creature would leave the battlefield, exile it instead.\""
+    ]
+  },
+  {
+    "id": "rep.p2re2.enchantedLand.destroyed.sacrificeInstead.gains",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 701.8a",
+      "CR 611.2c"
+    ],
+    "pattern": "if enchanted land would be destroyed , instead sacrifice ~ and that land gains {a:Abilities} until end of turn",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "destroy",
+        "object": {
+          "attachedToSource": true,
+          "types": [
+            "Land"
+          ]
+        }
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "sacrifice",
+            "what": {
+              "ref": "self"
+            }
+          },
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "event",
+                  "role": "subject"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": "$a"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Enchant snow land\nIf enchanted land would be destroyed, instead sacrifice ~ and that land gains hexproof until end of turn."
+      },
+      {
+        "text": "Enchant snow land\nIf enchanted land would be destroyed, instead sacrifice ~ and that land gains indestructible and shroud until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Enchant snow land\nIf enchanted land would be destroyed, instead sacrifice ~ and that land gains indestructible.",
+      "Enchant snow land\nIf enchanted land would be exiled, instead sacrifice ~ and that land gains indestructible until end of turn.",
+      "Enchant snow land\nIf enchanted land would be destroyed, sacrifice ~ and that land gains indestructible until end of turn."
+    ]
+  },
+  {
+    "id": "rep.p2re2.dies.insteadExileCard.create",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 700.4",
+      "CR 111.1"
+    ],
+    "pattern": "if {f:Filter} would die , instead exile that card and create {n:Qty} {t:TokenDesc}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": "$f",
+        "from": "battlefield",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "to": {
+              "zone": "exile"
+            }
+          },
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": "$n",
+            "token": "$t"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a nontoken creature you don't control would die, instead exile that card and create a 1/1 black Rat creature token."
+      },
+      {
+        "text": "If a creature an opponent controls would die, instead exile that card and create two Treasure tokens."
+      }
+    ],
+    "counterExamples": [
+      "If a nontoken creature you don't control would die, instead exile that card and draw a card.",
+      "If a nontoken creature you don't control would die, exile that card and create a 1/1 black Rat creature token.",
+      "If a nontoken creature you don't control would be exiled, instead exile that card and create a 1/1 black Rat creature token."
+    ]
+  },
+  {
+    "id": "rep.p2re2.draw.maySkip",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.10",
+      "CR 121.1"
+    ],
+    "pattern": "if you would draw a card , you may skip ( that draw | it ) instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "you"
+      },
+      "optional": true,
+      "body": {
+        "b": "skip"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "may",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card, you may skip it instead."
+      },
+      {
+        "text": "Haste, reach\nIf you would draw a card, you may skip it instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card, you may skip it.",
+      "If an opponent would draw a card, you may skip it instead.",
+      "If you would draw a card, skip it instead."
+    ]
+  },
+  {
+    "id": "rep.p2re2.nextDraw.insteadEffects",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 615.7",
+      "CR 121.1"
+    ],
+    "pattern": "the next time you would draw a card {d:Dur} , {e:Effects} instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": "you"
+          },
+          "body": {
+            "b": "instead",
+            "do": "$e"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{2}: The next time you would draw a card this turn, you gain 3 life instead."
+      },
+      {
+        "text": "{1}{U}: The next time you would draw a card this turn, each opponent mills two cards instead."
+      }
+    ],
+    "counterExamples": [
+      "{2}: The next time you would draw a card this turn, you gain 3 life.",
+      "{2}: The next time an opponent would draw a card this turn, you gain 3 life instead.",
+      "{2}: If you would draw a card this turn, you gain 3 life instead."
+    ]
+  },
+  {
+    "id": "rep.p2re2.proliferate.insteadEffects",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 701.34a"
+    ],
+    "pattern": "if you would proliferate , {e:Effects} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "proliferate",
+        "actor": "you"
+      },
+      "body": {
+        "b": "instead",
+        "do": "$e"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would proliferate, draw a card instead."
+      },
+      {
+        "text": "If you would proliferate, you gain 2 life and draw a card instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would proliferate, draw a card.",
+      "If an opponent would proliferate, draw a card instead.",
+      "If you would populate, draw a card instead."
+    ]
+  },
+  {
+    "id": "rep.p2re2.self.graveyard.mayTopLibrary",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 616.1",
+      "CR 401.4"
+    ],
+    "pattern": "if ~ would be put into a graveyard , you may put it on top of its owner 's library instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {
+          "self": true
+        },
+        "from": "battlefield",
+        "to": "graveyard"
+      },
+      "optional": true,
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "may",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Haste, reach\nIf ~ would be put into a graveyard, you may put it on top of its owner's library instead."
+      },
+      {
+        "text": "Creatures you control have \"If this creature would be put into a graveyard, you may put it on top of its owner's library instead.\""
+      }
+    ],
+    "counterExamples": [
+      "If ~ would be put into a graveyard, you may put it on the bottom of its owner's library instead.",
+      "If ~ would be put into a graveyard, put it on top of its owner's library instead.",
+      "If ~ would be put into exile, you may put it on top of its owner's library instead."
+    ]
+  }
+]

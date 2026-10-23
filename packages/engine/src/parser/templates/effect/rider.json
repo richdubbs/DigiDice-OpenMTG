@@ -1,0 +1,115 @@
+[
+  {
+    "id": "rid.countered.top",
+    "kind": "rider",
+    "cr": ["CR 701.6a", "CR 608.2c", "CR 614.15"],
+    "pattern": "if that spell is countered this way , put it on top of its owner 's library instead of into that player 's graveyard",
+    "build": { "$patchPrevious": { "to": { "@new": { "zone": "library", "position": "top" } } } },
+    "attachTo": "counter",
+    "consumes": ["if", "this way", "instead"],
+    "examples": [
+      { "text": "Counter target creature spell. If that spell is countered this way, put it on top of its owner's library instead of into that player's graveyard." },
+      { "text": "Counter target sorcery spell. If that spell is countered this way, put it on top of its owner's library instead of into that player's graveyard." }
+    ],
+    "counterExamples": [
+      "Draw a card. If that spell is countered this way, put it on top of its owner's library instead of into that player's graveyard.",
+      "Counter target spell. If that spell is countered this way, put it on top of its owner's library.",
+      "Counter target spell. If that spell is countered this way, put it on the bottom of its owner's library instead of into that player's graveyard."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.countered.bottom",
+    "kind": "rider",
+    "cr": ["CR 701.6a", "CR 608.2c", "CR 614.15"],
+    "pattern": "if that spell is countered this way , put it on the bottom of its owner 's library instead of into that player 's graveyard",
+    "build": { "$patchPrevious": { "to": { "@new": { "zone": "library", "position": "bottom" } } } },
+    "attachTo": "counter",
+    "consumes": ["if", "this way", "instead"],
+    "examples": [
+      { "text": "Counter target creature spell. If that spell is countered this way, put it on the bottom of its owner's library instead of into that player's graveyard." }
+    ],
+    "counterExamples": [
+      "Counter target spell. If that spell is countered this way, put it on top of its owner's library instead of into that player's graveyard.",
+      "Destroy target artifact. If that spell is countered this way, put it on the bottom of its owner's library instead of into that player's graveyard."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.countered.exile",
+    "kind": "rider",
+    "cr": ["CR 701.6a", "CR 608.2c", "CR 614.15"],
+    "pattern": "if that spell is countered this way , exile it instead of putting it into its owner 's graveyard",
+    "build": { "$patchPrevious": { "to": { "@new": { "zone": "exile" } } } },
+    "attachTo": "counter",
+    "consumes": ["if", "this way", "instead"],
+    "examples": [
+      { "text": "Counter target spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard." },
+      { "text": "Counter target instant spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard." }
+    ],
+    "counterExamples": [
+      "Counter target spell. If that spell is countered this way, exile it.",
+      "Draw a card. If that spell is countered this way, exile it instead of putting it into its owner's graveyard."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.noregen.that",
+    "kind": "rider",
+    "cr": ["CR 701.19c"],
+    "pattern": "( that creature | those creatures ) can't be regenerated",
+    "build": { "$patchPrevious": { "regeneration": "cant" } },
+    "attachTo": "destroy",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Destroy target nonblack creature. That creature can't be regenerated." },
+      { "text": "Destroy two target creatures. Those creatures can't be regenerated." }
+    ],
+    "counterExamples": [
+      "Draw a card. That creature can't be regenerated.",
+      "Destroy target creature. That creature can be regenerated."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.stillLand",
+    "kind": "rider",
+    "cr": ["CR 205.1b", "CR 613.1d"],
+    "pattern": "it's still a land",
+    "build": { "$patchPrevious": { "effects": [{ "mods": [{
+      "types": { "add": { "@concat": ["@previous.effects.0.mods.0.types.add", "@previous.effects.0.mods.0.types.set"] }, "set": null },
+      "subtypes": { "add": { "@concat": ["@previous.effects.0.mods.0.subtypes.add", "@previous.effects.0.mods.0.subtypes.set"] }, "set": null }
+    }] }], "@into": true } },
+    "attachTo": "effect",
+    "consumes": ["still"],
+    "examples": [{ "text": "~ becomes a 2/2 creature until end of turn. It's still a land." }],
+    "counterExamples": ["Draw a card. It's still a land.", "It's still a creature."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.copy.newTargets",
+    "kind": "rider",
+    "cr": ["CR 707.10c", "CR 115.7"],
+    "pattern": "you may choose new targets for the copy",
+    "build": { "$patchPrevious": { "newTargets": { "@new": "may" }, "@into": true } },
+    "attachTo": "copy",
+    "consumes": ["may"],
+    "examples": [
+      { "text": "Copy target instant spell. You may choose new targets for the copy." },
+      { "text": "Copy target sorcery spell you control. You may choose new targets for the copy." },
+      { "text": "Whenever you cast an instant spell, you may copy it. You may choose new targets for the copy." },
+      { "text": "Whenever you cast an instant spell, you may pay {2}. If you do, copy that spell. You may choose new targets for the copy." }
+    ],
+    "counterExamples": [
+      "Draw a card. You may choose new targets for the copy.",
+      "Copy target instant spell. You may choose new targets for the copies."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

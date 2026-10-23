@@ -1,0 +1,121 @@
+[
+  {
+    "id": "eff.t51.pump.forEachColorSpent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2h",
+      "CR 106.1",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} {d:Dur} for {n:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  "$n"
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  "$n"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{5}{W}{W}, {T}: You gain 7 life.\nWhenever you cast a creature spell, Elves you control get +2/+1 until end of turn for each color of mana spent to cast that spell."
+      },
+      {
+        "text": "{5}{W}{W}, {T}: You gain 7 life.\nWhenever you cast a noncreature spell, creatures you control get +1/+1 until end of turn for each color of mana spent to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "{5}{W}{W}, {T}: You gain 7 life.\nWhenever you cast a creature spell, Elves you control get +2/+1 until end of turn for each color of mana spent to cast it.",
+      "{5}{W}{W}, {T}: You gain 7 life.\nWhenever you cast a creature spell, Elves you control get +2/+1 for each color of mana spent to cast that spell.",
+      "{5}{W}{W}, {T}: You gain 7 life.\nWhenever you cast a creature spell, Elves you control get +2/+1 until end of turn for each color of mana spent to cast target spell.",
+      "{5}{W}{W}, {T}: You gain 7 life.\nElves you control get +2/+1 until end of turn for each color of mana spent to cast that spell."
+    ]
+  },
+  {
+    "id": "rep.t51.enters.counter.manaSpent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2h",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 400.7d"
+    ],
+    "pattern": "~ enters with a number of {k:CounterKind} counters on it equal to the amount of mana spent to cast it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "manaSpent"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ enters with a number of +1/+1 counters on it equal to the amount of mana spent to cast it."
+      },
+      {
+        "text": "~ enters with a number of charge counters on it equal to the amount of mana spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a number of +1/+1 counters on it equal to the number of creatures you control.",
+      "~ enters with a number of +1/+1 counters on it equal to the amount of mana spent to cast that spell.",
+      "Target creature enters with a number of +1/+1 counters on it equal to the amount of mana spent to cast it."
+    ]
+  }
+]

@@ -1,0 +1,673 @@
+[
+  {
+    "id": "eff.t6.sacrifice.theirChoice",
+    "kind": "effect",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": "$f",
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent sacrifices three enchantments of their choice."
+      },
+      {
+        "text": "Target player sacrifices a nongreen creature of their choice."
+      },
+      {
+        "text": "Each player sacrifices two lands of their choice. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices a creature of your choice.",
+      "Each opponent sacrifices a creature of their choice at random.",
+      "Each opponent sacrifices all creatures of their choice."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.token.you.tappedPre",
+    "kind": "effect",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 110.5b"
+    ],
+    "pattern": "create {n:Qty} tapped {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "tapped": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a tapped Food token."
+      },
+      {
+        "text": "Create three tapped 2/3 green Plant creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "Create a tapped and attacking Food token.",
+      "Create an untapped Food token.",
+      "Create a tapped Food token unless an opponent pays {2}."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.draw.loselife",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] {n:Qty} card[s] and lose[s] {m:Qty} life",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player draws three cards and loses three life."
+      },
+      {
+        "text": "You draw two cards and lose 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws three cards and gains three life.",
+      "Target player draws three cards and loses three life unless they pay {1}.",
+      "Target player draws three cards and you lose three life."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.discard.loselife",
+    "kind": "effect",
+    "cr": [
+      "CR 701.9a",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] {n:Qty} card[s] and lose[s] {m:Qty} life",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent discards two cards and loses 5 life."
+      },
+      {
+        "text": "Each opponent discards a card and loses 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent discards two cards at random and loses 5 life.",
+      "Target opponent discards two cards and gains 5 life.",
+      "Target opponent discards two cards and you lose 5 life."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.draw.thenDiscard",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] {n:Qty} card[s] , then discard[s] {m:Qty} card[s]",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player draws three cards, then discards two cards."
+      },
+      {
+        "text": "Each player draws two cards, then discards a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws three cards, then discards two cards at random.",
+      "Target player draws three cards, then you discard two cards.",
+      "Target player draws three cards, then mills two cards."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.discardHand.thenDraw",
+    "kind": "effect",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] ( their hand | all the cards in their hand ) , then draw[s] {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "hand"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+  "consumes": [
+   "all"
+  ],
+    "examples": [
+      {
+        "text": "Each player discards their hand, then draws five cards."
+      },
+      {
+        "text": "Target opponent discards their hand, then draws two cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player discards their hand, then draws five cards at random.",
+      "Each player discards their library, then draws five cards.",
+      "Each player discards their hand, then you draw five cards."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.exile.graveyard.player",
+    "kind": "effect",
+    "cr": [
+      "CR 406.1",
+      "CR 404.1"
+    ],
+    "pattern": "exile {p:Player} 's graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "graveyard",
+          "owner": "$p"
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile target player's graveyard. Draw two cards."
+      },
+      {
+        "text": "Exile target opponent's graveyard. You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Exile target player's library.",
+      "Exile target player's graveyard unless they pay {3}.",
+      "Exile the top card of target player's graveyard."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.exile.allGraveyards",
+    "kind": "effect",
+    "cr": [
+      "CR 406.1",
+      "CR 404.1"
+    ],
+    "pattern": "exile all graveyards",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "graveyard"
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Exile all graveyards. Draw three cards."
+      },
+      {
+        "text": "Exile all graveyards. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Exile all libraries.",
+      "Exile all graveyards unless an opponent pays {2}.",
+      "Exile all graveyards at random."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.bounce.choose",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "return {n:Qty} {f:Filter} to ( its owner 's hand | their owners' hands )",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "bounce"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "bounce"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return an enchantment you control to its owner's hand."
+      },
+      {
+        "text": "Return a green or white creature you control to its owner's hand."
+      },
+      {
+        "text": "Return two artifacts you control to their owners' hands."
+      }
+    ],
+    "counterExamples": [
+      "Return a creature you control to the battlefield.",
+      "Return a creature you control to its owner's hand at random.",
+      "Return a creature you control to its owner's library."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.return.choose.yourHand",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 400.7"
+    ],
+    "pattern": "return {n:Qty} {f:Filter} to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return an enchantment card from your graveyard to your hand."
+      },
+      {
+        "text": "Mill two cards, then you may return a land card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return an enchantment card from your graveyard to the battlefield.",
+      "Return target enchantment card from your graveyard to your hand.",
+      "Return an enchantment card from your graveyard to your hand at random."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.draw.thenPutBack",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 401.4",
+      "CR 608.2c"
+    ],
+    "pattern": "draw {n:Qty} card[s] , then put {m:Qty} card[s] from your hand on top of your library in any order",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": "$m",
+        "max": "$m",
+        "as": "back"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "back"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw four cards, then put three cards from your hand on top of your library in any order."
+      },
+      {
+        "text": "Draw two cards, then put two cards from your hand on top of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Draw four cards, then put three cards from your hand on the bottom of your library in any order.",
+      "Draw four cards, then put three cards from your graveyard on top of your library in any order.",
+      "Draw four cards, then put three cards from your hand on top of your library."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.tapOrUntap",
+    "kind": "effect",
+    "cr": [
+      "CR 701.26a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may tap or untap {o:Obj}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "tap",
+          "what": "$o"
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "you"
+          },
+          "do": [
+            {
+              "op": "untap",
+              "what": "$o"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may tap or untap target artifact."
+      },
+      {
+        "text": "You may tap or untap target land. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may tap or untap all creatures.",
+      "You may tap target artifact.",
+      "You may tap or untap target artifact unless it is blue."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.discardHand.drawThatMany",
+    "kind": "effect",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "discard all the cards in your hand , then draw that many cards",
+    "build": [
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": "hand",
+        "as": "discarded"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "discarded"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Discard all the cards in your hand, then draw that many cards. Scry 1."
+      },
+      {
+        "text": "Discard all the cards in your hand, then draw that many cards. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Discard all the cards in your hand, then draw that many cards plus one.",
+      "Discard all the cards in your hand, then draw two cards.",
+      "Discard all the cards in your graveyard, then draw that many cards."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.shuffle.graveyardInto.player",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.1",
+      "CR 400.3"
+    ],
+    "pattern": "{p:Player} shuffle[s] their graveyard into their library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "$p"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "owner": "$p"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player shuffles their graveyard into their library. Draw two cards."
+      },
+      {
+        "text": "Target opponent shuffles their graveyard into their library. You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Target player shuffles their hand into their library.",
+      "Target player shuffles their graveyard into their library unless they pay {2}.",
+      "Target player puts their graveyard on top of their library."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.t6.shuffle.graveyardInto.you",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.1",
+      "CR 400.3"
+    ],
+    "pattern": "shuffle your graveyard into your library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card, then shuffle your graveyard into your library."
+      },
+      {
+        "text": "Shuffle your graveyard into your library. Scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Shuffle your hand into your library.",
+      "Shuffle your graveyard into your library at random.",
+      "Shuffle your graveyard into target player's library."
+    ],
+    "status": "stable",
+    "since": 2
+  }
+]

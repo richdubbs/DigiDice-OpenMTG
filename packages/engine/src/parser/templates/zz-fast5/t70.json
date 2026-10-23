@@ -1,0 +1,459 @@
+[
+  {
+    "id": "eff.t70.permit.play.thisTurn.group",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 305.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may play {g:Impulses} this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$g"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, exile the top two cards of your library. You may play them this turn."
+      },
+      {
+        "text": "{T}: Exile the top three cards of your library. You may play those cards this turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top three cards of your library. You may play those cards until your next turn.",
+      "{T}: Exile the top three cards of your library. You may cast those cards this turn.",
+      "{T}: Exile the top three cards of your library. You may play those cards this turn without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.t70.permit.play.untilEndOfTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 305.1",
+      "CR 400.7"
+    ],
+    "pattern": "until end of turn , you may play {o:Impulse}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Exile the top card of your library. Until end of turn, you may play that card."
+      },
+      {
+        "text": "At the beginning of your upkeep, exile the top card of your library. Until end of turn, you may play it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top card of your library. Until your next turn, you may play that card.",
+      "{T}: Exile the top card of your library. Until end of turn, you may cast that card.",
+      "{T}: Exile the top card of your library. Until end of turn, you may play that card without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.t70.exile.top.whereX.plusManaValue",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 107.3",
+      "CR 202.3",
+      "CR 608.2h",
+      "CR 118.1"
+    ],
+    "pattern": "exile the top x cards of your library , where x is {n:Qty} plus the mana value of {o:Obj}",
+    "build": {
+      "lower": "whereX",
+      "value": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          "$n",
+          {
+            "q": "stat",
+            "stat": "manaValue",
+            "of": "$o"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "topCards",
+            "player": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "X"
+            }
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}, Sacrifice another artifact: Exile the top X cards of your library, where X is two plus the mana value of the sacrificed artifact."
+      },
+      {
+        "text": "{2}, Sacrifice a creature: Exile the top X cards of your library, where X is one plus the mana value of the sacrificed creature."
+      }
+    ],
+    "counterExamples": [
+      "{T}, Sacrifice another artifact: Exile the top X cards of your library, where X is two minus the mana value of the sacrificed artifact.",
+      "{T}, Sacrifice another artifact: Exile the top X cards of your library, where X is two plus the power of the sacrificed artifact.",
+      "{T}, Sacrifice another artifact: Exile the top X cards of an opponent's library, where X is two plus the mana value of the sacrificed artifact."
+    ]
+  },
+  {
+    "id": "eff.t70.thenIf.castElsewhere.counters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 608.2c",
+      "CR 122.1",
+      "CR 707.10"
+    ],
+    "pattern": "then if ~ was cast from anywhere other than your hand , put {n:Qty} {k:CounterKind} counter[s] on {o:Objs}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "any",
+        "of": [
+          {
+            "cond": "wasCast",
+            "from": "graveyard"
+          },
+          {
+            "cond": "wasCast",
+            "from": "exile"
+          },
+          {
+            "cond": "wasCast",
+            "from": "library"
+          },
+          {
+            "cond": "wasCast",
+            "from": "command"
+          }
+        ]
+      },
+      "then": [
+        {
+          "op": "putCounters",
+          "on": "$o",
+          "kind": "$k",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create three 1/1 green Elf Warrior creature tokens. Then if ~ was cast from anywhere other than your hand, put a +1/+1 counter on each Elf you control."
+      },
+      {
+        "text": "Create a 1/1 white Soldier creature token. Then if ~ was cast from anywhere other than your hand, put two +1/+1 counters on each Soldier you control."
+      }
+    ],
+    "counterExamples": [
+      "Create three 1/1 green Elf Warrior creature tokens. Then if ~ was cast from your hand, put a +1/+1 counter on each Elf you control.",
+      "Create three 1/1 green Elf Warrior creature tokens. Then if ~ was cast from a graveyard, put a +1/+1 counter on each Elf you control.",
+      "Create three 1/1 green Elf Warrior creature tokens. Then if ~ was cast from anywhere other than your hand, put a +1/+1 counter on each Elf you control unless you pay {1}."
+    ]
+  },
+  {
+    "id": "eff.t70.ifCastGraveyard.counters.perCards",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 608.2c",
+      "CR 122.1",
+      "CR 107.1a"
+    ],
+    "pattern": "if ~ was cast from a graveyard , put a {k:CounterKind} counter on each of {o:Group} for every {m:Qty} cards in your graveyard",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "wasCast",
+        "from": "graveyard"
+      },
+      "then": [
+        {
+          "op": "putCounters",
+          "on": "$o",
+          "kind": "$k",
+          "count": {
+            "q": "math",
+            "op": "floorDiv",
+            "args": [
+              {
+                "q": "zoneSize",
+                "zone": "graveyard",
+                "of": {
+                  "ref": "you"
+                }
+              },
+              "$m"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Create two 3/3 colorless Golem creature tokens. If ~ was cast from a graveyard, put a +1/+1 counter on each of them for every four cards in your graveyard."
+      },
+      {
+        "text": "Create two 1/1 white Soldier creature tokens. If ~ was cast from a graveyard, put a +1/+1 counter on each of them for every two cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Create two 3/3 colorless Golem creature tokens. If ~ was cast from your hand, put a +1/+1 counter on each of them for every four cards in your graveyard.",
+      "Create two 3/3 colorless Golem creature tokens. If ~ was cast from a graveyard, put a +1/+1 counter on each of them for every four cards in an opponent's graveyard.",
+      "Create two 3/3 colorless Golem creature tokens. If ~ was cast from a graveyard, put a +1/+1 counter on each of them for each card in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.t70.thenIf.counters.removeTransformTokens",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.27a",
+      "CR 712.9",
+      "CR 111.4",
+      "CR 608.2c"
+    ],
+    "pattern": "then if there are {n:Qty} or more {k:CounterKind} counters on {o:Obj} , remove those counters , transform ~ , and create {c:Qty} {t:TokenDesc}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "removeCounters",
+          "from": "$o",
+          "kind": "$k",
+          "count": "all"
+        },
+        {
+          "op": "changeFace",
+          "what": {
+            "ref": "self"
+          },
+          "to": "transform"
+        },
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$c",
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Put a landmark counter on ~. Then if there are three or more landmark counters on it, remove those counters, transform ~, and create three Treasure tokens."
+      },
+      {
+        "text": "{2}, {T}: Put a charge counter on ~. Then if there are five or more charge counters on it, remove those counters, transform ~, and create two Clue tokens."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Put a landmark counter on ~. Then if there are three or fewer landmark counters on it, remove those counters, transform ~, and create three Treasure tokens.",
+      "{1}, {T}: Put a landmark counter on ~. Then if there are three or more landmark counters on it, remove those counters, exile ~, and create three Treasure tokens.",
+      "{1}, {T}: Put a landmark counter on ~. Then if there are three or more landmark counters on it, remove those counters, transform ~, and create three Treasure tokens unless you pay {1}."
+    ]
+  },
+  {
+    "id": "eff.t70.permit.play.untilNextEndStep.group",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 513.1"
+    ],
+    "pattern": "until your next end step , you may play {g:Impulses}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "untilNextStep",
+        "step": "end",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$g"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Exile the top three cards of your library. Until your next end step, you may play those cards."
+      },
+      {
+        "text": "At the beginning of your upkeep, exile the top two cards of your library. Until your next end step, you may play them."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top three cards of your library. Until your next upkeep, you may play those cards.",
+      "{T}: Exile the top three cards of your library. Until your next end step, you may cast those cards.",
+      "{T}: Exile the top three cards of your library. Until your next end step, you may play those cards without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.t70.permit.play.untilNextEndStep",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 513.1"
+    ],
+    "pattern": "until your next end step , you may play {o:Impulse}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "untilNextStep",
+        "step": "end",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Exile the top card of your library. Until your next end step, you may play that card."
+      },
+      {
+        "text": "At the beginning of your upkeep, exile the top card of your library. Until your next end step, you may play it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top card of your library. Until your next upkeep, you may play that card.",
+      "{T}: Exile the top card of your library. Until your next end step, you may cast that card.",
+      "{T}: Exile the top card of your library. Until your next end step, you may play that card without paying its mana cost."
+    ]
+  }
+]

@@ -1,0 +1,460 @@
+[
+  {
+    "id": "eff.mana.W",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {W}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["W"]]},
+    "subject": "none",
+    "examples": [{"text": "{T}, Sacrifice ~: Add {W}."}, {"text": "{Q}: Add {W}."}],
+    "counterExamples": ["{T}: Add {W}{W}.", "{T}: Add {W} or {C}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.U",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {U}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["U"]]},
+    "subject": "none",
+    "examples": [{"text": "{T}, Sacrifice ~: Add {U}."}, {"text": "{Q}: Add {U}."}],
+    "counterExamples": ["{T}: Add {U}{U}.", "{T}: Add {U} or {C}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.B",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {B}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["B"]]},
+    "subject": "none",
+    "examples": [{"text": "{T}, Sacrifice ~: Add {B}."}, {"text": "{Q}: Add {B}."}],
+    "counterExamples": ["{T}: Add {B}{B}.", "{T}: Add {B} or {C}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.R",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {R}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["R"]]},
+    "subject": "none",
+    "examples": [{"text": "{T}, Sacrifice ~: Add {R}."}, {"text": "{Q}: Add {R}."}],
+    "counterExamples": ["{T}: Add {R}{R}.", "{T}: Add {R} or {C}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.C",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {C}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["C"]]},
+    "subject": "none",
+    "examples": [{"text": "{T}, Sacrifice ~: Add {C}."}, {"text": "{Q}: Add {C}."}],
+    "counterExamples": ["{4}, {T}: Add {C}{C}.", "{T}: Add {C} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.C2",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {C}{C}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["C"],  ["C"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {C}{C}."}, {"text": "{T}, Sacrifice ~: Add {C}{C}."}],
+    "counterExamples": ["{T}: Add {C}{C}{C}{C}{C}.", "{T}: Add {C}{C} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.G2",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {G}{G}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["G"],  ["G"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {G}{G}."}, {"text": "{T}, Sacrifice ~: Add {G}{G}."}],
+    "counterExamples": ["{T}: Add {G}{G}{G}{G}{G}.", "{T}: Add {G}{G} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.R2",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {R}{R}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["R"],  ["R"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {R}{R}."}, {"text": "{T}, Sacrifice ~: Add {R}{R}."}],
+    "counterExamples": ["{T}: Add {R}{R}{R}{R}{R}.", "{T}: Add {R}{R} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.B2",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {B}{B}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["B"],  ["B"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {B}{B}."}, {"text": "{T}, Sacrifice ~: Add {B}{B}."}],
+    "counterExamples": ["{T}: Add {B}{B}{B}{B}{B}.", "{T}: Add {B}{B} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.U2",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {U}{U}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["U"],  ["U"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {U}{U}."}, {"text": "{T}, Sacrifice ~: Add {U}{U}."}],
+    "counterExamples": ["{T}: Add {U}{U}{U}{U}{U}.", "{T}: Add {U}{U} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.W2",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {W}{W}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["W"],  ["W"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {W}{W}."}, {"text": "{T}, Sacrifice ~: Add {W}{W}."}],
+    "counterExamples": ["{T}: Add {W}{W}{W}{W}{W}.", "{T}: Add {W}{W} or {U}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.C3",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {C}{C}{C}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["C"],  ["C"],  ["C"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {C}{C}{C}."}, {"text": "{T}, Sacrifice ~: Add {C}{C}{C}."}],
+    "counterExamples": ["{T}: Add {C}{C}{C}{C}{C}{C}.", "{T}: Add {C}{C}{C} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.B3",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {B}{B}{B}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["B"],  ["B"],  ["B"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {B}{B}{B}."}, {"text": "{T}, Sacrifice ~: Add {B}{B}{B}."}],
+    "counterExamples": ["{T}: Add {B}{B}{B}{B}{B}{B}.", "{T}: Add {B}{B}{B} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.R3",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {R}{R}{R}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["R"],  ["R"],  ["R"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {R}{R}{R}."}, {"text": "{T}, Sacrifice ~: Add {R}{R}{R}."}],
+    "counterExamples": ["{T}: Add {R}{R}{R}{R}{R}{R}.", "{T}: Add {R}{R}{R} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.G3",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {G}{G}{G}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["G"],  ["G"],  ["G"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {G}{G}{G}."}, {"text": "{T}, Sacrifice ~: Add {G}{G}{G}."}],
+    "counterExamples": ["{T}: Add {G}{G}{G}{G}{G}{G}.", "{T}: Add {G}{G}{G} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.WorU",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {W} or {U}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["W", "U"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {W} or {U}."}, {"text": "{T}, Sacrifice ~: Add {W} or {U}."}],
+    "counterExamples": ["{5}, {T}: Add {W}{U}.", "{T}: Add {W} and {U}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.UorB",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {U} or {B}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["U", "B"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {U} or {B}."}, {"text": "{T}, Sacrifice ~: Add {U} or {B}."}],
+    "counterExamples": ["{5}, {T}: Add {U}{B}.", "{T}: Add {U} and {B}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.BorR",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {B} or {R}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["B", "R"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {B} or {R}."}, {"text": "{T}, Sacrifice ~: Add {B} or {R}."}],
+    "counterExamples": ["{5}, {T}: Add {B}{R}.", "{T}: Add {B} and {R}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.RorG",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {R} or {G}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["R", "G"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {R} or {G}."}, {"text": "{T}, Sacrifice ~: Add {R} or {G}."}],
+    "counterExamples": ["{5}, {T}: Add {R}{G}.", "{T}: Add {R} and {G}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.GorW",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {G} or {W}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["G", "W"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {G} or {W}."}, {"text": "{T}, Sacrifice ~: Add {G} or {W}."}],
+    "counterExamples": ["{5}, {T}: Add {G}{W}.", "{T}: Add {G} and {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.WorB",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {W} or {B}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["W", "B"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {W} or {B}."}, {"text": "{T}, Sacrifice ~: Add {W} or {B}."}],
+    "counterExamples": ["{5}, {T}: Add {W}{B}.", "{T}: Add {W} and {B}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.UorR",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {U} or {R}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["U", "R"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {U} or {R}."}, {"text": "{T}, Sacrifice ~: Add {U} or {R}."}],
+    "counterExamples": ["{5}, {T}: Add {U}{R}.", "{T}: Add {U} and {R}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.BorG",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {B} or {G}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["B", "G"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {B} or {G}."}, {"text": "{T}, Sacrifice ~: Add {B} or {G}."}],
+    "counterExamples": ["{5}, {T}: Add {B}{G}.", "{T}: Add {B} and {G}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.RorW",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {R} or {W}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["R", "W"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {R} or {W}."}, {"text": "{T}, Sacrifice ~: Add {R} or {W}."}],
+    "counterExamples": ["{5}, {T}: Add {R}{W}.", "{T}: Add {R} and {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.GorU",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add {G} or {U}",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["G", "U"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add {G} or {U}."}, {"text": "{T}, Sacrifice ~: Add {G} or {U}."}],
+    "counterExamples": ["{5}, {T}: Add {G}{U}.", "{T}: Add {G} and {U}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.any",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add one mana of any color",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["W", "U", "B", "R", "G"]]},
+    "subject": "none",
+    "examples": [{"text": "{T}, Sacrifice ~: Add one mana of any color."}, {"text": "{Q}: Add one mana of any color."}],
+    "counterExamples": ["{4}, {T}: Add one mana of any color in your commander's color identity.", "{T}: Add one mana of any color a land you control could produce."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.any2",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add two mana in any combination of colors",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["W", "U", "B", "R", "G"],  ["W", "U", "B", "R", "G"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add two mana in any combination of colors."}, {"text": "{T}, Sacrifice ~: Add two mana in any combination of colors."}],
+    "counterExamples": ["{T}: Add two mana of any one color.", "{T}: Add two mana in any combination of {R} and/or {G}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.any3",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add three mana in any combination of colors",
+    "build": {"op": "addMana", "who": {"ref": "you"}, "units": [["W", "U", "B", "R", "G"],  ["W", "U", "B", "R", "G"],  ["W", "U", "B", "R", "G"]]},
+    "subject": "none",
+    "examples": [{"text": "{Q}: Add three mana in any combination of colors."}, {"text": "{T}, Sacrifice ~: Add three mana in any combination of colors."}],
+    "counterExamples": ["{T}: Add four mana of any one color.", "{T}: Add three mana in any combination of {R} and/or {G}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.mana.creature",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 608.2c"],
+    "pattern": "spend this mana only to cast a creature spell",
+    "build": {"$patchPrevious": {"restriction": {"spells": {"types": ["Creature"]}}}},
+    "attachTo": "addMana",
+    "consumes": ["only"],
+    "examples": [
+      {"text": "{T}, Sacrifice ~: Add one mana of any color. Spend this mana only to cast a creature spell."},
+      {"text": "{Q}: Add {C}{C}. Spend this mana only to cast a creature spell."}
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color. Spend this mana only to cast a creature spell this turn.",
+      "{T}: Add one mana of any color. Spend this mana only to cast a creature card."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.mana.instantsorcery",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 608.2c"],
+    "pattern": "spend this mana only to cast an instant or sorcery spell",
+    "build": {"$patchPrevious": {"restriction": {"spells": {"types": ["Instant", "Sorcery"]}}}},
+    "attachTo": "addMana",
+    "consumes": ["only"],
+    "examples": [
+      {"text": "{T}: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell."},
+      {"text": "{Q}: Add {C}{C}. Spend this mana only to cast an instant or sorcery spell."}
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color. Spend this mana only to cast an instant or sorcery spell this turn.",
+      "{T}: Add one mana of any color. Spend this mana only to cast an instant and sorcery spell."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.mana.artifact",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 608.2c"],
+    "pattern": "spend this mana only to cast an artifact spell",
+    "build": {"$patchPrevious": {"restriction": {"spells": {"types": ["Artifact"]}}}},
+    "attachTo": "addMana",
+    "consumes": ["only"],
+    "examples": [
+      {"text": "{T}: Add one mana of any color. Spend this mana only to cast an artifact spell."},
+      {"text": "{Q}: Add {C}{C}. Spend this mana only to cast an artifact spell."}
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color. Spend this mana only to cast an artifact spell this turn.",
+      "{T}: Add one mana of any color. Spend this mana only to cast an artifact spell or activate an ability of an artifact source."
+    ],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "rid.mana.noncreature",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 608.2c"],
+    "pattern": "spend this mana only to cast a noncreature spell",
+    "build": {"$patchPrevious": {"restriction": {"spells": {"notTypes": ["Creature"]}}}},
+    "attachTo": "addMana",
+    "consumes": ["only"],
+    "examples": [
+      {"text": "{T}: Add one mana of any color. Spend this mana only to cast a noncreature spell."},
+      {"text": "{Q}: Add {C}{C}. Spend this mana only to cast a noncreature spell."}
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color. Spend this mana only to cast a noncreature spell this turn.",
+      "{T}: Add one mana of any color. Spend this mana only to cast a nonartifact spell."
+    ],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "rid.mana.chosentype",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 608.2c"],
+    "pattern": "spend this mana only to cast a creature spell of the chosen type",
+    "build": {"$patchPrevious": {"restriction": {"spells": {"types": ["Creature"],  "chosen": {"link": "type", "quality": "creatureType"}}}}},
+    "attachTo": "addMana",
+    "consumes": ["only", "chosen"],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\n{T}, Sacrifice ~: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type."
+      },
+      {"text": "As ~ enters, choose a creature type.\n{T}: Add {C}{C}. Spend this mana only to cast a creature spell of the chosen type."}
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen color.",
+      "As ~ enters, choose a creature type.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell that isn't of the chosen type."
+    ],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "rid.mana.chosentype.uncounterable",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 608.2c"],
+    "pattern": "spend this mana only to cast a creature spell of the chosen type , and that spell can't be countered",
+    "build": {
+      "$patchPrevious": {"restriction": {"spells": {"types": ["Creature"],  "chosen": {"link": "type", "quality": "creatureType"}}, "spellRider": "cantBeCountered"}}
+    },
+    "attachTo": "addMana",
+    "consumes": ["only", "chosen", "can't"],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\n{T}: Add {C}{C}. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered."
+      },
+      {
+        "text": "As ~ enters, choose a creature type.\n{Q}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can be countered.",
+      "As ~ enters, choose a creature type.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered this turn."
+    ],
+    "status": "experimental",
+    "since": 1
+  }
+]

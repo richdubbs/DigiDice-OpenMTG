@@ -1,0 +1,19 @@
+{
+  "name": "power-up",
+  "rule": "702.193",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Activate each power-up ability only once. Reduce the cost by its mana cost if it entered this turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "modifies": {
+    "kind": "activated",
+    "limit": {
+      "per": "game",
+      "max": 1
+    },
+    "reducedByManaCost": true
+  }
+}

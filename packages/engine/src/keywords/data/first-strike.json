@@ -1,0 +1,14 @@
+{
+  "name": "first strike",
+  "rule": "702.7",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "This creature deals combat damage before creatures without first strike.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "core/combat-damage.ts#combatDamageStep"
+  ]
+}

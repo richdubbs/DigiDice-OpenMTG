@@ -1,0 +1,107 @@
+[
+  {
+    "id": "eff.sacrifice",
+    "kind": "effect",
+    "cr": ["CR 701.21a"],
+    "pattern": "sacrifice {o:Obj}",
+    "build": { "op": "sacrifice", "what": "$o" },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw nine cards, then sacrifice ~." },
+      { "text": "Target player draws seven cards. Sacrifice ~." }
+    ],
+    "counterExamples": ["Sacrifice ~ unless you pay {7}{U}{U}.", "Sacrifice ~ at random."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.sacrifice.choice.you",
+    "kind": "effect",
+    "cr": ["CR 701.21a", "CR 608.2d"],
+    "pattern": "sacrifice {n:Qty} {f:Filter}",
+    "build": { "op": "sacrificeChoice", "who": { "ref": "you" }, "filter": "$f", "count": "$n" },
+    "subject": "none",
+    "examples": [
+      { "text": "Sacrifice four Goblins." },
+      { "text": "Draw three cards, then sacrifice a nonblue creature." }
+    ],
+    "counterExamples": ["Sacrifice a creature at random.", "Sacrifice all creatures."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.sacrifice.choice",
+    "kind": "effect",
+    "cr": ["CR 701.21a", "CR 608.2d", "CR 608.2e"],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter}",
+    "build": { "op": "sacrificeChoice", "who": "$p", "filter": "$f", "count": "$n" },
+    "subject": "player",
+    "examples": [
+      { "text": "Each opponent sacrifices three artifacts." },
+      { "text": "Target player sacrifices a nonwhite creature." }
+    ],
+    "counterExamples": ["Each opponent sacrifices a creature at random.", "Each opponent sacrifices all creatures."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.regenerate",
+    "kind": "effect",
+    "cr": ["CR 701.19a", "CR 701.19b"],
+    "pattern": "regenerate {o:Objs}",
+    "build": { "op": "regenerate", "what": "$o" },
+    "subject": "none",
+    "examples": [
+      { "text": "Regenerate target nonblack creature." },
+      { "text": "Regenerate each Zombie you control." }
+    ],
+    "counterExamples": ["Regenerate target creature. It can't be regenerated.", "Regenerate target creature unless it is red."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.tap",
+    "kind": "effect",
+    "cr": ["CR 701.26a"],
+    "pattern": "tap {o:Objs}",
+    "build": { "op": "tap", "what": "$o" },
+    "subject": "none",
+    "examples": [
+      { "text": "Tap target nonred creature." },
+      { "text": "Tap up to four target artifacts." }
+    ],
+    "counterExamples": ["Tap target creature. It doesn't untap during its controller's next untap step.", "Tap target creature at random."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.untap",
+    "kind": "effect",
+    "cr": ["CR 701.26b"],
+    "pattern": "untap {o:Objs}",
+    "build": { "op": "untap", "what": "$o" },
+    "subject": "none",
+    "examples": [
+      { "text": "Untap all Elves you control." },
+      { "text": "Untap up to three target lands." }
+    ],
+    "counterExamples": ["Untap target creature. It gains haste until end of turn unless it is red.", "Untap target creature at random."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.transform",
+    "kind": "effect",
+    "cr": ["CR 701.27a", "CR 712.9"],
+    "pattern": "transform {o:Obj}",
+    "build": { "op": "changeFace", "what": "$o", "to": "transform" },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw five cards, then transform ~." },
+      { "text": "Target player draws six cards. Transform ~." }
+    ],
+    "counterExamples": ["Transform ~ unless you pay {6}.", "Transform each creature you control."],
+    "status": "stable",
+    "since": 1
+  }
+]

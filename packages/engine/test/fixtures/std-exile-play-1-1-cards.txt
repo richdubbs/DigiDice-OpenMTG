@@ -1,0 +1,4 @@
+# std-exile-play-1-1 (lane std-exile-play-1): the golden cards of the round (Gwenom, Remorseless is in fast5x-e14-cards.txt)
+Black Cat, Cunning Thief
+Gonti, Night Minister
+Black Widow, Super Spy

@@ -1,0 +1,950 @@
+[
+  {
+    "id": "eff.stdmsh.basept.become.lead.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 611.2a",
+      "CR 201.5"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} 's base power and toughness become {pt:BasePT} and ( it gains | they gain ) {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature's base power and toughness become 4/4 and it gains flying."
+      },
+      {
+        "text": "Whenever you gain life, until end of turn, ~'s base power and toughness become 7/7 and they gain vigilance and reach."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature's base power and toughness become 4/4 and it loses flying.",
+      "Until end of turn, target creature's base power and toughness become +4/+4 and it gains flying.",
+      "Target creature's base power and toughness become 4/4 and it gains flying.",
+      "Until end of turn, target creature's power and toughness become 4/4 and it gains flying."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.stdmsh.token.tapped.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 111.1",
+      "CR 701.7a"
+    ],
+    "pattern": "^ create ( a | an ) tapped {t:TokenDesc} if {c:Cond}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": "$t",
+      "tapped": true,
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Create a tapped 1/1 white Soldier creature token if you control three or more artifacts."
+      },
+      {
+        "text": "When ~ enters, create a tapped 2/2 black Zombie creature token if there are two or more creature cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Create a tapped 1/1 white Soldier creature token unless you control three or more artifacts.",
+      "Create two tapped 1/1 white Soldier creature tokens if you control three or more artifacts.",
+      "You gain 2 life and create a tapped 1/1 white Soldier creature token if you control three or more artifacts."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.double.pt.possessive",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 701.10c",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "double {o:Obj} 's power and toughness {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": "$o"
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "toughness",
+                "of": "$o"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Double target creature's power and toughness until end of turn."
+      },
+      {
+        "text": "{2}{G}, {T}: Double ~'s power and toughness until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Double target creature's power and toughness.",
+      "Double target creature's power and toughness until your next turn.",
+      "Double target creature's power and toughness until end of turn unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.seen.cast.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast a spell from among {g:Seen} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: Look at the top four cards of your library. You may cast a spell from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ attacks, look at the top three cards of your library. You may cast a spell from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Look at the top four cards of your library. You may cast a spell from among them. Put the rest on the bottom of your library in a random order.",
+      "{4}, {T}: Look at the top four cards of your library. You may cast a creature spell from among them without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+      "{4}, {T}: You may cast a spell from among them without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.seen.cast.free.mvAtMost",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast a spell from among {g:Seen} with mana value less than or equal to {n:Qty} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack, look at the top five cards of your library. You may cast a spell from among them with mana value less than or equal to the greatest power among attacking creatures you control without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "{3}, {T}: Look at the top five cards of your library. You may cast a spell from among them with mana value less than or equal to the number of lands you control without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Look at the top five cards of your library. You may cast a spell from among them with mana value greater than or equal to the number of lands you control without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+      "{3}, {T}: Look at the top five cards of your library. You may cast a spell from among them with mana value less than or equal to the number of lands you control. Put the rest on the bottom of your library in a random order.",
+      "{3}, {T}: You may cast a spell from among them with mana value less than or equal to the number of lands you control without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.seen.cast.free.mvOrLess",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast a spell with mana value {n:Qty} or less from among {g:Seen} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Look at the top X cards of your library, where X is the number of artifacts you control. You may cast a spell with mana value 3 or less from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, look at the top four cards of your library. You may cast a spell with mana value 2 or less from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Look at the top four cards of your library. You may cast a spell with mana value 3 or greater from among them without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+      "{3}, {T}: Look at the top four cards of your library. You may cast a spell with mana value 3 or less from among them. Put the rest on the bottom of your library in a random order.",
+      "{3}, {T}: You may cast a spell with mana value 3 or less from among them without paying its mana cost."
+    ]
+  },
+  {
+    "id": "sta.stdmsh.aslong.flash",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.8a",
+      "CR 601.3e",
+      "CR 611.3a",
+      "CR 604.1"
+    ],
+    "pattern": "as long as {c:Cond} , you may cast {f:Filter} as though they had flash",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": "$f"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As long as an opponent has cast a spell this turn, you may cast spells as though they had flash."
+      },
+      {
+        "text": "As long as you control a Wizard, you may cast instant and sorcery spells as though they had flash."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Wizard, you may cast spells.",
+      "As long as you control a Wizard, you may cast spells this turn as though they had flash.",
+      "Until end of turn, you may cast spells as though they had flash."
+    ],
+    "consumes": [
+      "may",
+      "as though"
+    ]
+  },
+  {
+    "id": "cm.stdmsh.spells.less.you.manaValue.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 202.3",
+      "CR 107.3",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} you cast with mana value {n:Qty} or greater cost {x} less to cast , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "types": "$f.types",
+              "subtypes": "$f.subtypes",
+              "supertypes": "$f.supertypes",
+              "colors": "$f.colors",
+              "colorless": "$f.colorless",
+              "stackKind": "spell",
+              "zone": "stack",
+              "manaValue": {
+                "op": ">=",
+                "value": "$n"
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$q",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Instant and sorcery spells you cast with mana value 5 or greater cost {X} less to cast, where X is ~'s power."
+      },
+      {
+        "text": "Creature spells you cast with mana value 5 or greater cost {X} less to cast, where X is the greatest power among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Instant and sorcery spells you cast with mana value 4 or greater cost {X} more to cast, where X is ~'s power.",
+      "Instant and sorcery spells you cast with mana value 4 or less cost {X} less to cast, where X is ~'s power.",
+      "Instant and sorcery spells your opponents cast with mana value 4 or greater cost {X} less to cast, where X is ~'s power.",
+      "Instant and sorcery spells you cast with mana value 4 or greater cost {1} less to cast, where X is ~'s power."
+    ]
+  },
+  {
+    "id": "rep.stdmsh.damage.noncombat.opp.plus.insteadFirst.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 120.1a",
+      "CR 107.3",
+      "CR 609.7"
+    ],
+    "pattern": "if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls , instead it deals that much damage plus x , where x is {q:Qty}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "you"
+        },
+        "recipient": {
+          "player": "opponent",
+          "object": {
+            "controller": "opponent"
+          }
+        },
+        "combat": false
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$q"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, instead it deals that much damage plus X, where X is ~'s power."
+      },
+      {
+        "text": "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, instead it deals that much damage plus X, where X is the number of Wizards you control."
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, instead it deals that much damage minus X, where X is ~'s power.",
+      "If a source you control would deal combat damage to an opponent or a permanent an opponent controls, instead it deals that much damage plus X, where X is ~'s power.",
+      "If a source an opponent controls would deal noncombat damage to you or a permanent you control, instead it deals that much damage plus X, where X is ~'s power."
+    ]
+  },
+  {
+    "id": "rep.stdmsh.damage.noncombat.opp.plus",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 120.1a"
+    ],
+    "pattern": "if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls , it deals that much damage plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "you"
+        },
+        "recipient": {
+          "player": "opponent",
+          "object": {
+            "controller": "opponent"
+          }
+        },
+        "combat": false
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus 3 instead."
+      },
+      {
+        "text": "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus 4 instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals double that damage instead.",
+      "If a source you control would deal noncombat damage to an opponent, it deals that much damage plus 5 instead.",
+      "If a source you control would deal damage to an opponent or a permanent an opponent controls this turn, it deals that much damage plus 2 instead."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.forEach.filter.copy.notLegendary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 111.1"
+    ],
+    "pattern": "for each {f:Filter} , create a token that's a copy of ( it | that creature | that permanent | that artifact ) , except it isn't legendary",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "except": [
+            {
+              "layer": 4,
+              "supertypes": {
+                "remove": [
+                  "Legendary"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "For each nontoken artifact creature you control, create a token that's a copy of that creature, except it isn't legendary."
+      },
+      {
+        "text": "For each artifact creature you control, create a token that's a copy of it, except it isn't legendary."
+      }
+    ],
+    "counterExamples": [
+      "For each nontoken creature you control, create a token that's a copy of that creature, except it's a 1/1.",
+      "For each nontoken creature you control, create a tapped token that's a copy of that creature, except it isn't legendary.",
+      "Create a token that's a copy of each nontoken creature you control, except it isn't legendary."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.forEach.filter.copy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "for each {f:Filter} , create a token that's a copy of ( it | that creature | that permanent | that artifact )",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "{T}: For each other creature you control, create a token that's a copy of that permanent."
+      },
+      {
+        "text": "For each nontoken creature you control, create a token that's a copy of that creature."
+      },
+      {
+        "text": "For each artifact you control, create a token that's a copy of that artifact."
+      }
+    ],
+    "counterExamples": [
+      "For each nontoken creature you control, create a tapped token that's a copy of that creature.",
+      "For each nontoken creature you control, create two tokens that are copies of that creature.",
+      "For each nontoken creature you control, create a token that's a copy of target creature."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.player.reveals.cardsFromHand.equalTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 402.3",
+      "CR 608.2c",
+      "CR 107.1"
+    ],
+    "pattern": "{p:Player} reveals a number of cards from their hand equal to {n:Qty}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "picked"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "bound",
+          "name": "picked"
+        },
+        "as": "them"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player reveals a number of cards from their hand equal to the number of creatures you control. You choose one of them. That player discards that card."
+      },
+      {
+        "text": "When ~ enters, target opponent reveals a number of cards from their hand equal to the number of cards in your hand. You choose one of them. That player discards that card."
+      }
+    ],
+    "counterExamples": [
+      "Target player reveals a number of cards from your hand equal to the number of creatures you control.",
+      "Target player reveals their hand. You choose one of them. That player discards that card.",
+      "Target player discards a number of cards equal to the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.you.choose.oneOf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you choose one of {g:Them}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": "$g",
+          "zone": "any"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target player reveals a number of cards from their hand equal to the number of creatures you control. You choose one of them. That player discards that card."
+      },
+      {
+        "text": "Target opponent reveals a number of cards from their hand equal to the number of lands you control. You choose one of them. That player discards that card."
+      }
+    ],
+    "counterExamples": [
+      "You choose one of them.",
+      "Target player reveals a number of cards from their hand equal to the number of creatures you control. You choose two of them. That player discards those cards.",
+      "Target player reveals a number of cards from their hand equal to the number of creatures you control. That player chooses one of them. That player discards that card."
+    ]
+  },
+  {
+    "id": "eff.stdmsh.rst.cant.becomeUntapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 502.3",
+      "CR 611.2b"
+    ],
+    "pattern": "{o:Obj} can't become untapped {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untap"
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ enters, tap target creature an opponent controls. That creature can't become untapped for as long as you control ~."
+      },
+      {
+        "text": "Tap target artifact. It can't become untapped for as long as ~ remains on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, tap target creature an opponent controls. That creature can't become untapped.",
+      "When ~ enters, tap target artifact an opponent controls. That artifact doesn't untap during its controller's untap step for as long as you control ~.",
+      "When ~ enters, tap target creature an opponent controls. That creature can't attack for as long as you control ~."
+    ],
+    "consumes": [
+      "can't"
+    ]
+  },
+  {
+    "id": "eff.stdmsh.becomeCopy.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 613.1a",
+      "CR 611.2a",
+      "CR 611.2b"
+    ],
+    "pattern": "{o:Obj} becomes a copy of {p:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When this Aura enters, exile up to one target artifact creature until this Aura leaves the battlefield. Enchanted creature becomes a copy of that creature until this Aura leaves the battlefield."
+      },
+      {
+        "text": "Target creature you control becomes a copy of another target creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control becomes a copy of another target creature.",
+      "Target creature you control becomes a copy of another target creature until end of turn, except it isn't legendary.",
+      "Target creature you control becomes a 1/1 copy of another target creature until end of turn."
+    ]
+  },
+  {
+    "id": "rep.stdmsh.damage.double.attached",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "double all damage ( equipped | enchanted ) creature would deal",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "attachedToSource": true
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "double",
+      "would",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Double all damage equipped creature would deal."
+      },
+      {
+        "text": "Double all damage enchanted creature would deal."
+      }
+    ],
+    "counterExamples": [
+      "Double all damage equipped creature would deal this turn.",
+      "Double all damage that would be dealt to equipped creature.",
+      "Equipped creature deals double damage."
+    ]
+  },
+  {
+    "id": "kw.stdmsh.equip.worthy",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 702.6c",
+      "CR 207.2a",
+      "CR 205.4",
+      "CR 105.2"
+    ],
+    "pattern": "equip worthy {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "supertypes": [
+          "Legendary"
+        ],
+        "notSubtypes": [
+          "Villain"
+        ],
+        "colors": [
+          "R",
+          "W"
+        ],
+        "controller": "you"
+      }
+    },
+    "examples": [
+      {
+        "text": "Equip worthy {2}"
+      },
+      {
+        "text": "Equip worthy {3}"
+      }
+    ],
+    "counterExamples": [
+      "Equip worthy",
+      "Equip unworthy {1}",
+      "Equip worthy creature {1}"
+    ]
+  }
+]

@@ -1,0 +1,2 @@
+# std-cardcopy-9 (lane std-cardcopy): the round's golden cards (test/m5/golden/cards/cloud-std-cardcopy-9-review.json)
+Koh, the Face Stealer

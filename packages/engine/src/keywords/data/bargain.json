@@ -1,0 +1,48 @@
+{
+  "name": "bargain",
+  "rule": "702.166",
+  "params": [],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may sacrifice an artifact, enchantment, or token as you cast this spell.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Bargain",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": {
+                  "anyOf": [
+                    {
+                      "types": [
+                        "Artifact",
+                        "Enchantment"
+                      ]
+                    },
+                    {
+                      "token": true
+                    }
+                  ]
+                },
+                "count": 1
+              }
+            ]
+          },
+          "optional": true,
+          "name": "bargain"
+        }
+      ]
+    }
+  ]
+}

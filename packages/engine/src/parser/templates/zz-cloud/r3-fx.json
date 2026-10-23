@@ -1,0 +1,187 @@
+[
+  {
+    "id": "eff.r3fx.exile.fromHand.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "exile a card from your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw two cards, then exile a card from your hand."
+      },
+      {
+        "text": "If you control no Elves, exile a card from your hand."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards, then exile a card from your graveyard.",
+      "Draw two cards, then exile two cards from your hand."
+    ]
+  },
+  {
+    "id": "eff.r3fx.exile.self.returnTransformed.selfOwner",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 712.14a",
+      "CR 400.7",
+      "CR 110.2",
+      "CR 201.5",
+      "CR 608.2c"
+    ],
+    "pattern": "exile ~ , then return ~ to the battlefield transformed under ~ 's owner 's control",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "selfExiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "selfExiled"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner",
+          "transformed": true
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{5}: Exile ~, then return ~ to the battlefield transformed under ~'s owner's control."
+      },
+      {
+        "text": "{2}{G}, {T}: Exile ~, then return ~ to the battlefield transformed under ~'s owner's control. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{5}: Exile ~, then return ~ to the battlefield under ~'s owner's control.",
+      "{5}: Exile ~, then return ~ to the battlefield transformed under your control."
+    ]
+  },
+  {
+    "id": "sta.r3fx.self.unblockable.if",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ can't be blocked if {c:Cond}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "cant",
+      "action": "beBlocked",
+      "when": "$c"
+    },
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked if you control three or more Goblins."
+      },
+      {
+        "text": "Flying\n~ can't be blocked if a creature entered the battlefield under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be blocked unless you control three or more Goblins.",
+      "~ can't block if you control three or more Goblins."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.r3fx.token.two.kinds",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 608.2c"
+    ],
+    "pattern": "create {n:Qty} {t:TokenDesc} and {m:Qty} {u:TokenDesc}",
+    "build": [
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "token": "$t"
+      },
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$m",
+        "token": "$u"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a Clue token and a 1/1 green Squirrel creature token."
+      },
+      {
+        "text": "When ~ enters, create a 2/2 red Goblin creature token and a Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "Create a Clue token or a 1/1 green Squirrel creature token.",
+      "Target player creates a Clue token and a 1/1 green Squirrel creature token."
+    ]
+  }
+]

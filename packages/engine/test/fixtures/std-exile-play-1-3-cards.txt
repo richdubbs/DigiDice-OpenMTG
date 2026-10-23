@@ -1,0 +1,3 @@
+# std-exile-play-1-3 (lane std-exile-play-1): each opponent exiles a card from their hand and may play it; players may play the cards they exiled (CR 601.3, 608.2c)
+Lightstall Inquisitor
+Memory Vessel

@@ -1,0 +1,360 @@
+[
+ {
+  "card": "Yuriko, Blade of the Mighty",
+  "expect": "full",
+  "verified": "std-rx1 review (Standard, held-out half by the hash split: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (sta.stdrx1.combat.cantCastOrActivate.nonMana, render/stat.ts#combatCastActivateNonMana): during every step of the combat phase of any turn no player can cast a spell, and no player can activate an ability that is not a mana ability (mana abilities stay activatable, CR 605.1a); whenever a creature you control attacks a player (not a planeswalker or battle) as the only attacker, that creature gains double strike until end of turn (CR 604.1, 601.3, 602.5, 605.1a, 506.1, 506.5, 508.1, 702.4b, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "action": "cast",
+        "mode": "cant",
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "who": "player"
+        },
+        "when": {
+         "cond": "turnOf",
+         "step": [
+          "beginCombat",
+          "declareAttackers",
+          "declareBlockers",
+          "combatDamage",
+          "endCombat"
+         ],
+         "whose": "any"
+        }
+       },
+       {
+        "action": "activate",
+        "exceptMana": true,
+        "mode": "cant",
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "who": "player"
+        },
+        "when": {
+         "cond": "turnOf",
+         "step": [
+          "beginCombat",
+          "declareAttackers",
+          "declareBlockers",
+          "combatDamage",
+          "endCombat"
+         ],
+         "whose": "any"
+        }
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "event",
+            "role": "attacker"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "double strike",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "alone": true,
+         "attacker": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "defender": "any",
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Zimone, All-Questioning",
+  "expect": "full",
+  "verified": "std-rx1 review (Standard, held-out half: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (Cond prime: parser/holes/cond.ts#control, render/cond.ts; token epithet name: parser/holes/token.ts#epithet with eff.t55.token.named; that many: parser/lower/quantities.ts#primeCount, render/steps-life.ts#statedByIf; eff.counters.put): at the beginning of your end step, if a land entered the battlefield under your control this turn and the number of lands you control is prime (both checked when it triggers and again as it resolves), you create Primo, the Indivisible, a legendary 0/0 green and blue Fractal creature token, then put +1/+1 counters on it equal to the number of lands you control as the ability resolves (CR 603.4, 107.1, 111.4, 111.10, 201.2, 608.2h, 122.1, 513.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "token",
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "G",
+           "U"
+          ],
+          "name": "Primo, the Indivisible",
+          "power": 0,
+          "subtypes": [
+           "Fractal"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "toughness": 0,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": {
+          "of": {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Land"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "kind": "+1/+1",
+         "on": {
+          "name": "token",
+          "ref": "bound"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "all",
+       "of": [
+        {
+         "cond": "happened",
+         "event": {
+          "ev": "zoneChange",
+          "subject": {
+           "controller": "you",
+           "types": [
+            "Land"
+           ]
+          },
+          "to": "battlefield"
+         },
+         "scope": "turn"
+        },
+        {
+         "cond": "prime",
+         "of": {
+          "of": {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Land"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Zimone's Experiment",
+  "expect": "full",
+  "verified": "std-rx1 review (Standard, tuning half), by hand against the Oracle text and the rules cited (eff.look.top, eff.stdrx1.dig.mayReveal.upTo.thenRestBottomRandom, eff.stdrx1.putAll.revealed.battlefieldTapped.andHand; lower/mentions.ts: a chosen and revealed group is 'revealed this way'; render/fold.ts#chooseUpToFromGroupThenReveal, #putAllRevealedSplit): you look at the top five cards of your library, choose up to two of them that are creature or land cards (or both) and reveal them, put the other cards on the bottom of your library in a random order, then put each revealed land card onto the battlefield tapped under your control and each revealed creature card still in your library into your hand (a land creature is a land card, so it goes onto the battlefield; CR 701.20a, 701.20e, 608.2c, 608.2d, 401.4, 110.2a, 400.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "them",
+         "at": {
+          "count": 5,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "op": "look",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "as": "chosen",
+         "from": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature",
+              "Land"
+             ]
+            }
+           ],
+           "is": {
+            "name": "them",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         },
+         "max": 2,
+         "min": 0,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "reveal",
+         "what": {
+          "name": "chosen",
+          "ref": "bound"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "random",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "them",
+            "ref": "bound"
+           },
+           "not": {
+            "is": {
+             "name": "chosen",
+             "ref": "bound"
+            }
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "tapped": true,
+          "zone": "battlefield"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Land"
+             ]
+            }
+           ],
+           "is": {
+            "name": "chosen",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "is": {
+            "name": "chosen",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ }
+]

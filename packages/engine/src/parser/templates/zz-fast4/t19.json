@@ -1,0 +1,285 @@
+[
+  {
+    "id": "rst.t19.cantLoseGame.oppsCantWin",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 104.3",
+      "CR 104.2",
+      "CR 101.2"
+    ],
+    "pattern": "you can't lose the game and your opponents can't win the game",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "lose"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "mode": "cant",
+          "action": "win"
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Flying\nYou can't lose the game and your opponents can't win the game."
+      },
+      {
+        "text": "You can't lose the game and your opponents can't win the game.\n{T}: Add {C}."
+      }
+    ],
+    "counterExamples": [
+      "You can't lose the game and your opponents can't win the game this turn.",
+      "You can't win the game and your opponents can't lose the game.",
+      "You can't lose the game or your opponents can't win the game."
+    ]
+  },
+  {
+    "id": "eff.t19.rep.preventCombatBy",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.1"
+    ],
+    "pattern": "prevent all combat damage that would be dealt by {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Prevent all combat damage that would be dealt by target creature this turn."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt by target attacking creature this turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Prevent all damage that would be dealt by target creature this turn.",
+      "{3}, {T}: Prevent all combat damage that would be dealt to target creature this turn.",
+      "{3}, {T}: Prevent all combat damage that would be dealt by each creature this turn."
+    ]
+  },
+  {
+    "id": "rep.t19.self.anywhere.revealShuffle",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 113.6b",
+      "CR 701.20a",
+      "CR 701.24a"
+    ],
+    "pattern": "if ~ would be put into a graveyard from anywhere , reveal ~ and shuffle it into its owner 's library instead",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield",
+        "stack",
+        "hand",
+        "library",
+        "exile"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "reveal",
+                "who": {
+                  "ref": "you"
+                },
+                "what": {
+                  "ref": "self"
+                }
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "self"
+                },
+                "to": {
+                  "zone": "library",
+                  "owner": {
+                    "ref": "ownerOf",
+                    "object": {
+                      "ref": "self"
+                    }
+                  }
+                }
+              },
+              {
+                "op": "shuffle",
+                "who": {
+                  "ref": "ownerOf",
+                  "object": {
+                    "ref": "self"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Indestructible\nIf ~ would be put into a graveyard from anywhere, reveal ~ and shuffle it into its owner's library instead."
+      },
+      {
+        "text": "If ~ would be put into a graveyard from anywhere, reveal ~ and shuffle it into its owner's library instead.\n{T}: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would be put into a graveyard from anywhere, reveal ~ and put it on top of its owner's library instead.",
+      "If ~ would die, reveal ~ and shuffle it into its owner's library instead.",
+      "If ~ would be put into a graveyard from anywhere, shuffle it into its owner's library instead."
+    ]
+  },
+  {
+    "id": "eff.t19.rep.redirectNext",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.9",
+      "CR 615.7",
+      "CR 611.2c"
+    ],
+    "pattern": "the next {n:Qty} damage that would be dealt to {o:Obj} {d:Dur} is dealt to {t:Obj} instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": "$t",
+            "amount": "$n"
+          },
+          "shield": {
+            "uses": "all",
+            "amount": "$n"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{1}: The next 1 damage that would be dealt to ~ this turn is dealt to target creature you control instead."
+      },
+      {
+        "text": "{1}{W}: The next 2 damage that would be dealt to ~ this turn is dealt to target creature instead."
+      }
+    ],
+    "counterExamples": [
+      "{0}: The next 1 damage that would be dealt to ~ this turn is dealt to target creature you control.",
+      "{0}: The next 1 damage that would be dealt to ~ is dealt to target creature you control instead.",
+      "{0}: Prevent the next 1 damage that would be dealt to ~ this turn."
+    ]
+  },
+  {
+    "id": "eff.t19.endTurn",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 724.1",
+      "CR 724.1a",
+      "CR 724.1b",
+      "CR 724.1c",
+      "CR 724.1d"
+    ],
+    "pattern": "end the turn",
+    "build": {
+      "op": "endTurn"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw two cards. End the turn."
+      },
+      {
+        "text": "{2}, {T}: End the turn. Activate only during your turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. End the combat.",
+      "Draw two cards. End the turn unless it is blue.",
+      "Draw two cards. End this phase."
+    ]
+  }
+]

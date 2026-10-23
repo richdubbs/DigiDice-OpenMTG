@@ -1,0 +1,374 @@
+[
+  {
+    "id": "eff.stdrq.pump.dur.forEach.scaled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +3/+1 until end of turn for each Wizard you control."
+      },
+      {
+        "text": "Whenever you cast an instant spell, ~ gets +2/+0 until end of turn for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +3/+1 for each Wizard you control.",
+      "Target creature gets +3/+1 until end of turn for each Wizard you control and each Elf you control.",
+      "Target creature gets +3/+1 until your next turn for each Wizard you control."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.stdrq.player.may.putCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 122.1",
+      "CR 122.6"
+    ],
+    "pattern": "{p:Player} may put {n:Qty} {k:CounterKind} counter[s] on {o:Obj}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "putCounters",
+          "on": "$o",
+          "kind": "$k",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player may put a +1/+1 counter on ~. If they do, they gain 2 life."
+      },
+      {
+        "text": "At the beginning of each opponent's end step, that player may put two charge counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's upkeep, that player puts a +1/+1 counter on ~.",
+      "At the beginning of each player's upkeep, you may put a +1/+1 counter on each creature that player controls.",
+      "At the beginning of each player's upkeep, that player may remove a +1/+1 counter from ~."
+    ]
+  },
+  {
+    "id": "eff.stdrq.player.mana.forEachCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 122.1"
+    ],
+    "pattern": "{p:Player} add[s] {t:ManaSym} for each counter on {o:Obj}",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "any"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player may put a +1/+1 counter on ~. If they do, they add {G} for each counter on ~."
+      },
+      {
+        "text": "At the beginning of each player's precombat main phase, that player adds {R} for each counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's precombat main phase, that player adds {R} for each charge counter on ~.",
+      "At the beginning of each player's precombat main phase, that player adds {R}{R} for each counter on ~.",
+      "At the beginning of each player's precombat main phase, that player adds {R} for each creature they control."
+    ]
+  },
+  {
+    "id": "eff.stdrq.anyOpponent.maySacrifice.theirChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 701.21a"
+    ],
+    "pattern": "any opponent may sacrifice {n:Qty} {f:Filter} of their choice",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "anyOne": true,
+      "do": [
+        {
+          "op": "sacrificeChoice",
+          "who": {
+            "ref": "iterating"
+          },
+          "filter": "$f",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, any opponent may sacrifice an artifact of their choice. If a player does, you draw a card."
+      },
+      {
+        "text": "At the beginning of your end step, any opponent may sacrifice two creatures of their choice. If no one does, you gain 4 life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, each opponent may sacrifice an artifact of their choice. If a player does, you draw a card.",
+      "At the beginning of your upkeep, any opponent may sacrifice an artifact. If a player does, you draw a card.",
+      "At the beginning of your upkeep, any opponent may discard a card of their choice. If a player does, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.stdrq.exile.fromTop.equalTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 401.1",
+      "CR 608.2h"
+    ],
+    "pattern": "exile ( cards | a number of cards ) from the top of your library equal to {n:Qty}",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "topCards",
+        "player": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile cards from the top of your library equal to the number of Elves you control. You may play those cards this turn."
+      },
+      {
+        "text": "When ~ enters, exile cards from the top of your library equal to its power. Until end of turn, you may play those cards."
+      }
+    ],
+    "counterExamples": [
+      "Exile cards from the top of your library until you exile a land card.",
+      "Exile cards from the top of target player's library equal to the number of Elves you control.",
+      "Mill cards equal to the number of Elves you control."
+    ]
+  },
+  {
+    "id": "eff.stdrq.cast.free.maxManaValue",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 202.3",
+      "CR 118.9",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost if ( that | the resulting ) spell 's mana value is {n:Qty} or less",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true,
+      "maxManaValue": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Exile cards from the top of your library until you exile a nonland card. You may cast it without paying its mana cost if that spell's mana value is 5 or less. If you don't, put that card into your hand."
+      },
+      {
+        "text": "When ~ enters, exile cards from the top of your library until you exile a nonland card. You may cast it without paying its mana cost if the resulting spell's mana value is 3 or less."
+      }
+    ],
+    "counterExamples": [
+      "Exile cards from the top of your library until you exile a nonland card. You may cast it without paying its mana cost if that spell's mana value is 5 or greater.",
+      "Exile cards from the top of your library until you exile a nonland card. You may cast it if that spell's mana value is 5 or less.",
+      "Exile cards from the top of your library until you exile a nonland card. You may cast it without paying its mana cost if that spell's power is 5 or less."
+    ]
+  },
+  {
+    "id": "eff.stdrq.damage.n.forEach.stillExiled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 406.1",
+      "CR 400.7",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} for each of {o:Objs} that are still exiled",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$n",
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "is": "$o",
+                "zone": "exile"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top three cards of your library. You may play those cards this turn. At the beginning of the next end step, ~ deals 1 damage to each opponent for each of those cards that are still exiled."
+      },
+      {
+        "text": "When ~ enters, exile the top two cards of your library. You may play them until end of turn. At the beginning of your next end step, ~ deals 3 damage to each opponent for each of those cards that are still exiled."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top three cards of your library. You may play those cards this turn. At the beginning of the next end step, ~ deals 1 damage to each opponent for each of those cards.",
+      "Exile the top three cards of your library. You may play those cards this turn. At the beginning of the next end step, ~ deals 1 damage to each opponent for each of those cards that are still in your graveyard.",
+      "Exile the top three cards of your library. You may play those cards this turn. At the beginning of the next end step, ~ deals 1 damage to each opponent."
+    ]
+  },
+  {
+    "id": "eff.stdrq.extraCombat.onlyAttackers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1a",
+      "CR 508.1c"
+    ],
+    "pattern": "after this phase , there is an additional combat phase . only {f:Filter} can attack during that combat phase",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat",
+      "attackers": "$f"
+    },
+    "consumes": [
+      "additional",
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, untap all creatures you control. After this phase, there is an additional combat phase. Only Elves can attack during that combat phase."
+      },
+      {
+        "text": "Untap all artifact creatures you control. After this phase, there is an additional combat phase. Only artifact creatures can attack during that combat phase."
+      }
+    ],
+    "counterExamples": [
+      "Untap all artifact creatures you control. After this phase, there is an additional combat phase. Only artifact creatures can block during that combat phase.",
+      "Untap all artifact creatures you control. After this phase, there is an additional main phase. Only artifact creatures can attack during that combat phase.",
+      "Untap all artifact creatures you control. After this phase, there is an additional combat phase. Artifact creatures can attack during that combat phase."
+    ]
+  }
+]

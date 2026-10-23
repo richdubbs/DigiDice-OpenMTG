@@ -1,0 +1,67 @@
+{
+  "name": "persist",
+  "rule": "702.79",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this creature dies, if it had no -1/-1 counters on it, return it to the battlefield under its owner's control with a -1/-1 counter on it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ dies, if it had no -1/-1 counters on it, return it to the battlefield under its owner's control with a -1/-1 counter on it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "matches",
+        "object": {
+          "ref": "event",
+          "role": "subject"
+        },
+        "filter": {
+          "counters": {
+            "kind": "-1/-1",
+            "cmp": {
+              "op": "==",
+              "value": 0
+            }
+          }
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": "owner",
+              "counters": [
+                {
+                  "kind": "-1/-1",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

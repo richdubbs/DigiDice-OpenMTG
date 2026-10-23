@@ -1,0 +1,18 @@
+{
+  "name": "defender",
+  "rule": "702.3",
+  "params": [],
+  "mechanisms": [
+    "flag",
+    "hook"
+  ],
+  "reminder": "This creature can't attack.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "hooks": [
+    "canAttack"
+  ],
+  "readers": [
+    "rules/combat-rules.ts#attackOptions"
+  ]
+}

@@ -1,0 +1,403 @@
+[
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "rep.t40.damage.double.filter",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 614.5", "CR 120.3"],
+    "pattern": "if {f:Filter} would deal damage to a permanent or player , it deals double that damage instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": "$f"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": ["if", "would", "instead", "double"],
+    "examples": [
+      {
+        "text": "If a Knight you control would deal damage to a permanent or player, it deals double that damage instead."
+      },
+      {
+        "text": "If an artifact creature you control would deal damage to a permanent or player, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": ["If a Knight you control would deal damage to a permanent or player, it deals triple that damage instead.", "If a Knight you control would deal damage to a creature, it deals double that damage instead.", "If a Knight an opponent controls would deal damage to a permanent or player this turn, it deals double that damage instead."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "rep.t40.damage.plus.filter",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 120.3"],
+    "pattern": "if {f:Filter} would deal damage to a permanent or player , it deals that much damage plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": "$f"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": ["if", "would", "that much", "instead"],
+    "examples": [
+      {
+        "text": "If a Goblin, Rat, Elf, or Wizard you control would deal damage to a permanent or player, it deals that much damage plus 2 instead."
+      },
+      {
+        "text": "If a Dragon you control would deal damage to a permanent or player, it deals that much damage plus 3 instead."
+      }
+    ],
+    "counterExamples": ["If a Dragon you control would deal damage to a permanent or player, it deals that much damage minus 1 instead.", "If a Dragon you control would deal damage to a player, it deals that much damage plus 3 instead.", "If a Dragon you control would deal damage to a permanent or player, it deals that much damage plus 3 for each Dragon you control instead."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "rep.t40.damage.double.source.noncombat.while",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 614.5", "CR 120.3", "CR 207.2c", "CR 700.1"],
+    "pattern": "if a source you control would deal noncombat damage to a permanent or player while there are {n:Qty} or more card types among {f:Filter} , it deals double that damage instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "you"
+        },
+        "combat": false
+      },
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "distinct",
+          "what": "cardTypes",
+          "among": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": ["if", "would", "instead", "double"],
+    "examples": [
+      {
+        "text": "Delirium — If a source you control would deal noncombat damage to a permanent or player while there are five or more card types among cards in your graveyard, it deals double that damage instead."
+      },
+      {
+        "text": "If a source you control would deal noncombat damage to a permanent or player while there are three or more card types among cards in your graveyard, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": ["If a source you control would deal damage to a permanent or player while there are five or more card types among cards in your graveyard, it deals double that damage instead.", "If a source you control would deal noncombat damage to a permanent or player, it deals double that damage instead.", "If a source an opponent controls would deal noncombat damage to a permanent or player while there are five or more card types among cards in your graveyard, it deals double that damage instead."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "rep.t40.damage.double.chosenType",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 614.5", "CR 120.3", "CR 607.2d", "CR 614.12a"],
+    "pattern": "double all damage that sources you control of the chosen type would deal",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "you",
+          "chosen": {
+            "link": "type",
+            "quality": "creatureType"
+          }
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": ["double", "all", "chosen", "would"],
+    "examples": [
+      {
+        "text": "As this enchantment enters, choose a creature type.\nDouble all damage that sources you control of the chosen type would deal."
+      },
+      {
+        "text": "As this creature enters, choose a creature type.\nDouble all damage that sources you control of the chosen type would deal."
+      }
+    ],
+    "counterExamples": ["Double all damage that sources you control of the chosen type would deal.", "As this enchantment enters, choose a color.\nDouble all damage that sources you control of the chosen color would deal.", "As this enchantment enters, choose a creature type.\nDouble all damage that sources your opponents control of the chosen type would deal."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "rep.t40.life.loss.double.opponent.yourTurn",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 119.3", "CR 119.10"],
+    "pattern": "if an opponent would lose life during your turn , they lose twice that much life instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "life",
+        "change": "loss",
+        "player": "opponent"
+      },
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": ["if", "would", "twice", "that much", "instead"],
+    "needs": ["feature:replace.life.loss.fromDamage"],
+    "examples": [
+      {
+        "text": "If an opponent would lose life during your turn, they lose twice that much life instead."
+      },
+      {
+        "text": "Flying\nIf an opponent would lose life during your turn, they lose twice that much life instead."
+      }
+    ],
+    "counterExamples": ["If an opponent would lose life, they lose twice that much life instead.", "If an opponent would lose life during your turn, they lose three times that much life instead.", "If you would lose life during your turn, you lose twice that much life instead.", "If an opponent would gain life during your turn, they gain twice that much life instead."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "rep.t40.counters.double.anyKind",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 122.6", "CR 616.1e"],
+    "pattern": "if one or more counters would be put on {f:Filter} , twice that many of each of those kinds of counters are put on it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "on": "$f"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": ["if", "would", "twice", "that many", "each", "instead"],
+    "examples": [
+      {
+        "text": "If one or more counters would be put on a creature, Vehicle, or Saga you control, twice that many of each of those kinds of counters are put on it instead."
+      },
+      {
+        "text": "If one or more counters would be put on a permanent you control, twice that many of each of those kinds of counters are put on it instead."
+      }
+    ],
+    "counterExamples": ["If one or more counters would be put on a creature you control, three times that many of each of those kinds of counters are put on it instead.", "If one or more counters would be put on a creature you control, twice that many of each of those kinds of counters are put on a player instead.", "If one or more counters would be removed from a creature you control, twice that many of each of those kinds of counters are put on it instead."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "prv.t40.self.combat.toAndBy",
+    "kind": "static",
+    "cr": ["CR 615.1", "CR 615.6", "CR 614.1a", "CR 510.1"],
+    "pattern": "prevent all combat damage that would be dealt to and dealt by ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "self": true
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": ["prevent", "all", "would"],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to and dealt by ~."
+      },
+      {
+        "text": "Flying\nPrevent all combat damage that would be dealt to and dealt by ~."
+      }
+    ],
+    "counterExamples": ["Prevent all damage that would be dealt to and dealt by ~.", "Prevent all combat damage that would be dealt to ~.", "Prevent all combat damage that would be dealt to and dealt by ~ this turn."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "prv.t40.noncombat.to.filter",
+    "kind": "static",
+    "cr": ["CR 615.1", "CR 614.1a", "CR 120.3"],
+    "pattern": "prevent all noncombat damage that would be dealt to {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": false,
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": ["prevent", "all", "would"],
+    "examples": [
+      {
+        "text": "Prevent all noncombat damage that would be dealt to other Knights you control."
+      },
+      {
+        "text": "Prevent all noncombat damage that would be dealt to artifacts you control."
+      }
+    ],
+    "counterExamples": ["Prevent all damage that would be dealt to other Knights you control.", "Prevent all noncombat damage that would be dealt to other Knights you control this turn.", "Prevent all noncombat damage that would be dealt by other Knights you control."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "eff.t40.prevent.all.to.filter.dur",
+    "kind": "effect",
+    "cr": ["CR 615.1", "CR 611.2a", "CR 120.3"],
+    "pattern": "prevent all damage that would be dealt to {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["prevent", "all", "would"],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to artifacts you control this turn."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to Knights you control this turn. Draw a card."
+      }
+    ],
+    "counterExamples": ["Prevent all damage that would be dealt to artifacts you control.", "Prevent all combat damage that would be dealt to artifacts you control this turn.", "Prevent all damage that would be dealt by artifacts you control this turn."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.t40.triggerMod.anyCause",
+    "kind": "static",
+    "cr": ["CR 603.2d", "CR 603.10a"],
+    "pattern": "if a triggered ability of {f:Filter} triggers , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "abilitiesOf": "$f",
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": ["if", "additional"],
+    "examples": [
+      {
+        "text": "If a triggered ability of a Pirate creature you control triggers, that ability triggers an additional time."
+      },
+      {
+        "text": "If a triggered ability of a legendary artifact you control triggers, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": ["If a triggered ability of a Pirate creature you control triggers, that ability triggers two additional times.", "If a triggered ability of a Pirate creature an opponent controls triggers, that ability triggers an additional time.", "If an activated ability of a Pirate creature you control is activated, that ability triggers an additional time."]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.t40.triggerMod.equipped",
+    "kind": "static",
+    "cr": ["CR 603.2d", "CR 603.10a", "CR 301.5"],
+    "pattern": "if a triggered ability of equipped creature triggers , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "abilitiesOf": {
+            "attachedToSource": true
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": ["if", "additional"],
+    "examples": [
+      {
+        "text": "If a triggered ability of equipped creature triggers, that ability triggers an additional time."
+      },
+      {
+        "text": "Equipped creature has flying.\nIf a triggered ability of equipped creature triggers, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": ["If a triggered ability of equipped creature triggers, that ability triggers two additional times.", "If a triggered ability of enchanted creature triggers, that ability triggers an additional time.", "If an activated ability of equipped creature is activated, that ability triggers an additional time."]
+  }
+]

@@ -1,0 +1,6 @@
+# std-rx15 (wave 2, slice s12; test/cloud/std-rx15, golden cloud-std-rx15-review.json): "~ becomes a <subtypes> with base power and toughness N/M [and <abilities>]"
+# with no duration and protection from each of your opponents (Figure of Fable); devour land 3 (Famished Worldsire); "~'s equip abilities cost {2} less to activate"
+# in a token copy's exception and "that token" after a nontoken event object (Firion, Wild Rose Warrior)
+Figure of Fable
+Famished Worldsire
+Firion, Wild Rose Warrior

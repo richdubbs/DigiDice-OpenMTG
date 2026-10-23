@@ -1,0 +1,34 @@
+# FAST5X E29: impulse-draw permissions (CR 611.2a-c, 601.3, 305.1, 400.7, 609.4b): "until the end of your next turn" (CR 611.2a, 514.2), "until your next end
+# step", "for as long as it remains exiled", "and mana of any type can be spent to cast it".
+# After editing: npm run cards -- fixtures
+
+# ---- One card: "Until the end of your next turn, you may play that card" / "You may play it until the end of your next turn" (CR 611.2a, 514.2)
+Kulrath Zealot
+Gila Courser
+Cori Mountain Monastery
+Irascible Wolverine
+Snowslope Hunter
+Armory Paladin
+Fiend of the Shadows
+
+# ---- Groups: "those cards", "them" (this turn, until the end of your next turn, until your next end step)
+Seize Opportunity
+Hugs, Grisly Guardian
+Reckless Impulse
+Painter's Studio // Defaced Gallery
+Opera Love Song
+Korvold and the Noble Thief
+
+# ---- Cast permissions (CR 601.3) and the CR 609.4b rider; casting now (CR 608.2g)
+Practiced Scrollsmith
+Ragavan, Nimble Pilferer
+Tlincalli Hunter // Retrieve Prey
+Ramirez DePietro, Pillager
+Scholar of Combustion
+Chandra, Dressed to Kill
+Cruelclaw's Heist
+Tinybones, the Pickpocket
+
+# ---- Still partial for another reason ("it" after a trigger of ~ has two antecedents, design 6.4; "that card" after a cast spell)
+Clockwork Percussionist
+Harnesser of Storms

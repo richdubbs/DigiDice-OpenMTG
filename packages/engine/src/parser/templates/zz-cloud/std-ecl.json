@@ -1,0 +1,677 @@
+[
+  {
+    "id": "sta.stdecl.cast.self.flash.ifCond",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast ~ as though it had flash if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ as though it had flash if you control a Wizard."
+      },
+      {
+        "text": "You may cast ~ as though it had flash if you control two or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ as though it had flash.",
+      "You may cast ~ as though it had haste if you control a Wizard."
+    ]
+  },
+  {
+    "id": "eff.stdecl.thenIf.blight",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 701.68a"
+    ],
+    "pattern": "then if {c:Cond} , blight {n:Qty}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "action",
+          "action": "blight",
+          "who": {
+            "ref": "you"
+          },
+          "n": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to your hand. Then if it isn't your main phase, blight 1."
+      },
+      {
+        "text": "Draw two cards. Then if you control three or more creatures, blight 3."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. Then unless you control three or more creatures, blight 3.",
+      "Draw two cards. Then if you control three or more creatures, blight 3 instead.",
+      "Draw two cards. Then if you control three or more creatures, blight 3 unless an opponent pays {1}."
+    ]
+  },
+  {
+    "id": "eff.stdecl.thenIf.token",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2c",
+      "CR 111.1",
+      "CR 111.2"
+    ],
+    "pattern": "then if {c:Cond} , create {n:Qty} {t:TokenDesc}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Then if you control five or more artifacts, create a 2/2 colorless Robot artifact creature token."
+      },
+      {
+        "text": "Gain 3 life. Then if you have 20 or more life, create two 1/1 white Spirit creature tokens with flying."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Then unless you control five or more artifacts, create a 2/2 colorless Robot artifact creature token.",
+      "Draw a card. Then if you control five or more artifacts, create a 2/2 colorless Robot artifact creature token instead.",
+      "Draw a card. Then if you control five or more artifacts, target opponent creates a 2/2 colorless Robot artifact creature token."
+    ]
+  },
+  {
+    "id": "eff.stdecl.gains.allCreatureTypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Obj} gains all creature types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Up to one target creature gains all creature types."
+      },
+      {
+        "text": "Untap target creature you control. It gains all creature types."
+      }
+    ],
+    "counterExamples": [
+      "Up to one target creature gains all creature types until end of turn.",
+      "Up to one target creature loses all creature types.",
+      "Up to one target creature gains all creature types and flying."
+    ]
+  },
+  {
+    "id": "eff.stdecl.durFirst.basept.gains.allCreatureTypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} has base power and toughness {pt:BasePT} and gains all creature types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Tap up to one target creature. Until end of turn, that creature has base power and toughness 3/3 and gains all creature types."
+      },
+      {
+        "text": "Untap target creature you control. Until end of turn, it has base power and toughness 5/5 and gains all creature types."
+      }
+    ],
+    "counterExamples": [
+      "Untap target creature you control. Until end of turn, it has base power and toughness 5/5 and gains flying.",
+      "Untap target creature you control. Until end of turn, it gets +5/+5 and gains all creature types.",
+      "Untap target creature you control. It has base power and toughness 5/5 and gains all creature types."
+    ]
+  },
+  {
+    "id": "eff.stdecl.gains.allCreatureTypes.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Objs} gain[s] all creature types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gains all creature types until end of turn."
+      },
+      {
+        "text": "Creatures you control gain all creature types until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses all creature types until end of turn.",
+      "Target creature gains all creature types and trample until end of turn.",
+      "Target creature gains all colors until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdecl.durFirst.group.basept.gain.allCreatureTypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} have base power and toughness {pt:BasePT} and gain all creature types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, creatures you control have base power and toughness 3/3 and gain all creature types."
+      },
+      {
+        "text": "Until end of turn, creatures target player controls have base power and toughness 1/1 and gain all creature types."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, creatures you control have base power and toughness 3/3 and gain flying.",
+      "Until end of turn, creatures you control get +3/+3 and gain all creature types.",
+      "Creatures you control have base power and toughness 3/3 and gain all creature types."
+    ]
+  },
+  {
+    "id": "eff.stdecl.remove.anyNumber.counters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "remove any number of counters from {o:Obj}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "any",
+      "count": "all",
+      "upTo": true
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Remove any number of counters from target creature you control."
+      },
+      {
+        "text": "Remove any number of counters from target permanent."
+      }
+    ],
+    "counterExamples": [
+      "Remove all counters from target creature you control.",
+      "Remove a counter from target creature you control.",
+      "Remove any number of +1/+1 counters from target creature you control."
+    ]
+  },
+  {
+    "id": "eff.stdecl.loseall.becomes.subtype.inaddition.basept",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Objs} loses all abilities , becomes ( a | an ) {st:Subtypes} in addition to its other types , and has base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature target opponent controls loses all abilities, becomes a Frog in addition to its other types, and has base power and toughness 2/2."
+      },
+      {
+        "text": "Target creature loses all abilities, becomes a Toy in addition to its other types, and has base power and toughness 0/1."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses all abilities, becomes a Toy, and has base power and toughness 0/1.",
+      "Target creature loses all abilities, becomes a Toy in addition to its other types, and gets +0/+1.",
+      "Target creature loses all abilities, becomes a Toy in addition to its other types, and has base power and toughness 0/1 until end of turn."
+    ]
+  },
+  {
+    "id": "trg.stdecl.entersAndWhenever",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 503.1"
+    ],
+    "pattern": "when ~ enter[s] and ( whenever | at ) {e:Event}",
+    "build": {
+      "on": {
+        "$concat": [
+          [
+            {
+              "ev": "zoneChange",
+              "subject": {
+                "self": true
+              },
+              "to": "battlefield"
+            }
+          ],
+          "$e"
+        ]
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters and whenever you cast a spell with mana value 6 or greater, draw a card."
+      },
+      {
+        "text": "When ~ enters and whenever another creature you control dies, you gain 2 life."
+      },
+      {
+        "text": "When ~ enters and at the beginning of your upkeep, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters or whenever you cast a spell with mana value 6 or greater, draw a card.",
+      "When ~ dies and whenever you cast a spell with mana value 6 or greater, draw a card.",
+      "When ~ enters and whenever an opponent casts a spell with mana value 6 or greater, draw a card.",
+      "When ~ enters and at the beginning of your next upkeep, scry 1."
+    ]
+  },
+  {
+    "id": "eff.stdecl.mill.thenPutEach.milledThisWay.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 701.17c",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "{p:Player} mill[s] {n:Qty} cards , then put[s] each {f:Filter} card milled this way into ( your | their ) hand",
+    "build": [
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$n",
+        "as": "milled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "milled"
+            },
+            "zone": "any"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Target player mills four cards, then puts each Elf card milled this way into their hand."
+      },
+      {
+        "text": "Target opponent mills three cards, then puts each artifact card milled this way into their hand."
+      }
+    ],
+    "counterExamples": [
+      "Target player mills four cards, then puts each Elf card milled this way onto the battlefield.",
+      "Target player mills four cards, then puts an Elf card milled this way into their hand.",
+      "Target player mills four cards, then puts each Elf card into their hand."
+    ]
+  },
+  {
+    "id": "eff.stdecl.copy.token.except.has",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 111.1",
+      "CR 113.1a"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it has {a:Abilities}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "priority": -1,
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target artifact you control, except it has flying and \"At the beginning of your end step, exile this token.\""
+      },
+      {
+        "text": "Create a token that's a copy of target creature, except it has haste and \"At the beginning of the end step, sacrifice this token.\""
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it has haste and \"At the beginning of the end step, sacrifice this token.\" Then shuffle.",
+      "Create a token that's a copy of target creature, except it's 1/1 and has haste.",
+      "Create two tokens that are copies of target creature, except they have haste."
+    ]
+  },
+  {
+    "id": "eff.stdecl.copy.token.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 508.4"
+    ],
+    "pattern": "create a tapped and attacking token that's a copy of {o:Obj}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "attacking": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature you control."
+      },
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target attacking creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a tapped token that's a copy of target creature you control.",
+      "Whenever ~ attacks, create two tapped and attacking tokens that are copies of target creature you control.",
+      "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature you control unless an opponent pays {2}."
+    ]
+  },
+  {
+    "id": "eff.stdecl.copy.token.tappedAttacking.except.has",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 111.1",
+      "CR 508.4"
+    ],
+    "pattern": "create a tapped and attacking token that's a copy of {o:Obj} , except it has {a:Abilities}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "attacking": true,
+      "except": [
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature you control, except it has \"At the beginning of the end step, exile this token.\""
+      },
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target creature you control, except it has deathtouch."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a token that's a copy of target creature you control, except it has deathtouch.",
+      "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature you control, except it's 1/1.",
+      "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature you control, except it has deathtouch until end of turn."
+    ]
+  }
+]

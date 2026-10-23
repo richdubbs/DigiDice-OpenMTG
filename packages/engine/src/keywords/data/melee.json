@@ -1,0 +1,57 @@
+{
+  "name": "melee",
+  "rule": "702.121",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks, it gets +1/+1 until end of turn for each opponent you attacked this combat.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, it gets +1/+1 until end of turn for each opponent you attacked with a creature this combat.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": {
+                      "q": "opponentsAttacked"
+                    },
+                    "toughness": {
+                      "q": "opponentsAttacked"
+                    }
+                  }
+                ]
+              }
+            ],
+            "duration": {
+              "d": "endOfTurn"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

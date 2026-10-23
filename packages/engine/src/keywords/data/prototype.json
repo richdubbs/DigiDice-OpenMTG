@@ -1,0 +1,22 @@
+{
+  "name": "prototype",
+  "rule": "702.160",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "structural"
+  ],
+  "reminder": "You may cast this spell with different mana cost, color, and size. It keeps its abilities and types.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "cards/faces.ts#prototypeOf",
+    "actions/cast-opt/prototype.ts#PROTOTYPE_CAST_OPTIONS",
+    "rules/base-parts/prototype.ts#PROTOTYPE_BASE_PARTS"
+  ]
+}

@@ -1,0 +1,78 @@
+[
+  {
+    "id": "eff.stdrb.if.also",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "if {c:Cond} , also {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": "$e"
+    },
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. If ~ was kicked, also put a +1/+1 counter on each creature you control."
+      },
+      {
+        "text": "Put a +1/+1 counter on target creature you control. If you control an Elf, also draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If ~ was kicked, also put a +1/+1 counter on each creature you control instead.",
+      "Draw a card. If ~ was kicked, draw two cards instead.",
+      "Draw a card. Unless ~ was kicked, also draw a card."
+    ]
+  },
+  {
+    "id": "eff.stdrb.base.each",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Objs} have base power and toughness {pt:BasePT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Creatures you control have base power and toughness 4/4 until end of turn."
+      },
+      {
+        "text": "Goblins you control have base power and toughness 2/3 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control have base power and toughness 4/4.",
+      "Creatures you control have base power and toughness +1/+1 until end of turn.",
+      "Creatures you control get base power and toughness 4/4 until end of turn."
+    ]
+  }
+]

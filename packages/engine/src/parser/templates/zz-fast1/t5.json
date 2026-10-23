@@ -1,0 +1,1236 @@
+[
+  {
+    "id": "sta.all.anthem",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "all {f:Filter} get {pt:PT}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "All Golem creatures get +1/+1."
+      },
+      {
+        "text": "All creatures get -2/-2."
+      },
+      {
+        "text": "All green creatures get +3/+0."
+      }
+    ],
+    "counterExamples": [
+      "All Golem creatures get +1/+1 until end of turn.",
+      "All Golem creatures get +1/+1 as long as you control a Forest.",
+      "All Golem creatures gain +1/+1."
+    ]
+  },
+  {
+    "id": "sta.all.grant",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "all {f:Filter} have {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "All Golem creatures have trample."
+      },
+      {
+        "text": "All creatures have vigilance and reach."
+      }
+    ],
+    "counterExamples": [
+      "All Golem creatures have trample until end of turn.",
+      "All Golem creatures lose trample.",
+      "All Golem creatures gain trample."
+    ]
+  },
+  {
+    "id": "sta.duringturn.grant",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , {o:Obj} (has | have) {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During your turn, ~ has trample and haste."
+      },
+      {
+        "text": "During your turn, equipped creature has deathtouch and reach."
+      }
+    ],
+    "counterExamples": [
+      "During your opponent's turn, ~ has deathtouch.",
+      "During your turn, ~ has deathtouch until end of turn.",
+      "During your turn, ~ gains deathtouch.",
+      "During each turn, ~ has deathtouch."
+    ]
+  },
+  {
+    "id": "sta.duringturn.pump",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , {o:Obj} get[s] {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During your turn, ~ gets +3/+0."
+      },
+      {
+        "text": "During your turn, enchanted creature gets +1/+2."
+      }
+    ],
+    "counterExamples": [
+      "During your opponent's turn, ~ gets +3/+0.",
+      "During your turn, ~ gets +3/+0 until end of turn.",
+      "During your turn, ~ gets +3/+0 for each Golem you control."
+    ]
+  },
+  {
+    "id": "sta.duringturn.pumpgrant",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , {o:Obj} get[s] {pt:PT} and (has | have) {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During your turn, equipped creature gets +3/+1 and has vigilance."
+      },
+      {
+        "text": "During your turn, ~ gets +1/+1 and has haste."
+      }
+    ],
+    "counterExamples": [
+      "During your opponent's turn, ~ gets +1/+1 and has haste.",
+      "During your turn, ~ gets +1/+1 and loses haste.",
+      "During your turn, ~ gets +1/+1 and has haste until end of turn."
+    ]
+  },
+  {
+    "id": "sta.duringturn.anthem",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , {f:Filter} get {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During your turn, Golems you control get +1/+0."
+      },
+      {
+        "text": "During your turn, other creatures you control get +2/+2."
+      }
+    ],
+    "counterExamples": [
+      "During your opponent's turn, Golems you control get +1/+0.",
+      "During your turn, Golems you control get +1/+0 until end of turn."
+    ]
+  },
+  {
+    "id": "sta.duringturn.grant.each",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , {f:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During your turn, Golems you control have haste."
+      },
+      {
+        "text": "During your turn, creatures you control have first strike and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "During your opponent's turn, Golems you control have haste.",
+      "During your turn, Golems you control lose haste."
+    ]
+  },
+  {
+    "id": "sta.pump.cantblock",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and can't block",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "block"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +3/+1 and can't block."
+      },
+      {
+        "text": "~ gets +2/+2 and can't block."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +3/+1 and can't block this turn.",
+      "Enchanted creature gets +3/+1 until end of turn and can't block.",
+      "Enchanted creature gets +3/+1 and can't attack."
+    ]
+  },
+  {
+    "id": "sta.pump.cantbeblocked",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and can't be blocked",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beBlocked"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +3/+2 and can't be blocked."
+      },
+      {
+        "text": "Equipped creature gets +2/+1 and can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+0 and can't be blocked this turn.",
+      "Enchanted creature gets +1/+0 until end of turn and can't be blocked.",
+      "Enchanted creature gets +1/+0 and can't be blocked by Walls."
+    ]
+  },
+  {
+    "id": "sta.pump.mustattack",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 508.1d"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and attacks each combat if able",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "mustIfAble",
+        "action": "attack"
+      }
+    ],
+    "consumes": [
+      "each",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +4/+1 and attacks each combat if able."
+      },
+      {
+        "text": "Equipped creature gets +1/+2 and attacks each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +2/+2 and attacks this combat if able.",
+      "Enchanted creature gets +2/+2 until end of turn and attacks each combat if able.",
+      "Enchanted creature gets +2/+2 and blocks each combat if able."
+    ]
+  },
+  {
+    "id": "sta.aslong.pump.cantblock",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1b"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] {pt:PT} and can't block",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as there are six or more cards in your graveyard, ~ gets +3/+3 and can't block."
+      },
+      {
+        "text": "As long as you control a Swamp, ~ gets +1/+1 and can't block."
+      }
+    ],
+    "counterExamples": [
+      "If you control a Swamp, ~ gets +1/+1 and can't block.",
+      "As long as you control a Swamp, ~ gets +1/+1 and can't block this turn.",
+      "As long as you control a Swamp, ~ gets +1/+1 and can't attack."
+    ]
+  },
+  {
+    "id": "sta.cantattackblock.noactivate",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 602.5",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't attack or block , and its activated abilities can't be activated",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "attack"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "block"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "activate"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't attack or block, and its activated abilities can't be activated."
+      },
+      {
+        "text": "Enchanted land can't attack or block, and its activated abilities can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't attack or block, and its triggered abilities can't be activated.",
+      "Enchanted creature can't attack or block this turn, and its activated abilities can't be activated.",
+      "Enchanted creature can't attack, and its activated abilities can't be activated."
+    ]
+  },
+  {
+    "id": "sta.cantblock.noactivate",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 602.5",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't block , and its activated abilities can't be activated",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "block"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "activate"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted land can't block, and its activated abilities can't be activated."
+      },
+      {
+        "text": "Equipped creature can't block, and its activated abilities can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't block, and its triggered abilities can't be activated.",
+      "Enchanted creature can't block this turn, and its activated abilities can't be activated.",
+      "Enchanted creature can't attack, and its activated abilities can't be activated."
+    ]
+  },
+  {
+    "id": "rst.untapstep.noactivate",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 502.3",
+      "CR 602.5",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} doesn't untap during its controller 's untap step and its activated abilities can't be activated",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "untapDuringUntapStep"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "activate"
+      }
+    ],
+    "consumes": [
+      "not",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted land doesn't untap during its controller's untap step and its activated abilities can't be activated."
+      },
+      {
+        "text": "Equipped creature doesn't untap during its controller's untap step and its activated abilities can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted land doesn't untap during its controller's next untap step and its activated abilities can't be activated.",
+      "Enchanted land doesn't untap during its controller's untap step and its triggered abilities can't be activated.",
+      "Enchanted land doesn't untap during its controller's untap step and its activated abilities can't be activated this turn."
+    ]
+  },
+  {
+    "id": "rst.each.must.attack",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1d"
+    ],
+    "pattern": "{f:Filter} attack each combat if able",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "mustIfAble",
+      "action": "attack"
+    },
+    "consumes": [
+      "each",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Artifact creatures your opponents control attack each combat if able."
+      },
+      {
+        "text": "Golems you control attack each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control attack this combat if able.",
+      "Creatures your opponents control block each combat if able.",
+      "Creatures your opponents control attack each combat."
+    ]
+  },
+  {
+    "id": "rst.all.must.attack",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1d"
+    ],
+    "pattern": "all {f:Filter} attack each combat if able",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "mustIfAble",
+      "action": "attack"
+    },
+    "consumes": [
+      "all",
+      "each",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "All green creatures attack each combat if able."
+      },
+      {
+        "text": "All Golem creatures attack each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "All Golem creatures attack this combat if able.",
+      "All Golem creatures block each combat if able.",
+      "All Golem creatures attack each combat."
+    ]
+  },
+  {
+    "id": "rep.enters.tappedunless.opplands",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 614.1d",
+      "CR 614.12"
+    ],
+    "pattern": "~ enters tapped unless your opponents control {n:Qty} or more lands",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "tappedUnless": {
+              "cond": "compare",
+              "left": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ],
+                    "controller": "opponent"
+                  }
+                }
+              },
+              "op": ">=",
+              "right": "$n"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ enters tapped unless your opponents control five or more lands."
+      },
+      {
+        "text": "~ enters tapped unless your opponents control 9 or more lands."
+      }
+    ],
+    "counterExamples": [
+      "~ enters tapped unless your opponents control five or fewer lands.",
+      "~ enters tapped if your opponents control five or more lands.",
+      "~ enters tapped unless your opponents control five or more creatures."
+    ]
+  },
+  {
+    "id": "rep.enters.tappedunless.opponents",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 614.1d",
+      "CR 614.12",
+      "CR 102.3"
+    ],
+    "pattern": "~ enters tapped unless you have {n:Qty} or more opponents",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "tappedUnless": {
+              "cond": "compare",
+              "left": {
+                "q": "countPlayers",
+                "of": {
+                  "ref": "each",
+                  "who": "opponent"
+                }
+              },
+              "op": ">=",
+              "right": "$n"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ enters tapped unless you have four or more opponents."
+      },
+      {
+        "text": "~ enters tapped unless you have three or more opponents."
+      }
+    ],
+    "counterExamples": [
+      "~ enters tapped unless you have two or fewer opponents.",
+      "~ enters tapped if you have two or more opponents.",
+      "~ enters tapped unless you have two or more cards."
+    ]
+  },
+  {
+    "id": "rep.enters.tapped.counters",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.1d",
+      "CR 614.12",
+      "CR 122.6"
+    ],
+    "pattern": "~ enters tapped with {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ enters tapped with three charge counters on it."
+      },
+      {
+        "text": "~ enters tapped with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "~ enters untapped with three charge counters on it.",
+      "~ enters tapped with three charge counters on target creature.",
+      "~ enters tapped unless you control three charge counters."
+    ]
+  },
+  {
+    "id": "cm.self.less.if",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 113.6"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {2} less to cast if you control a Golem."
+      },
+      {
+        "text": "~ costs {1} less to cast if you control three or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {2} more to cast if you control a Golem.",
+      "~ costs {2} less to cast unless you control a Golem.",
+      "~ costs {2} less to cast for each Golem you control."
+    ]
+  },
+  {
+    "id": "sta.pump.aslong.cardtypes",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 205.2a"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} as long as there are {n:Qty} or more card types among {f:Filter}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "distinct",
+          "what": "cardTypes",
+          "among": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +2/+1 as long as there are three or more card types among cards in your graveyard."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1 as long as there are five or more card types among cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +2/+1 as long as there are three or more creature types among cards in your graveyard.",
+      "~ gets +2/+1 until end of turn as long as there are three or more card types among cards in your graveyard.",
+      "~ gets +2/+1 as long as there are three or fewer card types among cards in your graveyard."
+    ]
+  },
+  {
+    "id": "sta.pumpgrant.aslong.cardtypes",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 205.2a"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and (has | have) {a:Abilities} as long as there are {n:Qty} or more card types among {f:Filter}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "distinct",
+          "what": "cardTypes",
+          "among": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+1 and has trample as long as there are three or more card types among cards in your graveyard."
+      },
+      {
+        "text": "~ gets +2/+0 and has menace as long as there are four or more card types among cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 and has trample as long as there are three or more colors among cards in your graveyard.",
+      "~ gets +1/+1 and loses trample as long as there are three or more card types among cards in your graveyard."
+    ]
+  },
+  {
+    "id": "sta.grant.aslong.cardtypes",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 205.2a"
+    ],
+    "pattern": "{o:Obj} (has | have) {a:Abilities} as long as there are {n:Qty} or more card types among {f:Filter}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "distinct",
+          "what": "cardTypes",
+          "among": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "~ has flying as long as there are three or more card types among cards in your graveyard."
+      },
+      {
+        "text": "~ has first strike and lifelink as long as there are four or more card types among cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~ has flying as long as there are three or more creature types among cards in your graveyard.",
+      "~ loses flying as long as there are three or more card types among cards in your graveyard."
+    ]
+  },
+  {
+    "id": "rst.cant.block.beblocked",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1a",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't block and can't be blocked",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "block"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beBlocked"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't block and can't be blocked."
+      },
+      {
+        "text": "Enchanted creature can't block and can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block and can't be blocked this turn.",
+      "~ can't block and can be blocked.",
+      "~ can't block or be blocked by Walls."
+    ]
+  },
+  {
+    "id": "rst.cant.beblocked.except",
+    "kind": "static",
+    "since": 3,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked except by {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beBlockedBy",
+      "other": {
+        "not": "$f"
+      }
+    },
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked except by Golems."
+      },
+      {
+        "text": "~ can't be blocked except by creatures with reach."
+      },
+      {
+        "text": "Enchanted creature can't be blocked except by red creatures."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be blocked except by two or more creatures.",
+      "~ can't be blocked except by Golems this turn.",
+      "~ can block only Golems."
+    ]
+  }
+]

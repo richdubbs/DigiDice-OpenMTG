@@ -1,0 +1,6 @@
+# Standard round B (test/cloud/std-rb, golden cloud-std-rb-review.json and the updated Ojer Axonil entry of cloud-r3-repl-review.json): "If <cond>, also
+# <instruction>" and "each other" after one earlier target in a spell; "red sources you controlled dealt N or more noncombat damage this turn"; a lasting
+# replacement's "if you do"
+Moment of Glory
+Lilah, Undefeated Slickshot
+Ojer Axonil, Deepest Might // Temple of Power

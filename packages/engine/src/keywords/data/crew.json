@@ -1,0 +1,68 @@
+{
+  "name": "crew",
+  "rule": "702.122",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Tap any number of other untapped creatures you control with total power {n} or more: This Vehicle becomes an artifact creature until end of turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "Crew {n}",
+      "cost": {
+        "other": [
+          {
+            "kind": "tapPower",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            },
+            "power": "$amount",
+            "other": true,
+            "as": "crew"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 4,
+                    "types": {
+                      "add": [
+                        "Artifact",
+                        "Creature"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ],
+            "duration": {
+              "d": "endOfTurn"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

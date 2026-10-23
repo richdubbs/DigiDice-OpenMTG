@@ -1,0 +1,191 @@
+[
+ {
+  "card": "Codie, Ravenous Codex",
+  "expect": "full",
+  "verified": "std-copy-2 review (lane std-copy; Standard), by hand against the Oracle text and the rules cited: (1) whenever its controller casts a prepare spell (the spell cast from the exile copy of a prepared creature's prepare spell, filter prepareSpell; not the permanent designation 'prepared', which a spell never has), copy that spell and they may choose new targets for the copy (eff.copy.spell, rid.copy.newTargets); (2) {W}{U}{B}{R}{G}, {T}: each creature its controller controls becomes prepared, each with a prepare spell and not prepared already getting a new exile copy (eff.stdcopy2.eachBecomesPrepared; op designateObject over ref each). (CR 722.3a, 722.3c, 722.3d, 707.10, 707.10c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "prepareSpell": true
+         }
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "W",
+         "kind": "colored"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "designation": "prepared",
+         "op": "designateObject",
+         "what": {
+          "filter": {
+           "controller": "you",
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Spinerock Tyrant",
+  "expect": "full",
+  "verified": "std-copy-2 review (lane std-copy; Standard), by hand against the Oracle text and the rules cited: flying and wither are keywords; whenever its controller casts an instant or sorcery spell with exactly one target they may copy it, choosing new targets for the copy as it is made; if they do, the spell and its copy gain wither for as long as they are on the stack, so the damage each deals to creatures is dealt as -1/-1 counters (eff.stdcopy2.mayCopy.thoseSpellsGain.newTargets; may [copy as 'copy', a continuous effect on the union of the spell and the bound copy, layer 6]). (CR 707.10, 707.10c, 608.2c, 608.2d, 611.2c, 613.1f, 702.80a, 115.9c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "wither",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "as": "b0",
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "affects": {
+              "of": [
+               {
+                "ref": "event",
+                "role": "spell"
+               },
+               {
+                "name": "b0",
+                "ref": "bound"
+               }
+              ],
+              "ref": "union"
+             },
+             "mods": [
+              {
+               "add": [
+                {
+                 "keyword": "wither",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "targetCount": {
+           "op": "==",
+           "value": 1
+          },
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

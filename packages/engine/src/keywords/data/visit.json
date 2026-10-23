@@ -1,0 +1,11 @@
+{
+  "name": "visit",
+  "rule": "702.159",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "",
+  "multiple": "independent",
+  "status": "planned"
+}

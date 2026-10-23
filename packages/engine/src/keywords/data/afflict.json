@@ -1,0 +1,44 @@
+{
+  "name": "afflict",
+  "rule": "702.130",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature becomes blocked, defending player loses {n} life.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ becomes blocked, defending player loses {n} life.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "becomesBlocked",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "loseLife",
+            "who": {
+              "ref": "defending"
+            },
+            "amount": "$amount"
+          }
+        ]
+      }
+    }
+  ]
+}

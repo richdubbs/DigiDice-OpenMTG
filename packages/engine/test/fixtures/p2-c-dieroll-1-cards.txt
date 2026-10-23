@@ -1,0 +1,17 @@
+# p2-c-dieroll-1 (Phase 2 lane p2-c-dieroll): the golden cards of the round (test/m5/golden/cards/p2-c-dieroll-1-review.json)
+Hoarding Ogre
+Contact Other Plane
+Lightfoot Rogue
+Chaos Channeler
+Contraband Livestock
+Goblin Morningstar
+Overwhelming Encounter
+Herald of Hadar
+Nothic
+Djinni Windseer
+Sylvan Shepherd
+Bucknard's Everfull Purse
+Pixie Guide
+Barbarian Class
+Brazen Dwarf
+Feywild Trickster

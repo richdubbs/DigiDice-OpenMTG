@@ -1,0 +1,63 @@
+[
+  {
+    "id": "eff.stdrr.its.basePT.becomeEqual.objectPT",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 608.2h",
+      "CR 608.2c",
+      "CR 208.1"
+    ],
+    "pattern": "its base power and toughness become equal to {s:Obj} 's power and toughness {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "it"
+            }
+          },
+          "mods": [
+            {
+              "layer": "7b",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": "$s"
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "toughness",
+                "of": "$s"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ blocks, choose up to one other target creature you control. Its base power and toughness become equal to ~'s power and toughness until end of turn."
+      },
+      {
+        "text": "When ~ enters, choose target creature an opponent controls. Its base power and toughness become equal to ~'s power and toughness until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target creature an opponent controls. Its base power and toughness become equal to ~'s power and toughness.",
+      "When ~ enters, choose target creature an opponent controls. Its power and toughness become equal to ~'s power and toughness until end of turn.",
+      "When ~ enters, choose target creature an opponent controls. Its base power and toughness become equal to ~'s toughness until end of turn."
+    ]
+  }
+]

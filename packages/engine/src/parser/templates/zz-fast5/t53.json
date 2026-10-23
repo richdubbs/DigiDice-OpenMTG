@@ -1,0 +1,56 @@
+[
+  {
+    "id": "eff.t53.investigate.opponentsMoreCards",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.16a",
+      "CR 402.1",
+      "CR 102.3",
+      "CR 111.10f"
+    ],
+    "pattern": "investigate once for each opponent who has more cards in hand than you",
+    "build": {
+      "op": "action",
+      "action": "investigate",
+      "who": {
+        "ref": "you"
+      },
+      "n": {
+        "q": "countPlayers",
+        "of": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "sizeVs": {
+          "zone": "hand",
+          "op": ">",
+          "than": {
+            "ref": "you"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "action:investigate"
+    ],
+    "examples": [
+      {
+        "text": "Investigate once for each opponent who has more cards in hand than you."
+      },
+      {
+        "text": "Draw a card, then investigate once for each opponent who has more cards in hand than you."
+      }
+    ],
+    "counterExamples": [
+      "Investigate once for each opponent who has fewer cards in hand than you.",
+      "Investigate once for each opponent who has more cards in hand than target player.",
+      "Investigate once for each player who has more cards in hand than you."
+    ]
+  }
+]

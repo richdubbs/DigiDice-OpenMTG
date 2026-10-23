@@ -1,0 +1,93 @@
+{
+  "name": "casualty",
+  "rule": "702.153",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "As you cast this spell, you may sacrifice a creature with power {n} or greater. When you do, copy this spell and you may choose a new target for the copy.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Casualty {n}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "power": {
+                    "op": ">=",
+                    "value": "$amount"
+                  }
+                },
+                "count": 1
+              }
+            ]
+          },
+          "optional": true,
+          "name": {
+            "$ordinal": "casualty"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, if a casualty cost was paid for it, copy it. If the spell has any targets, you may choose new targets for the copy.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "wasCast",
+        "kicked": {
+          "$ordinal": "casualty"
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "copy",
+            "what": {
+              "ref": "self"
+            },
+            "result": "spell",
+            "who": {
+              "ref": "you"
+            },
+            "newTargets": "may"
+          }
+        ]
+      }
+    }
+  ]
+}

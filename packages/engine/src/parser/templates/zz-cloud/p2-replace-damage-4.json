@@ -1,0 +1,355 @@
+[
+  {
+    "id": "sta.p2rd4.prevent.toFilter.byFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 120.3",
+      "CR 604.1"
+    ],
+    "pattern": "prevent all damage that would be dealt to {f:Filter} by {g:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to artifacts you control by sources you control."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to Walls you control by red creatures."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt by artifacts you control to sources you control.",
+      "Prevent all combat damage that would be dealt to artifacts you control by sources you control.",
+      "Prevent all damage that would be dealt to artifacts you control by sources you control this turn."
+    ]
+  },
+  {
+    "id": "sta.p2rd4.prevent.duringYourTurn.toYou",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 604.1",
+      "CR 500.1"
+    ],
+    "pattern": "( during your turn , prevent all damage that would be dealt to you | prevent all damage that would be dealt to you during your turn )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          },
+          "condition": {
+            "cond": "turnOf",
+            "whose": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to you during your turn."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to you during your turn.\nWhen ~ enters, mill seven cards."
+      }
+    ],
+    "counterExamples": [
+      "During each opponent's turn, prevent all damage that would be dealt to you.",
+      "During your turn, prevent all combat damage that would be dealt to you.",
+      "During your turn, prevent all damage that would be dealt to each player."
+    ]
+  },
+  {
+    "id": "sta.p2rd4.prevent.duringYourTurn.toObj",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 604.1",
+      "CR 500.1"
+    ],
+    "pattern": "( during your turn , prevent all damage that would be dealt to {o:Obj} | prevent all damage that would be dealt to {o:Obj} during your turn )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          },
+          "condition": {
+            "cond": "turnOf",
+            "whose": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, prevent all damage that would be dealt to equipped creature."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to enchanted creature during your turn."
+      }
+    ],
+    "counterExamples": [
+      "During each opponent's turn, prevent all damage that would be dealt to equipped creature.",
+      "During your turn, prevent all combat damage that would be dealt to equipped creature.",
+      "During your turn, prevent all damage that would be dealt by equipped creature."
+    ]
+  },
+  {
+    "id": "eff.p2rd4.prevent.nextTime.objWouldDeal",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 611.2a"
+    ],
+    "pattern": "the next time {o:Obj} would deal damage {d:Dur} , prevent that damage",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "The next time target artifact creature would deal damage this turn, prevent that damage. Draw a card."
+      },
+      {
+        "text": "{2}: The next time target Goblin would deal damage this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "The next time target artifact creature would be dealt damage this turn, prevent that damage. Draw a card.",
+      "The next time target artifact creature would deal damage, prevent that damage. Draw a card.",
+      "The next time target artifact creature would deal damage this turn, prevent 1 of that damage. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.p2rd4.prevent.nextTime.objWouldDeal.toYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 611.2a"
+    ],
+    "pattern": "the next time {o:Obj} would deal damage to you {d:Dur} , prevent that damage",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            },
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "{3}: The next time ~ would deal damage to you this turn, prevent that damage."
+      },
+      {
+        "text": "The next time target creature would deal damage to you this turn, prevent that damage. Scry 1."
+      }
+    ],
+    "counterExamples": [
+      "{3}: The next time ~ would deal damage to an opponent this turn, prevent that damage.",
+      "{3}: The next time ~ would deal damage to you, prevent that damage.",
+      "{3}: The next time ~ would be dealt damage this turn, prevent that damage."
+    ]
+  },
+  {
+    "id": "eff.p2rd4.prevent.nextDescribedSourceOfChoice.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 609.7a",
+      "CR 615.7",
+      "CR 615.9"
+    ],
+    "pattern": "the next time {f:Filter} of your choice would deal damage to you {d:Dur} , prevent that damage",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack"
+            ],
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                },
+                "anyOf": [
+                  "$f"
+                ]
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "prevent",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{1}: The next time an enchantment source of your choice would deal damage to you this turn, prevent that damage."
+      },
+      {
+        "text": "{2}: The next time a white or green source of your choice would deal damage to you this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "{1}: The next time an enchantment source of your choice would deal damage to an opponent this turn, prevent that damage.",
+      "{1}: The next time an enchantment source of an opponent's choice would deal damage to you this turn, prevent that damage.",
+      "{1}: The next time an enchantment source of your choice would deal damage to you, prevent that damage."
+    ]
+  }
+]

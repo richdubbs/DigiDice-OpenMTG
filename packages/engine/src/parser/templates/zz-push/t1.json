@@ -1,0 +1,414 @@
+[
+  {
+    "id": "eff.action.investigate",
+    "kind": "effect",
+    "cr": ["CR 701.16a","CR 111.10f"],
+    "pattern": "investigate",
+    "build": {"op":"action","action":"investigate","who":{"ref":"you"}},
+    "subject": "none",
+    "needs": ["action:investigate"],
+    "examples": [
+      {"text":"Investigate, then scry 2.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"investigate","who":{"ref":"you"}},{"op":"scry","who":{"ref":"you"},"count":2}]}}]},
+      {"text":"Surveil 3, then investigate."}
+    ],
+    "counterExamples": [
+      "Investigate a card.",
+      "Investigates."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.investigate.twice",
+    "kind": "effect",
+    "cr": ["CR 701.16a","CR 111.10f"],
+    "pattern": "investigate twice",
+    "consumes": ["twice"],
+    "build": {"op":"action","action":"investigate","who":{"ref":"you"},"n":2},
+    "subject": "none",
+    "needs": ["action:investigate"],
+    "examples": [
+      {"text":"Scry 1, then investigate twice.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"scry","who":{"ref":"you"},"count":1},{"op":"action","action":"investigate","who":{"ref":"you"},"n":2}]}}]},
+      {"text":"Investigate twice, then surveil 1."}
+    ],
+    "counterExamples": [
+      "Investigate twice a card.",
+      "Investigate thrice."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.investigate.times",
+    "kind": "effect",
+    "cr": ["CR 701.16a","CR 111.10f"],
+    "pattern": "investigate {n:Qty} times",
+    "build": {"op":"action","action":"investigate","who":{"ref":"you"},"n":"$n"},
+    "subject": "none",
+    "needs": ["action:investigate"],
+    "examples": [
+      {"text":"Investigate seven times, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"investigate","who":{"ref":"you"},"n":7},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"Draw two cards, then investigate five times."}
+    ],
+    "counterExamples": [
+      "Investigate seven cards.",
+      "Investigate times."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.proliferate",
+    "kind": "effect",
+    "cr": ["CR 701.34a"],
+    "pattern": "proliferate",
+    "build": {"op":"action","action":"proliferate","who":{"ref":"you"}},
+    "subject": "none",
+    "needs": ["action:proliferate"],
+    "examples": [
+      {"text":"Proliferate, then draw two cards.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"proliferate","who":{"ref":"you"}},{"op":"draw","who":{"ref":"you"},"count":2}]}}]},
+      {"text":"You gain 3 life, then proliferate."}
+    ],
+    "counterExamples": [
+      "Proliferate a counter.",
+      "Proliferates."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.proliferate.twice",
+    "kind": "effect",
+    "cr": ["CR 701.34a"],
+    "pattern": "proliferate twice",
+    "consumes": ["twice"],
+    "build": {"op":"action","action":"proliferate","who":{"ref":"you"},"n":2},
+    "subject": "none",
+    "needs": ["action:proliferate"],
+    "examples": [
+      {"text":"Proliferate twice, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"proliferate","who":{"ref":"you"},"n":2},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"Scry 2, then proliferate twice."}
+    ],
+    "counterExamples": [
+      "Proliferate thrice.",
+      "Proliferate twice a counter."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.bolster",
+    "kind": "effect",
+    "cr": ["CR 701.39a"],
+    "pattern": "bolster {n:Qty}",
+    "build": {"op":"action","action":"bolster","who":{"ref":"you"},"n":"$n"},
+    "subject": "none",
+    "needs": ["action:bolster"],
+    "examples": [
+      {"text":"Bolster 6, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"bolster","who":{"ref":"you"},"n":6},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"You gain 2 life, then bolster 5."}
+    ],
+    "counterExamples": [
+      "Bolster.",
+      "Bolster 2 creatures."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.amass.zombies",
+    "kind": "effect",
+    "cr": ["CR 701.47a","CR 701.47d"],
+    "pattern": "amass zombies {n:Qty}",
+    "build": {"op":"action","action":"amass","who":{"ref":"you"},"n":"$n","arg":"Zombie"},
+    "subject": "none",
+    "needs": ["action:amass"],
+    "examples": [
+      {"text":"Amass Zombies 6, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"amass","who":{"ref":"you"},"n":6,"arg":"Zombie"},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"You gain 2 life, then amass Zombies 7."}
+    ],
+    "counterExamples": [
+      "Amass Zombies.",
+      "Amass 2 Zombies."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.amass.orcs",
+    "kind": "effect",
+    "cr": ["CR 701.47a"],
+    "pattern": "amass orcs {n:Qty}",
+    "build": {"op":"action","action":"amass","who":{"ref":"you"},"n":"$n","arg":"Orc"},
+    "subject": "none",
+    "needs": ["action:amass"],
+    "examples": [
+      {"text":"Amass Orcs 6, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"amass","who":{"ref":"you"},"n":6,"arg":"Orc"},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"You gain 2 life, then amass Orcs 7."}
+    ],
+    "counterExamples": [
+      "Amass Orcs.",
+      "Amass 2 Orcs."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.amass.goblins",
+    "kind": "effect",
+    "cr": ["CR 701.47a"],
+    "pattern": "amass goblins {n:Qty}",
+    "build": {"op":"action","action":"amass","who":{"ref":"you"},"n":"$n","arg":"Goblin"},
+    "subject": "none",
+    "needs": ["action:amass"],
+    "examples": [
+      {"text":"Amass Goblins 6, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"amass","who":{"ref":"you"},"n":6,"arg":"Goblin"},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"You gain 2 life, then amass Goblins 7."}
+    ],
+    "counterExamples": [
+      "Amass Goblins.",
+      "Amass 2 Goblins."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.explore",
+    "kind": "effect",
+    "cr": ["CR 701.44a","CR 701.44c"],
+    "pattern": "{o:Obj} explores",
+    "build": {"op":"action","action":"explore","who":{"ref":"controllerOf","object":"$o"},"subject":"$o"},
+    "subject": "object",
+    "needs": ["action:explore"],
+    "examples": [
+      {"text":"Target Elf you control explores.","expect":[{"kind":"spell","effect":{"targets":[{"id":"t0","kind":"object","filter":{"subtypes":["Elf"],"controller":"you"},"min":1,"max":1}],"steps":[{"op":"action","action":"explore","who":{"ref":"controllerOf","object":{"ref":"target","id":"t0"}},"subject":{"ref":"target","id":"t0"}}]}}]},
+      {"text":"Draw a card, then target creature you control explores."}
+    ],
+    "counterExamples": [
+      "Each creature you control explores.",
+      "Target creature explores twice."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.connive",
+    "kind": "effect",
+    "cr": ["CR 701.50a","CR 701.50b"],
+    "pattern": "{o:Obj} connives",
+    "build": {"op":"action","action":"connive","who":{"ref":"controllerOf","object":"$o"},"subject":"$o"},
+    "subject": "object",
+    "needs": ["action:connive"],
+    "examples": [
+      {"text":"Target Rogue you control connives.","expect":[{"kind":"spell","effect":{"targets":[{"id":"t0","kind":"object","filter":{"subtypes":["Rogue"],"controller":"you"},"min":1,"max":1}],"steps":[{"op":"action","action":"connive","who":{"ref":"controllerOf","object":{"ref":"target","id":"t0"}},"subject":{"ref":"target","id":"t0"}}]}}]},
+      {"text":"You gain 4 life, then target creature you control connives."}
+    ],
+    "counterExamples": [
+      "Each creature you control connives.",
+      "Target creature connives twice."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.incubate",
+    "kind": "effect",
+    "cr": ["CR 701.53a","CR 111.10i"],
+    "pattern": "incubate {n:Qty}",
+    "build": {"op":"action","action":"incubate","who":{"ref":"you"},"n":"$n"},
+    "subject": "none",
+    "needs": ["action:incubate"],
+    "examples": [
+      {"text":"Incubate 6, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"incubate","who":{"ref":"you"},"n":6},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"You gain 2 life, then incubate 7."}
+    ],
+    "counterExamples": [
+      "Incubate.",
+      "Incubate 2 tokens."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.discover",
+    "kind": "effect",
+    "cr": ["CR 701.57a"],
+    "pattern": "discover {n:Qty}",
+    "build": {"op":"action","action":"discover","who":{"ref":"you"},"n":"$n"},
+    "subject": "none",
+    "needs": ["action:discover"],
+    "examples": [
+      {"text":"Discover 9, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"discover","who":{"ref":"you"},"n":9},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"You gain 2 life, then discover 7."}
+    ],
+    "counterExamples": [
+      "Discover.",
+      "Discover 2 cards."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.action.populate",
+    "kind": "effect",
+    "cr": ["CR 701.36a","CR 701.36b"],
+    "pattern": "populate",
+    "build": {"op":"action","action":"populate","who":{"ref":"you"}},
+    "subject": "none",
+    "needs": ["action:populate"],
+    "examples": [
+      {"text":"Populate, then draw a card.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"populate","who":{"ref":"you"}},{"op":"draw","who":{"ref":"you"},"count":1}]}}]},
+      {"text":"You gain 2 life, then populate."}
+    ],
+    "counterExamples": [
+      "Populate a token.",
+      "Populates."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "kw.typecycling.plains",
+    "kind": "ability",
+    "cr": ["CR 702.29e","CR 702.29f"],
+    "pattern": "plainscycling {c:ManaCost}",
+    "build": {"kind":"keyword","keyword":"typecycling","cost":{"mana":"$c"},"filter":{"zone":"library","subtypes":["Plains"]}},
+    "needs": ["keyword:typecycling"],
+    "examples": [
+      {"text":"Plainscycling {7}","expect":[{"kind":"keyword","keyword":"typecycling","cost":{"mana":[{"kind":"generic","amount":7}]},"filter":{"zone":"library","subtypes":["Plains"]}}]},
+      {"text":"Flying, plainscycling {4}{G}{U}"}
+    ],
+    "counterExamples": [
+      "Plainscycling",
+      "Plainscycling {T}"
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "kw.typecycling.island",
+    "kind": "ability",
+    "cr": ["CR 702.29e","CR 702.29f"],
+    "pattern": "islandcycling {c:ManaCost}",
+    "build": {"kind":"keyword","keyword":"typecycling","cost":{"mana":"$c"},"filter":{"zone":"library","subtypes":["Island"]}},
+    "needs": ["keyword:typecycling"],
+    "examples": [
+      {"text":"Islandcycling {7}","expect":[{"kind":"keyword","keyword":"typecycling","cost":{"mana":[{"kind":"generic","amount":7}]},"filter":{"zone":"library","subtypes":["Island"]}}]},
+      {"text":"Flying, islandcycling {4}{G}{U}"}
+    ],
+    "counterExamples": [
+      "Islandcycling",
+      "Islandcycling {T}"
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "kw.typecycling.swamp",
+    "kind": "ability",
+    "cr": ["CR 702.29e","CR 702.29f"],
+    "pattern": "swampcycling {c:ManaCost}",
+    "build": {"kind":"keyword","keyword":"typecycling","cost":{"mana":"$c"},"filter":{"zone":"library","subtypes":["Swamp"]}},
+    "needs": ["keyword:typecycling"],
+    "examples": [
+      {"text":"Swampcycling {7}","expect":[{"kind":"keyword","keyword":"typecycling","cost":{"mana":[{"kind":"generic","amount":7}]},"filter":{"zone":"library","subtypes":["Swamp"]}}]},
+      {"text":"Flying, swampcycling {4}{G}{U}"}
+    ],
+    "counterExamples": [
+      "Swampcycling",
+      "Swampcycling {T}"
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "kw.typecycling.mountain",
+    "kind": "ability",
+    "cr": ["CR 702.29e","CR 702.29f"],
+    "pattern": "mountaincycling {c:ManaCost}",
+    "build": {"kind":"keyword","keyword":"typecycling","cost":{"mana":"$c"},"filter":{"zone":"library","subtypes":["Mountain"]}},
+    "needs": ["keyword:typecycling"],
+    "examples": [
+      {"text":"Mountaincycling {7}","expect":[{"kind":"keyword","keyword":"typecycling","cost":{"mana":[{"kind":"generic","amount":7}]},"filter":{"zone":"library","subtypes":["Mountain"]}}]},
+      {"text":"Flying, mountaincycling {4}{G}{U}"}
+    ],
+    "counterExamples": [
+      "Mountaincycling",
+      "Mountaincycling {T}"
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "kw.typecycling.forest",
+    "kind": "ability",
+    "cr": ["CR 702.29e","CR 702.29f"],
+    "pattern": "forestcycling {c:ManaCost}",
+    "build": {"kind":"keyword","keyword":"typecycling","cost":{"mana":"$c"},"filter":{"zone":"library","subtypes":["Forest"]}},
+    "needs": ["keyword:typecycling"],
+    "examples": [
+      {"text":"Forestcycling {7}","expect":[{"kind":"keyword","keyword":"typecycling","cost":{"mana":[{"kind":"generic","amount":7}]},"filter":{"zone":"library","subtypes":["Forest"]}}]},
+      {"text":"Flying, forestcycling {4}{G}{U}"}
+    ],
+    "counterExamples": [
+      "Forestcycling",
+      "Forestcycling {T}"
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "kw.typecycling.basicland",
+    "kind": "ability",
+    "cr": ["CR 702.29e","CR 702.29f"],
+    "pattern": "basic landcycling {c:ManaCost}",
+    "build": {"kind":"keyword","keyword":"typecycling","cost":{"mana":"$c"},"filter":{"zone":"library","types":["Land"],"supertypes":["Basic"]}},
+    "needs": ["keyword:typecycling"],
+    "examples": [
+      {"text":"Basic landcycling {7}","expect":[{"kind":"keyword","keyword":"typecycling","cost":{"mana":[{"kind":"generic","amount":7}]},"filter":{"zone":"library","types":["Land"],"supertypes":["Basic"]}}]},
+      {"text":"Flying, basic landcycling {4}{G}{U}"}
+    ],
+    "counterExamples": [
+      "Basic landcycling",
+      "Basic landcycling {T}"
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "kw.typecycling.wizard",
+    "kind": "ability",
+    "cr": ["CR 702.29e","CR 702.29f"],
+    "pattern": "wizardcycling {c:ManaCost}",
+    "build": {"kind":"keyword","keyword":"typecycling","cost":{"mana":"$c"},"filter":{"zone":"library","subtypes":["Wizard"]}},
+    "needs": ["keyword:typecycling"],
+    "examples": [
+      {"text":"Wizardcycling {7}","expect":[{"kind":"keyword","keyword":"typecycling","cost":{"mana":[{"kind":"generic","amount":7}]},"filter":{"zone":"library","subtypes":["Wizard"]}}]},
+      {"text":"Flying, wizardcycling {4}{G}{U}"}
+    ],
+    "counterExamples": [
+      "Wizardcycling",
+      "Wizardcycling {T}"
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "kw.typecycling.sliver",
+    "kind": "ability",
+    "cr": ["CR 702.29e","CR 702.29f"],
+    "pattern": "slivercycling {c:ManaCost}",
+    "build": {"kind":"keyword","keyword":"typecycling","cost":{"mana":"$c"},"filter":{"zone":"library","subtypes":["Sliver"]}},
+    "needs": ["keyword:typecycling"],
+    "examples": [
+      {"text":"Slivercycling {7}","expect":[{"kind":"keyword","keyword":"typecycling","cost":{"mana":[{"kind":"generic","amount":7}]},"filter":{"zone":"library","subtypes":["Sliver"]}}]},
+      {"text":"Flying, slivercycling {4}{G}{U}"}
+    ],
+    "counterExamples": [
+      "Slivercycling",
+      "Slivercycling {T}"
+    ],
+    "status": "experimental",
+    "since": 2
+  }
+]

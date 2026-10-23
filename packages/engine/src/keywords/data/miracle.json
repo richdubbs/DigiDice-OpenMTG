@@ -1,0 +1,21 @@
+{
+  "name": "miracle",
+  "rule": "702.94",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "structural"
+  ],
+  "reminder": "You may cast this card for its miracle cost when you draw it if it's the first card you drew this turn.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "triggers/miracle.ts#onDraw",
+    "core/zones.ts#drawCard"
+  ]
+}

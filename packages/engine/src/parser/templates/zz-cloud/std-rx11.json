@@ -1,0 +1,50 @@
+[
+  {
+    "id": "eff.stdrx11.whenever.thatCreature.combatDamage.any.thisTurn",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 510.2",
+      "CR 603.2c"
+    ],
+    "pattern": "whenever {o:Obj} deals combat damage this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "damage",
+          "source": {
+            "is": "$o"
+          },
+          "combat": true
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage this turn, you draw a card."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. Whenever it deals combat damage this turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals damage this turn, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a creature this turn, you draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

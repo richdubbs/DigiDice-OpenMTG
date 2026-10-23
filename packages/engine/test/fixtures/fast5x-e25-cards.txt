@@ -1,0 +1,38 @@
+# FAST5X E25: face-down II (CR 701.40, 701.58, 701.62, 708, 406.3)
+# manifest dread by another player, "that creature", "those creatures", X times
+Fear of Impostors
+Unwanted Remake
+Unidentified Hovership
+Stay Hidden, Stay Silent
+Underwater Tunnel // Slimy Aquarium
+Moldering Gym // Weight Room
+Valgavoth's Onslaught
+Paranormal Analyst
+# cloak from a hand, of N chosen from a look, of another player's library, of an exiled pile
+Vannifar, Evolved Enigma
+Hide in Plain Sight
+Expose the Culprit
+Etrata, Deadly Fugitive
+# face-down permissions, restrictions, history
+Found Footage
+Lumbering Laundry
+Keeper of the Lens
+Karlov Watchdog
+Oblivious Bookworm
+Tunnel Tipster
+Crowd-Control Warden
+Yarus, Roar of the Old Gods
+Dramatic Accusation
+Moon-Circuit Hacker
+Connecting the Dots
+# "its controller" / "that creature's controller" after a target (CR 109.5, 608.2c)
+Cavalier of Dawn
+Neonate's Rush
+Rakdos Ickspitter
+Burn Away
+Sawtusk Demolisher
+Cindervines
+Zulaport Duelist
+Nin, the Pain Artist
+Essence Backlash
+Grotag Siege-Runner

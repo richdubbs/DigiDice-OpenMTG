@@ -1,0 +1,50 @@
+[
+  {
+    "id": "eff.stdrc.cost.ability.less.whereX",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7",
+      "CR 107.3"
+    ],
+    "pattern": "this ability costs {x} less to activate , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$q",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{8}, {T}: Draw two cards. This ability costs {X} less to activate, where X is the number of artifacts you control."
+      },
+      {
+        "text": "{7}: ~ gets +3/+3 until end of turn. This ability costs {X} less to activate, where X is the greatest power among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "{8}, {T}: Draw two cards. This ability costs {X} more to activate, where X is the number of artifacts you control.",
+      "{8}, {T}: Draw two cards. This ability costs {X} less to cast, where X is the number of artifacts you control.",
+      "{8}, {T}: Draw two cards. This ability costs {1} less to activate, where X is the number of artifacts you control.",
+      "{8}, {T}: Draw two cards. This ability costs {X} less to activate, where X is the number of artifacts you control and Y is two."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

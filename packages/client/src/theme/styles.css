@@ -1,0 +1,534 @@
+/*
+ * Global styles: the DigiDice "grid" look (docs/design/m8-client.md "Visual design"). Brand colors come only from the theme variables (theme.ts, from
+ * assets/brand/brand.json); the derived tokens below mix them. Every screen sits on a dark navy room with a neon perspective grid floor; panels are dark
+ * glass with neon edges and corner brackets; buttons are physical slabs that sink when pressed.
+ *
+ * Card images are never touched here: no filter, blend or backdrop blur is ever applied to anything that can sit over a card (ARCHITECTURE.md "Card
+ * images").
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Derived tokens (brand colors from theme.ts) */
+  --neon: var(--brand-blue, #1fb8ff);
+  --neon-deep: var(--brand-blue-deep, #0098f0);
+  --neon-2: var(--brand-magenta, #f500f5);
+  /* The two neons as channels, for translucent glows: rgba(var(--neon-rgb), alpha). theme.ts sets them from the brand, a UI profile recolors them. */
+  --neon-rgb: 31, 184, 255;
+  --neon-2-rgb: 245, 0, 245;
+  --glow: rgba(var(--neon-rgb), 0.45);
+  --glow-soft: rgba(var(--neon-rgb), 0.18);
+  --glow-2: rgba(var(--neon-2-rgb), 0.42);
+  --glass: rgba(6, 14, 32, 0.86);
+  --glass-strong: rgba(8, 18, 40, 0.95);
+  --grid-line: rgba(var(--neon-rgb), 0.16);
+  --grid-line-strong: rgba(var(--neon-rgb), 0.34);
+  --hud-font: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  /* Slab buttons: face, side (the slab's thickness, seen below the face) and how deep the slab is. */
+  --btn-face: linear-gradient(180deg, #2a4d82 0%, #173260 52%, #0f2347 100%);
+  --btn-face-hover: linear-gradient(180deg, #33609f 0%, #1c3b72 52%, #132a55 100%);
+  --btn-side: #0a4a86;
+  --btn-rim: rgba(95, 205, 255, 0.7);
+  /* The light catching a slab's top edge: brighter on the lit (primary) slabs. */
+  --btn-top: rgba(190, 232, 255, 0.34);
+  --btn-text: var(--text, #e8e8f0);
+  --btn-glow: rgba(var(--neon-rgb), 0.5);
+  --btn-depth: 4px;
+  /* Dropdown lists (select options): an opaque well color, the same navy the fields end in, and the highlight of a hovered or chosen option. */
+  --menu-bg: #06102a;
+  --menu-hover: #1c4a8c;
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #02050c;
+  color: var(--text, #e8e8f0);
+  font-family: var(--hud-font);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/*
+ * The room: a dark navy gradient, a neon grid floor in perspective under a glowing horizon, and a faint ceiling grid. Drawn by two fixed layers behind the
+ * content (never over it), so screens need no background of their own. Home draws the same floor on a canvas (screens/homeFx.ts mirrors its numbers:
+ * keep them in step).
+ */
+.app {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background:
+    radial-gradient(ellipse 70% 45% at 50% 58%, rgba(var(--neon-rgb), 0.16), transparent 70%),
+    radial-gradient(ellipse 55% 35% at 50% 62%, rgba(var(--neon-2-rgb), 0.1), transparent 72%),
+    linear-gradient(180deg, #02050c 0%, #050b18 46%, #071330 62%, #02050c 100%);
+}
+
+.app::before {
+  content: '';
+  position: fixed;
+  left: -50vw;
+  right: -50vw;
+  bottom: -8vh;
+  height: 62vh;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 50% 0 / 64px 64px,
+    linear-gradient(0deg, var(--grid-line) 1px, transparent 1px) 50% 0 / 64px 64px;
+  transform: perspective(520px) rotateX(64deg);
+  transform-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 70%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 70%, transparent 100%);
+  animation: grid-drift 14s linear infinite;
+}
+
+/* The horizon: a thin magenta-to-blue light line where the floor meets the dark. */
+.app::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 38vh;
+  height: 2px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--neon-2) 22%, var(--neon) 50%, var(--neon-2) 78%, transparent);
+  box-shadow: 0 0 18px 2px var(--glow), 0 0 42px 6px rgba(var(--neon-2-rgb), 0.25);
+  opacity: 0.55;
+}
+
+@keyframes grid-drift {
+  from {
+    background-position: 50% 0, 50% 0;
+  }
+  to {
+    background-position: 50% 0, 50% 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app::before {
+    animation: none;
+  }
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(var(--neon-rgb), 0.22);
+}
+
+.screen-header h1 {
+  flex: 1;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* The Back button: a compact slab. */
+.screen-back {
+  --btn-depth: 3px;
+  min-width: 0;
+  padding: 5px 14px 5px 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+/*
+ * Buttons: physical neon slabs. The face sits `--btn-depth` above its side (the darker band under it); hover lifts it a pixel and lights the rim; a press
+ * sinks it onto its side with an inner flash, so every click is felt. Variables, not new rules, adapt it: a package sets `--btn-depth`, `--btn-face`,
+ * `--btn-side` or `--btn-rim` on its own class (small chips use a 2px slab).
+ */
+.button,
+button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 120px;
+  padding: 10px 18px;
+  border: 1px solid var(--btn-rim);
+  border-radius: 10px;
+  background: var(--btn-face);
+  color: var(--btn-text);
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateY(0);
+  box-shadow:
+    0 var(--btn-depth) 0 0 var(--btn-side),
+    0 calc(var(--btn-depth) + 4px) 12px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 var(--btn-top),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.25);
+  transition:
+    transform 70ms ease-out,
+    box-shadow 70ms ease-out,
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.button:hover,
+button:hover {
+  background: var(--btn-face-hover);
+  border-color: var(--neon);
+  transform: translateY(-1px);
+  box-shadow:
+    0 calc(var(--btn-depth) + 1px) 0 0 var(--btn-side),
+    0 calc(var(--btn-depth) + 6px) 16px rgba(0, 0, 0, 0.6),
+    0 0 18px var(--btn-glow),
+    inset 0 1px 0 var(--btn-top),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.button:active,
+button:active {
+  transform: translateY(var(--btn-depth));
+  box-shadow:
+    0 0 0 0 var(--btn-side),
+    0 2px 5px rgba(0, 0, 0, 0.7),
+    0 0 24px var(--btn-glow),
+    inset 0 3px 10px rgba(0, 0, 0, 0.55),
+    inset 0 0 18px var(--btn-glow);
+  transition-duration: 25ms;
+}
+
+/* The press flash: a short light burst from the middle of the face. */
+.button::after,
+button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 55%, rgba(255, 255, 255, 0.45), rgba(var(--neon-rgb), 0.18) 40%, transparent 70%);
+  opacity: 0;
+  transition: opacity 260ms ease-out;
+}
+
+.button:active::after,
+button:active::after {
+  opacity: 1;
+  transition-duration: 0ms;
+}
+
+/*
+ * Disabled: still a raised slab (its side and top light stay) but dimmed (face, rim and label lose their color), with no hover lift, glow or press, so it
+ * reads as "off" and never as a flat sticker. The variables carry it, so every kind of slab keeps its shape.
+ */
+button:disabled,
+.button[aria-disabled='true'] {
+  --btn-face: linear-gradient(180deg, #243756 0%, #172640 52%, #111d34 100%);
+  --btn-face-hover: var(--btn-face);
+  --btn-side: #0b1b31;
+  --btn-rim: rgba(120, 160, 205, 0.38);
+  --btn-top: rgba(190, 220, 255, 0.16);
+  --btn-text: rgba(214, 224, 240, 0.55);
+  --btn-glow: transparent;
+  cursor: not-allowed;
+}
+
+button:disabled:hover,
+button:disabled:active {
+  transform: translateY(0);
+  background: var(--btn-face);
+  border-color: var(--btn-rim);
+  box-shadow:
+    0 var(--btn-depth) 0 0 var(--btn-side),
+    0 calc(var(--btn-depth) + 4px) 12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 var(--btn-top),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.25);
+}
+
+button:disabled::after {
+  display: none;
+}
+
+.button-primary {
+  --btn-face: linear-gradient(180deg, #7fdcff 0%, #1fb8ff 38%, #0a8fe0 100%);
+  --btn-face-hover: linear-gradient(180deg, #a6e8ff 0%, #3fc4ff 38%, #0e9cf0 100%);
+  --btn-side: #035288;
+  --btn-rim: #b9ecff;
+  --btn-top: rgba(255, 255, 255, 0.55);
+  --btn-text: #00121f;
+  --btn-glow: rgba(var(--neon-rgb), 0.85);
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* A disabled primary keeps its blue and its slab, dimmed: a muted steel-blue face, a darker side, no text glow. */
+.button-primary:disabled,
+.button-primary[aria-disabled='true'] {
+  --btn-face: linear-gradient(180deg, #5f8ca6 0%, #3d6a87 45%, #2d546d 100%);
+  --btn-face-hover: var(--btn-face);
+  --btn-side: #163b52;
+  --btn-rim: rgba(160, 205, 228, 0.6);
+  --btn-top: rgba(220, 240, 255, 0.38);
+  --btn-text: rgba(228, 242, 252, 0.82);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* A second accent for actions that end or leave something (Concede, Mulligan): the brand magenta. */
+.button-danger {
+  --btn-face: linear-gradient(180deg, #3a0d3f 0%, #240829 60%, #1a061e 100%);
+  --btn-face-hover: linear-gradient(180deg, #4e1155 0%, #300a36 60%, #22072a 100%);
+  --btn-side: #3d003f;
+  --btn-rim: rgba(var(--neon-2-rgb), 0.7);
+  --btn-glow: rgba(var(--neon-2-rgb), 0.6);
+  --btn-top: rgba(255, 190, 255, 0.3);
+}
+
+.button-link {
+  min-width: 0;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: var(--accent);
+  box-shadow: none;
+  transform: none;
+}
+
+.button-link:hover {
+  background: none;
+  transform: none;
+  box-shadow: none;
+  text-shadow: 0 0 10px var(--glow);
+}
+
+.button-link:active {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.button-link::after {
+  display: none;
+}
+
+/* Text fields and lists: dark glass wells with a neon focus glow. */
+input[type='text'],
+input[type='search'],
+input[type='number'],
+input[type='url'],
+textarea,
+select {
+  border: 1px solid rgba(var(--neon-rgb), 0.4);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #020611, #06102a);
+  color: var(--text);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+input[type='text']:focus,
+input[type='search']:focus,
+input[type='number']:focus,
+input[type='url']:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--neon);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    0 0 0 1px var(--neon),
+    0 0 16px var(--glow);
+}
+
+/*
+ * The opened list of a <select> is drawn by the browser from the select's and the options' own background-color (a background-image gradient, as the
+ * field above has, is ignored there), so without a solid color it came up white with near-white text. `color-scheme: dark` makes the browser's own
+ * popup chrome (scrollbar, the highlight when we set none) dark too; the options get the field's solid color, the UI's text and, when chosen or
+ * hovered, the UI's highlight (the slab blue).
+ */
+select,
+select option,
+select optgroup {
+  color-scheme: dark;
+  background-color: var(--menu-bg);
+  color: var(--text);
+}
+
+select optgroup {
+  font-style: normal;
+}
+
+select option:checked,
+select option:hover,
+select option:focus {
+  background-color: var(--menu-hover);
+  color: var(--brand-white, #fff);
+}
+
+select option:disabled {
+  color: var(--text-muted);
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--neon);
+}
+
+/* Thin neon scrollbars. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--neon-rgb), 0.45) transparent;
+}
+
+/* A dark glass panel with neon corner brackets (shared by every screen). */
+.hud-panel {
+  position: relative;
+  border: 1px solid rgba(var(--neon-rgb), 0.3);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(10, 22, 46, 0.9), rgba(4, 10, 24, 0.94));
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.55),
+    0 14px 40px rgba(0, 0, 0, 0.55),
+    0 0 26px rgba(var(--neon-rgb), 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 34px rgba(var(--neon-rgb), 0.05);
+}
+
+.hud-panel::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--neon), var(--neon)) left top / 22px 2px no-repeat,
+    linear-gradient(var(--neon), var(--neon)) left top / 2px 22px no-repeat,
+    linear-gradient(var(--neon), var(--neon)) right top / 22px 2px no-repeat,
+    linear-gradient(var(--neon), var(--neon)) right top / 2px 22px no-repeat,
+    linear-gradient(var(--neon-2), var(--neon-2)) left bottom / 22px 2px no-repeat,
+    linear-gradient(var(--neon-2), var(--neon-2)) left bottom / 2px 22px no-repeat,
+    linear-gradient(var(--neon-2), var(--neon-2)) right bottom / 22px 2px no-repeat,
+    linear-gradient(var(--neon-2), var(--neon-2)) right bottom / 2px 22px no-repeat;
+  filter: drop-shadow(0 0 4px var(--glow));
+}
+
+/* A glowing heading: light text with a blue halo. */
+.neon-title {
+  margin: 0;
+  color: #f2fbff;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 6px rgba(var(--neon-rgb), 0.9),
+    0 0 22px rgba(var(--neon-rgb), 0.55),
+    0 0 44px rgba(var(--neon-2-rgb), 0.25);
+}
+
+/* Footer (branding slot 6): a quiet dark strip with a faint neon edge; the disclaimer stays readable (contrast well above 4.5:1). */
+.footer {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 16px;
+  padding: 8px 16px 10px;
+  background: linear-gradient(180deg, rgba(3, 8, 20, 0.7), rgba(2, 5, 12, 0.96));
+  font-size: 0.76rem;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--neon-rgb), 0.55) 20%, rgba(var(--neon-2-rgb), 0.45) 80%, transparent);
+}
+
+.footer strong {
+  color: var(--text);
+  letter-spacing: 0.06em;
+}
+
+.footer .disclaimer {
+  margin: 0;
+  max-width: min(100%, 620px);
+  text-align: center;
+}
+
+.donate-quiet {
+  font-size: 0.8rem;
+}
+
+.footer-build {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.placeholder {
+  padding: 24px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+}
+
+/* Shared utilities (one definition for every screen; package stylesheets prefix or scope their own classes) */
+.muted {
+  color: var(--text-muted);
+}
+
+/* Read by screen readers only (announcements such as "Moved X to the sideboard."). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

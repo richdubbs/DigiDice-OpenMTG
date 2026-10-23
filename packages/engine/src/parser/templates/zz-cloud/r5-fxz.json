@@ -1,0 +1,667 @@
+[
+  {
+    "id": "eff.r5fxz.forEach.keptOnTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.25a",
+      "CR 701.22a",
+      "CR 608.2c"
+    ],
+    "pattern": "[then] for each {n:KeptOnTop} , {e:Effects}",
+    "build": {
+      "op": "repeat",
+      "times": "$n",
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, surveil 3. Then for each card you put on top of your library, you gain 2 life."
+      },
+      {
+        "text": "When this creature dies, scry 2. Then for each card you put on top of your library, create a 1/1 white Spirit creature token with flying."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, surveil 3. Then for each card you put into your graveyard, you gain 2 life.",
+      "When this creature enters, surveil 3. Then for each card in your graveyard, you gain 2 life."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.r5fxz.forEach.thoseWhoDidntDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "for each of those opponents who didn't discard {f:DiscardDesc} , {e:Effects}",
+    "build": {
+      "op": "repeat",
+      "times": {
+        "q": "countPlayers",
+        "of": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "player",
+            "number": "plural",
+            "text": "those opponents",
+            "head": "opponent"
+          }
+        },
+        "didNot": {
+          "op": "discard",
+          "step": "",
+          "which": "$f"
+        }
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, any number of target opponents each discard a card. For each of those opponents who didn't discard a land card, you gain 2 life."
+      },
+      {
+        "text": "When this creature dies, any number of target opponents each discard a card. For each of those opponents who didn't discard a creature card, create a 1/1 black Rat creature token."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, any number of target opponents each discard a card. For each of those opponents who discarded a land card, you gain 2 life.",
+      "When this creature enters, any number of target opponents each discard a card. For each opponent, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.r5fxz.instructionChoice.orUnlock",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 709.5f"
+    ],
+    "pattern": "^ {a:Effects} or unlock a locked door of a room you control",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "first",
+          "second"
+        ],
+        "as": "instructionChoice",
+        "link": "instructionChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "first"
+        },
+        "then": "$a"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "second"
+        },
+        "then": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "subtypes": [
+                  "Room"
+                ],
+                "controller": "you",
+                "lockedDoor": true
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "as": "lockedRoom"
+          },
+          {
+            "op": "designateObject",
+            "what": {
+              "ref": "bound",
+              "name": "lockedRoom"
+            },
+            "designation": "unlockDoor"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, return an artifact card from your graveyard to your hand or unlock a locked door of a Room you control."
+      },
+      {
+        "text": "When this creature dies, draw two cards or unlock a locked door of a Room you control."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, return an artifact card from your graveyard to your hand and unlock a locked door of a Room you control.",
+      "When this creature enters, return an artifact card from your graveyard to your hand or unlock each locked door of a Room you control."
+    ],
+    "needs": [
+      "op:designateObject.unlockDoor"
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.r5fxz.unlock.lockedDoor.roomYouControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 709.5f",
+      "CR 709.5c"
+    ],
+    "pattern": "unlock a locked door of a room you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Room"
+            ],
+            "controller": "you",
+            "lockedDoor": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "lockedRoom"
+      },
+      {
+        "op": "designateObject",
+        "what": {
+          "ref": "bound",
+          "name": "lockedRoom"
+        },
+        "designation": "unlockDoor"
+      }
+    ],
+    "needs": [
+      "op:designateObject.unlockDoor"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, unlock a locked door of a Room you control."
+      },
+      {
+        "text": "Whenever this creature attacks, draw a card, then unlock a locked door of a Room you control."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, unlock a door of a Room you control.",
+      "When this creature enters, unlock each locked door of a Room you control."
+    ]
+  },
+  {
+    "id": "eff.r5fxz.put.bf.yourControl.inverted",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "put onto the battlefield under your control {o:Objs}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put onto the battlefield under your control all artifact cards in your opponents' graveyards."
+      },
+      {
+        "text": "When this creature enters, put onto the battlefield under your control all land cards in your opponents' graveyards that were put there from the battlefield this turn."
+      }
+    ],
+    "counterExamples": [
+      "Put onto the battlefield all artifact cards in your opponents' graveyards.",
+      "Put onto the battlefield under your control tapped all artifact cards in your opponents' graveyards."
+    ]
+  },
+  {
+    "id": "eff.r5fxz.they.are.subtype.artifacts.with",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:They} are {st:Subtypes} artifacts with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, return all creature cards from your graveyard to the battlefield. They are Clue artifacts with \"{2}, Sacrifice this artifact: Draw a card.\""
+      },
+      {
+        "text": "When this creature dies, put onto the battlefield under your control all creature cards in your opponents' graveyards. They are Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color.\""
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, return all creature cards from your graveyard to the battlefield. They are Clue artifacts in addition to their other types.",
+      "When this creature enters, return all creature cards from your graveyard to the battlefield. They are artifacts with \"{2}, Sacrifice this artifact: Draw a card.\""
+    ]
+  },
+  {
+    "id": "sta.r5fxz.enchanted.permanent.colorless.artifact.with.losesOthers",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 303.4",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f"
+    ],
+    "pattern": "enchanted permanent is a colorless {st:Subtypes} artifact with {a:Abilities} and loses all other card types and abilities",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Artifact"
+            ]
+          },
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": []
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature or artifact\nEnchanted permanent is a colorless Clue artifact with \"{2}, Sacrifice this artifact: Draw a card\" and loses all other card types and abilities."
+      },
+      {
+        "text": "Enchant creature or artifact\nEnchanted permanent is a colorless Treasure artifact with \"{T}, Sacrifice this artifact: Add one mana of any color\" and loses all other card types and abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature or artifact\nEnchanted permanent is a colorless Clue artifact with \"{2}, Sacrifice this artifact: Draw a card\" and loses all other abilities.",
+      "Enchant creature or artifact\nEnchanted permanent is a Clue artifact with \"{2}, Sacrifice this artifact: Draw a card\" and loses all other card types and abilities."
+    ]
+  },
+  {
+    "id": "eff.r5fxz.return.targets.bf.attachedTo.creatureYouControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4f",
+      "CR 301.5c",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Targets} to the battlefield attached to a creature you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "host"
+      },
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "attachedTo": {
+            "ref": "bound",
+            "name": "host"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return target Aura card from your graveyard to the battlefield attached to a creature you control."
+      },
+      {
+        "text": "When this creature enters, return target Equipment card from your graveyard to the battlefield attached to a creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Return target Aura card from your graveyard to the battlefield attached to target creature you control.",
+      "Return target Aura card from your graveyard to the battlefield attached to a creature an opponent controls."
+    ]
+  },
+  {
+    "id": "eff.r5fxz.return.anyNumber.filter.ownersHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.3"
+    ],
+    "pattern": "return any number of {f:Filter} to ( their owner 's hand | their owners' hands )",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, return any number of other creatures you control to their owners' hands."
+      },
+      {
+        "text": "When this creature enters, return any number of nonland permanents you control to their owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, return any number of target creatures you control to their owners' hands.",
+      "Whenever this creature attacks, return up to two other creatures you control to their owners' hands."
+    ]
+  },
+  {
+    "id": "eff.r5fxz.eachOpponent.chooses.theyControl.exilesIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2f",
+      "CR 101.4",
+      "CR 406.1"
+    ],
+    "pattern": "each opponent chooses ( a | an ) {f:Filter} they control and exiles it",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": {
+                "ref": "bound",
+                "name": "each"
+              }
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "exiled"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "exiled"
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, each opponent chooses an artifact they control and exiles it."
+      },
+      {
+        "text": "Whenever another creature you control dies, each opponent chooses an enchantment they control and exiles it."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, each opponent chooses an artifact you control and exiles it.",
+      "When this creature enters, each opponent chooses an artifact they control and sacrifices it."
+    ]
+  },
+  {
+    "id": "eff.r5fxz.dig.rest.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "put {r:Rest} into your hand",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, look at the top four cards of your library. You may exile an artifact card from among them. Put the rest into your hand."
+      },
+      {
+        "text": "When this creature dies, look at the top three cards of your library. You may put a creature card from among them onto the battlefield. Put the rest into your hand."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, look at the top four cards of your library. You may exile an artifact card from among them. Put the rest into your graveyard.",
+      "When this creature enters, look at the top four cards of your library. You may exile an artifact card from among them. Put the rest into target player's hand."
+    ]
+  },
+  {
+    "id": "eff.r5fxz.dig.exileOne.otherHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 401.2",
+      "CR 406.1"
+    ],
+    "pattern": "exile one of ( them | those cards ) and put the other into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "bound",
+          "name": "looked"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiledOne"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledOne"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "looked"
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, look at the top two cards of your library. Exile one of them and put the other into your hand."
+      },
+      {
+        "text": "{1}, {T}: Look at the top two cards of your library. Exile one of those cards and put the other into your hand."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, look at the top two cards of your library. Exile one of them and put the other into your graveyard.",
+      "When this creature enters, look at the top two cards of your library. Exile both of them."
+    ]
+  }
+]

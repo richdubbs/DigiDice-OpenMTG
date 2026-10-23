@@ -1,0 +1,66 @@
+[
+  {
+    "id": "eff.counter",
+    "kind": "effect",
+    "cr": ["CR 701.6a", "CR 115.1", "CR 608.2b"],
+    "pattern": "counter {o:Objs}",
+    "build": { "op": "counter", "what": "$o" },
+    "subject": "none",
+    "examples": [
+      { "text": "Counter target spell." },
+      { "text": "Counter target creature spell." },
+      { "text": "Counter target activated ability." }
+    ],
+    "counterExamples": ["Counter target spell unless it is blue.", "Counter target spell at random.", "Counter."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.copy.spell",
+    "kind": "effect",
+    "cr": ["CR 707.10", "CR 707.10c", "CR 115.1"],
+    "pattern": "copy {o:Obj}",
+    "build": { "op": "copy", "what": "$o", "result": "spell", "who": { "ref": "you" } },
+    "subject": "none",
+    "examples": [{ "text": "Copy target instant spell." }, { "text": "Copy target sorcery spell." }],
+    "counterExamples": ["Copy target creature.", "Copy target instant spell twice."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.copy.token",
+    "kind": "effect",
+    "cr": ["CR 707.2", "CR 111.1", "CR 707.10"],
+    "pattern": "create a token that's a copy of {o:Obj}",
+    "build": { "op": "copy", "what": "$o", "result": "token", "who": { "ref": "you" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Create a token that's a copy of target creature you control." },
+      { "text": "Create a token that's a copy of target artifact." }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it's an artifact.",
+      "Create two tokens that are copies of target creature."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.exchange.control",
+    "kind": "effect",
+    "cr": ["CR 701.12a", "CR 701.12b"],
+    "pattern": "exchange control of {a:Obj} and {b:Obj}",
+    "build": { "op": "exchange", "a": "$a", "b": "$b", "what": "control" },
+    "subject": "none",
+    "examples": [
+      { "text": "Exchange control of target artifact and target creature." },
+      { "text": "Exchange control of target enchantment and target land." }
+    ],
+    "counterExamples": [
+      "Exchange control of target artifact and target creature until end of turn.",
+      "Exchange control of target creature."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

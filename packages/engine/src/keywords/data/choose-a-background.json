@@ -1,0 +1,9 @@
+{
+  "name": "choose a background",
+  "rule": "702.124",
+  "params": [],
+  "mechanisms": [],
+  "reminder": "You can have a Background as a second commander.",
+  "multiple": "redundant",
+  "status": "implemented"
+}

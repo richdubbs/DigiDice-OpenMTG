@@ -1,0 +1,56 @@
+{
+  "name": "firebending",
+  "rule": "702.189",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks, add {n} {R}. This mana lasts until end of combat.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, add {n} {R}. Until end of combat, you don't lose this mana as steps and phases end.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "addMana",
+            "who": {
+              "ref": "you"
+            },
+            "dynamic": {
+              "kind": "ofType",
+              "type": "R",
+              "count": "$amount"
+            },
+            "keep": "endOfCombat"
+          },
+          {
+            "op": "reportAction",
+            "who": {
+              "ref": "you"
+            },
+            "verb": "firebend"
+          }
+        ]
+      }
+    }
+  ]
+}

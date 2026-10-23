@@ -1,0 +1,16 @@
+# std-rx31 (wave 2, Standard lane rx31: exile, copies and returns; test/cloud/std-rx31, golden cloud-std-rx31-review.json): optional casts with a quantity cap,
+# "Otherwise" and "if it wasn't cast this way", "instead of putting it into your hand", reveal-one digs, double-faced cards, totals of mana values, returns with
+# modifications, and "you may have ~ become a copy of that card until end of turn"
+Bre of Clan Stoutarm
+Beseech the Mirror
+Back for Seconds
+Break Out
+Follow the Lumarets
+Nick Fury, Agent of S.H.I.E.L.D.
+Improvisation Capstone
+Brilliance Unleashed
+Meathook Massacre II
+Tom, Bert, and William
+Lazav, Familiar Stranger
+# a transforming double-faced Hero for Nick Fury's scenario (CR 712.1)
+Peter Parker // Amazing Spider-Man

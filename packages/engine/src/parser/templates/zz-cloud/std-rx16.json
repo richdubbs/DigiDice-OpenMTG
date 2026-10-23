@@ -1,0 +1,133 @@
+[
+  {
+    "id": "cm.stdrx16.each.spell.toughnessGreater.less",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 208.1",
+      "CR 611.3a"
+    ],
+    "pattern": "each {f:Filter} you cast with toughness greater than its power costs {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "types": "$f.types",
+              "subtypes": "$f.subtypes",
+              "supertypes": "$f.supertypes",
+              "colors": "$f.colors",
+              "colorless": "$f.colorless",
+              "stackKind": "spell",
+              "zone": "stack",
+              "toughnessGreaterThanPower": true
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature spell you cast with toughness greater than its power costs {2} less to cast."
+      },
+      {
+        "text": "Each green creature spell you cast with toughness greater than its power costs {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Each creature spell you cast with toughness greater than its power costs {1} more to cast.",
+      "Each creature spell you cast with power greater than its toughness costs {1} less to cast.",
+      "Each creature spell your opponents cast with toughness greater than its power costs {1} less to cast.",
+      "Each creature spell you cast with toughness less than its power costs {1} less to cast."
+    ]
+  },
+  {
+    "id": "eff.stdrx16.forEachOfThose.ownerMayPlay.remainsExiled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 611.2b",
+      "CR 108.3",
+      "CR 400.7"
+    ],
+    "pattern": "for each of those cards , its owner may play it for as long as it remains exiled",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "set",
+          "number": "plural",
+          "head": "card",
+          "text": "those cards"
+        }
+      },
+      "as": "card",
+      "do": [
+        {
+          "op": "effect",
+          "effects": [
+            {
+              "s": "permit",
+              "who": {
+                "ref": "ownerOf",
+                "object": {
+                  "ref": "bound",
+                  "name": "card"
+                }
+              },
+              "action": "play",
+              "of": {
+                "is": {
+                  "ref": "bound",
+                  "name": "card"
+                }
+              }
+            }
+          ],
+          "duration": {
+            "d": "remainsExiled"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile up to two target creatures. For each of those cards, its owner may play it for as long as it remains exiled."
+      },
+      {
+        "text": "Exile target artifact and the top card of your library. For each of those cards, its owner may play it for as long as it remains exiled."
+      }
+    ],
+    "counterExamples": [
+      "Exile up to two target creatures. For each of those cards, you may play it for as long as it remains exiled.",
+      "Exile up to two target creatures. For each of those cards, its owner may cast it for as long as it remains exiled.",
+      "Exile up to two target creatures. For each of those cards, its owner may play it until the end of your next turn."
+    ]
+  }
+]

@@ -1,0 +1,59 @@
+{
+  "name": "mayhem",
+  "rule": "702.187",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost",
+      "optional": true
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may cast this card from your graveyard for {cost} if you discarded it this turn. Timing rules still apply.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "$ifParam": "cost",
+      "then": {
+        "kind": "static",
+        "text": "Mayhem {cost}",
+        "zone": [
+          "graveyard"
+        ],
+        "effects": [
+          {
+            "s": "alternativeCost",
+            "cost": "$cost",
+            "from": "graveyard",
+            "name": "mayhem",
+            "discardedThisTurn": true
+          }
+        ]
+      },
+      "else": {
+        "kind": "static",
+        "text": "Mayhem",
+        "zone": [
+          "graveyard"
+        ],
+        "effects": [
+          {
+            "s": "permit",
+            "who": {
+              "ref": "you"
+            },
+            "action": "play",
+            "of": {
+              "self": true
+            },
+            "from": "graveyard",
+            "discardedThisTurn": true
+          }
+        ]
+      }
+    }
+  ]
+}

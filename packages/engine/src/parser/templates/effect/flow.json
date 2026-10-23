@@ -1,0 +1,137 @@
+[
+  {
+    "id": "fl.otherwise",
+    "kind": "rider",
+    "cr": ["CR 608.2c", "CR 608.2d"],
+    "pattern": "otherwise , {e:Effects}",
+    "build": { "$patchPrevious": { "else": { "@new": "$e" } } },
+    "attachTo": "if",
+    "examples": [
+      { "text": "If you control an Elf, draw two cards. Otherwise, target player draws a card." },
+      { "text": "If it's your turn, draw three cards. Otherwise, draw a card." }
+    ],
+    "counterExamples": [
+      "Otherwise, draw two cards.",
+      "Draw a card. Otherwise, draw two cards.",
+      "If you control an Elf, draw two cards. Otherwise, draw a card instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "fl.instead",
+    "kind": "rider",
+    "cr": ["CR 614.15", "CR 608.2c", "CR 616.1a"],
+    "pattern": "if {c:Cond} , {e:Effects} instead",
+    "build": { "$patchPrevious": { "@replace": true, "op": "if", "cond": "$c", "then": "$e", "else": ["@previous"] } },
+    "consumes": ["if", "instead"],
+    "examples": [
+      { "text": "Draw a card. If you control an Elf, draw three cards instead." },
+      { "text": "Target player draws a card. If it's your turn, that player draws two cards instead." }
+    ],
+    "counterExamples": [
+      "Draw a card. If you control an Elf, draw three cards.",
+      "If you control an Elf, draw three cards instead.",
+      "Draw a card and target player draws a card. If you control an Elf, draw three cards instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "fl.forEach.opponent",
+    "kind": "effect",
+    "cr": ["CR 608.2f", "CR 101.4"],
+    "pattern": "for each opponent , {e:Effects}",
+    "build": { "op": "forEach", "over": { "ref": "each", "who": "opponent" }, "as": "each", "do": "$e" },
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "For each opponent, that player draws a card." },
+      { "text": "For each opponent, that player discards two cards." }
+    ],
+    "counterExamples": [
+      "For each opponent, that creature draws a card.",
+      "For each opponent, draw a card unless it is blue."
+    ],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "fl.forEach.player",
+    "kind": "effect",
+    "cr": ["CR 608.2f", "CR 101.4"],
+    "pattern": "for each player , {e:Effects}",
+    "build": { "op": "forEach", "over": { "ref": "each", "who": "player" }, "as": "each", "do": "$e" },
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [{ "text": "For each player, that player draws two cards." }],
+    "counterExamples": ["For each player, that creature draws a card.", "For each player, draw a card unless it is blue."],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "fl.linked.returnBattlefield",
+    "kind": "effect",
+    "cr": ["CR 607.2a", "CR 607.1", "CR 400.7"],
+    "pattern": "return the exiled card to the battlefield under its owner 's control",
+    "build": { "op": "move", "what": { "ref": "linked", "link": "exiled" }, "to": { "zone": "battlefield", "controller": "owner" } },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      { "text": "When ~ enters, exile target creature an opponent controls.\nWhen ~ leaves the battlefield, return the exiled card to the battlefield under its owner's control." },
+      { "text": "When ~ enters, you may exile target artifact.\nWhen ~ leaves the battlefield, return the exiled card to the battlefield under its owner's control." }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature an opponent controls.\nWhen ~ leaves the battlefield, return the exiled card to the battlefield under your control.",
+      "When ~ enters, exile target creature.\nWhen ~ leaves the battlefield, return the exiled cards to the battlefield under its owner's control."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "fl.linked.returnHand",
+    "kind": "effect",
+    "cr": ["CR 607.2a", "CR 607.1", "CR 400.7"],
+    "pattern": "return the exiled card to its owner 's hand",
+    "build": { "op": "move", "what": { "ref": "linked", "link": "exiled" }, "to": { "zone": "hand" } },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      { "text": "When ~ enters, exile target creature an opponent controls.\nWhen ~ leaves the battlefield, return the exiled card to its owner's hand." },
+      { "text": "When ~ enters, exile target artifact an opponent controls.\nWhen ~ leaves the battlefield, return the exiled card to its owner's hand." }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature.\nWhen ~ leaves the battlefield, return the exiled card to your hand.",
+      "When ~ enters, exile target creature.\nWhen ~ leaves the battlefield, return the exiled cards to its owner's hand."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "fl.loseGame",
+    "kind": "effect",
+    "cr": ["CR 104.3e"],
+    "pattern": "{p:Player} lose[s] the game",
+    "build": { "op": "loseGame", "who": "$p" },
+    "subject": "player",
+    "examples": [
+      { "text": "Pay {4}{B}. If you don't, you lose the game." },
+      { "text": "Target opponent loses the game." }
+    ],
+    "counterExamples": ["You lose the game unless it is blue.", "You lose two games."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "fl.winGame",
+    "kind": "effect",
+    "cr": ["CR 104.2b"],
+    "pattern": "{p:Player} win[s] the game",
+    "build": { "op": "winGame", "who": "$p" },
+    "subject": "player",
+    "examples": [{ "text": "You win the game." }, { "text": "Target player wins the game." }],
+    "counterExamples": ["You win the game unless it is blue.", "You win two games."],
+    "status": "stable",
+    "since": 1
+  }
+]

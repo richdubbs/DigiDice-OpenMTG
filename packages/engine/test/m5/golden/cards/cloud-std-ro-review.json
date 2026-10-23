@@ -1,0 +1,1671 @@
+[
+ {
+  "card": "Mulch",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.graveyard): you reveal your top four cards; every land card among them goes to your hand and every other revealed card, still in the library, to your graveyard (CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 4,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Land"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "graveyard"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Beast Hunt",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.graveyard): you reveal your top three cards; the creature cards among them go to your hand, the rest to your graveyard (CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 3,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "graveyard"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Chromescale Drake",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.graveyard): affinity for artifacts and flying are keywords; when it enters you reveal your top three cards, the artifact cards go to your hand, the rest to your graveyard (CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "filter": {
+       "types": [
+        "Artifact"
+       ]
+      },
+      "keyword": "affinity",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 3,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Artifact"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "graveyard"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Borborygmos Enraged",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.graveyard): trample; whenever it deals combat damage to a player you reveal your top three cards, the land cards go to your hand, the rest to your graveyard; discard a land card: 3 damage to any target (CR 510.2, 702.19, 701.9; CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 3,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Land"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "graveyard"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "combat": true,
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "self": true
+         }
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "other": [
+        {
+         "count": 1,
+         "filter": {
+          "types": [
+           "Land"
+          ]
+         },
+         "kind": "discard"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "amount": 3,
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "anyTarget",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Enlistment Officer",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.bottomAny): first strike; when it enters you reveal your top four cards, the Soldier cards go to your hand, the rest on the bottom of your library in an order you choose (CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "first strike",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 4,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Soldier"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "chosen",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Enshrined Memories",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.bottomAny): you reveal your top X cards (X announced with the cost, CR 107.3), the creature cards go to your hand, the rest on the bottom in an order you choose (CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": {
+           "q": "X"
+          },
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "chosen",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Garruk, Caller of Beasts",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.bottomAny): +1 reveals your top five cards, the creature cards to your hand, the rest on the bottom in an order you choose; -3 and -7 were automated before and are unchanged (CR 606.3; CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "loyalty": 1
+      },
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 5,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "chosen",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "loyalty": -3
+      },
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "colors": [
+            "G"
+           ],
+           "isCard": true,
+           "owner": "you",
+           "types": [
+            "Creature"
+           ],
+           "zone": "hand"
+          },
+          "ref": "each"
+         },
+         "max": 1,
+         "min": 0,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "zone": "battlefield"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "loyalty": -7
+      },
+      "effect": {
+       "steps": [
+        {
+         "abilities": [
+          {
+           "effect": {
+            "steps": [
+             {
+              "do": [
+               {
+                "as": "b0",
+                "filter": {
+                 "types": [
+                  "Creature"
+                 ]
+                },
+                "max": 1,
+                "op": "search",
+                "who": {
+                 "ref": "you"
+                },
+                "zone": "library"
+               },
+               {
+                "op": "move",
+                "to": {
+                 "controller": {
+                  "ref": "you"
+                 },
+                 "zone": "battlefield"
+                },
+                "what": {
+                 "name": "b0",
+                 "ref": "bound"
+                }
+               },
+               {
+                "op": "shuffle",
+                "who": {
+                 "ref": "you"
+                }
+               }
+              ],
+              "op": "may",
+              "who": {
+               "ref": "you"
+              }
+             }
+            ],
+            "targets": []
+           },
+           "kind": "triggered",
+           "trigger": {
+            "on": [
+             {
+              "ev": "cast",
+              "player": "you",
+              "spell": {
+               "types": [
+                "Creature"
+               ]
+              }
+             }
+            ]
+           }
+          }
+         ],
+         "op": "createEmblem",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Grave Defiler",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.bottomAny): when it enters you reveal your top four cards, the Zombie cards go to your hand, the rest on the bottom in an order you choose; {1}{B}: regenerate it (CR 701.15; CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 4,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Zombie"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "chosen",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "regenerate",
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lair Delve",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.bottomAny): you reveal your top two cards; every creature card and every land card among them (a card of either type) goes to your hand, the rest on the bottom in an order you choose (CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 2,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature",
+              "Land"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "chosen",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Merfolk Wayfinder",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.bottomAny): flying; when it enters you reveal your top three cards, the Island cards (the land subtype, CR 205.3i) go to your hand, the rest on the bottom in an order you choose (CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 3,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Island"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "chosen",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tidal Courier",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdro.dig.putAll.revealed.hand.rest.bottomAny): when it enters you reveal your top four cards, the Merfolk cards go to your hand, the rest on the bottom in an order you choose; {3}{U}: flying until end of turn (CR 701.20a, 608.2c, 400.3, 401.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "op": "reveal",
+         "what": {
+          "count": 4,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Merfolk"
+             ]
+            }
+           ],
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "order": "chosen",
+          "position": "bottom",
+          "zone": "library"
+         },
+         "what": {
+          "filter": {
+           "is": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "zone": "library"
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "flying",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Nether Traitor",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (render/evt.ts, std-rp family put-into-your-graveyard): haste, shadow; whenever another creature is put into your graveyard from the battlefield (one you own dies), you may pay {B}, and if you do this card returns from your graveyard to the battlefield; the ability functions in the graveyard (CR 113.6m, 702.28; CR 700.4, 404.1, 400.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "haste",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "shadow",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "cost": {
+          "mana": [
+           {
+            "color": "B",
+            "kind": "colored"
+           }
+          ]
+         },
+         "op": "pay",
+         "then": [
+          {
+           "op": "move",
+           "to": {
+            "controller": {
+             "ref": "you"
+            },
+            "zone": "battlefield"
+           },
+           "what": {
+            "ref": "self"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "other": true,
+          "owner": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Field of Souls",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (render/evt.ts, std-rp family put-into-your-graveyard): whenever a nontoken creature you own dies you create a 1/1 white Spirit with flying (CR 700.4, 404.1, 400.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "keywords": [
+           "flying"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Spirit"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "owner": "you",
+          "token": false,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Jinxed Ring",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (render/evt.ts, std-rp family put-into-your-graveyard): whenever a nontoken permanent you own is put into your graveyard from the battlefield it deals 1 damage to you; sacrifice a creature: target opponent gains control of it indefinitely (CR 613.1b, 701.21; CR 700.4, 404.1, 400.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": 1,
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "owner": "you",
+          "token": false
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "other": [
+        {
+         "count": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "kind": "sacrifice"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "controller": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "layer": 2
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kithkin Mourncaller",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (render/evt.ts, std-rp family put-into-your-graveyard): whenever an attacking Kithkin or Elf you own dies you may draw a card (CR 700.4, 404.1, 400.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "count": 1,
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "attacking": true,
+          "owner": "you",
+          "subtypes": [
+           "Elf",
+           "Kithkin"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mortuary",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (render/evt.ts, std-rp family put-into-your-graveyard): whenever a creature you own dies, that card (the new object in your graveyard, CR 400.7) goes on top of your library (CR 700.4, 404.1, 400.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "library"
+         },
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "owner": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Scrapheap",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (render/evt.ts, std-rp family put-into-your-graveyard): whenever an artifact or enchantment you own is put into your graveyard from the battlefield you gain 1 life (CR 700.4, 404.1, 400.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": 1,
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "owner": "you",
+          "types": [
+           "Artifact",
+           "Enchantment"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Guan Yu, Sainted Warrior",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (render/evt.ts, the object itself put into your graveyard; render/refs.ts selfOnly): horsemanship; when Guan Yu is put into your graveyard from the battlefield (it dies while you own it) you may shuffle that card from your graveyard into your library (CR 700.4, 404.1, 400.7, 701.20; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "horsemanship",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "as": "b0",
+           "op": "move",
+           "to": {
+            "owner": {
+             "ref": "you"
+            },
+            "zone": "library"
+           },
+           "what": {
+            "ref": "event",
+            "role": "subject"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "owner": "you",
+          "self": true
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ultimate Magic: Holy",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.r4repl.dur.prevent.toYou, its new word order; render/cond.ts \"was cast from exile\"): permanents you control gain indestructible until end of turn; if the spell was cast from exile (foretold, CR 702.143), all damage that would be dealt to you this turn is prevented (CR 615.1a, 611.2a, 406.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "filter": {
+             "controller": "you"
+            },
+            "ref": "each"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "indestructible",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "cond": {
+          "cond": "wasCast",
+          "from": "exile"
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "body": {
+              "amount": "all",
+              "b": "prevent"
+             },
+             "replaces": {
+              "ev": "damage",
+              "recipient": {
+               "player": "you"
+              }
+             },
+             "s": "replace"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "foretell",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,326 @@
+[
+ {
+  "card": "Season of Gathering",
+  "expect": "full",
+  "verified": "Standard round D (std-rD) review (Standard, held-out half: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (eff.stdrd.choose.cardTypeList): up to five pawprints of modes, a mode more than once; {P} put a +1/+1 counter on a creature you control (chosen on resolution, not targeted) and it gains vigilance and trample until end of turn; {P}{P} choose artifact or enchantment, only those two offered, and destroy all permanents of the chosen type; {P}{P}{P} draw cards equal to the greatest power among creatures you control (CR 700.2h, 700.2d, 608.2d, 607.2d, 205.2a, 701.8a, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "allowRepeat": true,
+        "max": 5,
+        "min": 0,
+        "options": [
+         {
+          "pawprints": 1,
+          "program": {
+           "steps": [
+            {
+             "as": "countersOn",
+             "from": {
+              "filter": {
+               "anyOf": [
+                {
+                 "types": [
+                  "Creature"
+                 ]
+                }
+               ],
+               "controller": "you"
+              },
+              "ref": "each"
+             },
+             "max": 1,
+             "min": 1,
+             "op": "chooseObjects",
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "count": 1,
+             "kind": "+1/+1",
+             "on": {
+              "name": "countersOn",
+              "ref": "bound"
+             },
+             "op": "putCounters"
+            },
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "name": "countersOn",
+                "ref": "bound"
+               },
+               "mods": [
+                {
+                 "add": [
+                  {
+                   "keyword": "vigilance",
+                   "kind": "keyword"
+                  },
+                  {
+                   "keyword": "trample",
+                   "kind": "keyword"
+                  }
+                 ],
+                 "layer": 6
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "pawprints": 2,
+          "program": {
+           "steps": [
+            {
+             "as": "chosenCardType",
+             "link": "chosenCardType",
+             "op": "chooseValue",
+             "options": [
+              "Artifact",
+              "Enchantment"
+             ],
+             "what": "cardType",
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "op": "destroy",
+             "what": {
+              "filter": {
+               "chosen": {
+                "link": "chosenCardType",
+                "quality": "cardType"
+               }
+              },
+              "ref": "each"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "pawprints": 3,
+          "program": {
+           "steps": [
+            {
+             "count": {
+              "agg": "max",
+              "of": {
+               "filter": {
+                "controller": "you",
+                "types": [
+                 "Creature"
+                ]
+               },
+               "ref": "each"
+              },
+              "q": "stat",
+              "stat": "power"
+             },
+             "op": "draw",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         }
+        ],
+        "pawprints": 5
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Moonstone, Harsh Mistress",
+  "expect": "full",
+  "verified": "Standard round D (std-rD) review (Standard, held-out half: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (eff.stdrd.exile.fromYourGraveyard, eff.e29.permit.play.obj.durFirst): flying; whenever you discard a card, you may exile that card, only while it is still in your graveyard (a card the discard put elsewhere or that left the graveyard is a new object and is not moved), and if you do, you may play it from exile until the end of your next turn (CR 701.9a, 603.5, 608.2c, 400.7, 701.13a, 611.2c, 601.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "did",
+         "do": [
+          {
+           "op": "move",
+           "to": {
+            "zone": "exile"
+           },
+           "what": {
+            "filter": {
+             "is": {
+              "ref": "event",
+              "role": "subject"
+             },
+             "owner": "you",
+             "zone": "graveyard"
+            },
+            "ref": "each"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfNextTurn",
+            "whose": {
+             "ref": "you"
+            }
+           },
+           "effects": [
+            {
+             "action": "play",
+             "of": {
+              "is": {
+               "ref": "event",
+               "role": "subject"
+              }
+             },
+             "s": "permit",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "actor": "you",
+         "ev": "action",
+         "verb": "discard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Cloud Key",
+  "expect": "full",
+  "verified": "Standard round D (std-rD) review (tuning half under the hash split of main 491cde1), by hand against the Oracle text and the rules cited (rep.stdrd.enters.choose.cardTypeList, sta.c5.spells.you.chosen.less): as it enters its controller chooses artifact, creature, enchantment, instant or sorcery (only those five); spells that player casts of the chosen type cost {1} less to cast, generic mana only (CR 614.12a, 607.2a, 205.2a, 601.2f; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "choose": [
+          {
+           "link": "cardType",
+           "options": [
+            "Artifact",
+            "Creature",
+            "Enchantment",
+            "Instant",
+            "Sorcery"
+           ],
+           "what": "cardType"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "stack",
+       "battlefield"
+      ]
+     },
+     {
+      "effects": [
+       {
+        "applies": {
+         "caster": "you",
+         "spells": {
+          "anyOf": [
+           {
+            "stackKind": "spell",
+            "zone": "stack"
+           }
+          ],
+          "chosen": {
+           "link": "cardType",
+           "quality": "cardType"
+          }
+         }
+        },
+        "change": {
+         "floor": "zero",
+         "generic": 1,
+         "kind": "reduce"
+        },
+        "s": "costMod"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield"
+      ]
+     }
+    ]
+   }
+  ]
+ }
+]

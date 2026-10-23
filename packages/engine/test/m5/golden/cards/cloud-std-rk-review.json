@@ -1,0 +1,366 @@
+[
+ {
+  "card": "Darksteel Splicer",
+  "expect": "full",
+  "verified": "Round std-rk review (Commander precon, tuning half), by hand against the Oracle text and the rules cited: whenever it or another nontoken Phyrexian you control enters, create X 3/3 colorless Phyrexian Golem artifact creature tokens, X the number of opponents you have, counted as the ability resolves (CR 603.2, 102.3, 107.3, 608.2h); Golems you control have indestructible (CR 613.1f). Cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "token": false,
+          "subtypes": [
+           "Phyrexian"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "countPlayers",
+          "of": {
+           "ref": "each",
+           "who": "opponent"
+          }
+         },
+         "token": {
+          "colors": [],
+          "types": [
+           "Artifact",
+           "Creature"
+          ],
+          "subtypes": [
+           "Phyrexian",
+           "Golem"
+          ],
+          "power": 3,
+          "toughness": 3
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Golem"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "indestructible"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Voice of Many",
+  "expect": "full",
+  "verified": "Round std-rk review (Commander precon, tuning half), by hand against the Oracle text and the rules cited: when it enters, draw a card for each opponent who controls fewer creatures than you, each opponent judged alone against the creatures you control as the trigger resolves, the Voice itself included (countPlayers controlsVs '<', CR 102.3, 608.2h). Cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "countPlayers",
+          "of": {
+           "ref": "each",
+           "who": "opponent"
+          },
+          "controlsVs": {
+           "filter": {
+            "types": [
+             "Creature"
+            ]
+           },
+           "op": "<",
+           "than": {
+            "ref": "you"
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Heidegger, Shinra Executive",
+  "expect": "full",
+  "verified": "Round std-rk review (Commander precon, tuning half), by hand against the Oracle text and the rules cited: at the beginning of combat on your turn, target creature you control gets +X/+0 until end of turn, X the Soldiers you control (fixed at resolution, CR 608.2h, 611.2c); at the beginning of your end step, one 1/1 white Soldier token for each opponent who controls more creatures than you (countPlayers controlsVs '>', CR 102.3, 111.1). Cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": {
+              "q": "count",
+              "of": {
+               "ref": "each",
+               "filter": {
+                "subtypes": [
+                 "Soldier"
+                ],
+                "controller": "you"
+               }
+              }
+             },
+             "toughness": 0
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "countPlayers",
+          "of": {
+           "ref": "each",
+           "who": "opponent"
+          },
+          "controlsVs": {
+           "filter": {
+            "types": [
+             "Creature"
+            ]
+           },
+           "op": ">",
+           "than": {
+            "ref": "you"
+           }
+          }
+         },
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Soldier"
+          ],
+          "power": 1,
+          "toughness": 1
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Banish to Another Universe",
+  "expect": "full",
+  "verified": "Round std-rk review (Commander precon, tuning half), by hand against the Oracle text and the rules cited: affinity for historic permanents, {1} less for each artifact, legendary and/or Saga permanent you control (CR 702.41a, 700.6); when it enters, exile target nonland permanent an opponent controls until it leaves the battlefield (CR 610.3). Cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "affinity",
+      "filter": {
+       "anyOf": [
+        {
+         "types": [
+          "Artifact"
+         ]
+        },
+        {
+         "supertypes": [
+          "Legendary"
+         ]
+        },
+        {
+         "subtypes": [
+          "Saga"
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "notTypes": [
+           "Land"
+          ],
+          "controller": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "until": {
+          "d": "until",
+          "event": {
+           "ev": "zoneChange",
+           "subject": {
+            "self": true
+           },
+           "from": "battlefield"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

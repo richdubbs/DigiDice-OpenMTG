@@ -1,0 +1,32 @@
+# FAST5X E14: the top of your library (CR 401.5, 601.3, 601.3e, 305.1-305.2): "You may look at the top card of your library any time" and the permissions
+# to play lands and cast spells from the top of your library.
+# After editing: npm run cards -- fixtures
+
+# ---- Look at the top card, cast or play from the top (CR 401.5, 601.3, 305.1)
+Vizier of the Menagerie
+Glarb, Calamity's Augur
+Madame Web, Clairvoyant
+Hakoda, Selfless Commander
+Traveling Chocobo
+Ka-Zar of the Savage Land
+Mikey & Don, Party Planners
+Mm'menon, the Right Hand
+
+# ---- Once each turn (CR 601.3)
+Johann, Apprentice Sorcerer
+Assemble the Players
+
+# ---- Until end of turn, conditional, granted, look only
+The Belligerent
+Gwenom, Remorseless
+The Lunar Whale
+Glowcap Lantern
+Iron Lad, Diverging Destiny
+
+# ---- Golden evidence for the stable templates (other cards of the corpus that print the sentences) and helpers
+Precognition Field
+Elven Chorus
+Errant and Giada
+Sigarda, Font of Blessings
+Mystic Forge
+Experimental Frenzy

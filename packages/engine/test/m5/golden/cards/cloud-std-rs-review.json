@@ -1,0 +1,554 @@
+[
+ {
+  "card": "Krang & Shredder",
+  "expect": "full",
+  "verified": "Standard round S (std-rs) review (card wave 2 slice s3, Standard), by hand against the Oracle text and the rules cited (eff.stdrs.player.exileUntil, eff.stdrs.cast.linkedExiled.free): as it enters or attacks, each opponent exiles cards from the top of their own library until a nonland card, every card exiled being linked to it; at the beginning of your end step, if a permanent left the battlefield under your control this turn, you may cast one nonland card exiled with it without paying its mana cost (CR 406.1, 608.2c, 101.4, 607.2a, 603.4, 608.2g, 118.9; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "exileUntil",
+         "filter": {
+          "notTypes": [
+           "Land"
+          ]
+         },
+         "link": "exiled",
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "as": "cast",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           },
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "any"
+          }
+         },
+         "max": 1,
+         "min": 0,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "cast",
+         "free": true,
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "zoneChange",
+        "from": "battlefield",
+        "subject": {
+         "controller": "you"
+        }
+       },
+       "scope": "turn"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Null Summoner",
+  "expect": "full",
+  "verified": "Standard round S (std-rs) review (card wave 2 slice s3, Standard, held-out half: open for Standard), by hand against the Oracle text and the rules cited (sta.stdrs.aslong.cast.exiled.anyType): when it enters, if you cast it, target opponent reveals their hand, you choose a nonland card from it and exile it (the linked card); as long as seven or more cards are in your graveyard, you may cast that card and spend mana of any type on it (CR 603.4, 701.20a, 607.2a, 604.1, 609.4b, 207.2c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "reveal",
+         "as": "them",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "zone": "hand"
+          }
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "chosen",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "isCard": true,
+             "notTypes": [
+              "Land"
+             ]
+            }
+           ],
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "any"
+          }
+         },
+         "max": 1,
+         "min": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "link": "exiled",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "wasCast",
+       "by": "you"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "exists",
+       "atLeast": 7,
+       "of": {
+        "ref": "each",
+        "filter": {
+         "isCard": true,
+         "owner": "you",
+         "zone": "graveyard"
+        }
+       }
+      },
+      "effects": [
+       {
+        "s": "permit",
+        "action": "cast",
+        "anyManaType": true,
+        "of": {
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        },
+        "who": {
+         "ref": "you"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Outrageous Robbery",
+  "expect": "full",
+  "verified": "Standard round S (std-rs) review (card wave 2 slice s3, Standard, held-out half: open for Standard), by hand against the Oracle text and the rules cited (eff.stdrs.player.exileTop.faceDown, eff.stdrs.lookAndPlay.group.remainsExiled, rid.stdrs.castThisWay.spendAnyType): target opponent exiles the top X cards of their library face down; you look at them and may play them for as long as they remain exiled, spending mana of any type on the spells cast this way (CR 406.3, 701.20e, 611.2a, 601.3, 305.1, 609.4b, 107.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "as": "them",
+         "to": {
+          "faceDown": true,
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "topCards",
+          "count": {
+           "q": "X"
+          },
+          "player": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        },
+        {
+         "op": "look",
+         "at": {
+          "ref": "bound",
+          "name": "them"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "remainsExiled"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "action": "play",
+           "anyManaType": true,
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            }
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Nexus of Becoming",
+  "expect": "full",
+  "verified": "Standard round S (std-rs) review (card wave 2 slice s3, Standard, held-out half: open for Standard), by hand against the Oracle text and the rules cited (eff.stdrs.copy.token.basept.subtype.artifactCreature): at the beginning of combat on your turn, draw a card, then you may exile an artifact or creature card from your hand; if you do, create a token copy of it that is also a 3/3 Golem artifact creature (CR 121.1, 608.2c, 707.2, 707.9b, 205.1b, 613.4b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "may",
+         "as": "did",
+         "do": [
+          {
+           "op": "chooseObjects",
+           "as": "exiled",
+           "from": {
+            "ref": "each",
+            "filter": {
+             "isCard": true,
+             "owner": "you",
+             "types": [
+              "Artifact",
+              "Creature"
+             ],
+             "zone": "hand"
+            }
+           },
+           "max": 1,
+           "min": 1,
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "op": "move",
+           "to": {
+            "zone": "exile"
+           },
+           "what": {
+            "ref": "bound",
+            "name": "exiled"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "copy",
+           "except": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Golem"
+              ]
+             },
+             "types": {
+              "add": [
+               "Artifact",
+               "Creature"
+              ]
+             }
+            },
+            {
+             "layer": "7b",
+             "power": 3,
+             "toughness": 3
+            }
+           ],
+           "result": "token",
+           "what": {
+            "ref": "bound",
+            "name": "exiled"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Decadent Dragon // Expensive Taste",
+  "expect": "full",
+  "verified": "Standard round S (std-rs) review (Standard, held-out half: open for Standard; wave 2 slice s10, reached by the round's general reading, not worked as a card), by hand against the Oracle text and the rules cited (eff.stdrs.lookAndPlay.group.remainsExiled): flying, trample, a Treasure whenever it attacks; the Adventure exiles the top two cards of target opponent's library face down and you may look at and play them for as long as they remain exiled (CR 702.9a, 702.19a, 111.10a, 715.3, 406.3, 701.20e, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "trample"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "predefined": "Treasure"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "as": "them",
+         "to": {
+          "faceDown": true,
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "topCards",
+          "count": 2,
+          "player": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        },
+        {
+         "op": "look",
+         "at": {
+          "ref": "bound",
+          "name": "them"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "remainsExiled"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "action": "play",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            }
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

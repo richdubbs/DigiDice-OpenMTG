@@ -1,0 +1,16 @@
+{
+  "name": "ripple",
+  "rule": "702.60",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When you cast this spell, you may reveal the top {n} cards of your library. You may cast spells with the same name as this spell from among those cards without paying their mana costs. Put the rest on the bottom of your library.",
+  "multiple": "independent",
+  "status": "planned"
+}

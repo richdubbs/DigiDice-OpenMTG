@@ -1,0 +1,229 @@
+/* The Images screen (work package C2). Colors only from the theme variables. */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* WCAG 2.4.7: the hidden file input comes right before its label, which draws the input's keyboard focus. */
+.visually-hidden:focus-visible + label {
+  outline: 2px solid var(--focus, var(--accent-2, #f500f5));
+  outline-offset: 2px;
+}
+
+/* Panels are .hud-panel (theme): dark glass with neon corner brackets. */
+.images-panel {
+  margin: 18px 0;
+  padding: 18px 22px;
+}
+
+.images-panel h2 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--neon);
+  text-shadow: 0 0 10px var(--glow-soft);
+}
+
+.images-warning {
+  padding: 8px 12px;
+  border: 1px solid var(--accent-2);
+  border-radius: 8px;
+  background: rgba(var(--neon-2-rgb), 0.08);
+}
+
+.upload-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.upload-row label[aria-disabled='true'] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.deck-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.images-screen textarea,
+.card-picker input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.images-status:empty {
+  display: none;
+}
+
+.review-list,
+.image-cards,
+.slot-list,
+.card-picker-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.review-item,
+.slot-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+}
+
+.review-body,
+.slot-body {
+  flex: 1 1 160px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.review-body p {
+  margin: 0;
+}
+
+.review-choices,
+.card-picker-slots,
+.slot-actions,
+.images-clear {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.image-thumb {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 100px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-strong);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Previews keep the whole image and its aspect ratio. */
+.image-thumb img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.image-card h3 {
+  margin: 12px 0 4px;
+  font-size: 1rem;
+}
+
+/* WCAG 1.4.10: long file and card names wrap instead of widening the page. */
+.review-file,
+.slot-label,
+.slot-file {
+  overflow-wrap: anywhere;
+}
+
+.slot-file {
+  font-size: 0.8rem;
+}
+
+.slot-actions .button,
+.slot-actions button {
+  min-width: 0;
+}
+
+/* At phone width the slot's buttons take their own line under the picture and the label. */
+@media (max-width: 560px) {
+  .slot-actions {
+    flex-basis: 100%;
+  }
+}
+
+/* Library messages stay in view wherever the player scrolled to. */
+.images-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 900;
+  transform: translateX(-50%);
+  max-width: min(560px, calc(100vw - 32px));
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  color: var(--text);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  overflow-wrap: anywhere;
+}
+
+.images-toast:empty {
+  display: none;
+}
+
+.images-panel h2:focus {
+  outline: none;
+}
+
+.images-panel h2:focus-visible {
+  outline: 2px solid var(--focus, var(--accent-2, #f500f5));
+  outline-offset: 2px;
+}
+
+.card-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.card-picker-results button {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 6px 10px;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.card-picker-type {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.setting-toggle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-weight: 600;
+}
+
+.setting-hint {
+  margin: 4px 0 0 26px;
+  font-size: 0.9rem;
+}

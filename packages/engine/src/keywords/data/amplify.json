@@ -1,0 +1,16 @@
+{
+  "name": "amplify",
+  "rule": "702.38",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "replacement"
+  ],
+  "reminder": "As this creature enters, reveal any number of cards in your hand that share a creature type with it. It enters with {n} +1/+1 counters on it for each card revealed this way.",
+  "multiple": "independent",
+  "status": "planned"
+}

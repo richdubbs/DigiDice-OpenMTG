@@ -1,0 +1,6 @@
+# std-rr (wave 2 slice s2; test/cloud/std-rr, golden cloud-std-rr-review.json): "enchanted player" (PlayerRef enchantedPlayer) and the promotion of
+# rst.player.cant.gainlife; "one or more [of your] opponents are dealt [combat] damage" (one trigger for the whole batch); "~'s owner shuffles ~ into their
+# library"; "its base power and toughness become equal to <object>'s power and toughness <duration>"
+Fblthp, Impossibly Lost
+Galion, Elvenking's Butler
+Grievous Wound

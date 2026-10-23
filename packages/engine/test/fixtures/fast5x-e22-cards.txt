@@ -1,0 +1,43 @@
+# FAST5X E22: descend and the turn's history II (CR 700.11, 207.2c, 603.4, 603.2c, 119.9-10, 701.21a, 700.2); the golden review cards
+# (test/m5/golden/cards/fast5x-e22-review.json). After editing: npm run cards -- fixtures
+
+# ---- "if you descended this turn" (CR 700.11) and "the number of times you descended this turn"
+Child of the Volcano
+Deep Goblin Skulltaker
+Stalactite Stalker
+Enterprising Scallywag
+Canonized in Blood
+Broodrage Mycoid
+Ruin-Lurker Bat
+Molten Collapse
+
+# ---- descend 4 / descend 8 / fathomless descent (CR 207.2c): permanent cards in your graveyard
+Akawalli, the Seething Tower
+Song of Stupefaction
+Wail of the Forgotten
+
+# ---- life gained or lost, cards that left your graveyard, cards put into exile, sacrificed, no spell cast
+Starlit Soothsayer
+Starseer Mentor
+Lunar Convocation
+Primary Research
+Living History
+Ennis, Debate Moderator
+Sawblade Skinripper
+Edgar, Moonlit Sovereign
+
+# ---- "whenever a card leaves / one or more cards leave your graveyard during your turn" (CR 603.2c, 603.10a)
+Kishla Skimmer
+Attuned Hunter
+Kheru Goldkeeper
+
+# ---- the same template families on cards outside the package: "-X/-0, where X is" Auras and "it gets an additional" Equipment (CR 613.4c)
+Fear of Death
+Spontaneous Mutation
+Disturbing Conversion
+Heavy Mattock
+True-Faith Censer
+Silver-Inlaid Dagger
+
+# ---- G10 guard: the cost reduction "if one or more cards left your graveyard this turn" keeps its own template (zz-fast4/t32.json)
+Wilt in the Heat

@@ -1,0 +1,83 @@
+{
+  "name": "replicate",
+  "rule": "702.56",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "When you cast this spell, copy it for each time you paid its replicate cost. You may choose new targets for the copies.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Replicate {cost}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$cost",
+          "optional": true,
+          "name": {
+            "$ordinal": "replicate"
+          },
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, if a replicate cost was paid for it, copy it for each time its replicate cost was paid. If the spell has any targets, you may choose new targets for any of the copies.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "wasCast",
+        "kicked": {
+          "$ordinal": "replicate"
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "copy",
+            "what": {
+              "ref": "self"
+            },
+            "result": "spell",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "kickCount",
+              "name": {
+                "$ordinal": "replicate"
+              }
+            },
+            "newTargets": "may"
+          }
+        ]
+      }
+    }
+  ]
+}

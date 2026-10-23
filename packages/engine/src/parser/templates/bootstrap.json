@@ -1,0 +1,226 @@
+[
+  {
+    "id": "eff.damage",
+    "kind": "effect",
+    "cr": ["CR 120.1", "CR 120.3", "CR 115.4"],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient}",
+    "build": { "op": "damage", "source": "$src", "to": "$to", "amount": "$n" },
+    "subject": "object",
+    "examples": [
+      { "text": "~ deals 11 damage to any target." },
+      { "text": "~ deals 1 damage to target player." }
+    ],
+    "counterExamples": ["~ deals 4 damage to any target unless it is red.", "~ deals 4 damage."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.destroy",
+    "kind": "effect",
+    "cr": ["CR 701.8a"],
+    "pattern": "destroy {o:Objs}",
+    "build": { "op": "destroy", "what": "$o" },
+    "subject": "none",
+    "examples": [
+      { "text": "Destroy target nonred artifact." },
+      { "text": "Destroy target nonblack enchantment." }
+    ],
+    "counterExamples": ["Destroy target creature at random.", "Destroy."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.noregen",
+    "kind": "rider",
+    "cr": ["CR 701.19c"],
+    "pattern": "( they | it ) can't be regenerated",
+    "build": { "$patchPrevious": { "regeneration": "cant" } },
+    "attachTo": "destroy",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Destroy target blue artifact. It can't be regenerated." },
+      { "text": "Destroy target nonwhite enchantment. It can't be regenerated." }
+    ],
+    "counterExamples": ["It can't be blocked.", "They can be regenerated."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.draw",
+    "kind": "effect",
+    "cr": ["CR 121.1"],
+    "pattern": "{p:Player} draw[s] {n:Qty} card[s]",
+    "build": { "op": "draw", "who": "$p", "count": "$n" },
+    "subject": "player",
+    "examples": [
+      { "text": "Target player draws eleven cards." },
+      { "text": "Each player draws a card." }
+    ],
+    "counterExamples": ["Target player draws three lands.", "Target player draws cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.draw.you",
+    "kind": "effect",
+    "cr": ["CR 121.1", "CR 109.5"],
+    "pattern": "draw {n:Qty} card[s]",
+    "build": { "op": "draw", "who": { "ref": "you" }, "count": "$n" },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw nine cards." },
+      { "text": "Draw six cards." }
+    ],
+    "counterExamples": ["Draw two lands.", "Draw cards."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.token",
+    "kind": "effect",
+    "cr": ["CR 111.1", "CR 111.2"],
+    "pattern": "{p:Player} create[s] {n:Qty} {t:TokenDesc}",
+    "build": { "op": "createToken", "who": "$p", "count": "$n", "token": "$t" },
+    "subject": "player",
+    "examples": [
+      { "text": "Each player creates a 2/2 green Bear creature token." },
+      { "text": "Each player creates a 4/4 red Ogre creature token." }
+    ],
+    "counterExamples": ["Each player creates a 2/2 green Bear creature.", "Each player creates tokens."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.pump",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.4c", "CR 514.2"],
+    "pattern": "{o:Obj} get[s] {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }],
+      "duration": "$d"
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "Target creature gets +2/+1 until end of turn." },
+      { "text": "Target creature gets -3/-6 until end of turn." }
+    ],
+    "counterExamples": ["Target creature gets +2/+1 until end of turn unless it is green.", "Target creature gets +2/+1 for each Elf you control."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "wrap.payelse",
+    "kind": "effect",
+    "cr": ["CR 118.12", "CR 118.12a"],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {c:Cost}",
+    "build": { "op": "pay", "who": "$p", "cost": "$c", "else": "$e" },
+    "consumes": ["unless"],
+    "examples": [
+      { "text": "Destroy target artifact unless its controller pays {2}." },
+      { "text": "Destroy target enchantment unless its controller pays {5}." }
+    ],
+    "counterExamples": ["Destroy target artifact unless it is blue.", "Destroy target artifact if its controller pays {2}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "wrap.mayunless",
+    "kind": "effect",
+    "cr": ["CR 118.12a", "CR 608.2d"],
+    "pattern": "{q:Player} may {e:Effects} unless {p:Player} pay[s] {c:Cost}",
+    "build": { "op": "pay", "who": "$p", "cost": "$c", "else": [{ "op": "may", "who": "$q", "do": "$e" }] },
+    "consumes": ["may", "unless"],
+    "examples": [
+      { "text": "You may draw a card unless target opponent pays {1}." },
+      { "text": "You may draw two cards unless target opponent pays {4}." }
+    ],
+    "counterExamples": ["You may draw a card unless it is blue.", "You may draw a card if target opponent pays {1}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.enters",
+    "kind": "trigger",
+    "cr": ["CR 603.2", "CR 603.6a"],
+    "pattern": "when ~ enter[s]",
+    "build": { "on": [{ "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" }] },
+    "consumes": ["when"],
+    "examples": [
+      { "text": "When ~ enters, draw three cards." },
+      { "text": "When ~ enters, target player draws four cards." }
+    ],
+    "counterExamples": ["When ~ enters tapped, draw a card.", "When ~ leaves, draw a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "trg.dies",
+    "kind": "trigger",
+    "cr": ["CR 603.2", "CR 603.6c", "CR 603.10a", "CR 700.4"],
+    "pattern": "whenever {s:Filter} die[s]",
+    "build": { "on": [{ "ev": "zoneChange", "subject": "$s", "from": "battlefield", "to": "graveyard" }] },
+    "consumes": ["whenever"],
+    "examples": [
+      { "text": "Whenever a creature an opponent controls dies, draw two cards." },
+      { "text": "Whenever another creature you control dies, draw three cards." }
+    ],
+    "counterExamples": ["Whenever a creature you control dies alone, draw a card.", "Whenever a creature you control leaves, draw a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cost.sac",
+    "kind": "cost",
+    "cr": ["CR 118.3", "CR 701.21a"],
+    "pattern": "sacrifice {o:Filter}",
+    "build": { "kind": "sacrifice", "filter": "$o", "count": 1 },
+    "examples": [
+      { "text": "Sacrifice an artifact" },
+      { "text": "Sacrifice an enchantment" }
+    ],
+    "counterExamples": ["Sacrifice two artifacts", "Sacrifice"],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.anthem",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c"],
+    "pattern": "{f:Filter} get[s] {pt:PT}",
+    "build": { "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] },
+    "examples": [
+      { "text": "Goblins you control get +1/+0." },
+      { "text": "Other Elves you control get +2/+4." }
+    ],
+    "counterExamples": ["Goblins you control get +1/+0 until end of turn.", "Goblins you control get +1/+0 as long as you control a Mountain."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.mana.G",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 605.1a"],
+    "pattern": "add {G}",
+    "build": { "op": "addMana", "who": { "ref": "you" }, "units": [["G"]] },
+    "subject": "none",
+    "examples": [{ "text": "{4}, {T}: Add {G}." }, { "text": "{5}, {T}: Add {G}." }],
+    "counterExamples": ["{T}: Add {G}{G}.", "{T}: Add {G} or {W}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "kw.line",
+    "kind": "ability",
+    "cr": ["CR 702.1", "CR 113.1a"],
+    "pattern": "{k:Keyword}",
+    "build": "$k",
+    "examples": [
+      { "text": "Ward {7}" },
+      { "text": "Vigilance, ward {9}" }
+    ],
+    "counterExamples": ["Flying until end of turn", "Flyings"],
+    "status": "stable",
+    "since": 1
+  }
+]

@@ -1,0 +1,110 @@
+[
+  {
+    "id": "eff.t54.becomes.artifactcreature.basept.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes an artifact creature with base power and toughness {pt:BasePT} and gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target artifact you control becomes an artifact creature with base power and toughness 3/3 and gains trample until end of turn."
+      },
+      {
+        "text": "At the beginning of combat on your turn, up to one target artifact you control becomes an artifact creature with base power and toughness 1/4 and gains flying and vigilance until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target artifact you control becomes an artifact creature with base power and toughness 3/3 and gains trample.",
+      "Target artifact you control becomes an artifact creature with base power and toughness +3/+3 and gains trample until end of turn.",
+      "Target artifact you control becomes an artifact creature with base power and toughness 3/3 until end of turn.",
+      "Target artifact you control becomes a creature with base power and toughness 3/3 and gains trample until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t54.copy.token.legendary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj}, except it's legendary",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "add": [
+              "Legendary"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target artifact you control, except it's legendary."
+      },
+      {
+        "text": "Create a token that's a copy of target creature, except it's legendary."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it isn't legendary.",
+      "Create a token that's a copy of target creature, except it's legendary and it has haste.",
+      "Create a token that's a copy of target artifact or enchantment."
+    ]
+  }
+]

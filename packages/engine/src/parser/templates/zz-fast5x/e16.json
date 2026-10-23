@@ -1,0 +1,109 @@
+[
+  {
+    "id": "trg.e16.oneOrMore.dealtExcessNoncombat",
+    "kind": "trigger",
+    "cr": [
+      "CR 120.10",
+      "CR 120.4a",
+      "CR 120.2b",
+      "CR 603.2c",
+      "CR 702.2c"
+    ],
+    "pattern": "whenever one or more {f:Filter} are dealt excess noncombat damage",
+    "build": {
+      "on": [
+        {
+          "ev": "damage",
+          "recipient": {
+            "object": "$f"
+          },
+          "combat": false,
+          "excess": true
+        }
+      ],
+      "batch": true
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "needs": [
+      "feature:ev.damage.excess",
+      "feature:trigger.batch"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more creatures your opponents control are dealt excess noncombat damage, create a Treasure token.",
+        "expect": {
+          "on": [
+            {
+              "ev": "damage",
+              "recipient": {
+                "object": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "opponent"
+                }
+              },
+              "combat": false,
+              "excess": true
+            }
+          ],
+          "batch": true
+        }
+      },
+      {
+        "text": "Whenever one or more creatures your opponents control are dealt excess noncombat damage, draw a card."
+      },
+      {
+        "text": "Whenever one or more artifact creatures are dealt excess noncombat damage, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more creatures your opponents control are dealt noncombat damage, create a Treasure token.",
+      "Whenever a creature an opponent controls is dealt excess noncombat damage, create a Treasure token.",
+      "Whenever one or more creatures your opponents control are dealt excess combat damage, create a Treasure token.",
+      "Whenever one or more creatures your opponents control deal excess noncombat damage, create a Treasure token."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e16.amass.goblins.whereX",
+    "kind": "effect",
+    "cr": [
+      "CR 701.47a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "amass goblins x , where x is {q:Qty}",
+    "build": {
+      "op": "action",
+      "action": "amass",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$q",
+      "arg": "Goblin"
+    },
+    "subject": "none",
+    "needs": [
+      "action:amass"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, amass Goblins X, where X is the number of Elves you control."
+      },
+      {
+        "text": "~ deals 5 damage to target creature. If excess damage was dealt this way, amass Goblins X, where X is that excess damage."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, amass Goblins X.",
+      "When ~ enters, amass Goblins 2, where X is the number of Elves you control.",
+      "When ~ enters, amass Goblins X, where Y is the number of Elves you control."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

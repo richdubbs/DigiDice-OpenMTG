@@ -1,0 +1,629 @@
+[
+  {
+    "id": "eff.r4mech.grant.mustBeBlocked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1c",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} {d:Dur} and must be blocked this turn if able",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "must",
+      "if able",
+      "if",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gains trample until end of turn and must be blocked this turn if able."
+      },
+      {
+        "text": "{2}{G}: ~ gains first strike until end of turn and must be blocked this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gains trample until end of turn and must be blocked this turn.",
+      "Target creature gains trample until end of turn and can't be blocked this turn.",
+      "Target creature gains trample until end of turn and must block this turn if able."
+    ]
+  },
+  {
+    "id": "eff.r4mech.counters.put.forEachCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {o:Objs} for each {c:CounterKind} counter on {on:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "counters",
+        "on": "$on",
+        "kind": "$c"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, put a +1/+1 counter on target creature for each charge counter on ~."
+      },
+      {
+        "text": "{T}: Put a -1/-1 counter on target creature for each age counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Put a +1/+1 counter on target creature for each charge counter.",
+      "{T}: Remove a +1/+1 counter from target creature for each charge counter on ~.",
+      "{T}: Put a +1/+1 counter on target creature for each charge counter on ~ unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.r4mech.repeatProcess",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c"
+    ],
+    "pattern": "repeat this process once",
+    "build": {
+      "op": "repeat",
+      "times": 1,
+      "process": true,
+      "do": []
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card, then discard a card. Repeat this process once."
+      },
+      {
+        "text": "When ~ enters, you may search your library for a Forest card and put it onto the battlefield tapped. Then if you control no Islands, repeat this process once. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Repeat this process once.",
+      "Draw a card. Repeat this process.",
+      "Draw a card. Repeat this process twice."
+    ]
+  },
+  {
+    "id": "sta.r4mech.rule.firstCoinFlipsWon",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 705.1",
+      "CR 705.2",
+      "CR 614.1a"
+    ],
+    "pattern": "the first time you flip one or more coins each turn , those coins come up heads and you win those flips",
+    "build": {
+      "s": "rule",
+      "rule": "firstCoinFlipsWon"
+    },
+    "consumes": [
+      "each",
+      "first time"
+    ],
+    "examples": [
+      {
+        "text": "Lucky Penny -- The first time you flip one or more coins each turn, those coins come up heads and you win those flips."
+      },
+      {
+        "text": "Heads Up -- The first time you flip one or more coins each turn, those coins come up heads and you win those flips."
+      }
+    ],
+    "counterExamples": [
+      "The first time you flip one or more coins each turn, those coins come up tails.",
+      "Each time you flip one or more coins, those coins come up heads and you win those flips.",
+      "The first time you flip one or more coins each turn, those coins come up heads and you lose those flips."
+    ]
+  },
+  {
+    "id": "eff.r4mech.flipCoins.n",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 705.1"
+    ],
+    "pattern": "flip {n:Qty} coins",
+    "build": {
+      "op": "flipCoin",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Flip three coins."
+      },
+      {
+        "text": "{4}, {T}: Flip two coins."
+      }
+    ],
+    "counterExamples": [
+      "Flip X coins.",
+      "Flip a coin.",
+      "Flip three coins until you lose a flip."
+    ]
+  },
+  {
+    "id": "sta.r4mech.rule.damageNotRemoved.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 514.2",
+      "CR 604.1"
+    ],
+    "pattern": "damage isn't removed from ~ during cleanup steps",
+    "build": {
+      "s": "rule",
+      "rule": "damageNotRemovedInCleanup"
+    },
+    "consumes": [
+      "isn't",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Damage isn't removed from this permanent during cleanup steps."
+      },
+      {
+        "text": "Damage isn't removed from this permanent during cleanup steps.\n{7}{G}: You gain 9 life."
+      }
+    ],
+    "counterExamples": [
+      "Damage isn't removed from ~ during your cleanup step.",
+      "Damage is removed from ~ during cleanup steps.",
+      "Counters aren't removed from ~ during cleanup steps."
+    ]
+  },
+  {
+    "id": "sta.r4mech.rule.damageNotRemoved.each",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 514.2",
+      "CR 604.1"
+    ],
+    "pattern": "damage isn't removed from {f:Filter} during cleanup steps",
+    "build": {
+      "s": "rule",
+      "rule": "damageNotRemovedInCleanup",
+      "of": "$f"
+    },
+    "consumes": [
+      "isn't",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Damage isn't removed from artifact creatures during cleanup steps."
+      },
+      {
+        "text": "Damage isn't removed from artifact creatures your opponents control during cleanup steps."
+      }
+    ],
+    "counterExamples": [
+      "Damage isn't removed from creatures during your cleanup step.",
+      "Damage is removed from creatures during cleanup steps.",
+      "Counters aren't removed from creatures during cleanup steps."
+    ]
+  },
+  {
+    "id": "eff.r4mech.extraPhase.combatThenMain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1a"
+    ],
+    "pattern": "after this main phase , there is an additional combat phase followed by an additional main phase",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat",
+      "after": "main1",
+      "followedBy": "main"
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Untap all creatures you control. After this main phase, there is an additional combat phase followed by an additional main phase."
+      },
+      {
+        "text": "Draw a card. After this main phase, there is an additional combat phase followed by an additional main phase."
+      }
+    ],
+    "counterExamples": [
+      "After this main phase, there is an additional combat phase.",
+      "After this main phase, there is an additional combat phase followed by an additional end step.",
+      "After this main phase, there are two additional combat phases followed by an additional main phase."
+    ]
+  },
+  {
+    "id": "eff.r4mech.extraPhase.combatAfterThisThenMain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1a"
+    ],
+    "pattern": "there is an additional combat phase after this phase [,] followed by an additional main phase",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat",
+      "followedBy": "main"
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, if it's your main phase, there is an additional combat phase after this phase followed by an additional main phase."
+      },
+      {
+        "text": "If it's your main phase, there is an additional combat phase after this phase, followed by an additional main phase."
+      }
+    ],
+    "counterExamples": [
+      "There is an additional combat phase after this phase.",
+      "There is an additional combat phase after this phase followed by an additional end step.",
+      "There is an additional main phase after this phase followed by an additional combat phase."
+    ]
+  },
+  {
+    "id": "eff.r4mech.amass.player.goblins.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.47a",
+      "CR 107.3"
+    ],
+    "pattern": "{p:Player} amasses goblins x , where x is {q:Qty}",
+    "build": {
+      "op": "action",
+      "action": "amass",
+      "who": "$p",
+      "n": "$q",
+      "arg": "Goblin"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Destroy target creature. Its controller amasses Goblins X, where X is that creature's toughness."
+      },
+      {
+        "text": "Target opponent amasses Goblins X, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent amasses Goblins X.",
+      "Target opponent amasses Goblins X, where X is.",
+      "Target opponent creates Goblins X, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.r4mech.amass.player.goblins",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.47a"
+    ],
+    "pattern": "{p:Player} amasses goblins {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "amass",
+      "who": "$p",
+      "n": "$n",
+      "arg": "Goblin"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Exile target creature. Its controller amasses Goblins 3."
+      },
+      {
+        "text": "Target opponent amasses Goblins 2."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent amasses Goblins.",
+      "Target opponent amasses 2.",
+      "Target opponent creates Goblins 2."
+    ]
+  },
+  {
+    "id": "eff.r4mech.amass.player.orcs",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.47a"
+    ],
+    "pattern": "{p:Player} amasses orcs {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "amass",
+      "who": "$p",
+      "n": "$n",
+      "arg": "Orc"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Exile target creature. Its controller amasses Orcs 3."
+      },
+      {
+        "text": "Target opponent amasses Orcs 2."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent amasses Orcs.",
+      "Target opponent amasses 2.",
+      "Target opponent creates Orcs 2."
+    ]
+  },
+  {
+    "id": "eff.r4mech.amass.player.zombies",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.47a"
+    ],
+    "pattern": "{p:Player} amasses zombies {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "amass",
+      "who": "$p",
+      "n": "$n",
+      "arg": "Zombie"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Exile target creature. Its controller amasses Zombies 3."
+      },
+      {
+        "text": "Target opponent amasses Zombies 2."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent amasses Zombies.",
+      "Target opponent amasses 2.",
+      "Target opponent creates Zombies 2."
+    ]
+  },
+  {
+    "id": "sta.r4mech.are.pluralSubtype.addition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.1b"
+    ],
+    "pattern": "{f:Filter} are {st:PluralSubtype} in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control but don't own are Pirates in addition to their other types."
+      },
+      {
+        "text": "Artifact creatures you control are Golems in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Artifact creatures you control are Golems.",
+      "Artifact creatures you control are Golems in addition to their other types until end of turn.",
+      "Artifact creatures you control are Golem in addition to their other types.",
+      "Artifact creatures you control are black Golems in addition to their other types."
+    ]
+  },
+  {
+    "id": "sta.r4mech.rule.zeroLoyaltyKept.each",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 704.5i",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} aren't put into their owners' graveyards for having 0 loyalty",
+    "build": {
+      "s": "rule",
+      "rule": "zeroLoyaltyKept",
+      "of": "$f"
+    },
+    "consumes": [
+      "aren't"
+    ],
+    "examples": [
+      {
+        "text": "Jace planeswalkers you control aren't put into their owners' graveyards for having 0 loyalty."
+      },
+      {
+        "text": "Legendary planeswalkers you control aren't put into their owners' graveyards for having 0 loyalty."
+      }
+    ],
+    "counterExamples": [
+      "Planeswalkers you control aren't put into their owners' graveyards.",
+      "Planeswalkers you control aren't put into their owners' graveyards for having 0 or less life.",
+      "Planeswalkers you control are put into their owners' graveyards for having 0 loyalty."
+    ]
+  },
+  {
+    "id": "eff.r4mech.permit.loyaltyAsInstant.untilEOT",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 611.2a"
+    ],
+    "pattern": "until end of turn , you may activate loyalty abilities of {f:Filter} on any player 's turn any time you could cast an instant",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "activateLoyaltyAsInstant",
+          "of": "$f"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "may",
+      "any time"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, you may activate loyalty abilities of planeswalkers you control on any player's turn any time you could cast an instant. Draw a card."
+      },
+      {
+        "text": "Until end of turn, you may activate loyalty abilities of Chandra planeswalkers you control on any player's turn any time you could cast an instant."
+      }
+    ],
+    "counterExamples": [
+      "You may activate loyalty abilities of planeswalkers you control on any player's turn any time you could cast an instant.",
+      "Until end of turn, you may activate loyalty abilities of planeswalkers you control any time you could cast a sorcery.",
+      "Until end of turn, you may activate abilities of planeswalkers you control on any player's turn any time you could cast an instant."
+    ]
+  },
+  {
+    "id": "eff.r4mech.damage.draw.gainLife.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 121.1",
+      "CR 119.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] x damage to {to:Recipient} , {p:Player} draw[s] x card[s] , and you gain x life , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "draw",
+          "who": "$p",
+          "count": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, it deals X damage to any target, target player draws X cards, and you gain X life, where X is the number of artifacts you control."
+      },
+      {
+        "text": "~ deals X damage to target creature, you draw X cards, and you gain X life, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "~ deals X damage to target creature, you draw X cards, and you gain X life.",
+      "~ deals X damage to target creature, you draw X cards, and you lose X life, where X is the number of cards in your hand.",
+      "~ deals X damage to target creature, you draw X cards, and you gain X life, where X is the number of cards in your hand unless it is red."
+    ]
+  }
+]

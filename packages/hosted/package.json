@@ -1,0 +1,38 @@
+{
+  "name": "@openmtg/hosted",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "DigiDice LLC",
+  "description": "OpenMTG hosted game server (milestone 13): server-authoritative games, guest sessions, lobby, matchmaking and capacity admission (Node only; unofficial fan project). `@openmtg/hosted/api` is the browser-safe protocol contract.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./api": "./src/api.ts"
+  },
+  "bin": {
+    "openmtg-hosted": "src/cli.ts"
+  },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "hosted": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.api.json"
+  },
+  "dependencies": {
+    "@openmtg/accounts": "*",
+    "@openmtg/cards": "*",
+    "@openmtg/engine": "*",
+    "@openmtg/net": "*",
+    "pg": "^8.23.0",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@openmtg/ai": "*",
+    "@openmtg/server": "*",
+    "@electric-sql/pglite": "0.5.8",
+    "@types/pg": "^8.23.1",
+    "@types/ws": "^8.18.2"
+  }
+}

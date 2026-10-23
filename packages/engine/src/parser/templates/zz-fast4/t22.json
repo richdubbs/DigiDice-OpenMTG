@@ -1,0 +1,175 @@
+[
+  {
+    "id": "eff.t22.counters.put.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 122.1", "CR 107.3", "CR 608.2h"],
+    "pattern": "put x {k:CounterKind} counters on {o:Objs} , where x is {q:Qty}",
+    "build": { "lower": "whereX", "value": "$q", "steps": [{ "op": "putCounters", "on": "$o", "kind": "$k", "count": { "q": "X" } }] },
+    "subject": "none",
+    "examples": [
+      { "text": "{3}{G}, {T}: Put X +1/+1 counters on each creature you control, where X is the number of Goblins you control." },
+      { "text": "{2}: Put X +1/+1 counters on target creature, where X is the number of Elves you control." }
+    ],
+    "counterExamples": [
+      "{3}{G}, {T}: Put X +1/+1 counters on each creature you control.",
+      "{3}{G}, {T}: Put X +1/+1 counters on each creature you control, where Y is the number of Goblins you control.",
+      "{3}{G}, {T}: Put two +1/+1 counters on each creature you control, where X is the number of Goblins you control."
+    ]
+  },
+  {
+    "id": "eff.t22.double.pt",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 701.10a", "CR 701.10b", "CR 701.10c", "CR 608.2f", "CR 608.2h", "CR 611.2c", "CR 611.2d", "CR 613.4c"],
+    "pattern": "double the power and toughness of {o:Objs} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": { "q": "stat", "stat": "power", "of": { "ref": "subject" } },
+              "toughness": { "q": "stat", "stat": "toughness", "of": { "ref": "subject" } }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["double"],
+    "examples": [
+      { "text": "Double the power and toughness of each Wolf you control until end of turn." },
+      { "text": "{4}{G}: Double the power and toughness of each Elf you control until end of turn." },
+      { "text": "{2}{G}: Double the power and toughness of target creature until end of turn." }
+    ],
+    "counterExamples": [
+      "Double the power and toughness of each creature you control.",
+      "Double the power of each Wolf you control until end of turn.",
+      "Double the power and toughness of each creature you control until end of turn unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t22.double.power",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 701.10a", "CR 701.10b", "CR 701.10c", "CR 608.2h", "CR 611.2c", "CR 613.4c"],
+    "pattern": "double {o:Obj} 's power {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": { "q": "stat", "stat": "power", "of": "$o" }, "toughness": 0 }] }]
+    },
+    "subject": "none",
+    "consumes": ["double"],
+    "examples": [
+      { "text": "{3}{R}: Double target creature's power until end of turn." },
+      { "text": "{1}{R}, {T}: Double ~'s power until end of turn." }
+    ],
+    "counterExamples": [
+      "Double target creature's power.",
+      "Double target creature's toughness until end of turn.",
+      "Double target creature's power until end of turn unless it is blue."
+    ]
+  },
+  {
+    "id": "sta.t22.self.pump.foreach.aura.attached",
+    "priority": 1,
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 303.4"],
+    "pattern": "~ gets {pt:PT} for each aura attached to it",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "self" },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": { "q": "math", "op": "*", "args": ["$pt.p", { "q": "count", "of": { "ref": "each", "filter": { "subtypes": ["Aura"], "attachedToObject": { "ref": "self" } } } }] },
+          "toughness": { "q": "math", "op": "*", "args": ["$pt.t", { "q": "count", "of": { "ref": "each", "filter": { "subtypes": ["Aura"], "attachedToObject": { "ref": "self" } } } }] }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~ gets +3/+1 for each Aura attached to it." },
+      { "text": "~ gets +1/+2 for each Aura attached to it." }
+    ],
+    "counterExamples": [
+      "~ gets +2/+2 for each Aura you control.",
+      "~ gets +2/+2 until end of turn for each Aura attached to it.",
+      "~ gets +2/+2 for each Aura attached to it unless it is blue."
+    ]
+  },
+  {
+    "id": "sta.t22.self.pump.foreach.equipment.attached",
+    "priority": 1,
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 301.5"],
+    "pattern": "~ gets {pt:PT} for each equipment attached to it",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "self" },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": { "q": "math", "op": "*", "args": ["$pt.p", { "q": "count", "of": { "ref": "each", "filter": { "subtypes": ["Equipment"], "attachedToObject": { "ref": "self" } } } }] },
+          "toughness": { "q": "math", "op": "*", "args": ["$pt.t", { "q": "count", "of": { "ref": "each", "filter": { "subtypes": ["Equipment"], "attachedToObject": { "ref": "self" } } } }] }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~ gets +1/+2 for each Equipment attached to it." },
+      { "text": "~ gets +3/+0 for each Equipment attached to it." }
+    ],
+    "counterExamples": [
+      "~ gets +1/+2 for each Equipment you control.",
+      "~ gets +1/+2 until end of turn for each Equipment attached to it.",
+      "~ gets +1/+2 for each Equipment attached to it unless it is blue."
+    ]
+  },
+  {
+    "id": "sta.t22.enchanted.pump.foreach.aura.equipment.attached",
+    "priority": 1,
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 303.4", "CR 301.5"],
+    "pattern": "enchanted creature gets {pt:PT} for each aura and equipment attached to it",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "attachedTo" },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": { "q": "math", "op": "*", "args": ["$pt.p", { "q": "count", "of": { "ref": "each", "filter": { "subtypes": ["Aura", "Equipment"], "attachedToObject": { "ref": "attachedTo" } } } }] },
+          "toughness": { "q": "math", "op": "*", "args": ["$pt.t", { "q": "count", "of": { "ref": "each", "filter": { "subtypes": ["Aura", "Equipment"], "attachedToObject": { "ref": "attachedTo" } } } }] }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Enchant creature\nEnchanted creature gets +2/+1 for each Aura and Equipment attached to it." },
+      { "text": "Enchant creature\nEnchanted creature gets +1/+0 for each Aura and Equipment attached to it." }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEnchanted creature gets +2/+2 for each Aura attached to it.",
+      "Enchant creature\nEnchanted creature gets +2/+2 for each Aura and Equipment you control.",
+      "Enchant creature\nEnchanted creature gets +2/+2 until end of turn for each Aura and Equipment attached to it."
+    ]
+  }
+]

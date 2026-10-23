@@ -1,0 +1,322 @@
+[
+  {
+    "id": "sta.t12.pump.foreach.counters.self",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 122.1"],
+    "pattern": "{o:Obj} gets {pt:PT} for each {k:CounterKind} counter on ~",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": { "q": "math", "op": "*", "args": ["$pt.p", { "q": "counters", "on": { "ref": "self" }, "kind": "$k" }] },
+          "toughness": { "q": "math", "op": "*", "args": ["$pt.t", { "q": "counters", "on": { "ref": "self" }, "kind": "$k" }] }
+        }
+      ]
+    },
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Equipped creature gets +2/+2 for each charge counter on ~." },
+      { "text": "Equipped creature gets +2/+0 for each charge counter on ~." },
+      { "text": "Enchanted creature gets +1/+1 for each verse counter on ~." }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+1 for each charge counter on it.",
+      "Equipped creature gets +1/+1 until end of turn for each charge counter on ~.",
+      "Equipped creature gets +1/+1 for each charge counter on ~ and has flying."
+    ]
+  },
+  {
+    "id": "sta.t12.pump.aslong.anyplayer.color",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 105.2", "CR 110.2"],
+    "pattern": "{o:Obj} get[s] {pt:PT} as long as any player controls ( a | an ) {c:Color} permanent",
+    "build": {
+      "kind": "static",
+      "condition": { "cond": "exists", "of": { "ref": "each", "filter": { "colors": ["$c"] } } },
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "~ gets +1/+0 as long as any player controls a green permanent." },
+      { "text": "~ gets +2/+2 as long as any player controls a blue permanent." }
+    ],
+    "counterExamples": [
+      "~ gets +1/+0 as long as an opponent controls a green permanent.",
+      "~ gets +1/+0 as long as any player controls a green creature.",
+      "~ gets +1/+0 until end of turn as long as any player controls a green permanent."
+    ]
+  },
+  {
+    "id": "sta.t12.enchanted.pump.foreach.othercreature",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 303.4"],
+    "pattern": "enchanted creature gets {pt:PT} for each other creature you control",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "attachedTo" },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": { "q": "math", "op": "*", "args": ["$pt.p", { "q": "count", "of": { "ref": "each", "filter": { "types": ["Creature"], "controller": "you", "attachedToSource": false } } }] },
+          "toughness": { "q": "math", "op": "*", "args": ["$pt.t", { "q": "count", "of": { "ref": "each", "filter": { "types": ["Creature"], "controller": "you", "attachedToSource": false } } }] }
+        }
+      ]
+    },
+    "consumes": ["each other", "each", "other"],
+    "priority": 2,
+    "examples": [
+      { "text": "Enchant creature\nEnchanted creature gets +2/+2 for each other creature you control." },
+      { "text": "Enchant creature\nEnchanted creature gets +0/+3 for each other creature you control." }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEnchanted creature gets +3/+3 for each creature you control.",
+      "Enchant creature\nEnchanted creature gets +1/+1 for each other creature an opponent controls.",
+      "Enchant creature\nEnchanted creature gets +1/+1 until end of turn for each other creature you control."
+    ]
+  },
+  {
+    "id": "sta.t12.pump.foreach.domain",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 305.6", "CR 205.3i"],
+    "pattern": "{o:Obj} gets {pt:PT} for each basic land type among lands you control",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "math",
+                "op": "+",
+                "args": [
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Plains"] } } }] },
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Island"] } } }] },
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Swamp"] } } }] },
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Mountain"] } } }] },
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Forest"] } } }] }
+                ]
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "math",
+                "op": "+",
+                "args": [
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Plains"] } } }] },
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Island"] } } }] },
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Swamp"] } } }] },
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Mountain"] } } }] },
+                  { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Forest"] } } }] }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Enchant creature\nEnchanted creature gets +2/+1 for each basic land type among lands you control." },
+      { "text": "Enchant creature\nEnchanted creature gets -2/-1 for each basic land type among lands you control." },
+      { "text": "~ gets +0/+1 for each basic land type among lands you control." }
+    ],
+    "counterExamples": [
+      "~ gets +1/+0 for each land type among lands you control.",
+      "~ gets +1/+0 for each basic land type among lands an opponent controls.",
+      "~ gets +1/+0 until end of turn for each basic land type among lands you control."
+    ]
+  },
+  {
+    "id": "sta.t12.cda.pt.domain",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.3", "CR 613.4a", "CR 208.2a", "CR 305.6", "CR 205.3i"],
+    "pattern": "~ 's power and toughness are each equal to the number of basic land types among lands you control",
+    "build": {
+      "s": "continuous",
+      "cda": true,
+      "affects": { "ref": "self" },
+      "mods": [
+        {
+          "layer": "7a",
+          "power": {
+            "q": "math",
+            "op": "+",
+            "args": [
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Plains"] } } }] },
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Island"] } } }] },
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Swamp"] } } }] },
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Mountain"] } } }] },
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Forest"] } } }] }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "+",
+            "args": [
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Plains"] } } }] },
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Island"] } } }] },
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Swamp"] } } }] },
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Mountain"] } } }] },
+              { "q": "math", "op": "min", "args": [1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Land"], "controller": "you", "subtypes": ["Forest"] } } }] }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~'s power and toughness are each equal to the number of basic land types among lands you control." },
+      { "text": "Flying\n~'s power and toughness are each equal to the number of basic land types among lands you control." }
+    ],
+    "counterExamples": [
+      "~'s power and toughness are each equal to the number of land types among lands you control.",
+      "~'s power is equal to the number of basic land types among lands you control.",
+      "~'s power and toughness are each equal to the number of basic land types among lands an opponent controls."
+    ]
+  },
+  {
+    "id": "sta.t12.cda.power.toughnessplus",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.3", "CR 613.4a", "CR 208.2a"],
+    "pattern": "~ 's power is equal to {q:Qty} and its toughness is equal to that number plus {n:Qty}",
+    "build": {
+      "s": "continuous",
+      "cda": true,
+      "affects": { "ref": "self" },
+      "mods": [{ "layer": "7a", "power": "$q", "toughness": { "q": "math", "op": "+", "args": ["$q", "$n"] } }]
+    },
+    "examples": [
+      { "text": "~'s power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 2." },
+      { "text": "~'s power is equal to the number of creature cards in your graveyard and its toughness is equal to that number plus 3." }
+    ],
+    "counterExamples": [
+      "~'s power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number minus 1.",
+      "~'s power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number.",
+      "~'s power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1 until end of turn."
+    ]
+  },
+  {
+    "id": "rst.t12.cantblock.power.atleast",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 101.2", "CR 208.1"],
+    "pattern": "{o:Obj} can't block creatures with power {n:Qty} or greater",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "block",
+      "other": { "types": ["Creature"], "power": { "op": ">=", "value": "$n" } }
+    },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "~ can't block creatures with power 5 or greater." },
+      { "text": "~ can't block creatures with power 4 or greater." }
+    ],
+    "counterExamples": [
+      "~ can't block creatures with power 3 or less.",
+      "~ can't block creatures with power 4 or greater unless you pay {2}.",
+      "~ can't block creatures with toughness 3 or greater."
+    ]
+  },
+  {
+    "id": "rst.t12.lesspower.cantblock.self",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 101.2", "CR 208.1"],
+    "pattern": "creatures with power less than ~ 's power can't block it",
+    "build": {
+      "s": "restrict",
+      "subject": { "ref": "self" },
+      "mode": "cant",
+      "action": "beBlockedBy",
+      "other": { "types": ["Creature"], "power": { "op": "<", "value": { "q": "stat", "stat": "power", "of": { "ref": "self" } } } }
+    },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Creatures with power less than ~'s power can't block it." },
+      { "text": "Trample\nCreatures with power less than ~'s power can't block it." }
+    ],
+    "counterExamples": [
+      "Creatures with power less than ~'s power can't block it this turn.",
+      "Creatures with power less than ~'s power can't block Golems.",
+      "Creatures with toughness less than ~'s power can't block it."
+    ]
+  },
+  {
+    "id": "sta.t12.pump.loseall",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f", "CR 613.4c"],
+    "pattern": "{o:Obj} gets {pt:PT} and loses all abilities",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        { "layer": 6, "removeAll": true },
+        { "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }
+      ]
+    },
+    "consumes": ["all"],
+    "examples": [
+      { "text": "Enchant creature\nEnchanted creature gets -4/-0 and loses all abilities." },
+      { "text": "Enchant creature\nEnchanted creature gets -2/-2 and loses all abilities." }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEnchanted creature gets -4/-0 and loses flying.",
+      "Enchant creature\nEnchanted creature gets -4/-0 and loses all abilities until end of turn.",
+      "Enchant creature\nEnchanted creature gets -4/-0 and gains all abilities."
+    ]
+  },
+  {
+    "id": "sta.t12.chosencolor.anthem",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 607.2d", "CR 611.3a", "CR 613.4c", "CR 105.2"],
+    "pattern": "creatures you control of the chosen color get {pt:PT}",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "each", "filter": { "types": ["Creature"], "controller": "you", "chosen": { "link": "color", "quality": "color" } } },
+      "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }]
+    },
+    "consumes": ["chosen"],
+    "priority": 1,
+    "examples": [
+      { "text": "As ~ enters, choose a color.\nCreatures you control of the chosen color get +2/+1." },
+      { "text": "As ~ enters, choose a color.\nCreatures you control of the chosen color get +0/+2." }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a color.\nCreatures you control of the chosen color get +2/+1 until end of turn.",
+      "As ~ enters, choose a color.\nCreatures you control of the chosen color have flying.",
+      "As ~ enters, choose a color.\nCreatures of the chosen color get +2/+1."
+    ]
+  }
+]

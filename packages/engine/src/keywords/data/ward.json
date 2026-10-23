@@ -1,0 +1,61 @@
+{
+  "name": "ward",
+  "rule": "702.21",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this permanent becomes the target of a spell or ability an opponent controls, counter it unless that player pays {cost}.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ becomes the target of a spell or ability an opponent controls, counter that spell or ability unless that player pays {pay}.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "becomes",
+            "what": "targeted",
+            "object": {
+              "self": true
+            },
+            "by": {
+              "controller": "opponent"
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "pay",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "event",
+                "role": "spell"
+              }
+            },
+            "cost": "$cost",
+            "else": [
+              {
+                "op": "counter",
+                "what": {
+                  "ref": "event",
+                  "role": "spell"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

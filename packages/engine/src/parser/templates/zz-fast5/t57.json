@@ -1,0 +1,478 @@
+[
+  {
+    "id": "rep.t57.enters.tapped.choose.color",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.1d",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a"
+    ],
+    "pattern": "~ enters tapped . as it enters , choose a color",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "choose": [
+              {
+                "what": "color",
+                "link": "color"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "This enchantment enters tapped. As it enters, choose a color."
+      },
+      {
+        "text": "This permanent enters tapped. As it enters, choose a color."
+      }
+    ],
+    "counterExamples": [
+      "This enchantment enters tapped. As it enters, choose two colors.",
+      "This enchantment enters tapped. As it enters, choose a creature type.",
+      "This enchantment enters untapped. As it enters, choose a color.",
+      "This enchantment enters tapped. As it enters, you may choose a color."
+    ]
+  },
+  {
+    "id": "rst.t57.cantbeblocked.except.min",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 702.111b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked except by {n:Qty} or more creatures",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beBlocked",
+      "min": "$n"
+    },
+    "consumes": [
+      "can't",
+      "except",
+      "or more"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked except by four or more creatures.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "~ can't be blocked except by four or more creatures.",
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "self"
+                },
+                "mode": "cant",
+                "action": "beBlocked",
+                "min": 4
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Enchanted creature can't be blocked except by three or more creatures."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be blocked except by X or more creatures.",
+      "~ can't be blocked except by three or fewer creatures.",
+      "~ can't be blocked by three or more creatures.",
+      "~ can't be blocked except by three or more creatures this turn.",
+      "~ can't be blocked except by three or more Walls."
+    ]
+  },
+  {
+    "id": "eff.t57.cantbeblockedby.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked by {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": "$f"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{2}: ~ can't be blocked by creatures with power 3 or less this turn."
+      },
+      {
+        "text": "Target creature can't be blocked by creatures with power 1 or less this turn."
+      },
+      {
+        "text": "{1}{R}: ~ can't be blocked by Walls this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ can't be blocked by creatures with power 3 or less.",
+      "{2}: ~ can be blocked by creatures with power 3 or less this turn.",
+      "{2}: ~ can't be blocked this turn by creatures with power 3 or less.",
+      "{2}: ~ can't block creatures with power 3 or less this turn."
+    ]
+  },
+  {
+    "id": "eff.t57.damage.unpreventable",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.12",
+      "CR 611.2a",
+      "CR 101.2"
+    ],
+    "pattern": "damage can't be prevented {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {}
+          },
+          "mode": "cant",
+          "action": "preventDamage"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "preventDamage"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Damage can't be prevented this turn."
+      },
+      {
+        "text": "Scry 2. Damage can't be prevented until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Damage can't be prevented.",
+      "Draw a card. Damage can be prevented this turn.",
+      "Draw a card. Combat damage can't be prevented this turn.",
+      "Draw a card. Damage dealt to you can't be prevented this turn."
+    ]
+  },
+  {
+    "id": "sta.t57.enchanted.loseall.nountap",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 502.3",
+      "CR 303.4",
+      "CR 604.1"
+    ],
+    "pattern": "enchanted ( creature | permanent | artifact | land ) loses all abilities and doesn't untap during its controller 's untap step",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted land loses all abilities and doesn't untap during its controller's untap step."
+      },
+      {
+        "text": "Enchanted artifact loses all abilities and doesn't untap during its controller's untap step."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted land loses flying and doesn't untap during its controller's untap step.",
+      "Enchanted land loses all abilities and doesn't untap during your untap step.",
+      "Enchanted land loses all abilities and doesn't untap during its controller's next untap step.",
+      "Enchanted land loses all abilities and untaps during its controller's untap step.",
+      "Equipped artifact loses all abilities and doesn't untap during its controller's untap step."
+    ]
+  },
+  {
+    "id": "sta.t57.enchanted.subtype.base",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted creature is ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchanted creature is a Frog with base power and toughness 2/2.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "Enchanted creature is a Frog with base power and toughness 2/2.",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": 4,
+                    "subtypes": {
+                      "set": [
+                        "Frog"
+                      ]
+                    }
+                  },
+                  {
+                    "layer": "7b",
+                    "power": 2,
+                    "toughness": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Enchanted creature is an Elk with base power and toughness 0/3."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature is a Frog with base power and toughness 2/2 until end of turn.",
+      "Enchanted creature is a Frog in addition to its other types with base power and toughness 2/2.",
+      "Enchanted creature is a Frog with power and toughness 2/2.",
+      "Enchanted land is a Frog with base power and toughness 2/2."
+    ]
+  },
+  {
+    "id": "sta.t57.enchanted.subtype.base.keyword.loseother",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted creature is ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} . it has {a:Abilities} and loses all other abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature is a Frog with base power and toughness 2/2. It has reach and loses all other abilities."
+      },
+      {
+        "text": "Enchanted creature is an Elk with base power and toughness 0/3. It has defender and loses all other abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature is a Frog with base power and toughness 2/2. It has reach and loses all abilities.",
+      "Enchanted creature is a Frog with base power and toughness 2/2. It has reach and loses all other abilities until end of turn.",
+      "Enchanted creature is a Frog with base power and toughness 2/2. It loses all other abilities.",
+      "Enchanted creature is a Frog with base power and toughness 2/2. It has reach and loses flying."
+    ]
+  },
+  {
+    "id": "sta.t57.enchanted.subtype.base.cantattack.loseall",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 508.1c",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted creature is ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} . it can't attack and loses all abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature is a Frog with base power and toughness 2/2. It can't attack and loses all abilities."
+      },
+      {
+        "text": "Enchanted creature is an Elk with base power and toughness 0/3. It can't attack and loses all abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature is a Frog with base power and toughness 2/2. It can't block and loses all abilities.",
+      "Enchanted creature is a Frog with base power and toughness 2/2. It can't attack and loses flying.",
+      "Enchanted creature is a Frog with base power and toughness 2/2. It can attack and loses all abilities.",
+      "Enchanted creature is a Frog with base power and toughness 2/2. It can't attack or block and loses all abilities."
+    ]
+  }
+]

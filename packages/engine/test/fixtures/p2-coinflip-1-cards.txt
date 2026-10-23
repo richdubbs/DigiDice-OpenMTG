@@ -1,0 +1,10 @@
+# p2-coinflip-1: the golden cards of the round (test/m5/golden/cards/cloud-p2-coinflip-1-review.json)
+Viconia, Drow Apostate
+Woodland Sleuth
+Exalted Flamer of Tzeentch
+Reap the Past
+Merfolk Spy
+Ignite Memories
+Planeswalker's Favor
+Planeswalker's Scorn
+Planeswalker's Mirth

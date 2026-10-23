@@ -1,0 +1,197 @@
+[
+  {
+    "id": "trg.r4trig.selfAndOthers.attack.one",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1",
+      "CR 508.3a",
+      "CR 603.2"
+    ],
+    "pattern": "whenever ~ and at least one other creature attack",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "self": true
+          },
+          "count": {
+            "op": ">=",
+            "value": 2
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "other",
+      "at least"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ and at least one other creature attack, you gain 2 life."
+      },
+      {
+        "text": "Whenever ~ and at least one other creature attack, ~ gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ and at least two other creatures attack, you gain 2 life.",
+      "Whenever ~ and at least one other creature block, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.r4trig.gainControl.untapIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 108.4",
+      "CR 613.1b",
+      "CR 611.2a",
+      "CR 701.26b"
+    ],
+    "pattern": "{p:Player} gains control of {o:Obj} and untaps it",
+    "build": [
+      {
+        "op": "effect",
+        "duration": {
+          "d": "permanent"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 2,
+                "controller": "$p"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "untap",
+        "what": "$o"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you're dealt combat damage, target opponent gains control of ~ and untaps it."
+      },
+      {
+        "text": "At the beginning of your upkeep, target opponent gains control of ~ and untaps it."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target opponent gains control of ~ and taps it.",
+      "At the beginning of your upkeep, target opponent gains control of ~ until end of turn and untaps it."
+    ]
+  },
+  {
+    "id": "trg.r4trig.whileInGraveyard",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 113.6k",
+      "CR 603.1",
+      "CR 603.2",
+      "CR 404.1"
+    ],
+    "pattern": "whenever {e:Event} while ~ is in your graveyard",
+    "build": {
+      "on": "$e",
+      "while": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "zone": "graveyard",
+          "owner": "you"
+        }
+      }
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control dies while this card is in your graveyard, you may pay {2}. If you do, return this card from your graveyard to your hand."
+      },
+      {
+        "text": "Whenever an opponent casts a spell while this card is in your graveyard, you may pay {B}. If you do, return this card from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control dies while this card is in your hand, you may pay {2}. If you do, return this card from your graveyard to your hand.",
+      "Whenever a creature you control dies while this card is in exile, you may pay {2}. If you do, return this card from exile to your hand."
+    ]
+  },
+  {
+    "id": "eff.r4trig.eachLoseHalfLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.1a",
+      "CR 608.2f"
+    ],
+    "pattern": "each opponent loses half their life , rounded up",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "amount": {
+            "q": "math",
+            "op": "ceilDiv",
+            "args": [
+              {
+                "q": "life",
+                "of": {
+                  "ref": "bound",
+                  "name": "each"
+                }
+              },
+              2
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "half",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent loses half their life, rounded up."
+      },
+      {
+        "text": "At the beginning of your upkeep, if you have 30 or more life, each opponent loses half their life, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent loses half their life, rounded down.",
+      "When ~ enters, each opponent loses half your life, rounded up."
+    ],
+    "priority": 1
+  }
+]

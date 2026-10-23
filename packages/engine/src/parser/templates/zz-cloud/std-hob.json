@@ -1,0 +1,617 @@
+[
+  {
+    "id": "eff.stdhob.search.reveal.oneTapped.otherHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards , reveal ( them | those cards ) , put one onto the battlefield tapped and the other into your hand , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "other",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two basic land cards, reveal them, put one onto the battlefield tapped and the other into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for up to two basic Swamp cards, reveal those cards, put one onto the battlefield tapped and the other into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two basic land cards, reveal them, put one onto the battlefield and the other into your hand, then shuffle.",
+      "Search your library for up to two basic land cards, reveal them, put one into your hand and the other onto the battlefield tapped, then shuffle.",
+      "Search your library for up to two basic land cards, put one onto the battlefield tapped and the other into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.stdhob.lead.pump.andGroupGains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} get[s] {pt:PT} and {g:Objs} gain[s] {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$g",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, until end of turn, ~ gets +2/+0 and creatures you control gain vigilance."
+      },
+      {
+        "text": "When ~ enters, until end of turn, target creature gets +1/+1 and Goblins you control gain haste."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, until end of turn, ~ gets +2/+0 and creatures you control gain vigilance unless an opponent pays {2}.",
+      "Whenever ~ attacks, until end of turn, ~ gets +2/+0 and creatures you control lose vigilance.",
+      "Whenever ~ attacks, ~ gets +2/+0 and creatures you control gain vigilance."
+    ]
+  },
+  {
+    "id": "eff.stdhob.pump.andGroupGains.trail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and {g:Objs} gain[s] {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$g",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, ~ gets +2/+0 and creatures you control gain vigilance until end of turn."
+      },
+      {
+        "text": "When ~ enters, target creature gets +1/+1 and Goblins you control gain haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, ~ gets +2/+0 and creatures you control gain vigilance.",
+      "Whenever ~ attacks, ~ gets +2/+0 and creatures you control lose vigilance until end of turn.",
+      "Whenever ~ attacks, ~ gets +2/+0 until end of turn and creatures you control gain vigilance."
+    ]
+  },
+  {
+    "id": "eff.stdhob.players.each.draw",
+    "kind": "effect",
+    "priority": 1,
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 121.1",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} each draw {n:Qty} card[s]",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{1}{U}, {T}: Two target players each draw two cards."
+      },
+      {
+        "text": "When ~ enters, up to three target players each draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}, {T}: Two target players each draw two cards unless they pay 2 life.",
+      "{1}{U}, {T}: Two target players each discard two cards.",
+      "{1}{U}, {T}: Two target players each draw two cards instead."
+    ]
+  },
+  {
+    "id": "eff.stdhob.players.each.mill",
+    "kind": "effect",
+    "priority": 1,
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 115.1",
+      "CR 701.17a",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} each mill {n:Qty} card[s]",
+    "build": {
+      "op": "mill",
+      "who": "$p",
+      "count": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Any number of target players each mill three cards."
+      },
+      {
+        "text": "When ~ enters, two target players each mill four cards."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Any number of target players each mill three cards unless they pay 3 life.",
+      "{2}, {T}: Any number of target players each draw three cards and mill three cards twice.",
+      "{2}, {T}: Any number of target players each exile three cards."
+    ]
+  },
+  {
+    "id": "eff.stdhob.players.each.gainlife",
+    "kind": "effect",
+    "priority": 1,
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 119.3",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} each gain {n:Qty} life",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{W}, {T}: Any number of target players each gain 3 life."
+      },
+      {
+        "text": "When ~ enters, two target players each gain 5 life."
+      }
+    ],
+    "counterExamples": [
+      "{W}, {T}: Any number of target players each lose 3 life.",
+      "{W}, {T}: Any number of target players each gain 3 life unless an opponent pays {1}.",
+      "{W}, {T}: Any number of target players each gain 3 life for each Cleric you control twice."
+    ]
+  },
+  {
+    "id": "eff.stdhob.players.each.loselife",
+    "kind": "effect",
+    "priority": 1,
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 115.1",
+      "CR 119.3",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} each lose {n:Qty} life",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{B}, {T}: Two target players each lose 3 life."
+      },
+      {
+        "text": "When ~ dies, any number of target players each lose 2 life."
+      }
+    ],
+    "counterExamples": [
+      "{B}, {T}: Two target players each gain 3 life.",
+      "{B}, {T}: Two target players each lose 3 life unless they discard a card.",
+      "{B}, {T}: Two target players each lose half their life."
+    ]
+  },
+  {
+    "id": "eff.stdhob.rep.preventAllBy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 615.7"
+    ],
+    "pattern": "prevent all damage that would be dealt by {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Prevent all damage that would be dealt by target creature this turn."
+      },
+      {
+        "text": "Prevent all damage that would be dealt by target attacking creature this turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Prevent all combat damage that would be dealt by target creature this turn.",
+      "{3}, {T}: Prevent all damage that would be dealt to target creature this turn.",
+      "{3}, {T}: Prevent the next 3 damage that would be dealt by target creature this turn."
+    ]
+  },
+  {
+    "id": "eff.stdhob.each.grant",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, each attacking Goblin gains menace until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, each creature you control gains vigilance and trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, each creature you control gains vigilance.",
+      "Whenever ~ attacks, each creature you control loses vigilance until end of turn.",
+      "Whenever ~ attacks, each creature you control gains vigilance until end of turn unless an opponent pays {1}."
+    ]
+  },
+  {
+    "id": "trg.stdhob.you.activate.abilityOf",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.2",
+      "CR 605.3b",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you activate an ability of {f:Filter}",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "you",
+          "source": "$f",
+          "manaAbility": false
+        },
+        {
+          "ev": "activate",
+          "player": "you",
+          "source": "$f",
+          "manaAbility": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you activate an ability of an artifact, draw a card."
+      },
+      {
+        "text": "Whenever you activate an ability of a Goblin you control, target player loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you activate an ability of an artifact that isn't a mana ability, draw a card.",
+      "Whenever an opponent activates an ability of an artifact, draw a card.",
+      "Whenever you activate a loyalty ability of an artifact, draw a card."
+    ]
+  },
+  {
+    "id": "sta.stdhob.aslong.triggerMod.anyCause",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.10a",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , if a triggered ability of {f:Filter} triggers , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "abilitiesOf": "$f",
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an artifact, if a triggered ability of a Pirate creature you control triggers, that ability triggers an additional time."
+      },
+      {
+        "text": "As long as it's your turn, if a triggered ability of a legendary artifact you control triggers, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an artifact, if a triggered ability of a Pirate creature you control triggers, that ability triggers two additional times.",
+      "As long as you control an artifact, if a triggered ability of a Pirate creature an opponent controls triggers, that ability triggers an additional time.",
+      "If a triggered ability of a Pirate creature you control triggers, that ability triggers an additional time."
+    ]
+  },
+  {
+    "id": "sta.stdhob.pump.perGraveyard.nOrMore",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 404.1",
+      "CR 402.1"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} for each graveyard with {n:Qty} or more cards in it",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "countPlayers",
+                "of": {
+                  "ref": "each",
+                  "who": "player"
+                },
+                "sizeIs": {
+                  "zone": "graveyard",
+                  "op": ">=",
+                  "n": "$n"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "countPlayers",
+                "of": {
+                  "ref": "each",
+                  "who": "player"
+                },
+                "sizeIs": {
+                  "zone": "graveyard",
+                  "op": ">=",
+                  "n": "$n"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+1 for each graveyard with five or more cards in it."
+      },
+      {
+        "text": "~ gets +2/+0 for each graveyard with 3 or more cards in it."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each graveyard with five or fewer cards in it.",
+      "~ gets +1/+1 for each graveyard with five or more creature cards in it.",
+      "~ gets +1/+1 until end of turn for each graveyard with five or more cards in it."
+    ]
+  }
+]

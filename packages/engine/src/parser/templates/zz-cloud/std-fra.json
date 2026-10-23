@@ -1,0 +1,326 @@
+[
+  {
+    "id": "eff.stdfra.gains.choice3",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{o:Obj} gains your choice of {k1:Keyword} , {k2:Keyword} , or {k3:Keyword} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "keywordChoice",
+        "link": "keywordChoice",
+        "options": [
+          "$k1.text",
+          "$k2.text",
+          "$k3.text"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k1.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k2.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k3.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k3"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature you control gains your choice of flying, vigilance, or menace until end of turn."
+      },
+      {
+        "text": "Put a +1/+1 counter on target creature. It gains your choice of reach, deathtouch, or lifelink until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gains your choice of flying, vigilance, or menace.",
+      "Target creature you control gains flying, vigilance, and menace until end of turn.",
+      "Target creature you control gains your choice of flying, vigilance, menace, or reach until end of turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.stdfra.then.effects",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c"
+    ],
+    "pattern": "^ then {e:Effects}",
+    "build": "$e",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Create a Treasure token. Then target creature gets +2/+1 until end of turn."
+      },
+      {
+        "text": "Draw two cards. Then tap target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Create a Treasure token. Then target creature gets +2/+1.",
+      "Create a Treasure token. Then blorf target creature."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.stdfra.tap.forEachOpponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 701.26a"
+    ],
+    "pattern": "for each opponent , tap {o:OppTarget}",
+    "build": {
+      "op": "tap",
+      "what": "$o"
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, tap up to one target creature that player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, tap up to one target artifact that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, tap up to one target creature that player controls.",
+      "When ~ enters, for each opponent, tap up to two target creatures that player controls.",
+      "When ~ enters, for each opponent, untap up to one target creature that player controls."
+    ]
+  },
+  {
+    "id": "eff.stdfra.destroy.forEachOpponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 701.8a"
+    ],
+    "pattern": "for each opponent , destroy {o:OppTarget}",
+    "build": {
+      "op": "destroy",
+      "what": "$o"
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, destroy up to one target creature that player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, destroy up to one target artifact or enchantment that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, destroy up to one target creature that player controls.",
+      "When ~ enters, for each opponent, destroy up to two target creatures that player controls.",
+      "When ~ enters, for each opponent, sacrifice up to one target creature that player controls."
+    ]
+  },
+  {
+    "id": "eff.stdfra.return.hand.forEachOpponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 400.3"
+    ],
+    "pattern": "for each opponent , return {o:OppTarget} to its owner 's hand",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, return up to one target creature that player controls to its owner's hand."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, return up to one target artifact or creature that player controls to its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, return up to one target creature that player controls to its owner's hand.",
+      "When ~ enters, for each opponent, return up to two target creatures that player controls to their owners' hands.",
+      "When ~ enters, for each opponent, return up to one target creature that player controls to your hand."
+    ]
+  },
+  {
+    "id": "eff.stdfra.if.sacrificeSelf.damageAndGain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.21a",
+      "CR 120.3",
+      "CR 119.3"
+    ],
+    "pattern": "then if {c:Cond} , sacrifice ~ , it deals {n:Qty} damage to {r:Recipient} , and you gain {m:Qty} life",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "sacrifice",
+          "what": {
+            "ref": "self"
+          }
+        },
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": "$r",
+          "amount": "$n"
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "if",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, draw a card. Then if you control four or more lands, sacrifice ~, it deals 3 damage to each opponent, and you gain 3 life."
+      },
+      {
+        "text": "At the beginning of your end step, scry 1. Then if there are five or more cards in your graveyard, sacrifice ~, it deals 1 damage to each opponent, and you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, draw a card. Then if you control four or more lands, sacrifice ~, it deals 3 damage to each opponent, and you draw a card.",
+      "At the beginning of your upkeep, draw a card. Then if you control four or more lands, sacrifice a land, it deals 3 damage to each opponent, and you gain 3 life.",
+      "At the beginning of your upkeep, draw a card. Then sacrifice ~, it deals 3 damage to each opponent, and you gain 3 life."
+    ]
+  }
+]

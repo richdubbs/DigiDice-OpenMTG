@@ -1,0 +1,116 @@
+{
+  "name": "fabricate",
+  "rule": "702.123",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this permanent enters, put {n} +1/+1 counters on it or create {n} 1/1 colorless Servo artifact creature tokens.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, you may put {n} +1/+1 counters on it. If you don't, create {n} 1/1 colorless Servo artifact creature tokens.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "if",
+            "cond": {
+              "cond": "exists",
+              "of": {
+                "ref": "self"
+              }
+            },
+            "then": [
+              {
+                "op": "may",
+                "who": {
+                  "ref": "you"
+                },
+                "do": [
+                  {
+                    "op": "putCounters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "+1/+1",
+                    "count": "$amount"
+                  }
+                ],
+                "as": "did"
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "did",
+                  "step": "did",
+                  "not": true
+                },
+                "then": [
+                  {
+                    "op": "createToken",
+                    "who": {
+                      "ref": "you"
+                    },
+                    "count": "$amount",
+                    "token": {
+                      "colors": [],
+                      "types": [
+                        "Artifact",
+                        "Creature"
+                      ],
+                      "subtypes": [
+                        "Servo"
+                      ],
+                      "power": 1,
+                      "toughness": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "else": [
+              {
+                "op": "createToken",
+                "who": {
+                  "ref": "you"
+                },
+                "count": "$amount",
+                "token": {
+                  "colors": [],
+                  "types": [
+                    "Artifact",
+                    "Creature"
+                  ],
+                  "subtypes": [
+                    "Servo"
+                  ],
+                  "power": 1,
+                  "toughness": 1
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

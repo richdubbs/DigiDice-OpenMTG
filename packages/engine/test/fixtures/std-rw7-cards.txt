@@ -1,0 +1,6 @@
+# ---- std-rw7 (card wave 2 slice s7): "you may cast a <spell> from your hand without paying its mana cost" / "from your graveyard" during a resolution; "If an instant or sorcery spell cast this way would be put into your graveyard, exile it instead"
+Bilbo, Thief in the Night
+Sram's Expertise
+Yahenni's Expertise
+Rishkar's Expertise
+Scholar of the Lost Trove

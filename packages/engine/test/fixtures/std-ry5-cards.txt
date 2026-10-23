@@ -1,0 +1,30 @@
+# std-ry5 (wave 2, Commander fresh lane ry5; test/cloud/std-ry5, golden cloud-std-ry5-review.json): skip your next turn(s); "<obj> doesn't untap during its controller's
+# untap step for as long as ~ remains tapped"; the Phantoms' prevention; cards in graveyards can't be targeted; an Aura attached to a <kind>; formidable at activation; discards this turn
+Phantom Nantuko
+Kill Switch
+Ground Seal
+Phantom Tiger
+Command the Dreadhorde
+Amber Prison
+Eater of Days
+Dragon-Scarred Bear
+Piety Charm
+Sand Squid
+Phyrexian Gremlins
+Dragon Whisperer
+Thalakos Dreamsower
+Mysterio's Mirage
+Gilt-Blade Prowler
+Miracle Worker
+Chronosavant
+Phantom Centaur
+Entrancing Lyre
+Deserter's Quarters
+Chronatog
+Rust Tick
+Mana Leech
+Phantom Nishoba
+Recalibrate
+Devout Harpist
+Circle of Elders
+Atarka Beastbreaker

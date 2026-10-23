@@ -1,0 +1,129 @@
+{
+  "name": "vanishing",
+  "rule": "702.63",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number",
+      "optional": true
+    }
+  ],
+  "mechanisms": [
+    "replacement",
+    "expands"
+  ],
+  "reminder": "This permanent enters with {n} time counters on it. At the beginning of your upkeep, remove a time counter from it. When the last is removed, sacrifice it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "$ifParam": "amount",
+      "then": {
+        "kind": "static",
+        "text": "~ enters with {n} time counters on it.",
+        "zone": [
+          "stack",
+          "battlefield"
+        ],
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "zoneChange",
+              "subject": {
+                "self": true
+              },
+              "to": "battlefield"
+            },
+            "body": {
+              "b": "enters",
+              "counters": [
+                {
+                  "kind": "time",
+                  "count": "$amount"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "triggered",
+      "text": "At the beginning of your upkeep, if there is a time counter on ~, remove a time counter from it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "step",
+            "step": "upkeep",
+            "whose": "you"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": {
+            "ref": "self"
+          },
+          "kind": "time"
+        },
+        "op": ">=",
+        "right": 1
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "removeCounters",
+            "from": {
+              "ref": "self"
+            },
+            "kind": "time",
+            "count": 1
+          }
+        ]
+      }
+    },
+    {
+      "kind": "triggered",
+      "text": "When the last time counter is removed from ~, sacrifice it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "counters",
+            "change": "removed",
+            "kind": "time",
+            "on": {
+              "self": true
+            }
+          }
+        ],
+        "while": {
+          "cond": "compare",
+          "left": {
+            "q": "counters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "time"
+          },
+          "op": "==",
+          "right": 0
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "sacrifice",
+            "what": {
+              "ref": "self"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+[
+  {
+    "id": "sta.stdtc1.loseall.isTypes.basept.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 604.1"
+    ],
+    "pattern": "{o:Obj} loses all abilities and is ( a | an ) {st:Subtypes} artifact creature with base power and toughness {pt:BasePT} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Artifact",
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature loses all abilities and is a Gnome artifact creature with base power and toughness 1/3 in addition to its other types."
+      },
+      {
+        "text": "Enchanted creature loses all abilities and is a Golem artifact creature with base power and toughness 4/1 in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature loses all abilities and is a Gnome artifact creature with base power and toughness 1/3.",
+      "Enchanted creature loses flying and is a Gnome artifact creature with base power and toughness 1/3 in addition to its other types.",
+      "Enchanted creature loses all abilities and is a Gnome artifact creature with base power and toughness 1/3 in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.stdtc1.aslong.cantTurnFaceUp",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 708.7",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} can't be turned face up",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beTurnedFaceUp"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as enchanted creature is tapped, it can't be turned face up."
+      },
+      {
+        "text": "As long as you control an artifact, enchanted creature can't be turned face up."
+      }
+    ],
+    "counterExamples": [
+      "As long as enchanted creature is face down, it can't be turned face down.",
+      "As long as enchanted creature is face down, it can be turned face up.",
+      "Unless enchanted creature is face down, it can't be turned face up."
+    ]
+  },
+  {
+    "id": "sta.stdtc1.loseall.isSubtype.basept.has.named",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 201.2",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 604.1"
+    ],
+    "pattern": "{o:Obj} loses all abilities and is ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} and {a:Abilities} named {n:Name}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          },
+          "named": "$n"
+        },
+        {
+          "layer": 6,
+          "removeAll": true,
+          "add": "$a"
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "named"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature loses all abilities and is a Peasant with base power and toughness 2/1 and \"{T}: Add {G}\" named Weary Farmhand."
+      },
+      {
+        "text": "Enchanted creature loses all abilities and is a Rat with base power and toughness 1/2 and \"{T}: You gain 1 life\" named Gutter Scrounger."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature loses all abilities and is a Peasant with base power and toughness 2/1 and \"{T}: Add {G}\".",
+      "Enchanted creature loses flying and is a Peasant with base power and toughness 2/1 and \"{T}: Add {G}\" named Weary Farmhand.",
+      "Enchanted creature loses all abilities and is a Peasant with base power and toughness 2/1 and \"{T}: Add {G}\" named weary farmhand."
+    ]
+  },
+  {
+    "id": "sta.stdtc1.chosenType.inaddition.sameIsTrue.spellsAndCards",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 607.2d",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 108.3",
+      "CR 109.4"
+    ],
+    "pattern": "creatures you control are ( the chosen type | the chosen creature type ) in addition to their other types . the same is true for creature spells you control and creature cards you own that aren't on the battlefield",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "zone": [
+                    "stack"
+                  ]
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "owner": "you",
+                  "isCard": true,
+                  "zone": [
+                    "hand",
+                    "graveyard",
+                    "library",
+                    "exile",
+                    "command",
+                    "stack"
+                  ]
+                }
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "chosen": "type"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "in addition",
+      "other",
+      "same",
+      "aren't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control are the chosen creature type in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+      },
+      {
+        "text": "Creatures you control are the chosen creature type in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.\n{5}: You gain 7 life."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control are the chosen type in addition to their other types. The same is true for creature spells you control.",
+      "Creatures you control are the chosen type in addition to their other types. The same is true for creature cards you own that are on the battlefield.",
+      "Creatures you control are the chosen creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+    ]
+  }
+]

@@ -1,0 +1,854 @@
+[
+  {
+    "id": "eff.t47.becomes.colors.subtype.creature.with.lead",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 702.1",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {pt:BasePT} {c1:Color} and {c2:Color} {st:Subtypes} creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target land you control becomes a 3/2 green and blue Hydra creature with trample."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a 1/5 white and black Spirit creature with flying and lifelink."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a 2/2 red and white Cat creature with \"During your turn, ~ has first strike.\""
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 3/2 green and blue Hydra creature with trample.",
+      "Until end of turn, target land you control becomes a 3/2 green Hydra creature with trample.",
+      "Until end of turn, target land you control becomes a 3/2 green and blue Hydra artifact creature with trample.",
+      "Until end of turn, target land you control becomes a 3/2 green and blue Hydra creature with trample unless it is tapped."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.colors.subtype.creature.trail",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1e",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c1:Color} and {c2:Color} {st:Subtypes} creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target land you control becomes a 3/2 green and blue Hydra creature until end of turn."
+      },
+      {
+        "text": "~ becomes a 4/4 white and black Spirit creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 3/2 green and blue Hydra creature.",
+      "Target land you control becomes a 3/2 green Hydra creature until end of turn.",
+      "Target land you control becomes a 3/2 green and blue Hydra artifact creature until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.subtype.creature.trail",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Target land you control becomes a 3/2 Hydra creature until end of turn."
+      },
+      {
+        "text": "~ becomes a 4/4 Spirit Cat creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 3/2 Hydra creature.",
+      "Target land you control becomes a 3/2 Hydras creature until end of turn.",
+      "Target land you control becomes a 3/2 Hydra artifact creature until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.subtype.creature.with.lead",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target land you control becomes a 4/4 Hydra creature with reach and haste."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a 2/6 Spirit Cat creature with vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 4/4 Hydra creature with reach and haste.",
+      "Until end of turn, target land you control becomes a 4/4 Hydra creature with reach and haste unless it is tapped.",
+      "Until end of turn, target land you control becomes a 4/4 Hydra artifact creature with reach."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.creature.with.allcreaturetypes.permanent",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 702.73a",
+      "CR 613.1f",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} creature with {a:Abilities} and all creature types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "all": true
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target land you control becomes a 3/3 creature with vigilance and all creature types."
+      },
+      {
+        "text": "~ becomes a 2/5 creature with flying and trample and all creature types."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 3/3 creature with vigilance.",
+      "Target land you control becomes a 3/3 creature with vigilance and all creature types until end of turn.",
+      "Target land you control becomes a 3/3 creature with vigilance and all land types."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.artifactcreature.basept.lead",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 301.7b",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes an artifact creature with base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target artifact or creature becomes an artifact creature with base power and toughness 3/4."
+      },
+      {
+        "text": "Until end of turn, ~ becomes an artifact creature with base power and toughness 5/5."
+      }
+    ],
+    "counterExamples": [
+      "Target artifact or creature becomes an artifact creature with base power and toughness 3/4.",
+      "Until end of turn, target artifact or creature becomes an artifact creature with base power and toughness +3/+4.",
+      "Until end of turn, target artifact or creature becomes an enchantment creature with base power and toughness 3/4."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.artifactcreature.gains.lead",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 301.7b",
+      "CR 613.1f",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes an artifact creature and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target artifact you control becomes an artifact creature and gains flying."
+      },
+      {
+        "text": "Until end of turn, ~ becomes an artifact creature and gains trample and haste."
+      }
+    ],
+    "counterExamples": [
+      "Target artifact you control becomes an artifact creature and gains flying.",
+      "Until end of turn, target artifact you control becomes an artifact creature and loses flying.",
+      "Until end of turn, target artifact you control becomes an artifact creature and gains flying unless it is tapped."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.subtype.basept.gains.lead",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control becomes a Hydra Cat with base power and toughness 3/5 and gains reach and vigilance."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a Spirit Cat with base power and toughness 6/6 and gains trample."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control becomes a Hydra Cat with base power and toughness 3/5 and gains reach.",
+      "Until end of turn, target creature you control becomes a Hydra Cat with base power and toughness +3/+5 and gains reach.",
+      "Until end of turn, target creature you control becomes a Hydra Cat with base power and toughness 3/5 and loses reach."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.subtype.basept.gains.permanent",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature you control becomes a Hydra Cat with base power and toughness 3/5 and gains reach."
+      },
+      {
+        "text": "~ becomes a Spirit Cat with base power and toughness 6/6 and gains trample and haste."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control becomes a Hydra Cat with base power and toughness 3/5 and gains reach until end of turn.",
+      "Target creature you control becomes a Hydra Cat with base power and toughness 3/5 and loses reach.",
+      "Target creature you control becomes a Hydra Cat with base power and toughness 3/5."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.subtype.creature.inaddition",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1b",
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target land you control becomes a 4/4 Hydra creature in addition to its other types."
+      },
+      {
+        "text": "~ becomes a 7/7 Spirit Cat creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 4/4 Hydra creature.",
+      "Target land you control becomes a 4/4 Hydra creature in addition to its other types until end of turn.",
+      "Target land you control becomes a 4/4 Hydra artifact creature in addition to its other types."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.becomes.subtype.creature.with.inaddition",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1b",
+      "CR 613.1f",
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target land you control becomes a 4/4 Hydra creature with reach in addition to its other types."
+      },
+      {
+        "text": "~ becomes a 3/3 Spirit Cat creature with flying and lifelink in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 4/4 Hydra creature with reach.",
+      "Target land you control becomes a 4/4 Hydra creature in addition to its other types with reach.",
+      "Target land you control becomes a 4/4 Hydra creature with reach in addition to its other types until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.then.may.become.subtype.creature",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2d",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "then you may have {o:Obj} become ( a | an ) {pt:BasePT} {st:Subtypes} creature {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "set": [
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "set": "$st"
+                  }
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Then you may have target land you control become a 3/3 Hydra creature until end of turn."
+      },
+      {
+        "text": "Draw a card. Then you may have ~ become a 0/0 Spirit creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Then you may have target land you control become a 3/3 Hydra creature.",
+      "Draw a card. Then you may have target land you control become a 3/3 Hydra artifact creature until end of turn.",
+      "Draw a card. Then you have target land you control become a 3/3 Hydra creature until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t47.itis.enchantment",
+    "kind": "effect",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 205.3d",
+      "CR 400.7"
+    ],
+    "pattern": "{o:ItIs} an enchantment",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Enchantment"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. It's an enchantment."
+      },
+      {
+        "text": "Return target artifact card from your graveyard to the battlefield. It's an enchantment."
+      }
+    ],
+    "counterExamples": [
+      "It's an enchantment.",
+      "Return target creature card from your graveyard to the battlefield. It's an artifact.",
+      "Return target creature card from your graveyard to the battlefield. It's an enchantment until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.t47.stillSubtypeLand",
+    "kind": "rider",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 305.7"
+    ],
+    "pattern": "it's still a {st:Subtypes} land",
+    "build": {
+      "$patchPrevious": {
+        "effects": [
+          {
+            "mods": [
+              {
+                "types": {
+                  "add": "@previous.effects.0.mods.0.types.set",
+                  "set": null
+                },
+                "subtypes": {
+                  "add": "$st"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "~ becomes a 3/3 Hydra creature until end of turn. It's still a Cave land."
+      },
+      {
+        "text": "Target land you control becomes a 2/2 Cat creature until end of turn. It's still a Gate land."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. It's still a Cave land.",
+      "It's still a Cave creature."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

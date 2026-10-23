@@ -1,0 +1,451 @@
+[
+  {
+    "id": "sta.p2ab1.aslong.cantbeblocked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 509.1b"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} can't be blocked",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as enchanted creature is tapped, it can't be blocked."
+      },
+      {
+        "text": "As long as you control a Wizard, ~ can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Wizard, ~ can be blocked.",
+      "As long as you control a Wizard, ~ can't be blocked by Walls.",
+      "If you control a Wizard, ~ can't be blocked."
+    ]
+  },
+  {
+    "id": "sta.p2ab1.filter.cantblock.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{f:Filter} can't block {g:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "block",
+      "other": "$g"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Green creatures can't block Goblins you control."
+      },
+      {
+        "text": "Creatures with power 2 or less can't block creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Green creatures can't block Goblins you control this turn.",
+      "Green creatures can block Goblins you control.",
+      "Green creatures can't be blocked by Goblins you control."
+    ]
+  },
+  {
+    "id": "sta.p2ab1.blockAsThough.attackers",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 702.14c"
+    ],
+    "pattern": "creatures with {k:Abilities} can be blocked as though they didn't have {a:Abilities}",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "action": "blockAsThough",
+      "attacker": {
+        "types": [
+          "Creature"
+        ]
+      },
+      "asThough": "$a.0.text"
+    },
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Creatures with desertwalk can be blocked as though they didn't have desertwalk."
+      },
+      {
+        "text": "Creatures with nonbasic landwalk can be blocked as though they didn't have nonbasic landwalk."
+      }
+    ],
+    "counterExamples": [
+      "Creatures with desertwalk can be blocked as though they had desertwalk.",
+      "Creatures with desertwalk can block as though they didn't have desertwalk.",
+      "Creatures with desertwalk can be blocked this turn as though they didn't have desertwalk.",
+      "Creatures with desertwalk can be blocked as though they didn't have nonbasic landwalk."
+    ]
+  },
+  {
+    "id": "eff.p2ab1.dur.cant.beblocked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} can't be blocked",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, target Wizard can't be blocked."
+      },
+      {
+        "text": "Until end of turn, target artifact creature can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, target Wizard can be blocked.",
+      "Until your next turn, target Wizard can't be blocked by Walls.",
+      "Until your next turn target Wizard can't be blocked."
+    ]
+  },
+  {
+    "id": "eff.p2ab1.dur.cant.attackblock.activate",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 602.5",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} can't attack or block ( , and | and ) its activated abilities can't be activated",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "block"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "activate"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, target Wizard can't attack or block and its activated abilities can't be activated."
+      },
+      {
+        "text": "Until end of turn, target artifact creature can't attack or block, and its activated abilities can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, target Wizard can attack or block and its activated abilities can't be activated.",
+      "Until your next turn, target Wizard can't attack or block and its activated abilities can be activated.",
+      "Until your next turn, target Wizard can't attack or block and its triggered abilities can't be activated."
+    ]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.p2ab1.each.cantbeblocked.except",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Objs} can't be blocked except by {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beBlockedBy",
+      "other": {
+        "not": "$f"
+      }
+    },
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Goblins you control can't be blocked except by Goblins."
+      },
+      {
+        "text": "Creatures you control with flying can't be blocked except by Dragons."
+      }
+    ],
+    "counterExamples": [
+      "Goblins you control can be blocked except by Goblins.",
+      "Goblins you control can't be blocked this turn except by Goblins.",
+      "Goblins you control can't block except by Goblins."
+    ],
+    "weak": 1
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.p2ab1.filter.cantblock.self",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{f:Filter} can't block ~",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "block",
+      "other": {
+        "self": true
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures with power 2 or less can't block ~."
+      },
+      {
+        "text": "Goblins without flying can't block ~."
+      }
+    ],
+    "counterExamples": [
+      "Creatures with power 2 or less can block ~.",
+      "Creatures with power 2 or less can't block ~ this turn.",
+      "Creatures with power 2 or less can't be blocked by ~."
+    ]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.p2ab1.each.have.cantbeblockedby",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1b"
+    ],
+    "pattern": "{o:Objs} have {a:Abilities} and can't be blocked by {f:Filter}",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+          {
+            "layer": 6,
+            "add": "$a"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": "$f"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Goblins you control have haste and can't be blocked by Walls."
+      },
+      {
+        "text": "Creatures you control with flying have vigilance and can't be blocked by Dragons."
+      }
+    ],
+    "counterExamples": [
+      "Goblins you control have haste and can be blocked by Walls.",
+      "Goblins you control have haste and can't block Walls.",
+      "Goblins you control have haste until end of turn and can't be blocked by Walls."
+    ]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "eff.p2ab1.and.cantblock.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{a:Filter} and {b:Filter} can't block {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$a"
+          },
+          "mode": "cant",
+          "action": "block"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$b"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Red creatures and blue creatures can't block this turn."
+      },
+      {
+        "text": "Blue creatures and black creatures can't block this turn."
+      }
+    ],
+    "counterExamples": [
+      "Red creatures and blue creatures can block this turn.",
+      "Red creatures and blue creatures can't attack this turn.",
+      "Red creatures or blue creatures can't block this turn."
+    ]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "eff.p2ab1.each.cantbeblocked.dur.except",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Objs} can't be blocked {d:Dur} except by {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": {
+            "not": "$f"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Red creatures you control can't be blocked this turn except by red creatures."
+      },
+      {
+        "text": "Goblins you control can't be blocked this turn except by Walls."
+      }
+    ],
+    "counterExamples": [
+      "Red creatures you control can be blocked this turn except by red creatures.",
+      "Red creatures you control can't be blocked except by red creatures this turn.",
+      "Red creatures you control can't block this turn except by red creatures."
+    ],
+    "weak": 1
+  }
+]

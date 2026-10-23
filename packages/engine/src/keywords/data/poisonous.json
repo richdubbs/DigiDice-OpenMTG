@@ -1,0 +1,16 @@
+{
+  "name": "poisonous",
+  "rule": "702.70",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature deals combat damage to a player, that player gets {n} poison counters.",
+  "multiple": "independent",
+  "status": "planned"
+}

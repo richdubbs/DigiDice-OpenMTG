@@ -1,0 +1,14 @@
+{
+  "name": "infinity",
+  "aliases": [
+    "∞"
+  ],
+  "rule": "702.186",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "",
+  "multiple": "independent",
+  "status": "planned"
+}

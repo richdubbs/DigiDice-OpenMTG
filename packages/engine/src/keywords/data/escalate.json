@@ -1,0 +1,16 @@
+{
+  "name": "escalate",
+  "rule": "702.120",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "Pay this cost for each mode chosen beyond the first.",
+  "multiple": "independent",
+  "status": "planned"
+}

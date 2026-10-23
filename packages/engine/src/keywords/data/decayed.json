@@ -1,0 +1,61 @@
+{
+  "name": "decayed",
+  "rule": "702.147",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "This creature can't block. When it attacks, sacrifice it at end of combat.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "~ can't block.",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When ~ attacks, sacrifice it at end of combat.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "delay",
+            "when": {
+              "at": "endOfCombat"
+            },
+            "do": [
+              {
+                "op": "sacrifice",
+                "what": {
+                  "ref": "event",
+                  "role": "attacker"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

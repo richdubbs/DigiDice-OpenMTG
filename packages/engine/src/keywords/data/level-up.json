@@ -1,0 +1,38 @@
+{
+  "name": "level up",
+  "rule": "702.87",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands",
+    "structural"
+  ],
+  "reminder": "{cost}: Put a level counter on this. Level up only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{printed}",
+      "cost": "$cost",
+      "sorcerySpeed": true,
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "level",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

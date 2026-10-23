@@ -1,0 +1,1311 @@
+[
+ {
+  "card": "Suspended Sentence",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand against the Oracle text and the rules cited: destroy target creature an opponent controls; its controller (read as it last existed) loses 3 life; then the resolving spell exiles itself with three time counters on it, so it is a suspended card in exile (it has suspend), and its suspend abilities count the counters down (eff.p2cs1.exile.withCounters; suspend from the keyword library). (CR 701.8a, 608.2h, 701.13a, 122.1, 608.2m, 702.62a, 702.62b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "amount": 3,
+         "op": "loseLife",
+         "who": {
+          "object": {
+           "id": "t0",
+           "ref": "target"
+          },
+          "ref": "controllerOf"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "counters": [
+           {
+            "count": 3,
+            "kind": "time"
+           }
+          ],
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "opponent",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     },
+     {
+      "amount": 3,
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "suspend",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Reality Strobe",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: return target permanent to its owner's hand, then the resolving spell exiles itself with three time counters on it (a suspended card: it has suspend and time counters) instead of going to its owner's graveyard (eff.p2cs1.exile.withCounters). (CR 400.7, 701.13a, 122.1, 608.2m, 702.62b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "counters": [
+           {
+            "count": 3,
+            "kind": "time"
+           }
+          ],
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     },
+     {
+      "amount": 3,
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "suspend",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rousing Refrain",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: add {R} for each card in target opponent's hand, the mana is kept until end of turn, then the resolving spell exiles itself with three time counters on it (suspended, with its printed suspend) (eff.p2cs1.exile.withCounters). (CR 106.4, 701.13a, 122.1, 608.2m, 702.62b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "dynamic": {
+          "count": {
+           "of": {
+            "filter": {
+             "isCard": true,
+             "owner": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "zone": "hand"
+            },
+            "ref": "each"
+           },
+           "q": "count"
+          },
+          "kind": "ofType",
+          "type": "R"
+         },
+         "keep": "endOfTurn",
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "counters": [
+           {
+            "count": 3,
+            "kind": "time"
+           }
+          ],
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "spell"
+     },
+     {
+      "amount": 3,
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "suspend",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Cyclical Evolution",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: target creature gets +3/+3 until end of turn, then the resolving spell exiles itself with three time counters on it (suspended, with its printed suspend) (eff.p2cs1.exile.withCounters). (CR 611.2a, 701.13a, 122.1, 608.2m, 702.62b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 3,
+             "toughness": 3
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "op": "move",
+         "to": {
+          "counters": [
+           {
+            "count": 3,
+            "kind": "time"
+           }
+          ],
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     },
+     {
+      "amount": 3,
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "suspend",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Exuberant Fuseling",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: trample; it gets +1/+0 for each oil counter on itself (layer 7c, the number counted continuously); when it enters and whenever another creature or artifact you control is put into a graveyard from the battlefield, put an oil counter on it (sta.p2cs1.self.pump.forEachCounterOnIt). (CR 613.4c, 122.1, 604.1, 603.6c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "args": [
+            1,
+            {
+             "kind": "oil",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          },
+          "toughness": {
+           "args": [
+            0,
+            {
+             "kind": "oil",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "oil",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Artifact",
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Evolving Adaptive",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: it enters with an oil counter; it gets +1/+1 for each oil counter on itself (sta.p2cs1.self.pump.forEachCounterOnIt); whenever another creature you control enters, if that creature has greater power or toughness than this one, put an oil counter on this one. (CR 614.1c, 613.4c, 122.1, 603.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 1,
+           "kind": "oil"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "args": [
+            1,
+            {
+             "kind": "oil",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          },
+          "toughness": {
+           "args": [
+            1,
+            {
+             "kind": "oil",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "oil",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "filter": {
+        "anyOf": [
+         {
+          "power": {
+           "op": ">",
+           "value": {
+            "of": {
+             "ref": "self"
+            },
+            "q": "stat",
+            "stat": "power"
+           }
+          }
+         },
+         {
+          "toughness": {
+           "op": ">",
+           "value": {
+            "of": {
+             "ref": "self"
+            },
+            "q": "stat",
+            "stat": "toughness"
+           }
+          }
+         }
+        ]
+       },
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Trawler Drake",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: flying; it enters with an oil counter; it gets +1/+1 for each oil counter on itself (sta.p2cs1.self.pump.forEachCounterOnIt); whenever you cast a noncreature spell, put an oil counter on it. (CR 702.9a, 614.1c, 613.4c, 122.1, 601.2i; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 1,
+           "kind": "oil"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "args": [
+            1,
+            {
+             "kind": "oil",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          },
+          "toughness": {
+           "args": [
+            1,
+            {
+             "kind": "oil",
+             "on": {
+              "ref": "self"
+             },
+             "q": "counters"
+            }
+           ],
+           "op": "*",
+           "q": "math"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "oil",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "notTypes": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Degavolver",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: kicked with its {1}{B} kicker (kicker) it enters with two +1/+1 counters and with the quoted 'Pay 3 life: Regenerate this creature.'; with its {R} kicker (kicker:2) with a +1/+1 counter and first strike (abl.p2cs1.kickedWith.counters.grant). (CR 702.33b, 702.33f, 614.1c, 613.1f, 701.15a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "condition": {
+       "cond": "wasCast",
+       "kicked": "kicker"
+      },
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 2,
+           "kind": "+1/+1"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       },
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "cost": {
+             "other": [
+              {
+               "amount": 3,
+               "kind": "payLife"
+              }
+             ]
+            },
+            "effect": {
+             "steps": [
+              {
+               "op": "regenerate",
+               "what": {
+                "ref": "self"
+               }
+              }
+             ],
+             "targets": []
+            },
+            "kind": "activated"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "condition": {
+       "cond": "wasCast",
+       "kicked": "kicker:2"
+      },
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 1,
+           "kind": "+1/+1"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       },
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "keyword": "first strike",
+            "kind": "keyword"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rakavolver",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: kicked with its {1}{W} kicker (kicker) it enters with two +1/+1 counters and with the quoted 'Whenever this creature deals damage, you gain that much life.'; with its {U} kicker (kicker:2) with a +1/+1 counter and flying (abl.p2cs1.kickedWith.counters.grant). (CR 702.33b, 702.33f, 614.1c, 613.1f, 603.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "condition": {
+       "cond": "wasCast",
+       "kicked": "kicker"
+      },
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 2,
+           "kind": "+1/+1"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       },
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "effect": {
+             "steps": [
+              {
+               "amount": {
+                "q": "eventAmount"
+               },
+               "op": "gainLife",
+               "who": {
+                "ref": "you"
+               }
+              }
+             ],
+             "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+             "on": [
+              {
+               "ev": "damage",
+               "source": {
+                "self": true
+               }
+              }
+             ]
+            }
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "condition": {
+       "cond": "wasCast",
+       "kicked": "kicker:2"
+      },
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 1,
+           "kind": "+1/+1"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       },
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "keyword": "flying",
+            "kind": "keyword"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sunscape Battlemage",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: two kicker lines (kicker, kicker:2); when it enters, if it was kicked with its {1}{G} kicker (an intervening if on its own enters trigger) destroy target creature with flying; if with its {2}{U} kicker, draw two cards (Cond reading 'it was kicked with its {M} kicker', parser/holes/p2cs1.ts). (CR 702.33f, 603.4, 603.6a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "keyword": "flying",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "wasCast",
+       "kicked": "kicker"
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "wasCast",
+       "kicked": "kicker:2"
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thornscape Battlemage",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: kicked with its {R} kicker (kicker): it deals 2 damage to any target; with its {W} kicker (kicker:2): destroy target artifact; each an intervening if on its enters trigger (Cond reading 'it was kicked with its {M} kicker'). (CR 702.33f, 603.4, 120.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "kicker",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": 2,
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "anyTarget",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "wasCast",
+       "kicked": "kicker"
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Artifact"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "wasCast",
+       "kicked": "kicker:2"
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Runaway Steam-Kin",
+  "expect": "full",
+  "verified": "p2-counters-state-1 review (lane p2-counters-state; tuning half, non-Standard), by hand: whenever you cast a red spell, if it has fewer than three +1/+1 counters on it (checked as it triggers and as it resolves), put a +1/+1 counter on it; remove three +1/+1 counters from it: add {R}{R}{R} (the strict comparison rendered 'fewer than three', render/cond.ts). (CR 603.4, 122.1, 605.1a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "filter": {
+        "counters": {
+         "cmp": {
+          "op": "<",
+          "value": 3
+         },
+         "kind": "+1/+1"
+        }
+       },
+       "object": {
+        "ref": "self"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "colors": [
+           "R"
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "other": [
+        {
+         "count": 3,
+         "counter": "+1/+1",
+         "kind": "removeCounters",
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "R"
+          ],
+          [
+           "R"
+          ],
+          [
+           "R"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ }
+]

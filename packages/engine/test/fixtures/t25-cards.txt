@@ -1,0 +1,24 @@
+# T25 (FAST4): one-shot effects on permanents and spells: damage, removal, control, next-end-step sacrifice.
+# After editing: npm run cards -- fixtures
+
+# ---- Damage to several targets and to opponents' permanents (CR 120.3, 601.2c, 102.3)
+Jaya's Immolating Inferno
+Tectonic Hazard
+Amarant Coral
+
+# ---- Removal: a list of targets, power or toughness, then destroy all, top or bottom of the library (CR 701.8a, 208.1, 401.1)
+Boom Box
+Repel Calamity
+Villainous Wrath
+Uneasy Partings
+
+# ---- Colors, control by owner, Living Death, sacrifice of each of two kinds (CR 105.3, 400.7a, 108.3, 701.21a)
+Purelace
+Homeward Path
+Living Death
+Living End
+Vile Mutilator
+
+# ---- Flicker with a counter, "if you do, sacrifice it at the beginning of the next end step" (CR 614.1c, 603.7a)
+Daydream
+Attack-in-the-Box

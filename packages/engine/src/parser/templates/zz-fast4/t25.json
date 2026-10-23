@@ -1,0 +1,603 @@
+[
+  {
+    "id": "eff.t25.then.destroy",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 608.2c"
+    ],
+    "pattern": "then destroy {o:Objs}",
+    "build": {
+      "op": "destroy",
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target opponent loses 2 life. Then destroy all creatures."
+      },
+      {
+        "text": "You gain 3 life. Then destroy all artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 2 life. Then exile all creatures.",
+      "Target opponent loses 2 life. Then destroy all creatures you control.",
+      "Target opponent loses 2 life. Then destroy all creatures. They can't be regenerated."
+    ]
+  },
+  {
+    "id": "eff.t25.return.bf.owner.counters",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 614.1c",
+      "CR 122.6",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Objs} to the battlefield under its owner 's control with {c:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$c"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile target creature you control, then return that card to the battlefield under its owner's control with two +1/+1 counters on it."
+      },
+      {
+        "text": "Exile target artifact you control, then return that card to the battlefield under its owner's control with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature you control, then return that card to the battlefield under your control with two +1/+1 counters on it.",
+      "Exile target creature you control, then return that card to the battlefield under its owner's control tapped.",
+      "Exile target creature you control, then return that card to its owner's hand with two +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.t25.sacrifice.theirChoice.then",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice , then sacrifices {m:Qty} {g:Filter} of their choice",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$n"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$g",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent sacrifices a nontoken artifact of their choice, then sacrifices a nontoken creature of their choice."
+      },
+      {
+        "text": "When ~ enters, each opponent sacrifices an enchantment of their choice, then sacrifices a land of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices a nontoken enchantment of their choice, then you sacrifice a nontoken creature.",
+      "Each opponent sacrifices a nontoken enchantment of their choice, then discards a card.",
+      "Each opponent sacrifices a nontoken enchantment, then sacrifices a nontoken creature of their choice."
+    ]
+  },
+  {
+    "id": "eff.t25.damage.eachOpponent.andTheirs",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 109.4",
+      "CR 102.3"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to each opponent and each {f:Filter} they control",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": "opponent"
+            }
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 3 damage to each opponent and each creature they control."
+      },
+      {
+        "text": "When ~ enters, it deals 2 damage to each opponent and each planeswalker they control."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 1 damage to each opponent and each creature you control.",
+      "~ deals 1 damage to each player and each creature they control.",
+      "~ deals 1 damage to target opponent and each creature they control."
+    ]
+  },
+  {
+    "id": "eff.t25.becomes.color.permanent",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1e",
+      "CR 105.3",
+      "CR 400.7a"
+    ],
+    "pattern": "{o:Obj} becomes {c:Color}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target spell or permanent becomes green. Draw a card."
+      },
+      {
+        "text": "Target creature becomes black. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target spell or permanent becomes blue until end of turn.",
+      "Target spell or permanent becomes blue and green.",
+      "Target spell or permanent becomes a 2/2 creature."
+    ]
+  },
+  {
+    "id": "eff.t25.control.eachOwner",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 108.3",
+      "CR 613.1b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "each player gains control of all {f:Filter} they own",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "ownerOf",
+                "object": {
+                  "ref": "subject"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Each player gains control of all creatures they own."
+      },
+      {
+        "text": "At the beginning of your end step, each player gains control of all artifacts they own."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Each player gains control of all creatures they control.",
+      "{T}: Each player gains control of all creatures they own until end of turn.",
+      "{T}: Each opponent gains control of all creatures they own."
+    ]
+  },
+  {
+    "id": "eff.t25.owner.topOrBottom",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 401.1",
+      "CR 108.3",
+      "CR 608.2d",
+      "CR 400.3"
+    ],
+    "pattern": "{o:Obj} 's owner puts it on their choice of the top or bottom of their library",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        },
+        "what": "option",
+        "options": [
+          "top",
+          "bottom"
+        ],
+        "as": "libraryEnd",
+        "link": "libraryEnd"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "libraryEnd",
+          "equals": "top"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "library",
+              "position": "top"
+            }
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "libraryEnd",
+          "equals": "bottom"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "library",
+              "position": "bottom"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target artifact's owner puts it on their choice of the top or bottom of their library."
+      },
+      {
+        "text": "Target nonland permanent's owner puts it on their choice of the top or bottom of their library. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target artifact's owner puts it on the top or bottom of their library.",
+      "Target artifact's owner puts it on their choice of the top or bottom of your library.",
+      "Target artifact's controller puts it on their choice of the top or bottom of their library."
+    ]
+  },
+  {
+    "id": "eff.t25.ownerOf.topOrBottom",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 401.1",
+      "CR 108.3",
+      "CR 608.2d",
+      "CR 400.3"
+    ],
+    "pattern": "the owner of {o:Obj} puts it on their choice of the top or bottom of their library",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        },
+        "what": "option",
+        "options": [
+          "top",
+          "bottom"
+        ],
+        "as": "libraryEnd",
+        "link": "libraryEnd"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "libraryEnd",
+          "equals": "top"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "library",
+              "position": "top"
+            }
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "libraryEnd",
+          "equals": "bottom"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "library",
+              "position": "bottom"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "The owner of target creature puts it on their choice of the top or bottom of their library."
+      },
+      {
+        "text": "The owner of target artifact puts it on their choice of the top or bottom of their library. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "The owner of target creature puts it on the top of their library.",
+      "The controller of target creature puts it on their choice of the top or bottom of their library.",
+      "The owner of target creature shuffles it into their library."
+    ]
+  },
+  {
+    "id": "eff.t25.damage.eachOtherOpponent",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 102.3",
+      "CR 603.2",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to each other opponent",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "otherOpponents",
+        "than": {
+          "ref": "event",
+          "role": "recipient"
+        }
+      },
+      "amount": "$n"
+    },
+    "subject": "object",
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals damage to an opponent, it deals that much damage to each other opponent."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to an opponent, it deals 1 damage to each other opponent."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to an opponent, it deals that much damage to each opponent.",
+      "Whenever ~ deals combat damage to an opponent, it deals that much damage to each other player.",
+      "Whenever ~ deals combat damage to a creature, it deals that much damage to each other opponent."
+    ]
+  },
+  {
+    "id": "eff.t25.ifThen.sacrifice.nextEnd",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 701.21a"
+    ],
+    "pattern": "if {c:Cond} , sacrifice {o:Obj} at the beginning of the next end step",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "delay",
+          "when": {
+            "at": "step",
+            "step": "end",
+            "next": true
+          },
+          "do": [
+            {
+              "op": "sacrifice",
+              "what": "$o"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may have it get +3/+0 until end of turn. If you do, sacrifice it at the beginning of the next end step."
+      },
+      {
+        "text": "When ~ enters, you may draw a card. If you do, sacrifice ~ at the beginning of the next end step."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may have it get +3/+0 until end of turn. If you do, sacrifice it at the beginning of your next upkeep.",
+      "Whenever ~ attacks, you may have it get +3/+0 until end of turn. If you do, exile it at the beginning of the next end step.",
+      "Whenever ~ attacks, you may have it get +3/+0 until end of turn. If you don't, sacrifice it at the beginning of the next end step."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.t25.eachPlayer.livingDeath",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.21a",
+      "CR 400.7j",
+      "CR 110.2",
+      "CR 603.6a"
+    ],
+    "pattern": "each player exiles all creature cards from their graveyard , then sacrifices all creatures they control , then puts all cards they exiled this way onto the battlefield",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "isCard": true,
+            "zone": "graveyard"
+          }
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiledThisWay"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": {
+          "types": [
+            "Creature"
+          ]
+        },
+        "count": 1,
+        "mode": "all"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledThisWay"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all",
+      "then",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Each player exiles all creature cards from their graveyard, then sacrifices all creatures they control, then puts all cards they exiled this way onto the battlefield."
+      },
+      {
+        "text": "Cascade\nEach player exiles all creature cards from their graveyard, then sacrifices all creatures they control, then puts all cards they exiled this way onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player exiles all creature cards from their graveyard, then sacrifices all creatures they control, then puts all cards they exiled this way into their hand.",
+      "Each player exiles all creature cards from their graveyard, then sacrifices all creatures they control.",
+      "Each opponent exiles all creature cards from their graveyard, then sacrifices all creatures they control, then puts all cards they exiled this way onto the battlefield."
+    ]
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "name": "bestow",
+  "rule": "702.103",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "structural"
+  ],
+  "reminder": "If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "actions/cast-opt/bestow.ts#bestowCost",
+    "rules/base-parts/bestow.ts#bestowedChars",
+    "core/resolve.ts#resolvePermanentSpell",
+    "core/sba-objects.ts#performObjectSbas"
+  ]
+}

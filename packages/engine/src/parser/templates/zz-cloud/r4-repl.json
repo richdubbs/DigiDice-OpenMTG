@@ -1,0 +1,2175 @@
+[
+  {
+    "id": "rid.r4repl.instead.tokens.count",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 111.1",
+      "CR 707.2"
+    ],
+    "pattern": "if {c:Cond} , create {n:Qty} of those tokens instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "@previousWith": {
+              "count": "$n"
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "createToken|copy",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Create a 1/1 white Spirit creature token. If ~ was kicked, create three of those tokens instead."
+      },
+      {
+        "text": "Create a token that's a copy of target artifact. If ~ was kicked, create three of those tokens instead."
+      },
+      {
+        "text": "Create two Treasure tokens. If you control a Pirate, create four of those tokens instead."
+      }
+    ],
+    "counterExamples": [
+      "Create a 1/1 white Spirit creature token. If ~ was kicked, create three of those tokens.",
+      "Create a 1/1 white Spirit creature token. If ~ was kicked, you may create three of those tokens instead.",
+      "Draw a card. If ~ was kicked, create three of those tokens instead.",
+      "Copy target instant spell. If ~ was kicked, create three of those tokens instead."
+    ]
+  },
+  {
+    "id": "rid.r4repl.insteadFirst.tokens.whereX",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 111.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "if {c:Cond} , instead create x of those tokens , where x is {q:Qty}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "@previousWith": {
+              "count": "$q"
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "createToken",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Create two 1/1 white Spirit creature tokens. If ~ was kicked, instead create X of those tokens, where X is the number of creatures you control."
+      },
+      {
+        "text": "Create a Food token. If you control an Elf, instead create X of those tokens, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Create two 1/1 white Spirit creature tokens. If ~ was kicked, create X of those tokens, where X is the number of creatures you control.",
+      "Create two 1/1 white Spirit creature tokens. If ~ was kicked, instead create X of those tokens, where Y is the number of creatures you control.",
+      "Create two 1/1 white Spirit creature tokens. If ~ was kicked, instead you may create X of those tokens, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "rid.r4repl.instead.sourceYouControl.twice",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "if {c:Cond} , the creature you control deals twice that much damage instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "source.ref": "target"
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                2,
+                "@previous.amount"
+              ]
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "twice",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control deals damage equal to its power to target creature you don't control. If ~ was kicked, the creature you control deals twice that much damage instead."
+      },
+      {
+        "text": "Target creature you control deals damage equal to its toughness to target creature an opponent controls. If you control a Dragon, the creature you control deals twice that much damage instead."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control deals damage equal to its power to target creature you don't control. If ~ was kicked, the creature you control deals three times that much damage instead.",
+      "Target creature you control deals damage equal to its power to target creature you don't control. If ~ was kicked, the creature you control deals twice that much damage to you instead.",
+      "~ deals 3 damage to target creature. If ~ was kicked, the creature you control deals twice that much damage instead."
+    ]
+  },
+  {
+    "id": "rid.r4repl.instead.exileTop.count",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 406.1"
+    ],
+    "pattern": "if {c:Cond} , exile the top {n:Qty} cards instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "what.ref": "topCards",
+          "to.zone": "exile"
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "@previousWith": {
+              "what": {
+                "ref": "topCards",
+                "player": "@previous.what.player",
+                "count": "$n"
+              }
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. If ~ was kicked, exile the top four cards instead."
+      },
+      {
+        "text": "Exile the top three cards of your library. If ~ was bargained, exile the top five cards instead."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. If ~ was kicked, exile the top four cards.",
+      "Exile the top two cards of your library. If ~ was kicked, you may exile the top four cards instead.",
+      "Exile target creature. If ~ was kicked, exile the top four cards instead.",
+      "Mill two cards. If ~ was kicked, exile the top four cards instead."
+    ]
+  },
+  {
+    "id": "eff.r4repl.search.n.bf.untapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for {n:Qty} {f:Filter} cards , put them onto the battlefield , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": "$n",
+        "max": "$n",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for two basic Plains cards, put them onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Sacrifice a creature. Search your library for three Elf cards, put them onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two basic Plains cards, put them onto the battlefield, then shuffle.",
+      "Search your library for two basic Plains cards, put them onto the battlefield tapped, then shuffle.",
+      "Search your library for two basic Plains cards, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r4repl.dig.putHand.only",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20e",
+      "CR 401.4"
+    ],
+    "pattern": "put {n:Qty} of {g:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top four cards of your library. Put one of them into your hand. If ~ was kicked, put two of them into your hand instead. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. Put two of those cards into your hand. If you control a Wizard, put three of those cards into your hand instead. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Put one of them into your hand.",
+      "Look at the top four cards of your library. Put one of them into your graveyard. Put the rest on the bottom of your library in a random order.",
+      "Look at the top four cards of your library. Put up to one of them into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "rid.r4repl.instead.basePT.only",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 613.4b"
+    ],
+    "pattern": "if {c:Cond} , it has base power and toughness {pt:BasePT} until end of turn instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "duration.d": "endOfTurn",
+          "effects.0.affects.ref": "target",
+          "effects.0.mods.1.layer": "7b",
+          "effects.0.mods.2": null,
+          "effects.1": null
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "@previousMerged": {
+              "effects": [
+                {
+                  "mods": [
+                    {},
+                    {
+                      "power": "$pt.p",
+                      "toughness": "$pt.t"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "if",
+      "until",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target artifact or creature becomes an artifact creature with base power and toughness 5/5. If ~ was kicked, it has base power and toughness 2/2 until end of turn instead."
+      },
+      {
+        "text": "Until end of turn, target artifact becomes an artifact creature with base power and toughness 3/3. If you control a Wizard, it has base power and toughness 6/6 until end of turn instead."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target artifact or creature becomes an artifact creature with base power and toughness 5/5. If ~ was kicked, it has base power and toughness 2/2 until end of turn.",
+      "Until end of turn, target artifact or creature becomes an artifact creature with base power and toughness 5/5. If ~ was kicked, it gets +2/+2 until end of turn instead.",
+      "Target creature gets +2/+2 until end of turn. If ~ was kicked, it has base power and toughness 2/2 until end of turn instead."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.r4repl.dig.putEach.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20e",
+      "CR 614.15"
+    ],
+    "pattern": "put each of {g:Seen} into your hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": "$g",
+          "zone": "library"
+        }
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order. Put each of those cards into your hand instead if you control a Wizard."
+      },
+      {
+        "text": "Look at the top two cards of your library. Put one of them into your hand and the rest into your graveyard. Put each of those cards into your hand instead if it's your turn."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order. Put each of those cards into your graveyard instead if you control a Wizard.",
+      "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order. Put each of those cards into your hand if you control a Wizard.",
+      "Put each of those cards into your hand."
+    ]
+  },
+  {
+    "id": "rid.r4repl.ifX.orMore.insteadFront",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 107.3"
+    ],
+    "pattern": "if x is {n:Qty} or more , instead {e:Effects}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "X"
+          },
+          "op": ">=",
+          "right": "$n"
+        },
+        "then": "$e",
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Draw X cards. If X is 6 or more, instead draw X cards and you gain X life."
+      },
+      {
+        "text": "~ deals X damage to target creature. If X is 5 or more, instead ~ deals X damage to target creature and you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Draw X cards. If X is 6 or more, draw X cards and you gain X life.",
+      "Draw X cards. If X is 6 or more, instead you may draw X cards and gain X life.",
+      "Draw X cards. If X is 6 or less, instead draw X cards and you gain X life."
+    ]
+  },
+  {
+    "id": "rep.r4repl.damage.double.opponentOrTheirs",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 102.2"
+    ],
+    "pattern": "if a [ {c:Color} ] source you control would deal damage to an opponent or a permanent an opponent controls , it deals double that damage instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "$when": "c",
+          "then": {
+            "colors": [
+              "$c"
+            ],
+            "controller": "you"
+          },
+          "else": {
+            "controller": "you"
+          }
+        },
+        "recipient": {
+          "object": {
+            "controller": "opponent"
+          },
+          "player": "opponent"
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a red source you control would deal damage to an opponent or a permanent an opponent controls, it deals double that damage instead."
+      },
+      {
+        "text": "{4}: You gain 3 life and scry 1.\nIf a green source you control would deal damage to an opponent or a permanent an opponent controls, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": [
+      "If a red source you control would deal damage to an opponent or a permanent an opponent controls, it deals triple that damage instead.",
+      "If a red source you control would deal damage to an opponent, it deals double that damage instead.",
+      "If a red source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 1 instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.damage.source.twice",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3"
+    ],
+    "pattern": "if {f:Filter} would deal damage , it deals ( twice that much damage | double that damage ) instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": "$f"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that much",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If an attacking creature you control would deal damage, it deals twice that much damage instead."
+      },
+      {
+        "text": "If an attacking Dragon you control would deal damage, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": [
+      "If an attacking creature you control would deal damage, it deals three times that much damage instead.",
+      "If an attacking creature you control would deal damage, you may have it deal twice that much damage instead.",
+      "If an attacking creature you control would be dealt damage, it deals twice that much damage instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.damage.plus.amountEqual.opponentOrTheirs",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 102.2",
+      "CR 107.3"
+    ],
+    "pattern": "if a source you control would deal damage to an opponent or a permanent an opponent controls , it deals that much damage plus an amount of damage equal to {q:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "you"
+        },
+        "recipient": {
+          "object": {
+            "controller": "opponent"
+          },
+          "player": "opponent"
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$q"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus an amount of damage equal to the number of charge counters on ~ instead."
+      },
+      {
+        "text": "{2}: Draw a card.\nIf a source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus an amount of damage equal to the number of cards in your hand instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus an amount of damage equal to the number of charge counters on ~.",
+      "If a source you control would deal damage to an opponent, it deals that much damage plus an amount of damage equal to the number of charge counters on ~ instead.",
+      "If a source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage minus an amount of damage equal to the number of charge counters on ~ instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.prevent.fromYourSources.toOpponent.then",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.5",
+      "CR 120.3"
+    ],
+    "pattern": "if a source you control would deal damage to an opponent , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "controller": "you"
+            },
+            "recipient": {
+              "player": "opponent"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a source you control would deal damage to an opponent, prevent that damage and each opponent mills twice that many cards."
+      },
+      {
+        "text": "{5}: ~ gets +3/+0 until end of turn.\nIf a source you control would deal damage to an opponent, prevent that damage and you gain that much life."
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal damage to an opponent, prevent that damage or each opponent mills twice that many cards.",
+      "If a source an opponent controls would deal damage to an opponent, prevent that damage and each opponent mills twice that many cards.",
+      "If a source you control would deal damage to target opponent, prevent that damage and each opponent mills twice that many cards."
+    ]
+  },
+  {
+    "id": "rep.r4repl.counters.plus.byYou.eachKind",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 122.6a"
+    ],
+    "pattern": "if you would put one or more counters on {f:Filter} , put that many plus {n:Qty} of each of those kinds of counters on that permanent instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "on": "$f",
+        "by": "you"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "each",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would put one or more counters on a creature you control, put that many plus one of each of those kinds of counters on that permanent instead."
+      },
+      {
+        "text": "If you would put one or more counters on an artifact you control, put that many plus two of each of those kinds of counters on that permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would put one or more counters on a creature you control, put that many minus one of each of those kinds of counters on that permanent instead.",
+      "If you would put one or more counters on a creature you control, put that many plus one of each of those kinds of counters on that permanent.",
+      "If you would remove one or more counters from a creature you control, put that many plus one of each of those kinds of counters on that permanent instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.dur.counters.plus.byYou.kind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , if you would put one or more {k:CounterKind} counters on {f:Filter} , put that many plus {n:Qty} {k2:CounterKind} counters on it instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "kind": "$k",
+            "on": "$f",
+            "by": "you"
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "add": "$n"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{2}{G}: Until end of turn, if you would put one or more +1/+1 counters on a creature you control, put that many plus one +1/+1 counters on it instead."
+      },
+      {
+        "text": "Until end of turn, if you would put one or more +1/+1 counters on an artifact creature you control, put that many plus two +1/+1 counters on it instead. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: Until end of turn, if you would put one or more +1/+1 counters on a creature you control, put that many plus one -1/-1 counters on it instead.",
+      "{2}{G}: Until end of turn, if you would put one or more +1/+1 counters on a creature you control, put that many minus one +1/+1 counters on it instead.",
+      "{2}{G}: Until end of turn, if you would remove one or more +1/+1 counters from a creature you control, put that many plus one +1/+1 counters on it instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.drawMany.plus.asLongAs",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 121.2",
+      "CR 604.1"
+    ],
+    "pattern": "as long as {c:Cond} , if you would draw one or more cards , you draw that many cards plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "draw",
+        "actor": "you"
+      },
+      "condition": "$c",
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "As long as you have two or fewer cards in hand, if you would draw one or more cards, you draw that many cards plus one instead."
+      },
+      {
+        "text": "{5}: ~ gets +3/+0 until end of turn.\nAs long as you control a Wizard, if you would draw one or more cards, you draw that many cards plus two instead."
+      }
+    ],
+    "counterExamples": [
+      "As long as you have two or fewer cards in hand, if you would draw one or more cards, you draw that many cards minus one instead.",
+      "As long as you have two or fewer cards in hand, if an opponent would draw one or more cards, you draw that many cards plus one instead.",
+      "As long as you have two or fewer cards in hand, if you would draw one or more cards, you may draw that many cards plus one instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.draw.while.skip",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.10",
+      "CR 121.3",
+      "CR 121.4"
+    ],
+    "pattern": "if you would draw a card while {c:Cond} , skip that draw instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "you"
+      },
+      "condition": "$c",
+      "body": {
+        "b": "skip"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card while you control a Wizard, skip that draw instead."
+      },
+      {
+        "text": "{4}: You gain 3 life and scry 1.\nIf you would draw a card while you have seven or more cards in hand, skip that draw instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card while you control a Wizard, you lose 2 life instead.",
+      "If you would draw a card while you control a Wizard, skip that draw.",
+      "If an opponent would draw a card while you control a Wizard, skip that draw instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.tokens.plusOne.passive",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1"
+    ],
+    "pattern": "if one or more tokens would be created under your control , those tokens plus ( a | an ) {t:TokenDesc} are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "body": {
+        "b": "modify",
+        "then": {
+          "as": "created",
+          "do": [
+            {
+              "op": "createToken",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1,
+              "token": "$t"
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more tokens would be created under your control, those tokens plus a Food token are created instead."
+      },
+      {
+        "text": "{2}: Draw a card.\nIf one or more tokens would be created under your control, those tokens plus a 1/1 white Spirit creature token with flying are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more tokens would be created under an opponent's control, those tokens plus a Food token are created instead.",
+      "If one or more tokens would be created under your control, a Food token is created instead.",
+      "If one or more tokens would be created under your control, those tokens plus two Food tokens are created instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.tokens.typed.thatMany.other",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 111.1"
+    ],
+    "pattern": "if one or more artifact tokens would be created under your control , that many {t:TokenDesc} are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you",
+        "token": {
+          "types": [
+            "Artifact"
+          ]
+        }
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "eventAmount"
+            },
+            "token": "$t"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more artifact tokens would be created under your control, that many 3/3 green Beast creature tokens are created instead."
+      },
+      {
+        "text": "{2}: Draw a card.\nIf one or more artifact tokens would be created under your control, that many 4/4 red Dragon creature tokens with flying are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more artifact tokens would be created under your control, twice that many 3/3 green Beast creature tokens are created instead.",
+      "If one or more artifact tokens would be created under an opponent's control, that many 3/3 green Beast creature tokens are created instead.",
+      "If one or more artifact tokens would be created under your control, that many 3/3 green Beast creature tokens are created."
+    ]
+  },
+  {
+    "id": "eff.r4repl.gy.cast.andExileInstead.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 614.1a",
+      "CR 601.3",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast spells from your graveyard this turn , and if a card would be put into your graveyard from anywhere this turn , exile ( that card | it ) instead",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "stackKind": "spell",
+            "zone": "stack"
+          },
+          "from": "graveyard"
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "isCard": true,
+              "owner": "you"
+            },
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast spells from your graveyard this turn, and if a card would be put into your graveyard from anywhere this turn, exile it instead."
+      },
+      {
+        "text": "{3}, {T}: You may cast spells from your graveyard this turn, and if a card would be put into your graveyard from anywhere this turn, exile that card instead."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast spells from your graveyard this turn, and if a card would be put into your graveyard from anywhere this turn, put it on the bottom of your library instead.",
+      "When ~ enters, you may cast spells from your hand this turn, and if a card would be put into your graveyard from anywhere this turn, exile it instead.",
+      "When ~ enters, you may cast spells from your graveyard this turn, and if a card would be put into your graveyard from anywhere, exile it instead."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "rep.r4repl.explore.scryFirst",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 614.6",
+      "CR 701.44a",
+      "CR 701.22a"
+    ],
+    "pattern": "if a creature you control would explore , instead you scry {n:Qty} , then that creature explores",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "explore",
+        "object": {
+          "types": [
+            "Creature"
+          ],
+          "controller": "you"
+        }
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "scry",
+            "who": {
+              "ref": "you"
+            },
+            "count": "$n"
+          },
+          {
+            "op": "action",
+            "action": "explore",
+            "subject": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "who": {
+              "ref": "you"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "If a creature you control would explore, instead you scry 2, then that creature explores."
+      },
+      {
+        "text": "{5}: ~ gets +3/+0 until end of turn.\nIf a creature you control would explore, instead you scry 3, then that creature explores."
+      }
+    ],
+    "counterExamples": [
+      "If a creature an opponent controls would explore, instead you scry 2, then that creature explores.",
+      "If a creature you control would explore, instead you surveil 2, then that creature explores.",
+      "If a creature you control would explore, you scry 2, then that creature explores."
+    ]
+  },
+  {
+    "id": "eff.r4repl.dur.prevent.toYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "( {d:Dur} , prevent all damage that would be dealt to you | prevent all damage that would be dealt to you {d:Dur} )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Until your next turn, prevent all damage that would be dealt to you."
+      },
+      {
+        "text": "You gain 2 life. Until end of turn, prevent all damage that would be dealt to you."
+      },
+      {
+        "text": "You gain 2 life. Prevent all damage that would be dealt to you this turn."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, prevent all combat damage that would be dealt to you.",
+      "Until your next turn, prevent all damage that would be dealt to target player.",
+      "Until your next turn, prevent the next 3 damage that would be dealt to you."
+    ]
+  },
+  {
+    "id": "eff.r4repl.prevent.toYouAnd.bySources",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all damage that would be dealt to you and {f:Filter} {d:Dur} by {g:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "player": "you",
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to you and artifacts you control this turn by creatures."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to you and planeswalkers you control this turn by artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to you and creatures you control this turn by creatures.",
+      "Prevent all damage that would be dealt to target player and creatures you control this turn by creatures.",
+      "Prevent the next 3 damage that would be dealt to you and creatures you control this turn by creatures."
+    ]
+  },
+  {
+    "id": "eff.r4repl.thisTurn.noncombat.plus",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 611.2a",
+      "CR 120.2b"
+    ],
+    "pattern": "if a source you control would deal noncombat damage to a permanent or player this turn , it deals that much damage plus {n:Qty} instead",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "controller": "you"
+            },
+            "combat": false
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "add": "$n"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{X}, {T}: If a source you control would deal noncombat damage to a permanent or player this turn, it deals that much damage plus X instead. Draw a card."
+      },
+      {
+        "text": "{2}, {T}: If a source you control would deal noncombat damage to a permanent or player this turn, it deals that much damage plus 1 instead."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: If a source you control would deal combat damage to a permanent or player this turn, it deals that much damage plus X instead.",
+      "{X}, {T}: If a source you control would deal noncombat damage to a permanent or player this turn, it deals double that damage instead.",
+      "{X}, {T}: If a source an opponent controls would deal noncombat damage to a permanent or player this turn, it deals that much damage plus X instead."
+    ]
+  },
+  {
+    "id": "rep.r4repl.enters.counter.forEach.diedUnderYourControl",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 122.6",
+      "CR 700.4",
+      "CR 603.10a"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it for each creature that died under your control this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "happenedCount",
+                  "event": {
+                    "ev": "zoneChange",
+                    "subject": {
+                      "types": [
+                        "Creature"
+                      ],
+                      "controller": "you"
+                    },
+                    "from": "battlefield",
+                    "to": "graveyard"
+                  },
+                  "scope": "turn"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a charge counter on it for each creature that died under your control this turn."
+      },
+      {
+        "text": "{5}: ~ gets +3/+0 until end of turn.\n~ enters with a -1/-1 counter on it for each creature that died under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a charge counter on it for each creature that died this turn.",
+      "~ enters with a charge counter on target creature for each creature that died under your control this turn.",
+      "~ enters with a charge counter on it for each creature that died under your control."
+    ]
+  },
+  {
+    "id": "rep.r4repl.enters.counter.plusAdditional.forEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 122.6",
+      "CR 107.3"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it plus an additional {k2:CounterKind} counter on it for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "math",
+                  "op": "+",
+                  "args": [
+                    1,
+                    {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": "$f"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it plus an additional +1/+1 counter on it for each other Elf you control."
+      },
+      {
+        "text": "{5}: ~ gets +3/+0 until end of turn.\n~ enters with a +1/+1 counter on it plus an additional +1/+1 counter on it for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it plus an additional +1/+1 counter on target creature for each other Elf you control.",
+      "~ enters with a +1/+1 counter on it plus two additional +1/+1 counters on it for each other Elf you control.",
+      "~ enters with a +1/+1 counter on it for each other Elf you control and each artifact you control."
+    ]
+  },
+  {
+    "id": "rep.r4repl.others.enter.additionalCounter.forEachAlready",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6"
+    ],
+    "pattern": "each {f:Filter} enters with an additional {k:CounterKind} counter on it for each {g:Filter} you already control",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        "$g"
+                      ],
+                      "controller": "you"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Each other Elf you control enters with an additional +1/+1 counter on it for each Elf you already control."
+      },
+      {
+        "text": "{5}: ~ gets +3/+0 until end of turn.\nEach other creature you control enters with an additional +1/+1 counter on it for each Knight you already control."
+      }
+    ],
+    "counterExamples": [
+      "Each other Elf you control enters with an additional +1/+1 counter on it for each Elf an opponent already controls.",
+      "Each other Elf you control enters with two additional +1/+1 counters on it for each Elf you already control.",
+      "Each other Elf you control enters with an additional +1/+1 counter on target creature for each Elf you already control."
+    ]
+  },
+  {
+    "id": "rep.r4repl.enters.chooseType.countersForEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 122.6",
+      "CR 607.2a"
+    ],
+    "pattern": "as ~ enters , choose a creature type . ~ enters with ( a | an ) {k:CounterKind} counter on it for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "creatureType",
+                "link": "type"
+              }
+            ],
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$f"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type. ~ enters with a charge counter on it for each creature you control of the chosen type."
+      },
+      {
+        "text": "As ~ enters, choose a creature type. ~ enters with a +1/+1 counter on it for each creature card of the chosen type in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a color. ~ enters with a charge counter on it for each creature you control of the chosen type.",
+      "As ~ enters, choose a creature type. ~ enters with a charge counter on target creature for each creature you control of the chosen type.",
+      "As ~ enters, choose a creature type. ~ enters with two charge counters on it for each creature you control of the chosen type."
+    ]
+  },
+  {
+    "id": "eff.r4repl.castSpell.entersWith.additional",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2c",
+      "CR 122.6"
+    ],
+    "pattern": "that creature enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": {
+                "ref": "event",
+                "role": "spell"
+              }
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell, that creature enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "Whenever you cast a Knight creature spell, that creature enters with an additional -1/-1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell, that creature enters with two additional +1/+1 counters on it.",
+      "Whenever a creature you control dies, that creature enters with an additional +1/+1 counter on it.",
+      "Whenever you cast a creature spell, target creature enters with an additional +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.r4repl.castSpell.entersWith.additional.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2c",
+      "CR 122.6"
+    ],
+    "pattern": "that creature enters with an additional {k:CounterKind} counter on it for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": {
+                "ref": "event",
+                "role": "spell"
+              }
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$f"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell, that creature enters with an additional +1/+1 counter on it for each Elf you control."
+      },
+      {
+        "text": "Whenever you cast your first Knight creature spell each turn, that creature enters with an additional +1/+1 counter on it for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell, that creature enters with two additional +1/+1 counters on it for each Elf you control.",
+      "Whenever a creature you control dies, that creature enters with an additional +1/+1 counter on it for each Elf you control.",
+      "Whenever you cast a creature spell, that creature enters with an additional +1/+1 counter on target creature for each Elf you control."
+    ]
+  },
+  {
+    "id": "eff.r4repl.castSpell.entersWith.xAdditional.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2c",
+      "CR 122.6"
+    ],
+    "pattern": "that creature enters with x additional {k:CounterKind} counters on it , where x is {q:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": {
+                "ref": "event",
+                "role": "spell"
+              }
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell, that creature enters with X additional +1/+1 counters on it, where X is the number of cards in your hand."
+      },
+      {
+        "text": "Whenever you cast a Knight creature spell, that creature enters with X additional +1/+1 counters on it, where X is the number of colors of mana spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell, that creature enters with X +1/+1 counters on it, where Y is the number of cards in your hand.",
+      "Whenever a creature you control dies, that creature enters with X additional +1/+1 counters on it, where X is the number of cards in your hand.",
+      "Whenever you cast a creature spell, target creature enters with X additional +1/+1 counters on it, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.r4repl.nextCast.entersWith.additional",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2c"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , that creature enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "replace",
+              "replaces": {
+                "ev": "zoneChange",
+                "subject": {
+                  "is": {
+                    "ref": "event",
+                    "role": "spell"
+                  }
+                },
+                "to": "battlefield"
+              },
+              "body": {
+                "b": "enters",
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "You gain 2 life. When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. When you next cast a creature spell, that creature enters with an additional +1/+1 counter on it.",
+      "Draw a card. Whenever you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it.",
+      "Draw a card. When you next cast a creature spell this turn, that creature enters with two additional +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "rid.r4repl.cast.yourGraveyard.exileInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 611.2a"
+    ],
+    "pattern": "if that spell would be put into your graveyard , exile it instead",
+    "build": {
+      "$patchPrevious": {
+        "@byOp": {
+          "cast": {
+            "graveyardInstead": {
+              "@new": {
+                "to": {
+                  "zone": "exile"
+                },
+                "yours": true
+              }
+            }
+          },
+          "effect": {
+            "@require": {
+              "effects.0.s": "permit",
+              "effects.0.action": "cast",
+              "effects.1": null
+            },
+            "effects": [
+              {
+                "graveyardInstead": {
+                  "@new": {
+                    "to": {
+                      "zone": "exile"
+                    },
+                    "yours": true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "cast|effect",
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast target instant card from your graveyard. If that spell would be put into your graveyard, exile it instead."
+      },
+      {
+        "text": "{2}, {T}: You may cast target sorcery card from your graveyard, and mana of any type can be spent to cast that spell. If that spell would be put into your graveyard, exile it instead."
+      },
+      {
+        "text": "{2}, {T}: You may cast target instant card from your graveyard this turn. If that spell would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast target instant card from your graveyard. If that spell would be put into your graveyard, exile it.",
+      "When ~ enters, you may cast target instant card from your graveyard. If that spell would be put into your graveyard, you may exile it instead.",
+      "When ~ enters, destroy target artifact. If that spell would be put into your graveyard, exile it instead."
+    ]
+  },
+  {
+    "id": "rid.r4repl.cast.aGraveyard.exileInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 611.2a"
+    ],
+    "pattern": "if that spell would be put into a graveyard , exile it instead",
+    "build": {
+      "$patchPrevious": {
+        "@byOp": {
+          "cast": {
+            "graveyardInstead": {
+              "@new": {
+                "to": {
+                  "zone": "exile"
+                }
+              }
+            }
+          },
+          "effect": {
+            "@require": {
+              "effects.0.s": "permit",
+              "effects.0.action": "cast",
+              "effects.1": null
+            },
+            "effects": [
+              {
+                "graveyardInstead": {
+                  "@new": {
+                    "to": {
+                      "zone": "exile"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "cast|effect",
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast target instant card from a graveyard. If that spell would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "{2}, {T}: You may cast target sorcery card from a graveyard, and mana of any type can be spent to cast that spell. If that spell would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "{4}: Exile target instant card from an opponent's graveyard. You may cast it this turn. If that spell would be put into a graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast target instant card from a graveyard. If that spell would be put into a graveyard, exile it.",
+      "When ~ enters, you may cast target instant card from a graveyard. If that spell would be put into a graveyard, you may exile it instead.",
+      "When ~ enters, destroy target artifact. If that spell would be put into a graveyard, exile it instead."
+    ]
+  },
+  {
+    "id": "rid.r4repl.cast.aGraveyard.bottomInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 611.2a"
+    ],
+    "pattern": "if that spell would be put into a graveyard , put it on the bottom of its owner 's library instead",
+    "build": {
+      "$patchPrevious": {
+        "@byOp": {
+          "cast": {
+            "graveyardInstead": {
+              "@new": {
+                "to": {
+                  "zone": "library",
+                  "position": "bottom"
+                }
+              }
+            }
+          },
+          "effect": {
+            "@require": {
+              "effects.0.s": "permit",
+              "effects.0.action": "cast",
+              "effects.1": null
+            },
+            "effects": [
+              {
+                "graveyardInstead": {
+                  "@new": {
+                    "to": {
+                      "zone": "library",
+                      "position": "bottom"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "cast|effect",
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast target instant card from a graveyard. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead."
+      },
+      {
+        "text": "{2}, {T}: You may cast target sorcery card from a graveyard, and mana of any type can be spent to cast that spell. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead."
+      },
+      {
+        "text": "{3}: Exile target sorcery card from an opponent's graveyard. You may cast it this turn. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast target instant card from a graveyard. If that spell would be put into a graveyard, put it on top of its owner's library instead.",
+      "When ~ enters, you may cast target instant card from a graveyard. If that spell would be put into a graveyard, put it on the bottom of its owner's library.",
+      "When ~ enters, destroy target artifact. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead."
+    ]
+  },
+  {
+    "id": "eff.r4repl.castSpell.exileAsItResolves",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2n",
+      "CR 611.2c"
+    ],
+    "pattern": "exile that spell instead of putting it into your graveyard as it resolves",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": {
+                "ref": "event",
+                "role": "spell"
+              }
+            },
+            "from": "stack",
+            "to": "graveyard",
+            "cause": "resolve"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast an instant spell from your hand, exile that spell instead of putting it into your graveyard as it resolves."
+      },
+      {
+        "text": "Whenever you cast a multicolored sorcery spell, exile that spell instead of putting it into your graveyard as it resolves."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell from your hand, exile that spell instead of putting it into your hand as it resolves.",
+      "Whenever you cast an instant spell from your hand, you may exile that spell instead of putting it into your graveyard as it resolves.",
+      "Whenever a creature you control dies, exile that spell instead of putting it into your graveyard as it resolves."
+    ]
+  },
+  {
+    "id": "sta.r4repl.duringTurn.equipped.grant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 500.1",
+      "CR 301.5"
+    ],
+    "pattern": "during your turn , as long as ~ is equipped , ( it | ~ ) has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "turnOf",
+            "whose": "you"
+          },
+          {
+            "cond": "exists",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "subtypes": [
+                  "Equipment"
+                ],
+                "attachedToObject": {
+                  "ref": "self"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, as long as ~ is equipped, it has double strike and indestructible."
+      },
+      {
+        "text": "{5}: ~ gets +3/+0 until end of turn.\nDuring your turn, as long as ~ is equipped, ~ has flying."
+      }
+    ],
+    "counterExamples": [
+      "During your opponent's turn, as long as ~ is equipped, it has double strike and indestructible.",
+      "During your turn, as long as ~ is equipped, it gains double strike and indestructible.",
+      "During your turn, as long as ~ is enchanted, it has double strike and indestructible."
+    ]
+  }
+]

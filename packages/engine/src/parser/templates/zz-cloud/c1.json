@@ -1,0 +1,94 @@
+[
+  {
+    "id": "eff.c1.target.cantbecountered",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 701.6a",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Targets} can't be countered",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beCountered"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{1}{G}: Target spell can't be countered."
+      },
+      {
+        "text": "Draw a card. Target creature spell can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "{1}{G}: Target spell can be countered.",
+      "{1}{G}: Counter target spell.",
+      "{1}{G}: Target spell can't be countered this turn.",
+      "{1}{G}: Target spell can't be countered by blue spells."
+    ]
+  },
+  {
+    "id": "eff.c1.spells.cantbecountered.thisturn",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 101.2",
+      "CR 701.6a",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{f:Filter} can't be countered this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "beCountered"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Gain 2 life. Spells you control can't be countered this turn."
+      },
+      {
+        "text": "Scry 1. Creature spells you control can't be countered this turn."
+      }
+    ],
+    "counterExamples": [
+      "Artifact spells you control can't be countered.",
+      "Spells you control can be countered this turn.",
+      "Spells you control can't be countered by blue spells this turn.",
+      "The next spell you cast this turn can't be countered."
+    ]
+  }
+]

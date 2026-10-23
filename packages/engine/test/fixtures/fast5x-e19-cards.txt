@@ -1,0 +1,32 @@
+# FAST5X E19: the mana spent to cast a spell (opus, CR 601.2h, 207.2c), mana from a source of a subtype (CR 106.3) and unspent mana (CR 106.4, 500.5, 614.1)
+Tackle Artist
+Muse Seeker
+Deluge Virtuoso
+Thunderdrum Soloist
+Colorstorm Stallion
+Molten-Core Maestro
+Spectacular Skywhale
+Exhibition Tidecaller
+Expressive Firedancer
+Elemental Mascot
+Blazing Bomb
+Ultros, Obnoxious Octopus
+Prompto Argentum
+The Prima Vista
+Chart a Course
+Kaito Shizuki
+Fangorn, Tree Shepherd
+Ashling, Flame Dancer
+Bat Colony
+Marut
+Alchemist's Talent
+Smaug, Wicked Worm
+Electro, Assaulting Battery
+Ozai, the Phoenix King
+Kruphix, God of Horizons
+Horizon Stone
+Omnath, Locus of the Void
+Omnath, Locus of Mana
+Omnath, Locus of All
+Leyline Tyrant
+# The Last Agni Kai: listed in fast5x-e16-cards.txt (one line per card across the lists)

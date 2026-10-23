@@ -1,0 +1,242 @@
+[
+  {
+    "id": "sta.c2.maxhand.your.n",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1",
+      "CR 613.11"
+    ],
+    "pattern": "your maximum hand size is {n:Qty}",
+    "build": {
+      "s": "rule",
+      "rule": "maxHandSize",
+      "player": {
+        "ref": "you"
+      },
+      "value": "$n"
+    },
+    "examples": [
+      {
+        "text": "Your maximum hand size is three."
+      },
+      {
+        "text": "Your maximum hand size is six."
+      }
+    ],
+    "counterExamples": [
+      "Your minimum hand size is three.",
+      "Your maximum hand size is increased by five.",
+      "Your maximum library size is three."
+    ]
+  },
+  {
+    "id": "sta.c2.maxhand.your.equalto",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1",
+      "CR 613.11",
+      "CR 611.3a"
+    ],
+    "pattern": "your maximum hand size is equal to {n:Qty}",
+    "build": {
+      "s": "rule",
+      "rule": "maxHandSize",
+      "player": {
+        "ref": "you"
+      },
+      "value": "$n"
+    },
+    "examples": [
+      {
+        "text": "Your maximum hand size is equal to the number of lands you control."
+      },
+      {
+        "text": "Your maximum hand size is equal to the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Your maximum hand size is equal to two.",
+      "Your minimum hand size is equal to the number of lands you control.",
+      "Your maximum hand size is increased by the number of lands you control."
+    ]
+  },
+  {
+    "id": "sta.c2.maxhand.player.n",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1",
+      "CR 613.11"
+    ],
+    "pattern": "{p:Player} 's maximum hand size is {n:Qty}",
+    "build": {
+      "s": "rule",
+      "rule": "maxHandSize",
+      "player": "$p",
+      "value": "$n"
+    },
+    "examples": [
+      {
+        "text": "Each opponent's maximum hand size is three."
+      },
+      {
+        "text": "Each player's maximum hand size is five."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent's maximum hand size is reduced by four.",
+      "Each opponent's minimum hand size is three.",
+      "Each opponent's maximum library size is three."
+    ]
+  },
+  {
+    "id": "sta.c2.nomaxhand.player",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1"
+    ],
+    "pattern": "{p:Player} has no maximum hand size",
+    "build": {
+      "s": "rule",
+      "rule": "handSizeNoLimit",
+      "player": "$p"
+    },
+    "examples": [
+      {
+        "text": "Each player has no maximum hand size."
+      },
+      {
+        "text": "Each opponent has no maximum hand size."
+      }
+    ],
+    "counterExamples": [
+      "Each player has no minimum hand size.",
+      "Each player has a maximum hand size.",
+      "Each player has no maximum library size."
+    ]
+  },
+  {
+    "id": "sta.c2.nomaxhand.players",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1"
+    ],
+    "pattern": "players have no maximum hand size",
+    "build": {
+      "s": "rule",
+      "rule": "handSizeNoLimit",
+      "player": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "examples": [
+      {
+        "text": "Players have no maximum hand size."
+      },
+      {
+        "text": "Flying\nPlayers have no maximum hand size."
+      }
+    ],
+    "counterExamples": [
+      "Players have no minimum hand size.",
+      "Players have a maximum hand size.",
+      "Opponents have no maximum hand size."
+    ]
+  },
+  {
+    "id": "sta.c2.nomaxhand.aslongas",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , you have no maximum hand size",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "handSizeNoLimit",
+          "player": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an Island, you have no maximum hand size."
+      },
+      {
+        "text": "As long as you control three or more artifacts, you have no maximum hand size."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an Island, you have no minimum hand size.",
+      "As long as you control an Island, each opponent has no maximum hand size.",
+      "If you control an Island, you have no maximum hand size."
+    ]
+  },
+  {
+    "id": "eff.c2.nomaxhand.restofgame",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1",
+      "CR 611.2a"
+    ],
+    "pattern": "you have no maximum hand size for the rest of the game",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "handSizeNoLimit",
+          "player": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Draw two cards. You have no maximum hand size for the rest of the game."
+      },
+      {
+        "text": "Draw a card. You have no maximum hand size for the rest of the game."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. You have no maximum hand size for the rest of the turn.",
+      "Draw two cards. You have no minimum hand size for the rest of the game.",
+      "Draw two cards. You have a maximum hand size for the rest of the game."
+    ]
+  }
+]

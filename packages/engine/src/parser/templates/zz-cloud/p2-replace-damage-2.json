@@ -1,0 +1,128 @@
+[
+  {
+    "id": "rep.p2rd2.damage.more",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 609.7"
+    ],
+    "pattern": "if {e:DamageWould} , ( it | that source ) deals {m:DamageMore} instead",
+    "build": {
+      "s": "replace",
+      "replaces": "$e",
+      "body": {
+        "b": "modify",
+        "amount": "$m.change"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a blue source you control would deal damage to a permanent or player, it deals triple that damage instead."
+      },
+      {
+        "text": "If another green source you control would deal damage to an opponent, it deals that much damage plus 3 to that player instead."
+      }
+    ],
+    "counterExamples": [
+      "If a blue source you control would deal damage to a permanent or player, it deals half that damage instead.",
+      "If a blue source you control would be dealt damage, it deals triple that damage instead.",
+      "If a blue source you control would deal damage to a permanent or player, you may have it deal triple that damage instead."
+    ]
+  },
+  {
+    "id": "eff.p2rd2.damage.more.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "if {e:DamageWould} {d:Dur} , ( it | that source ) deals {m:DamageMore} instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": "$e",
+          "body": {
+            "b": "modify",
+            "amount": "$m.change"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a white source you control would deal damage to a permanent or player this turn, it deals that much damage plus 3 to that permanent or player instead."
+      },
+      {
+        "text": "If an artifact creature would deal combat damage to a creature this turn, it deals triple that damage to that creature instead."
+      }
+    ],
+    "counterExamples": [
+      "If a white source you control would deal damage to a permanent or player, it deals that much damage plus 3 to that permanent or player instead. Draw a card.",
+      "If a white source you control would deal damage to a permanent or player this turn, it deals that much damage minus 3 to that permanent or player instead.",
+      "If a white source you control would deal damage to a permanent or player this turn, prevent that damage."
+    ]
+  },
+  {
+    "id": "rep.p2rd2.double.all.thatFilterWouldDeal",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 609.7"
+    ],
+    "pattern": "double all damage that {f:Filter} would deal",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": "$f"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "all",
+      "would",
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Double all damage that artifact sources you control would deal."
+      },
+      {
+        "text": "Double all damage that green sources you control would deal."
+      }
+    ],
+    "counterExamples": [
+      "Triple all damage that artifact sources you control would deal.",
+      "Double all damage that would be dealt to artifact sources you control.",
+      "Double all damage that artifact sources you control would deal this turn."
+    ]
+  }
+]

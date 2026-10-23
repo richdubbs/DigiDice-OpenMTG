@@ -1,0 +1,694 @@
+[
+  {
+    "id": "sta.stdrx21.player.cantCast.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 601.3",
+      "CR 101.2"
+    ],
+    "pattern": "{p:Player} can't cast {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$p",
+      "mode": "cant",
+      "action": "cast",
+      "other": "$f"
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "You can't cast artifact spells."
+      },
+      {
+        "text": "Your opponents can't cast green instant spells."
+      }
+    ],
+    "counterExamples": [
+      "You can cast creature spells.",
+      "You can't cast creature spells this turn.",
+      "You can't activate abilities of creatures."
+    ]
+  },
+  {
+    "id": "eff.stdrx21.player.cantCast.filter.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 101.2"
+    ],
+    "pattern": "{p:Player} can't cast {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "cast",
+          "other": "$f"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "{2}, {T}: Each opponent can't cast artifact spells this turn."
+      },
+      {
+        "text": "When ~ enters, each opponent can't cast red creature spells until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target player can cast artifact spells this turn.",
+      "Target player can't cast artifact spells.",
+      "Target player can't activate abilities of artifacts this turn."
+    ]
+  },
+  {
+    "id": "sta.stdrx21.player.cantPlayLands",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 305.2",
+      "CR 101.2"
+    ],
+    "pattern": "{p:Player} can't play lands",
+    "build": {
+      "s": "restrict",
+      "subject": "$p",
+      "mode": "cant",
+      "action": "playLand"
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Your opponents can't play lands."
+      },
+      {
+        "text": "Each player can't play lands."
+      }
+    ],
+    "counterExamples": [
+      "You can play lands.",
+      "You can't play lands this turn.",
+      "You can't play lands from your graveyard."
+    ]
+  },
+  {
+    "id": "eff.stdrx21.gains.protection.colorless.orChosenColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 702.16b",
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 105.1",
+      "CR 105.2c"
+    ],
+    "pattern": "{o:Obj} gains protection from colorless or from the color of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "colorless",
+          "white",
+          "blue",
+          "black",
+          "red",
+          "green"
+        ],
+        "as": "protectionChoice",
+        "link": "protectionChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "colorless"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "colorless",
+                        "text": "protection from colorless"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "white"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:W",
+                        "text": "protection from white"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "blue"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:U",
+                        "text": "protection from blue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "black"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:B",
+                        "text": "protection from black"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "red"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:R",
+                        "text": "protection from red"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "green"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:G",
+                        "text": "protection from green"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}{W}, {T}: Target creature gains protection from colorless or from the color of your choice until end of turn."
+      },
+      {
+        "text": "When ~ enters, ~ gains protection from colorless or from the color of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gains protection from colorless and from the color of your choice until end of turn.",
+      "Target creature gains protection from colorless or from the color of your choice.",
+      "Target creature gains protection from multicolored or from the color of your choice until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdrx21.gains.protection.artifacts.orChosenColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 702.16b",
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 105.1",
+      "CR 105.2c"
+    ],
+    "pattern": "{o:Obj} gains protection from artifacts or from the color of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "artifacts",
+          "white",
+          "blue",
+          "black",
+          "red",
+          "green"
+        ],
+        "as": "protectionChoice",
+        "link": "protectionChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "artifacts"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "type:Artifact",
+                        "text": "protection from artifacts"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "white"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:W",
+                        "text": "protection from white"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "blue"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:U",
+                        "text": "protection from blue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "black"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:B",
+                        "text": "protection from black"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "red"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:R",
+                        "text": "protection from red"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionChoice",
+          "equals": "green"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:G",
+                        "text": "protection from green"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: Target creature gains protection from artifacts or from the color of your choice until end of turn."
+      },
+      {
+        "text": "When ~ enters, target creature an opponent controls gains protection from artifacts or from the color of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gains protection from artifacts and from the color of your choice until end of turn.",
+      "Target creature gains protection from artifacts or from the color of your choice.",
+      "Target creature gains protection from enchantments or from the color of your choice until end of turn."
+    ]
+  },
+  {
+    "id": "sta.stdrx21.obj.cantBeTargeted.byOpponents",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 115.1",
+      "CR 702.11b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be the target of spells or abilities your opponents control",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTargeted",
+      "other": {
+        "controller": "opponent"
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted permanent can't be the target of spells or abilities your opponents control."
+      },
+      {
+        "text": "Equipped creature can't be the target of spells or abilities your opponents control.\nEquip {3}{U}{U}"
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can be the target of spells or abilities your opponents control.",
+      "Enchanted creature can't be the target of spells or abilities you control.",
+      "Enchanted creature can't be the target of spells your opponents control."
+    ]
+  },
+  {
+    "id": "eff.stdrx21.obj.cantBeTargeted.byOpponents.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 115.1",
+      "CR 702.11b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be the target of spells or abilities your opponents control {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{1}{G}: Target artifact can't be the target of spells or abilities your opponents control this turn."
+      },
+      {
+        "text": "When ~ enters, target creature you control can't be the target of spells or abilities your opponents control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature can be the target of spells or abilities your opponents control this turn.",
+      "Target creature can't be the target of spells or abilities your opponents control.",
+      "Target creature can't be the target of abilities your opponents control this turn."
+    ]
+  }
+]

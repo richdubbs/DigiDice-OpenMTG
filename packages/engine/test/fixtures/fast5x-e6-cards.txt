@@ -1,0 +1,23 @@
+# FAST5X E6: plot (CR 702.170, 116.2k), mayhem (CR 702.187) and harmonize (CR 702.180): cast later from exile or from a graveyard.
+# After editing: npm run cards -- fixtures
+
+# ---- Plot (CR 702.170a-d, 116.2k)
+Slickshot Show-Off
+Djinn of Fool's Fall
+Highway Robbery
+Stingerback Terror
+Longhorn Sharpshooter
+Aloe Alchemist
+
+# ---- Mayhem (CR 702.187a-b)
+Electro's Bolt
+Swarm, Being of Bees
+Raging Goblinoids
+Sandman's Quicksand
+Oscorp Industries
+
+# ---- Harmonize (CR 702.180a-b)
+Wild Ride
+Unending Whisper
+Ureni's Rebuff
+Nature's Rhythm

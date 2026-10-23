@@ -1,0 +1,35 @@
+# FAST5X E2: warp (CR 702.185) and the void ability word (CR 207.2c: "if a nonland permanent left the battlefield this turn or a spell was warped this turn").
+# After editing: npm run cards -- fixtures
+
+# ---- Warp creatures and permanents (CR 702.185a, 118.9, 603.7, 400.7)
+Red Tiger Mechan
+Bygone Colossus
+Knight Luminary
+Germinating Wurm
+Broodguard Elite
+Pinnacle Emissary
+Starwinder
+Timeline Culler
+Eusocial Engineering
+Tannuk, Steadfast Second
+Haliya, Guided by Light
+Sinister Cryologist
+
+# ---- Void (CR 207.2c, 603.4, 702.185c)
+Kavaron Skywarden
+Insatiable Skittermaw
+Elegy Acolyte
+Voidforged Titan
+Hylderblade
+Hymn of the Faller
+Plasma Bolt
+Temporal Intervention
+Tragic Trajectory
+Chorale of the Void
+Alpharael, Stonechosen
+Decode Transmissions
+Roving Actuator
+
+# ---- Other warp references
+Full Bore
+Blade of the Swarm

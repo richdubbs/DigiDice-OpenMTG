@@ -1,0 +1,124 @@
+[
+  {
+    "id": "eff.stdro.dig.putAll.revealed.hand.rest.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "put all {f:Filter} cards {g:RevealedThisWay} into your hand and the rest into your graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, reveal the top five cards of your library. Put all enchantment cards revealed this way into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Reveal the top two cards of your library. Put all instant cards revealed this way into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top two cards of your library. Put all instant cards revealed this way into your graveyard and the rest into your hand.",
+      "Look at the top two cards of your library. Put all instant cards revealed this way into your hand and the rest into your graveyard.",
+      "Reveal the top two cards of your library. Put an instant card revealed this way into your hand and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.stdro.dig.putAll.revealed.hand.rest.bottomAny",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 401.4"
+    ],
+    "pattern": "put all {f:Filter} cards {g:RevealedThisWay} into your hand and the rest on the bottom of your library in any order",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, reveal the top three cards of your library. Put all Wizard cards revealed this way into your hand and the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "Reveal the top six cards of your library. Put all artifact and enchantment cards revealed this way into your hand and the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top six cards of your library. Put all artifact cards revealed this way into your hand and the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. Put all artifact cards revealed this way into your hand and the rest on the bottom of your library in any order.",
+      "Reveal the top six cards of your library. Put all artifact cards revealed this way into your hand and the rest on top of your library in any order."
+    ]
+  }
+]

@@ -1,0 +1,214 @@
+[
+  {
+    "id": "eff.p2cf1.return.filterCard.randomFromGraveyard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} card at random from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, return a land card at random from your graveyard to your hand."
+      },
+      {
+        "text": "{2}, {T}: Return an artifact card at random from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, return a land card from your graveyard to your hand.",
+      "When ~ enters, return a land card at random from target player's graveyard to your hand.",
+      "When ~ enters, return a land card at random from your graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.p2cf1.return.nCards.randomFromGraveyard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 107.3a"
+    ],
+    "pattern": "return {n:Qty} cards at random from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Return two cards at random from your graveyard to your hand. You gain 2 life."
+      },
+      {
+        "text": "Return three cards at random from your graveyard to your hand. You lose 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Return two cards from your graveyard to your hand.",
+      "Return two cards at random from your graveyard to the battlefield.",
+      "Return two cards at random from target player's graveyard to your hand."
+    ]
+  },
+  {
+    "id": "eff.p2cf1.player.reveals.cardAtRandomFromHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} reveal[s] a card at random from their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "picked"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "bound",
+          "name": "picked"
+        },
+        "as": "them"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Target player reveals a card at random from their hand. You gain life equal to that card's mana value."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to an opponent, that player reveals a card at random from their hand. You draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player reveals a card from their hand. You gain life equal to that card's mana value.",
+      "Target player reveals two cards at random from their hand.",
+      "Target player reveals their hand.",
+      "Each opponent reveals a card at random from their hand."
+    ]
+  },
+  {
+    "id": "eff.p2cf1.flipCoin.untilLose",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 705.1",
+      "CR 705.2"
+    ],
+    "pattern": "flip a coin until you lose a flip",
+    "build": {
+      "op": "flipCoin",
+      "who": {
+        "ref": "you"
+      },
+      "untilLose": true
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, flip a coin until you lose a flip."
+      },
+      {
+        "text": "{3}, {T}: Flip a coin until you lose a flip."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, flip a coin until you win a flip.",
+      "At the beginning of your end step, flip a coin.",
+      "At the beginning of your end step, flip two coins until you lose a flip."
+    ]
+  }
+]

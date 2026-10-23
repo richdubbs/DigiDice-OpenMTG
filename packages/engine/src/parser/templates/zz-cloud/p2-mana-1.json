@@ -1,0 +1,232 @@
+[
+  {
+    "id": "eff.p2mana1.mana.forEachCounterRemoved",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 107.1c",
+      "CR 602.2b",
+      "CR 605.1a"
+    ],
+    "pattern": "add {t:ManaSym} for each {n:Qty}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}, Remove any number of moss counters from ~: Add {G} for each moss counter removed this way."
+      },
+      {
+        "text": "{1}, Remove X fuel counters from ~: Add {R} for each fuel counter removed this way."
+      }
+    ],
+    "counterExamples": [
+      "{T}, Remove any number of moss counters from ~: Add {G} for each moss counter on ~.",
+      "{T}, Remove any number of moss counters from ~: Add {G}{G} for each moss counter removed this way.",
+      "{T}, Remove any number of moss counters from ~: Add {G} for each fuel counter removed this way."
+    ],
+    "priority": -1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.p2mana1.mana.thenAdditionalForEachCounterRemoved",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 107.1c",
+      "CR 602.2b",
+      "CR 605.1a"
+    ],
+    "pattern": "add {t:ManaSym} , then add an additional {t2:ManaSym} for each {n:Qty}",
+    "build": [
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "units": [
+          [
+            "$t"
+          ]
+        ]
+      },
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "$t2",
+          "count": "$n"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "additional",
+      "then",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{T}, Remove any number of fuel counters from ~: Add {R}, then add an additional {R} for each fuel counter removed this way."
+      },
+      {
+        "text": "{1}, {T}, Remove any number of moss counters from ~: Add {G}, then add an additional {G} for each moss counter removed this way."
+      }
+    ],
+    "counterExamples": [
+      "{T}, Remove any number of fuel counters from ~: Add {R}, then add {R}.",
+      "{T}, Remove any number of fuel counters from ~: Add {R}, then add an additional {R} for each fuel counter on ~.",
+      "{T}, Remove any number of fuel counters from ~: Add {R}, then add an additional two {R} for each fuel counter removed this way."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.p2mana1.mana.producedType.land",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.3",
+      "CR 106.4",
+      "CR 106.12",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "pattern": "add one mana of any type that land produced",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "eventProduced",
+        "count": 1,
+        "noun": "land"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:mana.eventProduced"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you tap a snow land for mana, add one mana of any type that land produced."
+      },
+      {
+        "text": "Whenever you tap a Desert for mana, add one mana of any type that land produced."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you tap a snow land for mana, add two mana of any type that land produced.",
+      "Whenever you tap a snow land for mana, add one mana of any color that land produced.",
+      "Whenever you tap a snow land for mana, add one mana of any type that creature produced."
+    ]
+  },
+  {
+    "id": "eff.p2mana1.mana.couldProduce.color",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.7",
+      "CR 106.1",
+      "CR 605.1a"
+    ],
+    "pattern": "add one mana of any color that ( a | an ) {f:Filter} could produce",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "couldProduce",
+        "count": 1,
+        "among": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "colorsOnly": true
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:mana.couldProduce"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any color that a creature you control could produce."
+      },
+      {
+        "text": "{1}, {T}: Add one mana of any color that an artifact an opponent controls could produce."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color that a creature you control produces.",
+      "{T}: Add two mana of any color that a creature you control could produce.",
+      "{T}: Add one mana of any color a creature you control could produce."
+    ]
+  },
+  {
+    "id": "eff.p2mana1.mana.couldProduce.type",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 106.7",
+      "CR 106.1",
+      "CR 605.1a"
+    ],
+    "pattern": "add one mana of any type that ( a | an ) {f:Filter} could produce",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "couldProduce",
+        "count": 1,
+        "among": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:mana.couldProduce"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any type that a creature you control could produce."
+      },
+      {
+        "text": "{2}, {T}: Add one mana of any type that a Wall you control could produce."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any type that a creature you control produced.",
+      "{T}: Add three mana of any type that a creature you control could produce.",
+      "{T}: Add one mana of any kind that a creature you control could produce."
+    ]
+  }
+]

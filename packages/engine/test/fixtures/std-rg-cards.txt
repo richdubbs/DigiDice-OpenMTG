@@ -1,0 +1,14 @@
+# Standard round G (test/cloud/std-rg, golden cloud-std-rg-review.json): slot G of the parallel rounds F-J
+# Aura wording: legendary Soldier in addition, attach any number of target Equipment
+Super-Soldier Serum
+# "Equipment" as its own plural; "its controller" after "attacks or blocks"
+Contaminated Bond
+Pure // Simple
+# the cast permission of a reflexive trigger and its rider
+Wishing Well
+# loyalty counters among Jaces; all but the bottom card of a library
+Jace, Reality Sculptor
+# hexproof from each of its colors
+Tam, Mindful First-Year
+# promoted narrow templates (one golden card each)
+Ancient Adamantoise

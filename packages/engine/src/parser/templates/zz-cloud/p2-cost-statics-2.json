@@ -1,0 +1,348 @@
+[
+  {
+    "id": "cm.p2cst2.spells.more.opp.targetFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "spells your opponents cast that target ( a | an ) {f:Filter} cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "targets": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            },
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:costMod.spellTargets.each"
+    ],
+    "examples": [
+      {
+        "text": "Spells your opponents cast that target a Goblin you control cost {1} more to cast."
+      },
+      {
+        "text": "Spells your opponents cast that target an artifact or enchantment you control cost {3} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells your opponents cast that target a Goblin you control cost {1} less to cast.",
+      "Spells you cast that target a Goblin you control cost {1} more to cast.",
+      "Spells your opponents cast that target ~ cost {1} more to cast."
+    ]
+  },
+  {
+    "id": "cm.p2cst2.spells.more.opp.targetOneOrMore",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "spells your opponents cast that target one or more {f:Filter} cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "targets": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            },
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:costMod.spellTargets.each"
+    ],
+    "examples": [
+      {
+        "text": "Spells your opponents cast that target one or more Goblins you control cost {1} more to cast."
+      },
+      {
+        "text": "Spells your opponents cast that target one or more legendary creatures you control cost {2} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells your opponents cast that target one or more Goblins you control cost {1} less to cast.",
+      "Spells your opponents cast that target two or more Goblins you control cost {1} more to cast.",
+      "Spells you cast that target one or more Goblins you control cost {1} more to cast."
+    ]
+  },
+  {
+    "id": "cm.p2cst2.spells.less.you.targetFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "spells you ( cast | control ) that target ( a | an ) {f:Filter} cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "targets": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:costMod.spellTargets.each"
+    ],
+    "examples": [
+      {
+        "text": "Spells you cast that target a Goblin you control cost {1} less to cast."
+      },
+      {
+        "text": "Spells you control that target an artifact you control cost {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast that target a Goblin you control cost {1} more to cast.",
+      "Spells your opponents cast that target a Goblin you control cost {1} less to cast.",
+      "Spells you cast that target ~ cost {1} less to cast."
+    ]
+  },
+  {
+    "id": "cm.p2cst2.abilities.more.opp.targetFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 602.2b",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 118.7"
+    ],
+    "pattern": "abilities your opponents activate that target ( a | an ) {f:Filter} cost {m:ManaCost} more to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {},
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "spellTargetCount",
+                  "filter": "$f"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Abilities your opponents activate that target a Goblin you control cost {1} more to activate."
+      },
+      {
+        "text": "Abilities your opponents activate that target an artifact you control cost {3} more to activate."
+      }
+    ],
+    "counterExamples": [
+      "Abilities your opponents activate that target a Goblin you control cost {1} less to activate.",
+      "Abilities you activate that target a Goblin you control cost {1} more to activate.",
+      "Abilities your opponents activate that target a Goblin you control cost {1} more to cast."
+    ]
+  },
+  {
+    "id": "cm.p2cst2.spells.less.you.targetEnchanted",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 118.7",
+      "CR 303.4"
+    ],
+    "pattern": "{f:Filter} you cast that target enchanted creature cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "types": "$f.types",
+              "subtypes": "$f.subtypes",
+              "supertypes": "$f.supertypes",
+              "colors": "$f.colors",
+              "stackKind": "spell",
+              "zone": "stack",
+              "targets": {
+                "ref": "each",
+                "filter": {
+                  "attachedToSource": true
+                }
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:costMod.spellTargets.each"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nInstant spells you cast that target enchanted creature cost {1} less to cast."
+      },
+      {
+        "text": "Enchant creature\nAura spells you cast that target enchanted creature cost {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nInstant spells you cast that target enchanted creature cost {1} more to cast.",
+      "Enchant creature\nInstant spells your opponents cast that target enchanted creature cost {1} less to cast.",
+      "Enchant creature\nInstant spells you cast that target equipped creature cost {1} less to cast."
+    ]
+  },
+  {
+    "id": "cm.p2cst2.keywordAbilities.less.you.targetEnchanted",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 602.2b",
+      "CR 601.2f",
+      "CR 702.6a",
+      "CR 303.4"
+    ],
+    "pattern": "{k:Keyword} abilities you activate that target enchanted creature cost {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "keyword": "$k.keyword",
+              "kind": "activated"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "spellTargetCount",
+                  "filter": {
+                    "attachedToSource": true
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchant creature\nEquip abilities you activate that target enchanted creature cost {1} less to activate."
+      },
+      {
+        "text": "Enchant creature\nEquip abilities you activate that target enchanted creature cost {2} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEquip abilities you activate that target enchanted creature cost {1} more to activate.",
+      "Enchant creature\nEquip abilities your opponents activate that target enchanted creature cost {1} less to activate.",
+      "Enchant creature\nEquip abilities you activate that target ~ cost {1} less to activate."
+    ]
+  }
+]

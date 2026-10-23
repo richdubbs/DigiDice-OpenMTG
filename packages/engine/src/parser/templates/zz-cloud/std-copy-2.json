@@ -1,0 +1,123 @@
+[
+  {
+    "id": "eff.stdcopy2.eachBecomesPrepared",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 722.3a",
+      "CR 722.3c"
+    ],
+    "pattern": "each {f:Filter} becomes prepared",
+    "build": {
+      "op": "designateObject",
+      "what": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "designation": "prepared"
+    },
+    "subject": "object",
+    "needs": [
+      "op:designateObject.prepared"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}, {T}: Each Wizard you control becomes prepared."
+      },
+      {
+        "text": "When this creature enters, each Cleric you control becomes prepared."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control becomes tapped.",
+      "Each creature you control becomes prepared until end of turn.",
+      "Each creature you control becomes unprepared."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.stdcopy2.mayCopy.thoseSpellsGain.newTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.7",
+      "CR 608.2c",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 400.7"
+    ],
+    "pattern": "you may copy {o:Obj} . if you do , those spells gain {a:Abilities} . you may choose new targets for the copy",
+    "build": [
+      {
+        "op": "may",
+        "who": {
+          "ref": "you"
+        },
+        "do": [
+          {
+            "op": "copy",
+            "what": "$o",
+            "result": "spell",
+            "who": {
+              "ref": "you"
+            },
+            "as": "copy",
+            "newTargets": "may"
+          },
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "union",
+                  "of": [
+                    "$o",
+                    {
+                      "ref": "bound",
+                      "name": "copy"
+                    }
+                  ]
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": "$a"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if",
+      "do"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast an instant spell, you may copy it. If you do, those spells gain lifelink. You may choose new targets for the copy."
+      },
+      {
+        "text": "Whenever you cast a sorcery spell with a single target, you may copy it. If you do, those spells gain deathtouch. You may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell, you may copy it. If you do, those spells gain lifelink. You may choose new targets for the copies.",
+      "Whenever you cast an instant spell, copy it. If you do, those spells gain lifelink. You may choose new targets for the copy.",
+      "Whenever you cast an instant spell, you may copy it. If you do, the copy gains lifelink. You may choose new targets for the copy."
+    ]
+  }
+]

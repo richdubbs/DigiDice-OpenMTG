@@ -1,0 +1,150 @@
+[
+  {
+    "id": "se.library.one",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 401.2"],
+    "pattern": "search your library for ( a | an ) {f:Filter} card",
+    "build": { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "max": 1, "as": "search" },
+    "subject": "none",
+    "examples": [
+      { "text": "Search your library for a basic land card, put it into your hand, then shuffle." },
+      { "text": "Search your library for an artifact card, put it into your hand, then shuffle." },
+      { "text": "Search your library for a Forest card, put it onto the battlefield tapped, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your graveyard for a basic land card, put it into your hand, then shuffle.",
+      "Search target player's library for a basic land card, put it into your hand, then shuffle.",
+      "Search your library for two basic land cards, put them into your hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "se.library.anyCard",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23d", "CR 401.2"],
+    "pattern": "search your library for a card",
+    "build": { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": {}, "max": 1, "as": "search" },
+    "subject": "none",
+    "examples": [{ "text": "Search your library for a card, put it into your hand, then shuffle." }],
+    "counterExamples": [
+      "Search your library for two cards, put them into your hand, then shuffle.",
+      "Search your graveyard for a card, put it into your hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "se.library.reveal",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.20a"],
+    "pattern": "search your library for ( a | an ) {f:Filter} card , reveal it",
+    "build": { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "max": 1, "reveal": true, "as": "search" },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      { "text": "Search your library for a creature card, reveal it, put it into your hand, then shuffle." },
+      { "text": "Search your library for an Equipment card, reveal it, put it into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for a creature card, reveal them, put it into your hand, then shuffle.",
+      "Search your library for a creature card, reveal it to target opponent, put it into your hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "se.library.upTo",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 107.1"],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards",
+    "build": { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "min": 0, "max": "$n", "as": "search" },
+    "subject": "none",
+    "consumes": ["up to"],
+    "examples": [
+      { "text": "Search your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle." },
+      { "text": "Search your library for up to three Forest cards, put them into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for two basic land cards, put them onto the battlefield tapped, then shuffle.",
+      "Search your library for up to two basic land cards and put them onto the battlefield tapped unless it is red."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "se.library.upTo.reveal",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.20a"],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards , reveal them",
+    "build": { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "min": 0, "max": "$n", "reveal": true, "as": "search" },
+    "subject": "none",
+    "consumes": ["up to"],
+    "priority": 1,
+    "examples": [
+      { "text": "Search your library for up to two creature cards, reveal them, put them into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for up to two creature cards, reveal it, put them into your hand, then shuffle.",
+      "Search your library for two creature cards, reveal them, put them into your hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "se.player.may.bf.tapped",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 401.2", "CR 110.2", "CR 608.2d"],
+    "pattern": "{p:Player} may search their library for ( a | an ) {f:Filter} card , put that card onto the battlefield tapped , then shuffle",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        { "op": "search", "who": "$p", "zone": "library", "filter": "$f", "max": 1, "as": "search" },
+        { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "battlefield", "controller": "$p", "tapped": true } },
+        { "op": "shuffle", "who": "$p" }
+      ]
+    },
+    "subject": "player",
+    "consumes": ["may"],
+    "examples": [
+      { "text": "Exile target creature. Its controller may search their library for a basic Swamp card, put that card onto the battlefield tapped, then shuffle." },
+      { "text": "Destroy target artifact. Its controller may search their library for an artifact card, put that card onto the battlefield tapped, then shuffle." }
+    ],
+    "counterExamples": [
+      "Exile target creature. Its controller may search their library for a basic Swamp card, put that card into their hand, then shuffle.",
+      "Exile target creature. Its controller may search your library for a basic Swamp card, put that card onto the battlefield tapped, then shuffle.",
+      "Exile target creature. Its controller may search their library for a basic Swamp card, put that card onto the battlefield, then shuffle."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "se.player.may.bf",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 401.2", "CR 110.2", "CR 608.2d"],
+    "pattern": "{p:Player} may search their library for ( a | an ) {f:Filter} card , put that card onto the battlefield , then shuffle",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        { "op": "search", "who": "$p", "zone": "library", "filter": "$f", "max": 1, "as": "search" },
+        { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "battlefield", "controller": "$p" } },
+        { "op": "shuffle", "who": "$p" }
+      ]
+    },
+    "subject": "player",
+    "consumes": ["may"],
+    "examples": [
+      { "text": "Exile target creature. Its controller may search their library for a basic Swamp card, put that card onto the battlefield, then shuffle." },
+      { "text": "Destroy target artifact. Its controller may search their library for an artifact card, put that card onto the battlefield, then shuffle." }
+    ],
+    "counterExamples": [
+      "Exile target creature. Its controller may search their library for a basic Swamp card, put that card into their hand, then shuffle.",
+      "Exile target creature. Its controller may search your library for a basic Swamp card, put that card onto the battlefield, then shuffle.",
+      "Exile target creature. Its controller may search their library for a basic Swamp card, put that card onto the battlefield tapped, then shuffle."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

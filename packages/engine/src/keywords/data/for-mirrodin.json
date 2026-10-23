@@ -1,0 +1,64 @@
+{
+  "name": "for mirrodin!",
+  "rule": "702.163",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this Equipment enters, create a 2/2 red Rebel creature token, then attach this to it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, create a 2/2 red Rebel creature token, then attach ~ to it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1,
+            "token": {
+              "colors": [
+                "R"
+              ],
+              "types": [
+                "Creature"
+              ],
+              "subtypes": [
+                "Rebel"
+              ],
+              "power": 2,
+              "toughness": 2
+            },
+            "as": "token"
+          },
+          {
+            "op": "attach",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "ref": "bound",
+              "name": "token"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

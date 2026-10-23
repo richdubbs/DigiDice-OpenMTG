@@ -1,0 +1,55 @@
+{
+  "name": "jump-start",
+  "rule": "702.133",
+  "params": [],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this card from your graveyard by discarding a card in addition to paying its other costs. Then exile this card.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "You may cast this card from your graveyard if the resulting spell is an instant or sorcery spell by discarding a card as an additional cost to cast it. If this spell was cast using jump-start, exile this card instead of putting it anywhere else any time it would leave the stack.",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true,
+            "anyOf": [
+              {
+                "types": [
+                  "Instant"
+                ]
+              },
+              {
+                "types": [
+                  "Sorcery"
+                ]
+              }
+            ]
+          },
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "discard",
+                "count": 1
+              }
+            ]
+          },
+          "exileOnLeave": true
+        }
+      ]
+    }
+  ]
+}

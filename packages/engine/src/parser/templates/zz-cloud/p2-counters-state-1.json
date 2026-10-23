@@ -1,0 +1,177 @@
+[
+  {
+    "id": "eff.p2cs1.exile.withCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 122.1",
+      "CR 400.7",
+      "CR 608.2m"
+    ],
+    "pattern": "exile {o:Obj} with {n:Qty} {k:CounterKind} counters on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile",
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return target creature to its owner's hand. Exile ~ with two time counters on it."
+      },
+      {
+        "text": "Exile target artifact with three gloom counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Exile target artifact with three gloom counters on that creature.",
+      "Exile target artifact from your graveyard.",
+      "Exile target artifact with three gloom tokens on it."
+    ]
+  },
+  {
+    "id": "sta.p2cs1.self.pump.forEachCounterOnIt",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 122.1"
+    ],
+    "pattern": "~ gets {pt:PT} for each {k:CounterKind} counter on it",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k"
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+1 for each gloom counter on it."
+      },
+      {
+        "text": "~ gets +2/+0 for each charge counter on it."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each gloom counter on target creature.",
+      "~ gets +1/+1 until end of turn for each gloom counter on it.",
+      "Enchanted creature gets +1/+1 for each gloom counter."
+    ]
+  },
+  {
+    "id": "abl.p2cs1.kickedWith.counters.grant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33f",
+      "CR 614.1c",
+      "CR 613.1f",
+      "CR 400.7d"
+    ],
+    "pattern": "if {c:KickedWith} , it enters with {n:Qty} {k:CounterKind} counter[s] on it and with {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Kicker {2}{G} and/or {U}\nIf ~ was kicked with its {2}{G} kicker, it enters with three +1/+1 counters on it and with reach."
+      },
+      {
+        "text": "Kicker {1}{W} and/or {B}\nIf ~ was kicked with its {B} kicker, it enters with a +1/+1 counter on it and with deathtouch."
+      }
+    ],
+    "counterExamples": [
+      "Kicker {2}{G} and/or {U}\nIf ~ was kicked with its {2}{G} cost, it enters with three +1/+1 counters on it and with reach.",
+      "Kicker {2}{G} and/or {U}\nIf ~ was kicked with its {2}{G} kicker, target creature enters with three +1/+1 counters on it and with reach.",
+      "Kicker {2}{G} and/or {U}\nIf ~ wasn't kicked with its {2}{G} kicker, it enters with three +1/+1 counters on it and with reach."
+    ]
+  }
+]

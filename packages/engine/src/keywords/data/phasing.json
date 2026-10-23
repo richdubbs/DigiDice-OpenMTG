@@ -1,0 +1,14 @@
+{
+  "name": "phasing",
+  "rule": "702.26",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "This phases in or out before you untap during each of your untap steps. While it's phased out, it's treated as though it doesn't exist.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "rules/phasing.ts#phaseInForUntapStep"
+  ]
+}

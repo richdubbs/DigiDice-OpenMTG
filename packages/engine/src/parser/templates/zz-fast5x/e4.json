@@ -1,0 +1,116 @@
+[
+  {
+    "id": "sta.e4.anthem.whereX",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 107.3", "CR 702.179f"],
+    "pattern": "{f:Filter} get[s] {pt:PT} , where x is {q:Qty}",
+    "build": { "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$q", "toughness": "$pt.t" }] },
+    "examples": [
+      { "text": "Other creatures you control get +X/+0, where X is your speed." },
+      { "text": "Goblins you control get +X/+1, where X is your speed." },
+      { "text": "Other Elves you control get +X/+0, where X is the number of Forests you control." }
+    ],
+    "counterExamples": [
+      "Other creatures you control get +2/+0, where X is your speed.",
+      "Other creatures you control get +X/+X, where X is your speed.",
+      "Other creatures you control get +X/+0 until end of turn, where X is your speed.",
+      "Other creatures you control get +0/+X, where X is your speed."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e4.anthem.whereX.both",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 107.3"],
+    "pattern": "{f:Filter} get[s] +x/+x , where x is {q:Qty}",
+    "build": { "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$q", "toughness": "$q" }] },
+    "priority": 1,
+    "examples": [
+      { "text": "Legendary creatures you control get +X/+X, where X is the number of legendary creatures you control." },
+      { "text": "Other Goblins you control get +X/+X, where X is your speed." }
+    ],
+    "counterExamples": [
+      "Legendary creatures you control get +X/+0, where X is the number of legendary creatures you control.",
+      "Legendary creatures you control get +X/+X until end of turn, where X is the number of legendary creatures you control.",
+      "Legendary creatures you control get +2/+2, where X is the number of legendary creatures you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.e4.spells.less.whereX",
+    "kind": "static",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 604.1", "CR 107.3", "CR 702.179f"],
+    "pattern": "{f:Filter} you cast cost {x} less to cast , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [{ "s": "costMod", "applies": { "spells": "$f", "caster": "you" }, "change": { "kind": "reduce", "generic": "$q", "floor": "zero" } }]
+    },
+    "examples": [
+      { "text": "Noncreature spells you cast cost {X} less to cast, where X is your speed." },
+      { "text": "Instant and sorcery spells you cast cost {X} less to cast, where X is your speed." }
+    ],
+    "counterExamples": [
+      "Noncreature spells you cast cost {X} more to cast, where X is your speed.",
+      "Noncreature spells your opponents cast cost {X} less to cast, where X is your speed.",
+      "Noncreature spells you cast cost {1} less to cast, where X is your speed."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e4.damage.eachPlayerWithoutMaxSpeed",
+    "kind": "effect",
+    "cr": ["CR 120.1", "CR 120.3", "CR 608.2f", "CR 702.179e"],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to each player who doesn't have max speed",
+    "build": {
+      "op": "forEach",
+      "over": { "ref": "each", "who": "player" },
+      "as": "each",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": { "ref": "bound", "name": "each" },
+          "amount": "$n",
+          "guard": { "cond": "not", "of": { "cond": "designation", "who": { "ref": "bound", "name": "each" }, "what": "maxSpeed" } }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "{3}, Sacrifice ~: It deals 2 damage to each player who doesn't have max speed." },
+      { "text": "When ~ enters, it deals 1 damage to each player who doesn't have max speed." }
+    ],
+    "counterExamples": [
+      "{3}, Sacrifice ~: It deals 2 damage to each player who has max speed.",
+      "{3}, Sacrifice ~: It deals 2 damage to each opponent who doesn't have max speed.",
+      "{3}, Sacrifice ~: It deals 2 damage to each player."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "se.e4.library.upTo.whereX",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 107.1", "CR 107.3", "CR 608.2h", "CR 702.179f"],
+    "pattern": "search your library for up to x {f:Filter} cards , where x is {q:Qty}",
+    "build": { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "min": 0, "max": "$q", "as": "search" },
+    "subject": "none",
+    "consumes": ["up to"],
+    "examples": [
+      { "text": "{2}{G}, Sacrifice ~: Search your library for up to X basic land cards, where X is your speed. Put those cards onto the battlefield tapped, then shuffle." },
+      { "text": "Search your library for up to X Forest cards, where X is the number of Elves you control. Put those cards into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for X basic land cards, where X is your speed. Put those cards onto the battlefield tapped, then shuffle.",
+      "Search your library for up to X basic land cards. Put those cards onto the battlefield tapped, then shuffle.",
+      "Search your library for up to two basic land cards, where X is your speed. Put those cards onto the battlefield tapped, then shuffle."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

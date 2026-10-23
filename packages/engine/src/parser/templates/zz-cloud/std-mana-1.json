@@ -1,0 +1,514 @@
+[
+  {
+    "id": "rid.stdmana1.spent.gains.eot",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 601.2h",
+      "CR 611.2c",
+      "CR 400.7a"
+    ],
+    "pattern": "if that mana is spent on {f:SpellsCast} , it gains {k:Keyword} until end of turn",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": "$f",
+          "gains": "$k"
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if",
+      "until"
+    ],
+    "needs": [
+      "feature:mana.spentRider"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. If that mana is spent on an Elf creature spell, it gains haste until end of turn."
+      },
+      {
+        "text": "{1}, {T}: Add {U}. If that mana is spent on an artifact creature spell, it gains flying until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. If that mana is spent on an Elf creature spell, it gains haste.",
+      "{T}: Add {G}. If that mana is spent on an Elf creature spell, it gets +1/+1 until end of turn.",
+      "{T}: Add {G}. Spend this mana only to cast an Elf creature spell.",
+      "{T}: Add {G}. If that mana is spent on an Elf creature spell, it gains haste until your next turn."
+    ]
+  },
+  {
+    "id": "rid.stdmana1.spent.any.gains.eot",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 601.2h",
+      "CR 611.2c",
+      "CR 400.7a"
+    ],
+    "pattern": "if any of that mana is spent on {f:SpellsCast} , it gains {k:Keyword} until end of turn",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": "$f",
+          "any": true,
+          "gains": "$k"
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if",
+      "until"
+    ],
+    "needs": [
+      "feature:mana.spentRider"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}{G}. If any of that mana is spent on a Beast creature spell, it gains trample until end of turn."
+      },
+      {
+        "text": "{2}, {T}: Add {C}{C}. If any of that mana is spent on an artifact spell, it gains haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}{G}. If any of that mana is spent on a Beast creature spell, it gains trample.",
+      "{T}: Add {G}{G}. If all of that mana is spent on a Beast creature spell, it gains trample until end of turn.",
+      "{T}: Add {G}{G}. If any of that mana is spent on a Beast creature spell, it gains trample until end of combat."
+    ]
+  },
+  {
+    "id": "rid.stdmana1.spent.cantBeCountered",
+    "kind": "rider",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 106.6",
+      "CR 601.2h",
+      "CR 101.2"
+    ],
+    "pattern": "if that mana is spent on {f:SpellsCast} , that spell can't be countered",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": "$f",
+          "cantBeCountered": true
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "needs": [
+      "feature:mana.spentRider"
+    ],
+    "examples": [
+      {
+        "text": "{T}, Pay 1 life: Add {U}. If that mana is spent on a creature spell, that spell can't be countered."
+      },
+      {
+        "text": "{T}: Add {C}. If that mana is spent on an enchantment spell, that spell can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {C}. If that mana is spent on an enchantment spell, that spell can be countered.",
+      "{T}: Add {C}. If that mana is spent on an enchantment spell, that spell can't be countered this turn.",
+      "{T}: Add {C}. Spend this mana only to cast an enchantment spell, and that spell can't be countered."
+    ]
+  },
+  {
+    "id": "eff.stdmana1.mana.producedType.artifactToken",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.3",
+      "CR 106.4",
+      "CR 106.12",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "pattern": "add one mana of any type that artifact token produced",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "eventProduced",
+        "count": 1,
+        "noun": "artifact token"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:mana.eventProduced"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you tap a colorless artifact token for mana, add one mana of any type that artifact token produced."
+      },
+      {
+        "text": "Whenever you tap a legendary artifact token for mana, add one mana of any type that artifact token produced."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you tap an artifact token for mana, add two mana of any type that artifact token produced.",
+      "Whenever you tap an artifact token for mana, add one mana of any color that artifact token produced.",
+      "Whenever you tap an artifact token for mana, add one mana of any type that creature produced.",
+      "Whenever you tap an artifact token for mana, add an additional one mana of any type that artifact token produced."
+    ]
+  },
+  {
+    "id": "eff.stdmana1.mana.producedType.permanent.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 106.3",
+      "CR 106.4",
+      "CR 106.12",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "pattern": "{p:Player} add[s] one mana of any type that permanent produced",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "dynamic": {
+        "kind": "eventProduced",
+        "count": 1,
+        "noun": "permanent"
+      }
+    },
+    "subject": "player",
+    "needs": [
+      "feature:mana.eventProduced"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player taps a nonland permanent for mana, that player adds one mana of any type that permanent produced."
+      },
+      {
+        "text": "Whenever you tap a permanent for mana, you add one mana of any type that permanent produced."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player taps a permanent for mana, that player adds two mana of any type that permanent produced.",
+      "Whenever a player taps a permanent for mana, that player adds one mana of any color that permanent produced.",
+      "Whenever a player taps a permanent for mana, that player adds one mana of any type that land produced."
+    ]
+  },
+  {
+    "id": "eff.stdmana1.losesLandTypesAbilities.has.leadDur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3i",
+      "CR 305.7",
+      "CR 611.2b",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} loses all land types and abilities and has {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "removeAll": "land"
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, put a rust counter on target land. For as long as that land has a rust counter on it, it loses all land types and abilities and has \"{T}: Add {B}.\""
+      },
+      {
+        "text": "{2}, {T}: Put a moss counter on target land. For as long as that land has a moss counter on it, it loses all land types and abilities and has \"{T}: Add {G}{G}.\""
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, put a rust counter on target land. For as long as that land has a rust counter on it, it loses all creature types and abilities and has \"{T}: Add {B}.\"",
+      "Whenever ~ attacks, put a rust counter on target land. For as long as that land has a rust counter on it, it loses all land types and has \"{T}: Add {B}.\"",
+      "Whenever ~ attacks, put a rust counter on target land. For as long as that land has a rust counter on it, it loses all land types and abilities."
+    ]
+  },
+  {
+    "id": "eff.stdmana1.losesLandTypesAbilities.has.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 205.3i",
+      "CR 305.7",
+      "CR 611.2b",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} loses all land types and abilities and has {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "removeAll": "land"
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Target land loses all land types and abilities and has \"{T}: Add {R}.\" until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, put a rust counter on target land. It loses all land types and abilities and has \"{T}: Add {B}.\" for as long as it has a rust counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Target land loses all land types and abilities and has \"{T}: Add {R}.\"",
+      "{1}, {T}: Target land loses all creature types and abilities and has \"{T}: Add {R}.\" until end of turn.",
+      "{1}, {T}: Target land loses all land types and has \"{T}: Add {R}.\" until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdmana1.mana.chosen.player.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 607.2d",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} add[s] {n:Qty} mana of the chosen color for each {f:Filter}",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "dynamic": {
+        "kind": "chosen",
+        "link": "color",
+        "count": {
+          "q": "math",
+          "op": "*",
+          "args": [
+            "$n",
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "chosen",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}, Sacrifice one or more creatures: Choose a color. Target player adds two mana of the chosen color for each creature sacrificed this way."
+      },
+      {
+        "text": "{T}, Sacrifice any number of artifacts: Choose a color. Target opponent adds one mana of the chosen color for each artifact sacrificed this way."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}, Sacrifice one or more creatures: Choose a color. Target player adds two mana of any color for each creature sacrificed this way.",
+      "{1}, {T}, Sacrifice one or more creatures: Choose a color. Target player adds two mana of the chosen color.",
+      "{1}, {T}, Sacrifice one or more creatures: Choose a color. Target player adds two mana of the chosen color for each creature sacrificed this way this turn."
+    ]
+  },
+  {
+    "id": "sta.stdmana1.tapForMana.threeTimes",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.12",
+      "CR 614.1a",
+      "CR 305.6"
+    ],
+    "pattern": "if you tap ( a | an ) {f:Filter} for mana , it produces three times as much of that mana instead",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "tapManaMultiplier",
+          "of": "$f",
+          "value": 3
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "needs": [
+      "rulemod:tapManaMultiplier"
+    ],
+    "examples": [
+      {
+        "text": "If you tap a Forest for mana, it produces three times as much of that mana instead."
+      },
+      {
+        "text": "If you tap a snow Mountain for mana, it produces three times as much of that mana instead."
+      }
+    ],
+    "counterExamples": [
+      "If you tap a Forest for mana, it produces twice as much of that mana instead.",
+      "If an opponent taps a Forest for mana, it produces three times as much of that mana instead.",
+      "If you tap a Forest for mana, it produces three times as much of that mana."
+    ]
+  },
+  {
+    "id": "sta.stdmana1.tapForMana.twice",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 106.12",
+      "CR 614.1a",
+      "CR 305.6"
+    ],
+    "pattern": "if you tap ( a | an ) {f:Filter} for mana , it produces twice as much of that mana instead",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "tapManaMultiplier",
+          "of": "$f",
+          "value": 2
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "instead",
+      "twice"
+    ],
+    "needs": [
+      "rulemod:tapManaMultiplier"
+    ],
+    "examples": [
+      {
+        "text": "If you tap a Swamp for mana, it produces twice as much of that mana instead."
+      },
+      {
+        "text": "If you tap a snow land for mana, it produces twice as much of that mana instead."
+      }
+    ],
+    "counterExamples": [
+      "If you tap a Swamp for mana, it produces three times as much of that mana instead.",
+      "If you tap a Swamp for mana, it produces twice as much of that mana.",
+      "If you tap a Swamp for mana, it produces twice as much mana instead."
+    ]
+  },
+  {
+    "id": "eff.stdmana1.mana.producedType.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.3",
+      "CR 106.4",
+      "CR 106.12",
+      "CR 605.1b",
+      "CR 605.4a"
+    ],
+    "pattern": "add one mana of any type that permanent produced",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "eventProduced",
+        "count": 1,
+        "noun": "permanent"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:mana.eventProduced"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you tap a nonland permanent you control for mana, add one mana of any type that permanent produced."
+      },
+      {
+        "text": "Whenever you tap an artifact creature for mana, add one mana of any type that permanent produced."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you tap a nonland permanent you control for mana, add two mana of any type that permanent produced.",
+      "Whenever you tap a nonland permanent you control for mana, add one mana of any color that permanent produced.",
+      "Whenever you tap a nonland permanent you control for mana, add one mana of any type that land produced."
+    ]
+  }
+]

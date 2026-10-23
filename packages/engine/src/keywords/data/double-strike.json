@@ -1,0 +1,14 @@
+{
+  "name": "double strike",
+  "rule": "702.4",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "This creature deals both first-strike and regular combat damage.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "core/combat-damage.ts#combatDamageStep"
+  ]
+}

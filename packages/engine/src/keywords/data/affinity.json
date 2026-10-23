@@ -1,0 +1,49 @@
+{
+  "name": "affinity",
+  "rule": "702.41",
+  "params": [
+    {
+      "name": "filter",
+      "type": "filter"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "This spell costs {1} less to cast for each {quality} you control.",
+  "multiple": "cumulative",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Affinity {filter}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": {
+                  "controller": "you",
+                  "anyOf": [
+                    "$filter"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

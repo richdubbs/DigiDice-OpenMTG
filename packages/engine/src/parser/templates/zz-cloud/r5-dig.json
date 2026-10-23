@@ -1,0 +1,1000 @@
+[
+  {
+    "id": "eff.r5dig.then.counterUnless.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.6a",
+      "CR 118.12",
+      "CR 118.12a"
+    ],
+    "pattern": "{a:Effects} , then counter {o:Obj} unless {p:Player} pay[s] {c:Cost} for each {f:Filter}",
+    "build": {
+      "$concat": [
+        "$a",
+        [
+          {
+            "op": "pay",
+            "who": "$p",
+            "cost": "$c",
+            "times": {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            },
+            "else": [
+              {
+                "op": "counter",
+                "what": "$o"
+              }
+            ]
+          }
+        ]
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "unless",
+      "each"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Scry 1, then counter target spell unless its controller pays {1} for each creature you control."
+      },
+      {
+        "text": "Mill three cards, then counter target creature spell unless its controller pays {2} for each card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Scry 1, then counter target spell unless its controller pays {1}.",
+      "Scry 1, then counter target spell if its controller pays {1} for each creature you control.",
+      "Scry 1, then exile target spell unless its controller pays {1} for each creature you control."
+    ]
+  },
+  {
+    "id": "eff.r5dig.dig.mayReveal.upTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal up to {n:Qty} {f:CardsDesc} from among {g:Seen} $",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top ten cards of your library. You may reveal up to two artifact cards from among them. If this spell was kicked, put the revealed cards onto the battlefield. Otherwise, put the revealed cards into your hand. Then shuffle."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may reveal up to three land cards from among them. If you control a Forest, put the revealed cards onto the battlefield. Otherwise, put the revealed cards into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top ten cards of your library. You may reveal up to two artifact cards from among them and put them into your graveyard. Then shuffle.",
+      "Look at the top ten cards of your library. You may reveal two artifact cards from among them. If this spell was kicked, put the revealed cards onto the battlefield. Otherwise, put the revealed cards into your hand. Then shuffle.",
+      "Look at the top ten cards of your library. You may reveal up to two artifact cards from your hand. If this spell was kicked, put the revealed cards onto the battlefield. Otherwise, put the revealed cards into your hand. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r5dig.look.separate.faceDownFaceUpPiles",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3c",
+      "CR 700.3d",
+      "CR 701.20e",
+      "CR 401.1"
+    ],
+    "pattern": "look at the top {n:Qty} cards of your library and separate them into a face-down pile and a face-up pile",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "looked"
+      },
+      {
+        "op": "piles",
+        "cards": {
+          "ref": "bound",
+          "name": "looked"
+        },
+        "separator": {
+          "ref": "you"
+        },
+        "chosen": "chosenPile",
+        "other": "otherPile",
+        "faceDown": true
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "feature:piles.faceDown"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of the piles. Put that pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "When ~ enters, look at the top three cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. Put that pile into your hand and the other into your graveyard.",
+      "Look at the top six cards of your library and separate them into two piles. An opponent chooses one of the piles. Put that pile into your hand and the other into your graveyard.",
+      "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. You choose one of the piles. Put that pile into your hand and the other into your graveyard."
+    ]
+  },
+  {
+    "id": "rid.r5dig.opponentChoosesPile",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.3",
+      "CR 608.2d"
+    ],
+    "pattern": "an opponent chooses one of ( the | those ) piles",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "chooser": null,
+          "separator.ref": "you"
+        },
+        "chooser": {
+          "ref": "anOpponent"
+        }
+      }
+    },
+    "attachTo": "piles",
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of the piles. Put that pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "When ~ enters, look at the top three cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. Each opponent chooses one of the piles. Put that pile into your hand and the other into your graveyard.",
+      "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses two of the piles. Put that pile into your hand and the other into your graveyard.",
+      "Reveal the top six cards of your library. An opponent chooses one of the piles. Put that pile into your hand and the other into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.r5dig.putThatPile.andOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.3",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "put that pile into your hand and the other into your graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosenPile"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "otherPile"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of the piles. Put that pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "When ~ enters, look at the top three cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of the piles. Put that pile into your graveyard and the other into your hand.",
+      "Put that pile into your hand and the other into your graveyard.",
+      "Look at the top six cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of the piles. Put that pile into your hand and the other on the bottom of your library."
+    ]
+  },
+  {
+    "id": "eff.r5dig.search.differentNames.andReveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 201.2b"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards ( that have | with ) different names and reveal them",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "min": 0,
+      "max": "$n",
+      "differentNames": true,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to three artifact cards with different names and reveal them. An opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Search your library for up to five creature cards with different names and reveal them. An opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three artifact cards with the same name and reveal them. An opponent chooses one of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle.",
+      "Search your library for three artifact cards with different names and reveal it. An opponent chooses one of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r5dig.opponentChooses.nOfFound",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.23a",
+      "CR 400.7"
+    ],
+    "pattern": "an opponent chooses {n:Qty} of {g:Found}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "anOpponent"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": "$g",
+          "zone": "library"
+        }
+      },
+      "min": "$n",
+      "max": "$n",
+      "as": "chosen"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for up to three artifact cards with different names and reveal them. An opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Search your library for up to five creature cards with different names and reveal them. An opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three artifact cards with different names and reveal them. Each opponent chooses one of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle.",
+      "Search your library for up to three artifact cards with different names and reveal them. An opponent chooses one of those creatures. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle.",
+      "Search your library for up to three artifact cards with different names and reveal them. An opponent chooses up to two of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r5dig.putChosen.graveyard.restBattlefieldTapped.shuffle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 701.24a"
+    ],
+    "pattern": "put the chosen cards into your graveyard and {r:Rest} onto the battlefield tapped , then shuffle",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "object",
+            "number": "plural",
+            "head": "card",
+            "participle": "chosen",
+            "text": "the chosen cards"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to three artifact cards with different names and reveal them. An opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Search your library for up to five creature cards with different names and reveal them. An opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three artifact cards with different names and reveal them. An opponent chooses two of those cards. Put the chosen cards into your hand and the rest onto the battlefield tapped, then shuffle.",
+      "Search your library for up to three artifact cards with different names and reveal them. An opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest onto the battlefield, then shuffle.",
+      "Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r5dig.becomes.subtypes.gains.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}{G}: If ~ is a Druid, it becomes an Elf Warrior and gains trample."
+      },
+      {
+        "text": "{2}{U}: ~ becomes a Merfolk Wizard and gains \"Whenever ~ attacks, draw a card.\""
+      }
+    ],
+    "counterExamples": [
+      "{3}{G}: If ~ is a Druid, it becomes an Elf Warrior in addition to its other types and gains trample.",
+      "{3}{G}: If ~ is a Druid, it becomes an Elf Warrior and loses trample.",
+      "{3}{G}: If ~ is a Druid, it becomes an Elf Warrior until end of turn and gains trample."
+    ]
+  },
+  {
+    "id": "eff.r5dig.becomes.basePT.subtypes.gains.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}{G}: If ~ is a Warrior, it becomes a 5/4 Elf Berserker and gains trample."
+      },
+      {
+        "text": "{4}{R}: ~ becomes a 4/4 Dragon Shaman and gains flying."
+      }
+    ],
+    "counterExamples": [
+      "{3}{G}: If ~ is a Warrior, it becomes a 5/4 Elf Berserker in addition to its other types and gains trample.",
+      "{3}{G}: If ~ is a Warrior, it gets +5/+4 and gains trample.",
+      "{3}{G}: If ~ is a Warrior, it becomes a 5/4 Elf Berserker until end of turn and gains trample."
+    ]
+  },
+  {
+    "id": "eff.r5dig.damage.equal.eachOtherCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2h",
+      "CR 109.2"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to each other creature",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "not": {
+            "is": "$src"
+          }
+        }
+      },
+      "amount": "$n"
+    },
+    "subject": "object",
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control deals damage equal to its toughness to each other creature."
+      },
+      {
+        "text": "Target creature an opponent controls deals damage equal to its power to each other creature."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control deals damage equal to its toughness to each creature.",
+      "Target creature you control deals damage equal to its toughness to each other creature you control.",
+      "Target creature you control deals damage equal to its toughness to each other permanent."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.r5dig.exile.objAndTopCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "exile {o:Obj} and the top card of your library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "union",
+        "of": [
+          "$o",
+          {
+            "ref": "topCards",
+            "player": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile target creature and the top card of your library. For each of those cards, its owner may play it until the end of their next turn."
+      },
+      {
+        "text": "Exile target artifact an opponent controls and the top card of your library. For each of those cards, its owner may play it until the end of their next turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature and the top two cards of your library. For each of those cards, its owner may play it until the end of their next turn.",
+      "Exile target creature and the top card of target player's library. For each of those cards, its owner may play it until the end of their next turn."
+    ]
+  },
+  {
+    "id": "eff.r5dig.forEachOfThose.ownerMayPlay.endOfTheirNextTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 108.3",
+      "CR 400.7"
+    ],
+    "pattern": "for each of those cards , its owner may play it until the end of their next turn",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "set",
+          "number": "plural",
+          "head": "card",
+          "text": "those cards"
+        }
+      },
+      "as": "card",
+      "do": [
+        {
+          "op": "effect",
+          "effects": [
+            {
+              "s": "permit",
+              "who": {
+                "ref": "ownerOf",
+                "object": {
+                  "ref": "bound",
+                  "name": "card"
+                }
+              },
+              "action": "play",
+              "of": {
+                "is": {
+                  "ref": "bound",
+                  "name": "card"
+                }
+              }
+            }
+          ],
+          "duration": {
+            "d": "endOfNextTurn",
+            "whose": {
+              "ref": "ownerOf",
+              "object": {
+                "ref": "bound",
+                "name": "card"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "until",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature and the top card of your library. For each of those cards, its owner may play it until the end of their next turn."
+      },
+      {
+        "text": "Exile target artifact an opponent controls and the top card of your library. For each of those cards, its owner may play it until the end of their next turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature and the top card of your library. For each of those cards, its owner may play it until the end of your next turn.",
+      "Exile target creature and the top card of your library. For each of those cards, you may play it until the end of their next turn.",
+      "Exile target creature and the top card of your library. For each of those cards, its owner may cast it until the end of their next turn."
+    ]
+  },
+  {
+    "id": "eff.r5dig.player.revealUntil.putThoseGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 608.2c",
+      "CR 608.2e",
+      "CR 404.1"
+    ],
+    "pattern": "{p:Player} reveal[s] cards from the top of their library until they reveal {f:DiscardDesc} , then put[s] those cards into their graveyard",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "revealer",
+      "do": [
+        {
+          "op": "revealUntil",
+          "who": {
+            "ref": "iterating"
+          },
+          "filter": "$f",
+          "as": "hit",
+          "revealed": "revealed"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "is": {
+                "ref": "bound",
+                "name": "revealed"
+              },
+              "zone": "library"
+            }
+          },
+          "to": {
+            "zone": "graveyard"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "until",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, each opponent reveals cards from the top of their library until they reveal a creature card, then puts those cards into their graveyard."
+      },
+      {
+        "text": "{2}, {T}: Target player reveals cards from the top of their library until they reveal an artifact card, then puts those cards into their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Target player reveals cards from the top of their library until they reveal an artifact card, then puts those cards into their hand.",
+      "{2}, {T}: Target player reveals cards from the top of their library until they reveal an artifact card, then puts that card into their graveyard.",
+      "{2}, {T}: Target player reveals cards from the top of their library until they reveal an artifact card, then puts those cards on the bottom of their library."
+    ]
+  },
+  {
+    "id": "eff.r5dig.player.revealUntilN.putThoseGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 608.2c",
+      "CR 608.2e",
+      "CR 404.1",
+      "CR 107.3"
+    ],
+    "pattern": "{p:Player} reveal[s] cards from the top of their library until they reveal {n:Qty} {f:CardsDesc} , then put[s] ( those cards | all cards revealed this way ) into their graveyard",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "revealer",
+      "do": [
+        {
+          "op": "revealUntil",
+          "who": {
+            "ref": "iterating"
+          },
+          "filter": "$f",
+          "as": "hit",
+          "revealed": "revealed",
+          "count": "$n"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "is": {
+                "ref": "bound",
+                "name": "revealed"
+              },
+              "zone": "library"
+            }
+          },
+          "to": {
+            "zone": "graveyard"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "until",
+      "then",
+      "all",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player reveals cards from the top of their library until they reveal three creature cards, then puts those cards into their graveyard."
+      },
+      {
+        "text": "Each opponent reveals cards from the top of their library until they reveal X artifact cards, then puts all cards revealed this way into their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent reveals cards from the top of their library until they reveal X artifact cards, then puts all cards revealed this way into their hand.",
+      "Each opponent reveals cards from the top of their library until they reveal X artifact cards, then exiles all cards revealed this way.",
+      "Each opponent reveals cards from the top of their library until they reveal X artifact cards, then puts those artifact cards into their graveyard."
+    ]
+  },
+  {
+    "id": "eff.r5dig.permit.castFromGraveyard.asAdventure",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 715.3",
+      "CR 715.3a",
+      "CR 611.2a",
+      "CR 601.3"
+    ],
+    "pattern": "you may cast {o:Obj} from your graveyard as an adventure {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "asAdventure": true
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "feature:permit.cast.asAdventure"
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, you may cast it from your graveyard as an Adventure until end of turn."
+      },
+      {
+        "text": "When ~ dies, you may cast it from your graveyard as an Adventure this turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, you may cast it from your graveyard until the end of your next turn.",
+      "When ~ dies, you may cast it from your hand as an Adventure until the end of your next turn.",
+      "When ~ dies, you may cast it from your graveyard as an Omen until the end of your next turn."
+    ]
+  },
+  {
+    "id": "eff.r5dig.chooseOne.ofThem.implicit",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 611.2c"
+    ],
+    "pattern": "^ choose one $",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "plural",
+              "text": "them"
+            }
+          },
+          "zone": "any"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. Choose one. You may play that card this turn."
+      },
+      {
+        "text": "{1}{R}, {T}: Exile the top four cards of your library. Choose one. You may play that card this turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. Choose two. You may play that card this turn.",
+      "Exile the top two cards of your library. Choose one of those creatures. You may play that card this turn.",
+      "Exile the top two cards of your library. Choose one. You may play that card until your next turn."
+    ]
+  },
+  {
+    "id": "eff.r5dig.permit.play.duringTurnLoreCounterOnSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2c",
+      "CR 122.6",
+      "CR 122.6a",
+      "CR 714.3c",
+      "CR 400.7"
+    ],
+    "pattern": "during any turn you put a lore counter on ~ , you may play {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "while": {
+            "cond": "happened",
+            "event": {
+              "ev": "counters",
+              "change": "put",
+              "kind": "lore",
+              "on": {
+                "is": {
+                  "ref": "self"
+                }
+              },
+              "by": "you"
+            },
+            "scope": "turn"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Exile the top card of your library. During any turn you put a lore counter on ~, you may play that card."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top card of your library. During any turn you put a lore counter on ~, you may play that card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top card of your library. During any turn an opponent puts a lore counter on ~, you may play that card.",
+      "Whenever ~ attacks, exile the top card of your library. During any turn you put a lore counter on ~, you may cast that card.",
+      "Whenever ~ attacks, exile the top card of your library. During any turn you put a charge counter on ~, you may play that card."
+    ]
+  }
+]

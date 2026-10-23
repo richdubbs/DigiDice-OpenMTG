@@ -1,0 +1,924 @@
+[
+  {
+    "id": "sta.stddft.otherturns.is.artifactcreature",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 500.1",
+      "CR 301.7"
+    ],
+    "pattern": "during turns other than yours , {o:Obj} is an artifact creature",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "turnOf",
+          "whose": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "During turns other than yours, ~ is an artifact creature.\nCrew 3"
+      },
+      {
+        "text": "Flying\nDuring turns other than yours, ~ is an artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, ~ is an artifact creature.",
+      "During turns other than yours, ~ is an artifact creature until end of turn.",
+      "During turns other than yours, ~ becomes an artifact creature."
+    ]
+  },
+  {
+    "id": "eff.stddft.discard.chosen.thendraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] {o:ChosenCard} , then draw[s] {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": 1,
+        "filter": {
+          "is": "$o"
+        }
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Look at target player's hand. You may choose a nonland card from it. If you do, that player discards that card, then draws a card."
+      },
+      {
+        "text": "Target opponent reveals their hand. You choose an artifact card from it. That player discards that card, then draws two cards."
+      }
+    ],
+    "counterExamples": [
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player discards that card, then you draw a card.",
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player discards that card, then draws a card for each land you control.",
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player discards that card, then mills a card."
+    ]
+  },
+  {
+    "id": "eff.stddft.then.return.choose.yourHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 400.7"
+    ],
+    "pattern": "then return {n:Qty} {f:Filter} to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, mill three cards. Then return an artifact or creature card from your graveyard to your hand."
+      },
+      {
+        "text": "Surveil 2. Then return a land card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Surveil 2. Then return a land card from your graveyard to the battlefield.",
+      "Surveil 2. Then return target land card from your graveyard to your hand.",
+      "Surveil 2. Then return a land card from your graveyard to your hand unless you control a Forest."
+    ]
+  },
+  {
+    "id": "rep.stddft.damage.plus.yourSource.toOpponentOrTheirPermanent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 609.7",
+      "CR 102.2"
+    ],
+    "pattern": "if a source you control would deal damage to an opponent or a permanent an opponent controls , it deals that much damage plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "you"
+        },
+        "recipient": {
+          "object": {
+            "controller": "opponent"
+          },
+          "player": "opponent"
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 2 instead."
+      },
+      {
+        "text": "Start your engines!\nMax speed — If a source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 3 instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal damage to an opponent or a permanent an opponent controls, it deals triple that damage instead.",
+      "If a source you control would deal damage to an opponent, it deals that much damage plus 2 instead.",
+      "If a source you control would deal damage to a player or a permanent an opponent controls, it deals that much damage plus 2 instead.",
+      "If a source an opponent controls would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 2 instead."
+    ]
+  },
+  {
+    "id": "eff.stddft.thenIf.oddCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 122.1",
+      "CR 107.1"
+    ],
+    "pattern": "then if {o:Obj} has an odd number of counters on it , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "math",
+          "op": "-",
+          "args": [
+            {
+              "q": "counters",
+              "on": "$o",
+              "kind": "any"
+            },
+            {
+              "q": "math",
+              "op": "*",
+              "args": [
+                2,
+                {
+                  "q": "math",
+                  "op": "floorDiv",
+                  "args": [
+                    {
+                      "q": "counters",
+                      "on": "$o",
+                      "kind": "any"
+                    },
+                    2
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "op": "==",
+        "right": 1
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, put a +1/+1 counter on ~. Then if it has an odd number of counters on it, draw a card."
+      },
+      {
+        "text": "Put a +1/+1 counter on target creature. Then if that creature has an odd number of counters on it, you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter on target creature. Then if that creature has an even number of counters on it, you gain 3 life.",
+      "Put a +1/+1 counter on target creature. Then if that creature has an odd number of +1/+1 counters on it, you gain 3 life.",
+      "Put a +1/+1 counter on target creature. Then if that creature has an odd number of counters on it, you gain 3 life instead."
+    ]
+  },
+  {
+    "id": "sta.stddft.have.basePT.are.subtypes.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 205.3d"
+    ],
+    "pattern": "{f:Filter} have base power and toughness {pt:BasePT} and are {g:Filter} in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$g.subtypes"
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "base",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control have base power and toughness 4/4 and are Giants in addition to their other types."
+      },
+      {
+        "text": "Other creatures you control have base power and toughness 1/3 and are Walls in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control have base power and toughness 4/4 and are Giants.",
+      "Creatures you control have base power and toughness 4/4 and are Giants in addition to their other types until end of turn.",
+      "Creatures you control get +4/+4 and are Giants in addition to their other types.",
+      "Creatures you control have base power and toughness 4/4 and are artifacts in addition to their other types."
+    ]
+  },
+  {
+    "id": "eff.stddft.search.libraryAndOrGraveyard.reveal.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.23d",
+      "CR 701.20a",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library and/or graveyard for {f:DiscardDesc} , reveal it , and put it into your hand",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "alsoZones": [
+          "graveyard"
+        ],
+        "filter": "$f",
+        "max": 1,
+        "as": "search",
+        "reveal": true
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:search.alsoZones"
+    ],
+    "examples": [
+      {
+        "text": "Search your library and/or graveyard for an Equipment card, reveal it, and put it into your hand. If you search your library this way, shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library and/or graveyard for a creature card with flying, reveal it, and put it into your hand. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library or graveyard for an Equipment card, reveal it, and put it into your hand. If you search your library this way, shuffle.",
+      "Search your library and/or graveyard for an Equipment card, reveal it, and put it on top of your library. If you search your library this way, shuffle.",
+      "Search your library and/or graveyard for two Equipment cards, reveal them, and put them into your hand. If you search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.stddft.search.libraryAndOrGraveyard.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.23d",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "search your library and/or graveyard for {f:DiscardDesc} and put it onto the battlefield",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "alsoZones": [
+          "graveyard"
+        ],
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:search.alsoZones"
+    ],
+    "examples": [
+      {
+        "text": "Search your library and/or graveyard for an Aura card and put it onto the battlefield. If you search your library this way, shuffle."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may search your library and/or graveyard for a Dragon card and put it onto the battlefield. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library and/or graveyard for an Aura card and put it onto the battlefield tapped. If you search your library this way, shuffle.",
+      "Search your library and/or graveyard for an Aura card and put it into your graveyard. If you search your library this way, shuffle.",
+      "Search your hand and/or graveyard for an Aura card and put it onto the battlefield. If you search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.stddft.search.graveyardHandAndOrLibrary.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.23d",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "search your graveyard , hand , and/or library for {f:DiscardDesc} and put it onto the battlefield",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:search.alsoZones"
+    ],
+    "examples": [
+      {
+        "text": "Search your graveyard, hand, and/or library for an Equipment card and put it onto the battlefield. If you search your library this way, shuffle."
+      },
+      {
+        "text": "When ~ enters, search your graveyard, hand, and/or library for a Dragon creature card and put it onto the battlefield. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your graveyard, hand, or library for an Equipment card and put it onto the battlefield. If you search your library this way, shuffle.",
+      "Search your graveyard, hand, and/or library for an Equipment card and put it into your hand. If you search your library this way, shuffle.",
+      "Search your graveyard, hand, and/or library for an Equipment card and put it onto the battlefield tapped. If you search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.stddft.shuffle.ifSearchedLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 608.2c"
+    ],
+    "pattern": "if you search your library this way , shuffle",
+    "build": {
+      "op": "shuffle",
+      "who": {
+        "ref": "you"
+      },
+      "ifSearched": true
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "needs": [
+      "op:shuffle.ifSearched"
+    ],
+    "examples": [
+      {
+        "text": "Search your library and/or graveyard for an Equipment card, reveal it, and put it into your hand. If you search your library this way, shuffle."
+      },
+      {
+        "text": "Search your library and/or graveyard for an Aura card and put it onto the battlefield. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library and/or graveyard for an Aura card and put it onto the battlefield. If you search your library this way, draw a card.",
+      "Search your library and/or graveyard for an Aura card and put it onto the battlefield. If you search your graveyard this way, shuffle.",
+      "Search your library and/or graveyard for an Aura card and put it onto the battlefield. If you don't search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.stddft.lose.keyword.each",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{o:Objs} lose {k:Keyword} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "All creatures lose reach until end of turn."
+      },
+      {
+        "text": "Creatures your opponents control lose indestructible until end of turn, then destroy all creatures."
+      }
+    ],
+    "counterExamples": [
+      "All creatures lose reach.",
+      "All creatures gain reach until end of turn.",
+      "All creatures lose all abilities until end of turn."
+    ]
+  },
+  {
+    "id": "trg.stddft.cardsExiledFromGraveyardsAndOrBattlefield.batch.yourTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 603.10a",
+      "CR 406.1",
+      "CR 500.1"
+    ],
+    "pattern": "whenever one or more cards are put into exile from graveyards and/or the battlefield during your turn",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "isCard": true
+          },
+          "from": [
+            "graveyard",
+            "battlefield"
+          ],
+          "to": "exile"
+        }
+      ],
+      "batch": true,
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "during",
+      "one or more"
+    ],
+    "needs": [
+      "feature:trigger.while",
+      "feature:trigger.batch"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more cards are put into exile from graveyards and/or the battlefield during your turn, create a Treasure token."
+      },
+      {
+        "text": "Whenever one or more cards are put into exile from graveyards and/or the battlefield during your turn, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more cards are put into exile from graveyards and/or the battlefield during an opponent's turn, create a Treasure token.",
+      "Whenever one or more cards are put into exile from graveyards during your turn, create a Treasure token.",
+      "Whenever one or more creature cards are put into exile from graveyards and/or the battlefield during your turn, create a Treasure token."
+    ]
+  },
+  {
+    "id": "trg.stddft.selfBecomesTapped.yourTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2e",
+      "CR 701.26a",
+      "CR 500.1"
+    ],
+    "pattern": "whenever ~ becomes tapped during your turn",
+    "build": {
+      "on": [
+        {
+          "ev": "becomes",
+          "what": "tapped",
+          "object": {
+            "self": true
+          }
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes tapped during your turn, draw a card."
+      },
+      {
+        "text": "Whenever ~ becomes tapped during your turn, you gain 1 life. This ability triggers only once each turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes tapped during an opponent's turn, draw a card.",
+      "Whenever ~ becomes untapped during your turn, draw a card.",
+      "Whenever ~ becomes tapped during your turn, draw a card unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.stddft.players.eachMill.ownGraveyardSize",
+    "kind": "effect",
+    "priority": 1,
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 115.1",
+      "CR 608.2c",
+      "CR 608.2f",
+      "CR 107.3"
+    ],
+    "pattern": "{p:Player} each mill cards equal to the number of cards in their graveyard",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "each",
+      "do": [
+        {
+          "op": "mill",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "count": {
+            "q": "zoneSize",
+            "zone": "graveyard",
+            "of": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Any number of target players each mill cards equal to the number of cards in their graveyard."
+      },
+      {
+        "text": "{U}, {T}: Up to two target players each mill cards equal to the number of cards in their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Any number of target players each mill cards equal to the number of cards in their hand.",
+      "{3}, {T}: Any number of target players each draw cards equal to the number of cards in their graveyard.",
+      "{3}, {T}: Any number of target players each mill cards equal to the number of cards in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.stddft.become.artifactcreatures.each",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 301.7b"
+    ],
+    "pattern": "{o:Objs} become artifact creatures {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Vehicles you control become artifact creatures until end of turn. Draw a card."
+      },
+      {
+        "text": "{2}: Artifacts you control become artifact creatures until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Vehicles you control become artifact creatures. Draw a card.",
+      "Vehicles you control become enchantment creatures until end of turn. Draw a card.",
+      "Vehicles you control become artifact creatures until end of turn unless they're blue. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.stddft.pump.eachOther.nonartifactCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 109.2",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "^ each other nonartifact creature gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "other": true,
+              "notTypes": [
+                "Artifact"
+              ],
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Each other nonartifact creature gets -1/-1 until end of turn."
+      },
+      {
+        "text": "When ~ enters, each other nonartifact creature gets -2/-2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Each other nonartifact creature gets -1/-1.",
+      "{T}: Each other nonland creature gets -1/-1 until end of turn.",
+      "{T}: Target creature gets +1/+1 until end of turn and each other nonartifact creature gets -1/-1 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stddft.mayHave.basePT.equalTo.each",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4b"
+    ],
+    "pattern": "[ then ] you may have the base power and toughness of {o:Objs} become equal to {q:Qty} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7b",
+                  "power": "$q",
+                  "toughness": "$q"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{2}{G}: Put a +1/+1 counter on ~. Then you may have the base power and toughness of each other creature you control become equal to ~'s power until end of turn."
+      },
+      {
+        "text": "When ~ enters, you may have the base power and toughness of each other creature you control become equal to the number of cards in your hand until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may have the base power and toughness of each other creature you control become equal to ~'s power.",
+      "When ~ enters, you may have the power and toughness of each other creature you control become equal to ~'s power until end of turn.",
+      "When ~ enters, the base power and toughness of each other creature you control become equal to ~'s power until end of turn."
+    ]
+  }
+]

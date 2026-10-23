@@ -1,0 +1,4743 @@
+[
+  {
+    "card": "Weatherseed Elf",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.forestwalk (CR 702.14c, 611.2c)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "landwalk",
+                              "kind": "keyword",
+                              "quality": "forest"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Ivy Dancer",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.forestwalk (CR 702.14c, 611.2c)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "landwalk",
+                              "kind": "keyword",
+                              "quality": "forest"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Elvish Pathcutter",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.forestwalk (CR 702.14c, 611.2c)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 2,
+                  "kind": "generic"
+                },
+                {
+                  "color": "G",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "landwalk",
+                              "kind": "keyword",
+                              "quality": "forest"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "subtypes": [
+                      "Elf"
+                    ],
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Deeptread Merrow",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.islandwalk (CR 702.14c, 611.2c)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "U",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "landwalk",
+                              "kind": "keyword",
+                              "quality": "island"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Shore Snapper",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.islandwalk (CR 702.14c, 611.2c)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "U",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "landwalk",
+                              "kind": "keyword",
+                              "quality": "island"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Piracy Charm",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.islandwalk (CR 702.14c, 611.2c)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "modes": {
+                "max": 1,
+                "min": 1,
+                "options": [
+                  {
+                    "program": {
+                      "steps": [
+                        {
+                          "duration": {
+                            "d": "endOfTurn"
+                          },
+                          "effects": [
+                            {
+                              "affects": {
+                                "id": "t0",
+                                "ref": "target"
+                              },
+                              "mods": [
+                                {
+                                  "add": [
+                                    {
+                                      "keyword": "landwalk",
+                                      "kind": "keyword",
+                                      "quality": "island"
+                                    }
+                                  ],
+                                  "layer": 6
+                                }
+                              ],
+                              "s": "continuous"
+                            }
+                          ],
+                          "op": "effect"
+                        }
+                      ],
+                      "targets": [
+                        {
+                          "filter": {
+                            "types": [
+                              "Creature"
+                            ]
+                          },
+                          "id": "t0",
+                          "kind": "object",
+                          "max": 1,
+                          "min": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "program": {
+                      "steps": [
+                        {
+                          "duration": {
+                            "d": "endOfTurn"
+                          },
+                          "effects": [
+                            {
+                              "affects": {
+                                "id": "t1",
+                                "ref": "target"
+                              },
+                              "mods": [
+                                {
+                                  "layer": "7c",
+                                  "power": 2,
+                                  "toughness": -1
+                                }
+                              ],
+                              "s": "continuous"
+                            }
+                          ],
+                          "op": "effect"
+                        }
+                      ],
+                      "targets": [
+                        {
+                          "filter": {
+                            "types": [
+                              "Creature"
+                            ]
+                          },
+                          "id": "t1",
+                          "kind": "object",
+                          "max": 1,
+                          "min": 1
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "program": {
+                      "steps": [
+                        {
+                          "count": 1,
+                          "op": "discard",
+                          "who": {
+                            "id": "t2",
+                            "ref": "target"
+                          }
+                        }
+                      ],
+                      "targets": [
+                        {
+                          "id": "t2",
+                          "kind": "player",
+                          "max": 1,
+                          "min": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "steps": [],
+              "targets": []
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Nighthaze",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.swampwalk (CR 702.14c, 611.2c); eff.t13.becomes.subtype (CR 305.7)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "landwalk",
+                              "kind": "keyword",
+                              "quality": "swamp"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                },
+                {
+                  "count": 1,
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Restless Bones",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.swampwalk (CR 702.14c, 611.2c); eff.t13.becomes.subtype (CR 305.7)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 3,
+                  "kind": "generic"
+                },
+                {
+                  "color": "B",
+                  "kind": "colored"
+                }
+              ],
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "landwalk",
+                              "kind": "keyword",
+                              "quality": "swamp"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                },
+                {
+                  "color": "B",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "op": "regenerate",
+                  "what": {
+                    "ref": "self"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Zombie Trailblazer",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.gain.swampwalk (CR 702.14c, 611.2c); eff.t13.becomes.subtype (CR 305.7)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "other": [
+                {
+                  "count": 1,
+                  "filter": {
+                    "controller": "you",
+                    "subtypes": [
+                      "Zombie"
+                    ]
+                  },
+                  "kind": "tapUntapped"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Swamp"
+                            ]
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "other": [
+                {
+                  "count": 1,
+                  "filter": {
+                    "controller": "you",
+                    "subtypes": [
+                      "Zombie"
+                    ]
+                  },
+                  "kind": "tapUntapped"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "landwalk",
+                              "kind": "keyword",
+                              "quality": "swamp"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Mother of Runes",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.protection.choice (CR 702.16a, 608.2d, 611.2c: the color chosen as it resolves, one fixed grant per color)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "protectionColor",
+                  "op": "chooseValue",
+                  "what": "color",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "W",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:W"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "U",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:U"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "B",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:B"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "R",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:R"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "G",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:G"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "controller": "you",
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Gods Willing",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.protection.choice (CR 702.16a, 608.2d, 611.2c: the color chosen as it resolves, one fixed grant per color)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "protectionColor",
+                  "op": "chooseValue",
+                  "what": "color",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "W",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:W"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "U",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:U"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "B",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:B"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "R",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:R"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "G",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:G"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "count": 1,
+                  "op": "scry",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "controller": "you",
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Benevolent Bodyguard",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.protection.choice (CR 702.16a, 608.2d, 611.2c: the color chosen as it resolves, one fixed grant per color)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "other": [
+                {
+                  "count": 1,
+                  "filter": {
+                    "self": true
+                  },
+                  "kind": "sacrifice",
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "protectionColor",
+                  "op": "chooseValue",
+                  "what": "color",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "W",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:W"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "U",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:U"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "B",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:B"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "R",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:R"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "G",
+                    "link": "protectionColor"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "id": "t0",
+                            "ref": "target"
+                          },
+                          "mods": [
+                            {
+                              "add": [
+                                {
+                                  "keyword": "protection",
+                                  "kind": "keyword",
+                                  "quality": "color:G"
+                                }
+                              ],
+                              "layer": 6
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "controller": "you",
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Dream Thrush",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.basiclandtype.choice (CR 305.7, 608.2d, 608.2h: one of the five basic land types, SET, stored as chosen)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "keyword": "flying",
+            "kind": "keyword"
+          },
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenBasicLandType",
+                  "op": "chooseValue",
+                  "options": [
+                    "Plains",
+                    "Island",
+                    "Swamp",
+                    "Mountain",
+                    "Forest"
+                  ],
+                  "what": "landType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "chosen": "chosenBasicLandType",
+                            "chosenSets": true
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Jinx",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.basiclandtype.choice (CR 305.7, 608.2d, 608.2h: one of the five basic land types, SET, stored as chosen)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenBasicLandType",
+                  "op": "chooseValue",
+                  "options": [
+                    "Plains",
+                    "Island",
+                    "Swamp",
+                    "Mountain",
+                    "Forest"
+                  ],
+                  "what": "landType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "chosen": "chosenBasicLandType",
+                            "chosenSets": true
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                },
+                {
+                  "do": [
+                    {
+                      "count": 1,
+                      "op": "draw",
+                      "who": {
+                        "ref": "you"
+                      }
+                    }
+                  ],
+                  "op": "delay",
+                  "when": {
+                    "at": "step",
+                    "next": true,
+                    "step": "upkeep",
+                    "turn": "next"
+                  }
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Unstable Frontier",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.basiclandtype.choice (CR 305.7, 608.2d, 608.2h: one of the five basic land types, SET, stored as chosen)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "op": "addMana",
+                  "units": [
+                    [
+                      "C"
+                    ]
+                  ],
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "isMana": true,
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenBasicLandType",
+                  "op": "chooseValue",
+                  "options": [
+                    "Plains",
+                    "Island",
+                    "Swamp",
+                    "Mountain",
+                    "Forest"
+                  ],
+                  "what": "landType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "chosen": "chosenBasicLandType",
+                            "chosenSets": true
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "controller": "you",
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Mistform Wall",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.creaturetype.choice (CR 205.1a, 608.2d, 608.2h: the creature types replaced by the one chosen)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "condition": {
+              "cond": "matches",
+              "filter": {
+                "subtypes": [
+                  "Wall"
+                ]
+              },
+              "object": {
+                "ref": "self"
+              }
+            },
+            "effects": [
+              {
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "add": [
+                      {
+                        "keyword": "defender",
+                        "kind": "keyword"
+                      }
+                    ],
+                    "layer": 6
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenCreatureType",
+                  "op": "chooseValue",
+                  "what": "creatureType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "chosen": "chosenCreatureType",
+                            "chosenSets": true
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Mistform Stalker",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.creaturetype.choice (CR 205.1a, 608.2d, 608.2h: the creature types replaced by the one chosen)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenCreatureType",
+                  "op": "chooseValue",
+                  "what": "creatureType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "chosen": "chosenCreatureType",
+                            "chosenSets": true
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 2,
+                  "kind": "generic"
+                },
+                {
+                  "color": "U",
+                  "kind": "colored"
+                },
+                {
+                  "color": "U",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "layer": "7c",
+                          "power": 2,
+                          "toughness": 2
+                        },
+                        {
+                          "add": [
+                            {
+                              "keyword": "flying",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Mistform Mask",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.creaturetype.choice (CR 205.1a, 608.2d, 608.2h: the creature types replaced by the one chosen)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            },
+            "keyword": "enchant",
+            "kind": "keyword"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenCreatureType",
+                  "op": "chooseValue",
+                  "what": "creatureType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "attachedTo"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "chosen": "chosenCreatureType",
+                            "chosenSets": true
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Defensive Maneuvers",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.chosentype.pump (CR 608.2d, 611.2c, 613.4c: every creature of the chosen type, any controller, locked as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenCreatureType",
+                  "op": "chooseValue",
+                  "what": "creatureType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "filter": {
+                          "chosen": {
+                            "link": "chosenCreatureType",
+                            "quality": "creatureType"
+                          },
+                          "types": [
+                            "Creature"
+                          ]
+                        },
+                        "ref": "each"
+                      },
+                      "mods": [
+                        {
+                          "layer": "7c",
+                          "power": 0,
+                          "toughness": 4
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Tribal Unity",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.chosentype.pump (CR 608.2d, 611.2c, 613.4c: every creature of the chosen type, any controller, locked as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenCreatureType",
+                  "op": "chooseValue",
+                  "what": "creatureType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "filter": {
+                          "chosen": {
+                            "link": "chosenCreatureType",
+                            "quality": "creatureType"
+                          },
+                          "types": [
+                            "Creature"
+                          ]
+                        },
+                        "ref": "each"
+                      },
+                      "mods": [
+                        {
+                          "layer": "7c",
+                          "power": {
+                            "q": "X"
+                          },
+                          "toughness": {
+                            "q": "X"
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Witch's Vengeance",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.chosentype.pump (CR 608.2d, 611.2c, 613.4c: every creature of the chosen type, any controller, locked as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "chosenCreatureType",
+                  "op": "chooseValue",
+                  "what": "creatureType",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "filter": {
+                          "chosen": {
+                            "link": "chosenCreatureType",
+                            "quality": "creatureType"
+                          },
+                          "types": [
+                            "Creature"
+                          ]
+                        },
+                        "ref": "each"
+                      },
+                      "mods": [
+                        {
+                          "layer": "7c",
+                          "power": -3,
+                          "toughness": -3
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Tidal Warrior",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.subtype (CR 305.7, 205.1a: the land type set until end of turn)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Island"
+                            ]
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Slimy Kavu",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.subtype (CR 305.7, 205.1a: the land type set until end of turn)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Swamp"
+                            ]
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Kavu Recluse",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.subtype (CR 305.7, 205.1a: the land type set until end of turn)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Forest"
+                            ]
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Spreading Seas",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: sta.t13.enchanted.is.subtype (CR 305.7, 205.1a, 303.4a: the subtypes of that class set while attached)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "filter": {
+              "types": [
+                "Land"
+              ]
+            },
+            "keyword": "enchant",
+            "kind": "keyword"
+          },
+          {
+            "effect": {
+              "steps": [
+                {
+                  "count": 1,
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            }
+          },
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": 4,
+                    "subtypes": {
+                      "set": [
+                        "Island"
+                      ]
+                    }
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Evil Presence",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: sta.t13.enchanted.is.subtype (CR 305.7, 205.1a, 303.4a: the subtypes of that class set while attached)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "filter": {
+              "types": [
+                "Land"
+              ]
+            },
+            "keyword": "enchant",
+            "kind": "keyword"
+          },
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": 4,
+                    "subtypes": {
+                      "set": [
+                        "Swamp"
+                      ]
+                    }
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Oni Possession",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: sta.t13.enchanted.is.subtype (CR 305.7, 205.1a, 303.4a: the subtypes of that class set while attached)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            },
+            "keyword": "enchant",
+            "kind": "keyword"
+          },
+          {
+            "effect": {
+              "steps": [
+                {
+                  "count": 1,
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "op": "sacrificeChoice",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "step",
+                  "step": "upkeep",
+                  "whose": "you"
+                }
+              ]
+            }
+          },
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "add": [
+                      {
+                        "keyword": "trample",
+                        "kind": "keyword"
+                      }
+                    ],
+                    "layer": 6
+                  },
+                  {
+                    "layer": "7c",
+                    "power": 3,
+                    "toughness": 3
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          },
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": 4,
+                    "subtypes": {
+                      "set": [
+                        "Demon",
+                        "Spirit"
+                      ]
+                    }
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Frogify",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: sta.t13.enchanted.loseall.becomes (CR 205.1a, 613.1d-f, 613.4b: card type Creature, creature type, color and base P/T set, all abilities lost)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            },
+            "keyword": "enchant",
+            "kind": "keyword"
+          },
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": 4,
+                    "subtypes": {
+                      "set": [
+                        "Frog"
+                      ]
+                    },
+                    "types": {
+                      "set": [
+                        "Creature"
+                      ]
+                    }
+                  },
+                  {
+                    "colors": {
+                      "set": [
+                        "U"
+                      ]
+                    },
+                    "layer": 5
+                  },
+                  {
+                    "layer": 6,
+                    "removeAll": true
+                  },
+                  {
+                    "layer": "7b",
+                    "power": 1,
+                    "toughness": 1
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Kenrith's Transformation",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: sta.t13.enchanted.loseall.becomes (CR 205.1a, 613.1d-f, 613.4b: card type Creature, creature type, color and base P/T set, all abilities lost)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            },
+            "keyword": "enchant",
+            "kind": "keyword"
+          },
+          {
+            "effect": {
+              "steps": [
+                {
+                  "count": 1,
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            }
+          },
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": 4,
+                    "subtypes": {
+                      "set": [
+                        "Elk"
+                      ]
+                    },
+                    "types": {
+                      "set": [
+                        "Creature"
+                      ]
+                    }
+                  },
+                  {
+                    "colors": {
+                      "set": [
+                        "G"
+                      ]
+                    },
+                    "layer": 5
+                  },
+                  {
+                    "layer": 6,
+                    "removeAll": true
+                  },
+                  {
+                    "layer": "7b",
+                    "power": 3,
+                    "toughness": 3
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Eaten by Piranhas",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: sta.t13.enchanted.loseall.becomes (CR 205.1a, 613.1d-f, 613.4b: card type Creature, creature type, color and base P/T set, all abilities lost)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "keyword": "flash",
+            "kind": "keyword"
+          },
+          {
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            },
+            "keyword": "enchant",
+            "kind": "keyword"
+          },
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": 4,
+                    "subtypes": {
+                      "set": [
+                        "Skeleton"
+                      ]
+                    },
+                    "types": {
+                      "set": [
+                        "Creature"
+                      ]
+                    }
+                  },
+                  {
+                    "colors": {
+                      "set": [
+                        "B"
+                      ]
+                    },
+                    "layer": 5
+                  },
+                  {
+                    "layer": 6,
+                    "removeAll": true
+                  },
+                  {
+                    "layer": "7b",
+                    "power": 1,
+                    "toughness": 1
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Turn to Frog",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.eot.loseall.becomes (CR 205.1a, 613.1d-f, 613.4b: creature type, color and base P/T set until end of turn, card types kept)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Frog"
+                            ]
+                          }
+                        },
+                        {
+                          "colors": {
+                            "set": [
+                              "U"
+                            ]
+                          },
+                          "layer": 5
+                        },
+                        {
+                          "layer": 6,
+                          "removeAll": true
+                        },
+                        {
+                          "layer": "7b",
+                          "power": 1,
+                          "toughness": 1
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Snakeform",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.eot.loseall.becomes (CR 205.1a, 613.1d-f, 613.4b: creature type, color and base P/T set until end of turn, card types kept)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Snake"
+                            ]
+                          }
+                        },
+                        {
+                          "colors": {
+                            "set": [
+                              "G"
+                            ]
+                          },
+                          "layer": 5
+                        },
+                        {
+                          "layer": 6,
+                          "removeAll": true
+                        },
+                        {
+                          "layer": "7b",
+                          "power": 1,
+                          "toughness": 1
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                },
+                {
+                  "count": 1,
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Gift of Tusks",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.eot.loseall.becomes (CR 205.1a, 613.1d-f, 613.4b: creature type, color and base P/T set until end of turn, card types kept)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Elephant"
+                            ]
+                          }
+                        },
+                        {
+                          "colors": {
+                            "set": [
+                              "G"
+                            ]
+                          },
+                          "layer": 5
+                        },
+                        {
+                          "layer": 6,
+                          "removeAll": true
+                        },
+                        {
+                          "layer": "7b",
+                          "power": 3,
+                          "toughness": 3
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Chimeric Egg",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.artifactcreature.with (CR 205.1b: types added, creature type set; 613.4b base P/T; the keyword granted)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "count": 1,
+                  "kind": "charge",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "op": "putCounters"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "cast",
+                  "player": "opponent",
+                  "spell": {
+                    "notTypes": [
+                      "Artifact"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "cost": {
+              "other": [
+                {
+                  "count": 3,
+                  "counter": "charge",
+                  "kind": "removeCounters",
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Construct"
+                            ]
+                          },
+                          "types": {
+                            "add": [
+                              "Artifact",
+                              "Creature"
+                            ]
+                          }
+                        },
+                        {
+                          "add": [
+                            {
+                              "keyword": "trample",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        },
+                        {
+                          "layer": "7b",
+                          "power": 6,
+                          "toughness": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Iron Suitcase",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.artifactcreature.with (CR 205.1b: types added, creature type set; 613.4b base P/T; the keyword granted)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "count": 2,
+                  "op": "scry",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            }
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 3,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Construct"
+                            ]
+                          },
+                          "types": {
+                            "add": [
+                              "Artifact",
+                              "Creature"
+                            ]
+                          }
+                        },
+                        {
+                          "add": [
+                            {
+                              "keyword": "flying",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        },
+                        {
+                          "layer": "7b",
+                          "power": 3,
+                          "toughness": 3
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Ensouled Scimitar",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.becomes.artifactcreature.with (CR 205.1b: types added, creature type set; 613.4b base P/T; the keyword granted)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 3,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "subtypes": {
+                            "set": [
+                              "Spirit"
+                            ]
+                          },
+                          "types": {
+                            "add": [
+                              "Artifact",
+                              "Creature"
+                            ]
+                          }
+                        },
+                        {
+                          "add": [
+                            {
+                              "keyword": "flying",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        },
+                        {
+                          "layer": "7b",
+                          "power": 1,
+                          "toughness": 5
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 1,
+                    "toughness": 5
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 2,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "keyword": "equip",
+            "kind": "keyword"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Gargoyle Sentinel",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.eot.lose.gain (CR 613.1f: one layer-6 change that removes the keyword and grants the others, until end of turn)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "keyword": "defender",
+            "kind": "keyword"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 3,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "flying",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6,
+                          "remove": [
+                            "defender"
+                          ]
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Manor Gargoyle",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.eot.lose.gain (CR 613.1f: one layer-6 change that removes the keyword and grants the others, until end of turn)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "keyword": "defender",
+            "kind": "keyword"
+          },
+          {
+            "condition": {
+              "cond": "matches",
+              "filter": {
+                "keyword": "defender"
+              },
+              "object": {
+                "ref": "self"
+              }
+            },
+            "effects": [
+              {
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "add": [
+                      {
+                        "keyword": "indestructible",
+                        "kind": "keyword"
+                      }
+                    ],
+                    "layer": 6
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "flying",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6,
+                          "remove": [
+                            "defender"
+                          ]
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Xathrid Slyblade",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.eot.lose.gain (CR 613.1f: one layer-6 change that removes the keyword and grants the others, until end of turn)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "keyword": "hexproof",
+            "kind": "keyword"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 3,
+                  "kind": "generic"
+                },
+                {
+                  "color": "B",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "first strike",
+                              "kind": "keyword"
+                            },
+                            {
+                              "keyword": "deathtouch",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6,
+                          "remove": [
+                            "hexproof"
+                          ]
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Shadowspear",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.each.lose.two (CR 613.1f, 611.2c, 702.11e: the set locked as it resolves; losing hexproof loses hexproof from)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effects": [
+              {
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "add": [
+                      {
+                        "keyword": "trample",
+                        "kind": "keyword"
+                      },
+                      {
+                        "keyword": "lifelink",
+                        "kind": "keyword"
+                      }
+                    ],
+                    "layer": 6
+                  },
+                  {
+                    "layer": "7c",
+                    "power": 1,
+                    "toughness": 1
+                  }
+                ],
+                "s": "continuous"
+              }
+            ],
+            "kind": "static"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "filter": {
+                          "controller": "opponent"
+                        },
+                        "ref": "each"
+                      },
+                      "mods": [
+                        {
+                          "layer": 6,
+                          "remove": [
+                            "hexproof",
+                            "indestructible"
+                          ]
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 2,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "keyword": "equip",
+            "kind": "keyword"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Bonds of Mortality",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.each.lose.two (CR 613.1f, 611.2c, 702.11e: the set locked as it resolves; losing hexproof loses hexproof from)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "count": 1,
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            }
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "G",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "filter": {
+                          "controller": "opponent",
+                          "types": [
+                            "Creature"
+                          ]
+                        },
+                        "ref": "each"
+                      },
+                      "mods": [
+                        {
+                          "layer": 6,
+                          "remove": [
+                            "hexproof",
+                            "indestructible"
+                          ]
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Quick Draw",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.each.lose.two (CR 613.1f, 611.2c, 702.11e: the set locked as it resolves; losing hexproof loses hexproof from)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": "7c",
+                          "power": 1,
+                          "toughness": 1
+                        },
+                        {
+                          "add": [
+                            {
+                              "keyword": "first strike",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                },
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "filter": {
+                          "controller": {
+                            "id": "t1",
+                            "ref": "target"
+                          },
+                          "types": [
+                            "Creature"
+                          ]
+                        },
+                        "ref": "each"
+                      },
+                      "mods": [
+                        {
+                          "layer": 6,
+                          "remove": [
+                            "double strike",
+                            "first strike"
+                          ]
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "controller": "you",
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                },
+                {
+                  "id": "t1",
+                  "kind": "player",
+                  "max": 1,
+                  "min": 1,
+                  "players": {
+                    "who": "opponent"
+                  }
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Karn's Touch",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.animate.manavalue (CR 205.1b, 613.4b, 608.2h: the target's mana value read as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "types": {
+                            "add": [
+                              "Artifact",
+                              "Creature"
+                            ]
+                          }
+                        },
+                        {
+                          "layer": "7b",
+                          "power": {
+                            "of": {
+                              "id": "t0",
+                              "ref": "target"
+                            },
+                            "q": "stat",
+                            "stat": "manaValue"
+                          },
+                          "toughness": {
+                            "of": {
+                              "id": "t0",
+                              "ref": "target"
+                            },
+                            "q": "stat",
+                            "stat": "manaValue"
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "notTypes": [
+                      "Creature"
+                    ],
+                    "types": [
+                      "Artifact"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Toymaker",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.animate.manavalue (CR 205.1b, 613.4b, 608.2h: the target's mana value read as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ],
+              "other": [
+                {
+                  "count": 1,
+                  "kind": "discard"
+                }
+              ],
+              "tap": true
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "types": {
+                            "add": [
+                              "Artifact",
+                              "Creature"
+                            ]
+                          }
+                        },
+                        {
+                          "layer": "7b",
+                          "power": {
+                            "of": {
+                              "id": "t0",
+                              "ref": "target"
+                            },
+                            "q": "stat",
+                            "stat": "manaValue"
+                          },
+                          "toughness": {
+                            "of": {
+                              "id": "t0",
+                              "ref": "target"
+                            },
+                            "q": "stat",
+                            "stat": "manaValue"
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "notTypes": [
+                      "Creature"
+                    ],
+                    "types": [
+                      "Artifact"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Sydri, Galvanic Genius",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.animate.manavalue (CR 205.1b, 613.4b, 608.2h: the target's mana value read as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "U",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "types": {
+                            "add": [
+                              "Artifact",
+                              "Creature"
+                            ]
+                          }
+                        },
+                        {
+                          "layer": "7b",
+                          "power": {
+                            "of": {
+                              "id": "t0",
+                              "ref": "target"
+                            },
+                            "q": "stat",
+                            "stat": "manaValue"
+                          },
+                          "toughness": {
+                            "of": {
+                              "id": "t0",
+                              "ref": "target"
+                            },
+                            "q": "stat",
+                            "stat": "manaValue"
+                          }
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "notTypes": [
+                      "Creature"
+                    ],
+                    "types": [
+                      "Artifact"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "W",
+                  "kind": "colored"
+                },
+                {
+                  "color": "B",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "id": "t0",
+                        "ref": "target"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "deathtouch",
+                              "kind": "keyword"
+                            },
+                            {
+                              "keyword": "lifelink",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "allTypes": [
+                      "Artifact",
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Brightling",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.pump.or.1 (CR 608.2d, 613.4c: one of the two changes chosen as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "W",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "vigilance",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "W",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "lifelink",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "W",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "op": "move",
+                  "to": {
+                    "zone": "hand"
+                  },
+                  "what": {
+                    "ref": "self"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "ptChoice",
+                  "op": "chooseValue",
+                  "options": [
+                    "+1/-1",
+                    "-1/+1"
+                  ],
+                  "what": "option",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "+1/-1",
+                    "link": "ptChoice"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "ref": "self"
+                          },
+                          "mods": [
+                            {
+                              "layer": "7c",
+                              "power": 1,
+                              "toughness": -1
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "-1/+1",
+                    "link": "ptChoice"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "ref": "self"
+                          },
+                          "mods": [
+                            {
+                              "layer": "7c",
+                              "power": -1,
+                              "toughness": 1
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Pemmin's Aura",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.pump.or.1 (CR 608.2d, 613.4c: one of the two changes chosen as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            },
+            "keyword": "enchant",
+            "kind": "keyword"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "U",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "op": "untap",
+                  "what": {
+                    "ref": "attachedTo"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "U",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "attachedTo"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "flying",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "U",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "attachedTo"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "shroud",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "ptChoice",
+                  "op": "chooseValue",
+                  "options": [
+                    "+1/-1",
+                    "-1/+1"
+                  ],
+                  "what": "option",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "+1/-1",
+                    "link": "ptChoice"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "ref": "attachedTo"
+                          },
+                          "mods": [
+                            {
+                              "layer": "7c",
+                              "power": 1,
+                              "toughness": -1
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "-1/+1",
+                    "link": "ptChoice"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "ref": "attachedTo"
+                          },
+                          "mods": [
+                            {
+                              "layer": "7c",
+                              "power": -1,
+                              "toughness": 1
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Endling",
+    "expect": "full",
+    "verified": "FAST3 T13 review, by hand against the Oracle text: eff.t13.pump.or.1 (CR 608.2d, 613.4c: one of the two changes chosen as it resolves)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "B",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "menace",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "B",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "deathtouch",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "color": "B",
+                  "kind": "colored"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "add": [
+                            {
+                              "keyword": "undying",
+                              "kind": "keyword"
+                            }
+                          ],
+                          "layer": 6
+                        }
+                      ],
+                      "s": "continuous"
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          },
+          {
+            "cost": {
+              "mana": [
+                {
+                  "amount": 1,
+                  "kind": "generic"
+                }
+              ]
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "link": "ptChoice",
+                  "op": "chooseValue",
+                  "options": [
+                    "+1/-1",
+                    "-1/+1"
+                  ],
+                  "what": "option",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "+1/-1",
+                    "link": "ptChoice"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "ref": "self"
+                          },
+                          "mods": [
+                            {
+                              "layer": "7c",
+                              "power": 1,
+                              "toughness": -1
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                },
+                {
+                  "cond": {
+                    "cond": "chosen",
+                    "equals": "-1/+1",
+                    "link": "ptChoice"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "affects": {
+                            "ref": "self"
+                          },
+                          "mods": [
+                            {
+                              "layer": "7c",
+                              "power": -1,
+                              "toughness": 1
+                            }
+                          ],
+                          "s": "continuous"
+                        }
+                      ],
+                      "op": "effect"
+                    }
+                  ]
+                }
+              ],
+              "targets": []
+            },
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  }
+]

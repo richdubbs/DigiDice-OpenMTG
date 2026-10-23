@@ -1,0 +1,312 @@
+{
+ "measured": "2026-10-22",
+ "revision": "97d73190",
+ "all": {
+  "cards": 34590,
+  "full": 24928,
+  "partial": 5225,
+  "manual": 4437
+ },
+ "formats": [
+  {
+   "key": "standard",
+   "label": "Standard",
+   "cards": 5164,
+   "full": 5164,
+   "partial": 0,
+   "manual": 0
+  },
+  {
+   "key": "pioneer",
+   "label": "Pioneer",
+   "cards": 15086,
+   "full": 13003,
+   "partial": 1551,
+   "manual": 532
+  },
+  {
+   "key": "modern",
+   "label": "Modern",
+   "cards": 22718,
+   "full": 18826,
+   "partial": 2732,
+   "manual": 1160
+  },
+  {
+   "key": "pauper",
+   "label": "Pauper",
+   "cards": 10881,
+   "full": 9803,
+   "partial": 646,
+   "manual": 432
+  },
+  {
+   "key": "legacy",
+   "label": "Legacy",
+   "cards": 31958,
+   "full": 24653,
+   "partial": 5046,
+   "manual": 2259
+  },
+  {
+   "key": "commander",
+   "label": "Commander",
+   "cards": 32116,
+   "full": 24693,
+   "partial": 5087,
+   "manual": 2336
+  }
+ ],
+ "standardSets": [
+  {
+   "code": "FRA",
+   "name": "Reality Fracture",
+   "type": "expansion",
+   "released": "2026-10-02",
+   "cards": 285,
+   "full": 285,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "HOB",
+   "name": "The Hobbit",
+   "type": "expansion",
+   "released": "2026-08-14",
+   "cards": 193,
+   "full": 193,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "MSH",
+   "name": "Marvel Super Heroes",
+   "type": "expansion",
+   "released": "2026-06-26",
+   "cards": 281,
+   "full": 281,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "SOS",
+   "name": "Secrets of Strixhaven",
+   "type": "expansion",
+   "released": "2026-04-24",
+   "cards": 271,
+   "full": 271,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "TMT",
+   "name": "Teenage Mutant Ninja Turtles",
+   "type": "expansion",
+   "released": "2026-03-06",
+   "cards": 195,
+   "full": 195,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "ECL",
+   "name": "Lorwyn Eclipsed",
+   "type": "expansion",
+   "released": "2026-01-23",
+   "cards": 273,
+   "full": 273,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "TLA",
+   "name": "Avatar: The Last Airbender",
+   "type": "expansion",
+   "released": "2025-11-21",
+   "cards": 284,
+   "full": 284,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "SPM",
+   "name": "Marvel's Spider-Man",
+   "type": "expansion",
+   "released": "2025-09-26",
+   "cards": 193,
+   "full": 193,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "EOE",
+   "name": "Edge of Eternities",
+   "type": "expansion",
+   "released": "2025-08-01",
+   "cards": 266,
+   "full": 266,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "FIN",
+   "name": "Final Fantasy",
+   "type": "expansion",
+   "released": "2025-06-13",
+   "cards": 311,
+   "full": 311,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "TDM",
+   "name": "Tarkir: Dragonstorm",
+   "type": "expansion",
+   "released": "2025-04-11",
+   "cards": 275,
+   "full": 275,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "DFT",
+   "name": "Aetherdrift",
+   "type": "expansion",
+   "released": "2025-02-14",
+   "cards": 276,
+   "full": 276,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "FDN",
+   "name": "Foundations",
+   "type": "core",
+   "released": "2024-11-15",
+   "cards": 517,
+   "full": 517,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "DSK",
+   "name": "Duskmourn: House of Horror",
+   "type": "expansion",
+   "released": "2024-09-27",
+   "cards": 275,
+   "full": 275,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "BLB",
+   "name": "Bloomburrow",
+   "type": "expansion",
+   "released": "2024-08-02",
+   "cards": 277,
+   "full": 277,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "BIG",
+   "name": "The Big Score",
+   "type": "expansion",
+   "released": "2024-04-19",
+   "cards": 30,
+   "full": 30,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "OTJ",
+   "name": "Outlaws of Thunder Junction",
+   "type": "expansion",
+   "released": "2024-04-19",
+   "cards": 275,
+   "full": 275,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "MKM",
+   "name": "Murders at Karlov Manor",
+   "type": "expansion",
+   "released": "2024-02-09",
+   "cards": 278,
+   "full": 278,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "LCI",
+   "name": "The Lost Caverns of Ixalan",
+   "type": "expansion",
+   "released": "2023-11-17",
+   "cards": 290,
+   "full": 290,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  },
+  {
+   "code": "WOE",
+   "name": "Wilds of Eldraine",
+   "type": "expansion",
+   "released": "2023-09-08",
+   "cards": 278,
+   "full": 278,
+   "partial": 0,
+   "manual": 0,
+   "notInIndex": 0
+  }
+ ],
+ "upcoming": [
+  {
+   "code": "TRK",
+   "name": "Star Trek",
+   "released": "2026-11-13",
+   "sets": [
+    "TRC",
+    "TRK"
+   ],
+   "cards": 218,
+   "full": 174,
+   "partial": 33,
+   "manual": 11,
+   "notInIndex": 0
+  },
+  {
+   "code": "MDD",
+   "name": "Marvel: Darkhold Destiny",
+   "released": "2027-04-09",
+   "sets": [
+    "MDC",
+    "MDD"
+   ],
+   "cards": 13,
+   "full": 9,
+   "partial": 3,
+   "manual": 1,
+   "notInIndex": 0
+  }
+ ]
+}

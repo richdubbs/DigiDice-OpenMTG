@@ -1,0 +1,23 @@
+[
+  {
+    "id": "eff.t58.draw.foreach.color.among",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 121.1", "CR 105.1", "CR 105.2", "CR 608.2h", "CR 109.5"],
+    "pattern": "draw a card for each color among {f:Filter}",
+    "build": {"op": "draw", "who": {"ref": "you"}, "count": {"q": "distinct", "what": "colors", "among": {"ref": "each", "filter": "$f"}}},
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [
+      {"text": "Draw a card for each color among enchantments you control."},
+      {"text": "Draw a card for each color among creatures you control."}
+    ],
+    "counterExamples": [
+      "Draw a card for each card type among other enchantments you control.",
+      "Draw two cards for each color among creatures you control.",
+      "Draw a card for each color among creatures you control unless it is blue.",
+      "Target player draws a card for each color among creatures you control."
+    ]
+  }
+]

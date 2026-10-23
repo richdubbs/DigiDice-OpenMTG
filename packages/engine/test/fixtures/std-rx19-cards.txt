@@ -1,0 +1,19 @@
+# std-rx19 (wave 2, Commander precon lane rx19; test/cloud/std-rx19, golden cloud-std-rx19-review.json): "that player" of a becomes-the-target trigger,
+# the first spell during each opponent's turn, the player or planeswalker it's attacking, enters untapped, each player's extra land, the first time each turn
+Thunderbreak Regent
+Scalelord Reckoner
+Alela, Cunning Conqueror
+Wavebreak Hippocamp
+Arena Trickster
+Stinging Lionfish
+Gustha Ebbasdotter
+Mage Slayer
+Fathom Fleet Swordjack
+Gingerbread Cabin
+Dwarven Mine
+Witch's Cottage
+Rites of Flourishing
+Whispering Snitch
+Intermediate Chirography
+Gonti's Machinations
+Angelic Cub

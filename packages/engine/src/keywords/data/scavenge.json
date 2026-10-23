@@ -1,0 +1,72 @@
+{
+  "name": "scavenge",
+  "rule": "702.97",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Exile this card from your graveyard: Put a number of +1/+1 counters equal to this card's power on target creature. Scavenge only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{cost}, Exile ~ from your graveyard: Put a number of +1/+1 counters equal to ~'s power on target creature. Activate only as a sorcery.",
+      "zone": [
+        "graveyard"
+      ],
+      "sorcerySpeed": true,
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "exileFrom",
+              "zone": "graveyard",
+              "count": 1,
+              "self": true
+            }
+          ]
+        }
+      },
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "object",
+            "min": 1,
+            "max": 1,
+            "text": "target creature",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "target",
+              "id": "t0"
+            },
+            "kind": "+1/+1",
+            "count": {
+              "q": "stat",
+              "stat": "power",
+              "of": {
+                "ref": "self"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

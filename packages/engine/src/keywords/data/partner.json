@@ -1,0 +1,9 @@
+{
+  "name": "partner",
+  "rule": "702.124",
+  "params": [],
+  "mechanisms": [],
+  "reminder": "You can have two commanders if both have partner.",
+  "multiple": "redundant",
+  "status": "implemented"
+}

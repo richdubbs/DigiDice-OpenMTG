@@ -1,0 +1,235 @@
+/* RPL-1: the Replays screen (ReplaysScreen.tsx) and the end screen's replay panel (EndScreenReplay.tsx). Classes are prefixed replays- (one stylesheet
+   per package, C6). */
+
+.replays-screen {
+  min-height: 60vh;
+}
+
+.replays-dragging {
+  outline: 2px dashed rgba(var(--neon-rgb), 0.7);
+  outline-offset: -6px;
+  border-radius: 12px;
+}
+
+.replays-total {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.replays-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.replays-note,
+.replays-message,
+.replays-error {
+  margin: 0 0 12px;
+  padding: 8px 14px;
+  border-left: 3px solid var(--neon);
+  border-radius: 6px;
+  background: rgba(var(--neon-rgb), 0.1);
+}
+
+.replays-note {
+  border-left-color: #ffd27a;
+  background: rgba(255, 210, 122, 0.1);
+}
+
+.replays-error {
+  color: #ff9bff;
+  border-left-color: #ff9bff;
+  background: rgba(255, 155, 255, 0.08);
+}
+
+.replays-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 16px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+}
+
+.replays-tools label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.replays-retention {
+  margin-left: auto;
+}
+
+.replays-hint {
+  flex-basis: 100%;
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.replays-empty {
+  padding: 18px;
+  color: var(--text-muted);
+}
+
+.replays-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.replays-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px 14px;
+}
+
+.replays-row-main {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.replays-row-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+
+.replays-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 4px 14px;
+  margin: 0 0 8px;
+}
+
+.replays-facts dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.replays-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.replays-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.replays-badge {
+  padding: 2px 10px;
+  border: 1px solid rgba(232, 232, 240, 0.25);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.replays-badge-exact,
+.replays-badge-kept {
+  color: #8fe9ff;
+  border-color: rgba(var(--neon-rgb), 0.7);
+  background: rgba(var(--neon-rgb), 0.14);
+}
+
+.replays-badge-checked,
+.replays-badge-recordingOnly {
+  color: #ffd98f;
+  border-color: rgba(255, 210, 122, 0.6);
+}
+
+.replays-badge-needsNewer {
+  color: #ffa6ff;
+  border-color: rgba(255, 166, 255, 0.6);
+}
+
+.replays-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.replays-row-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex-basis: 100%;
+}
+
+.replays-row-form p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.replays-row-form input {
+  flex: 1 1 240px;
+}
+
+/* The end screen's replay panel, inside the game-over panel. */
+.replays-end {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(var(--neon-rgb), 0.22);
+}
+
+.replays-end-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Keep, when it is on (the end screen's Keep replay, a row's Keep): lit like the deck screen's chosen segment (decks.css), so the choice shows. */
+.replays-end-buttons button[aria-pressed='true'],
+.replays-row-actions button[aria-pressed='true'] {
+  --btn-face: linear-gradient(180deg, #7fdcff 0%, #1fb8ff 38%, #0a8fe0 100%);
+  --btn-face-hover: linear-gradient(180deg, #a6e8ff 0%, #3fc4ff 38%, #0e9cf0 100%);
+  --btn-side: #035288;
+  --btn-rim: #b9ecff;
+  --btn-top: rgba(255, 255, 255, 0.55);
+  --btn-text: #00121f;
+}
+
+.replays-end-reveal {
+  margin: 10px 0 0;
+  padding: 0;
+  border: none;
+}
+
+.replays-end-reveal legend {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.replays-end-reveal label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 12px 0 0;
+}
+
+.replays-end-note {
+  margin: 6px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}

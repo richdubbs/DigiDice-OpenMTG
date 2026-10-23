@@ -1,0 +1,78 @@
+{
+  "name": "eternalize",
+  "rule": "702.129",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Exile this card from your graveyard: Create a token that's a copy of it, except it's a 4/4 black Zombie with no mana cost. Eternalize only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{printed}",
+      "zone": [
+        "graveyard"
+      ],
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "exileFrom",
+              "zone": "graveyard",
+              "count": 1,
+              "self": true
+            }
+          ]
+        }
+      },
+      "sorcerySpeed": true,
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "copy",
+            "what": {
+              "ref": "self"
+            },
+            "result": "token",
+            "who": {
+              "ref": "you"
+            },
+            "except": [
+              {
+                "layer": 5,
+                "colors": {
+                  "set": [
+                    "B"
+                  ]
+                }
+              },
+              {
+                "layer": 4,
+                "subtypes": {
+                  "add": [
+                    "Zombie"
+                  ]
+                }
+              },
+              {
+                "layer": "7b",
+                "power": 4,
+                "toughness": 4
+              }
+            ],
+            "noManaCost": true
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "name": "craft",
+  "rule": "702.167",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    },
+    {
+      "name": "filter",
+      "type": "filter",
+      "optional": true
+    },
+    {
+      "name": "amount",
+      "type": "number",
+      "optional": true
+    },
+    {
+      "name": "quality",
+      "type": "quality",
+      "optional": true
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Exile this artifact, Exile {quality} you control or {quality} card from your graveyard: Return this card transformed under its owner's control. Craft only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{printed}",
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "exileFrom",
+              "zone": "battlefield",
+              "count": 1,
+              "self": true
+            },
+            {
+              "$ifParam": "filter",
+              "then": {
+                "$ifParam": "quality",
+                "then": {
+                  "kind": "exileFrom",
+                  "zone": "battlefield",
+                  "orGraveyard": true,
+                  "filter": "$filter",
+                  "count": "any",
+                  "atLeast": "$amount"
+                },
+                "else": {
+                  "$ifParam": "amount",
+                  "then": {
+                    "kind": "exileFrom",
+                    "zone": "battlefield",
+                    "orGraveyard": true,
+                    "filter": "$filter",
+                    "count": "$amount"
+                  },
+                  "else": {
+                    "kind": "exileFrom",
+                    "zone": "battlefield",
+                    "orGraveyard": true,
+                    "filter": "$filter",
+                    "count": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "sorcerySpeed": true,
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "costExiled",
+              "self": true
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": "owner",
+              "transformed": true
+            },
+            "remember": {
+              "link": "craft",
+              "what": {
+                "ref": "costExiled"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

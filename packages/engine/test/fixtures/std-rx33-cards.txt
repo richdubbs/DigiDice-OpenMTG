@@ -1,0 +1,45 @@
+# std-rx33 (EDH lane rx33): the golden cards of the round
+Aether Swooper
+Aetherstorm Roc
+Bone Devourer
+Carrion Grub
+Chandra, Bold Pyromancer
+Chandra, Flame's Fury
+Consul's Shieldguard
+Criminal Past
+Dust Corona
+Echo Circlet
+Eddytrail Hawk
+Entourage of Trest
+Glint-Sleeve Siphoner
+Greven, Predator Captain
+Iona's Blessing
+Kashi-Tribe Elite
+Kashi-Tribe Reaver
+Kashi-Tribe Warriors
+Matsu-Tribe Birdstalker
+Matsu-Tribe Decoy
+Maulfist Doorbuster
+Obscuring Aether
+Orochi Ranger
+Quiet Contemplation
+Radiating Lightning
+Rhizome Lurcher
+Riddle Gate Gargoyle
+Riparian Tiger
+Rishadan Cutpurse
+Rishadan Footpad
+Sarkhan, Dragonsoul
+Scrapper Champion
+Skittish Valesk
+Smelted Chargebug
+Thriving Ibex
+Thriving Rats
+Thriving Rhino
+Thriving Skyclaw
+Thriving Turtle
+Undergrowth Scavenger
+Voltaic Brawler
+Voltstorm Angel
+Wall of Deceit
+Guide of Souls

@@ -1,0 +1,106 @@
+[
+  {
+    "id": "eff.gainlife",
+    "kind": "effect",
+    "cr": ["CR 119.1", "CR 119.3"],
+    "pattern": "{p:Player} gain[s] {n:Qty} life",
+    "build": {"op": "gainLife", "who": "$p", "amount": "$n"},
+    "subject": "player",
+    "examples": [{"text": "You gain 13 life."}, {"text": "Target player gains 11 life."}],
+    "counterExamples": ["You gain 7 life for each creature you control.", "You gain life."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.loselife",
+    "kind": "effect",
+    "cr": ["CR 119.1", "CR 119.3"],
+    "pattern": "{p:Player} lose[s] {n:Qty} life",
+    "build": {"op": "loseLife", "who": "$p", "amount": "$n"},
+    "subject": "player",
+    "examples": [{"text": "Each opponent loses 6 life."}, {"text": "Target player loses 9 life."}],
+    "counterExamples": ["Each opponent loses 6 life unless it is blue.", "Each opponent loses life."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.gainlife.equal",
+    "kind": "effect",
+    "cr": ["CR 119.1", "CR 119.3", "CR 608.2h"],
+    "pattern": "{p:Player} gain[s] life equal to {n:Qty}",
+    "build": {"op": "gainLife", "who": "$p", "amount": "$n"},
+    "subject": "player",
+    "examples": [
+      {"text": "You gain life equal to the number of Forests you control."},
+      {"text": "Target player gains life equal to the number of cards in your hand."}
+    ],
+    "counterExamples": ["You gain life equal to the number of Forests you control instead.", "You gain life equal to."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.loselife.equal",
+    "kind": "effect",
+    "cr": ["CR 119.1", "CR 119.3", "CR 608.2h"],
+    "pattern": "{p:Player} lose[s] life equal to {n:Qty}",
+    "build": {"op": "loseLife", "who": "$p", "amount": "$n"},
+    "subject": "player",
+    "examples": [
+      {"text": "Target player loses life equal to the number of Swamps you control."},
+      {"text": "Each opponent loses life equal to the number of cards in your hand."}
+    ],
+    "counterExamples": ["Target player loses life equal to the number of Swamps you control unless it is blue.", "Target player loses life."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.gainlife.foreach",
+    "kind": "effect",
+    "cr": ["CR 119.1", "CR 119.3", "CR 608.2h"],
+    "pattern": "{p:Player} gain[s] 1 life for each {f:Filter}",
+    "build": {"op": "gainLife", "who": "$p", "amount": {"q": "count", "of": {"ref": "each", "filter": "$f"}}},
+    "subject": "player",
+    "consumes": ["each"],
+    "examples": [{"text": "You gain 1 life for each Cleric you control."}, {"text": "Target player gains 1 life for each enchantment you control."}],
+    "counterExamples": ["You gain 2 life for each Cleric you control.", "You gain 1 life for each.", "When ~ enters, each player gains 1 life for each creature they control.", "When ~ enters, you gain 1 life for each creature you control with power greater than its toughness."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.loselife.foreach",
+    "kind": "effect",
+    "cr": ["CR 119.1", "CR 119.3", "CR 608.2h"],
+    "pattern": "{p:Player} lose[s] 1 life for each {f:Filter}",
+    "build": {"op": "loseLife", "who": "$p", "amount": {"q": "count", "of": {"ref": "each", "filter": "$f"}}},
+    "subject": "player",
+    "consumes": ["each"],
+    "examples": [{"text": "Target player loses 1 life for each Zombie you control."}, {"text": "Each opponent loses 1 life for each artifact you control."}],
+    "counterExamples": ["Target player loses 3 life for each Zombie you control.", "Target player loses 1 life for each Zombie you control instead.", "When ~ enters, each opponent loses 1 life for each creature they control."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.setlife.you",
+    "kind": "effect",
+    "cr": ["CR 119.5"],
+    "pattern": "your life total becomes {n:Qty}",
+    "build": {"op": "setLife", "who": {"ref": "you"}, "value": "$n"},
+    "subject": "none",
+    "examples": [{"text": "Your life total becomes 12."}, {"text": "Your life total becomes the number of Plains you control."}],
+    "counterExamples": ["Your life total becomes 12 instead.", "Your life total can't change."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.setlife",
+    "kind": "effect",
+    "cr": ["CR 119.5"],
+    "pattern": "{p:Player} 's life total becomes {n:Qty}",
+    "build": {"op": "setLife", "who": "$p", "value": "$n"},
+    "subject": "player",
+    "examples": [{"text": "Target player's life total becomes 13."}, {"text": "Target opponent's life total becomes 4."}],
+    "counterExamples": ["Target player's life total becomes 13 unless it is blue.", "Target player's life total doesn't change."],
+    "status": "stable",
+    "since": 1
+  }
+]

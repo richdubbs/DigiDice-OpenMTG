@@ -1,0 +1,14 @@
+{
+  "name": "storied",
+  "rule": "702.195",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "If you control three or more artifacts, legendaries, and/or Sagas, you have an enduring story for the rest of the game.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "core/enduring-story.ts#storiedCheck"
+  ]
+}

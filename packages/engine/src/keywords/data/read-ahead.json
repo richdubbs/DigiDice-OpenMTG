@@ -1,0 +1,15 @@
+{
+  "name": "read ahead",
+  "rule": "702.155",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "Choose a chapter and start with that many lore counters. Add one after your draw step. Skipped chapters don't trigger. Sacrifice after the last chapter.",
+  "multiple": "redundant",
+  "status": "native",
+  "readers": [
+    "statics/levels.ts#sagaRuleAbilities",
+    "triggers/collect.ts#chapterHits"
+  ]
+}

@@ -1,0 +1,345 @@
+[
+ {
+  "card": "Theorist's Proxy",
+  "expect": "full",
+  "verified": "Standard round 10 (std-r10) review (Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdr10.nextSpell.cantBeCountered): flash; when it enters you empower Jace 3; {U}, sacrifice it: the next spell you cast this turn can't be countered, applied as that spell becomes cast, not by a trigger (CR 702.8a, 603.6a, 601.2i, 101.2, 611.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flash",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "action": "empower",
+         "arg": "Jace",
+         "n": 3,
+         "op": "action",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "filter": {
+          "self": true
+         },
+         "kind": "sacrifice",
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "filter": {
+          "zone": "stack"
+         },
+         "op": "nextSpell",
+         "rider": "cantBeCountered",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mistrise Village",
+  "expect": "full",
+  "verified": "Standard round 10 (std-r10) review (Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdr10.nextSpell.cantBeCountered): enters tapped unless you control a Mountain or a Forest; {T}: add {U}; {U}, {T}: the next spell you cast this turn can't be countered, applied as that spell becomes cast (CR 614.1c, 305.7, 605.1a, 601.2i, 101.2, 611.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "tapped": true,
+         "tappedUnless": {
+          "cond": "exists",
+          "of": {
+           "filter": {
+            "controller": "you",
+            "subtypes": [
+             "Forest",
+             "Mountain"
+            ]
+           },
+           "ref": "each"
+          }
+         }
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "U"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "filter": {
+          "zone": "stack"
+         },
+         "op": "nextSpell",
+         "rider": "cantBeCountered",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Insist",
+  "expect": "full",
+  "verified": "Standard round 10 (std-r10) review (tuning half, not Standard-legal), by hand against the Oracle text and the rules cited (eff.stdr10.nextSpell.cantBeCountered): the next creature spell you cast this turn can't be countered (a noncreature spell cast first leaves it waiting), then you draw a card (CR 601.2i, 101.2, 611.2, 121.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "zone": "stack"
+         },
+         "op": "nextSpell",
+         "rider": "cantBeCountered",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Biomantic Mastery",
+  "expect": "full",
+  "verified": "Standard round 10 (std-r10) review (tuning half, not Standard-legal), by hand against the Oracle text and the rules cited (renderer: render/qty.ts#countParts, render/steps-cards.ts draw; templates eff.draw.foreach.you, used twice): you draw a card for each creature the first target player controls, then a card for each creature a second, different target player controls (CR 115.1, 115.3, 121.1, 608.2c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "of": {
+           "filter": {
+            "controller": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "types": [
+             "Creature"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": {
+          "of": {
+           "filter": {
+            "controller": {
+             "id": "t1",
+             "ref": "target"
+            },
+            "types": [
+             "Creature"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1
+        },
+        {
+         "distinctFrom": [
+          "t0"
+         ],
+         "id": "t1",
+         "kind": "player",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Borrowing 100,000 Arrows",
+  "expect": "full",
+  "verified": "Standard round 10 (std-r10) review (tuning half, not Standard-legal), by hand against the Oracle text and the rules cited (renderer: render/qty.ts#countParts, render/steps-cards.ts draw; template eff.draw.foreach.you): you draw a card for each tapped creature the target opponent controls, counted as it resolves (CR 115.1, 121.1, 608.2h; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "of": {
+           "filter": {
+            "controller": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "tapped": true,
+            "types": [
+             "Creature"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ }
+]

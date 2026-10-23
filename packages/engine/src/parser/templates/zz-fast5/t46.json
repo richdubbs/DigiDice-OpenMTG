@@ -1,0 +1,124 @@
+[
+  {
+    "id": "eff.t46.hand.choose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 609.3"
+    ],
+    "pattern": "you choose ( a | an ) {c:HandCard}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": "$c",
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals their hand. You choose a red or green card from it. That player discards that card."
+      },
+      {
+        "text": "Target player reveals their hand. You choose an enchantment card from it. Exile that card."
+      },
+      {
+        "text": "Look at target opponent's hand. You choose a nonland, nonartifact card from it. That player discards that card."
+      },
+      {
+        "text": "Target opponent reveals their hand. You choose a nonland permanent card from it. Exile that card."
+      }
+    ],
+    "counterExamples": [
+      "You choose a red card from it.",
+      "Target opponent reveals their hand. You choose a red card from your graveyard. That player discards that card.",
+      "Target opponent reveals their hand. You choose two red cards from it. That player discards that card.",
+      "Target opponent reveals their hand. You choose a red card at random from it. That player discards that card."
+    ]
+  },
+  {
+    "id": "eff.t46.hand.choose.may",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 609.3",
+      "CR 603.5"
+    ],
+    "pattern": "you may choose ( a | an ) {c:HandCard}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": "$c",
+      "min": 0,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "Look at target player's hand. You may choose a legendary card from it. That player discards that card."
+      },
+      {
+        "text": "Target opponent reveals their hand. You may choose a card from it. Exile that card."
+      }
+    ],
+    "counterExamples": [
+      "You may choose a legendary card from it.",
+      "Look at target player's hand. You may choose a legendary card from their graveyard. That player discards that card."
+    ]
+  },
+  {
+    "id": "eff.t46.discard.chosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] {o:ChosenCard}",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": 1,
+      "filter": {
+        "is": "$o"
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player reveals their hand. You choose a Goblin card from it. That player discards that card."
+      },
+      {
+        "text": "Look at target opponent's hand. You may choose an instant card from it. Target opponent discards that card."
+      }
+    ],
+    "counterExamples": [
+      "That player discards that card.",
+      "Target player discards that creature.",
+      "Target player reveals their hand. That player discards that card."
+    ]
+  }
+]

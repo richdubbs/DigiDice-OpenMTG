@@ -1,0 +1,122 @@
+[
+  {
+    "id": "eff.mx6.endure",
+    "kind": "effect",
+    "cr": ["CR 701.63a", "CR 701.63b"],
+    "pattern": "{o:Obj} endures {n:Qty}",
+    "build": {"op": "action", "action": "endure", "who": {"ref": "controllerOf", "object": "$o"}, "subject": "$o", "n": "$n"},
+    "subject": "object",
+    "needs": ["action:endure"],
+    "examples": [
+      {"text": "When ~ enters, ~ endures 4.", "expect": [{"kind": "triggered", "trigger": {"on": [{"ev": "zoneChange", "subject": {"self": true}, "to": "battlefield"}]}, "effect": {"targets": [], "steps": [{"op": "action", "action": "endure", "who": {"ref": "controllerOf", "object": {"ref": "self"}}, "subject": {"ref": "self"}, "n": 4}]}}]},
+      {"text": "Whenever ~ attacks, you gain 2 life and ~ endures 3."}
+    ],
+    "counterExamples": [
+      "When ~ enters, ~ endures.",
+      "When ~ enters, each creature you control endures 2.",
+      "When ~ enters, ~ endures 2 unless an opponent pays {2}."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx6.earthbend",
+    "kind": "effect",
+    "cr": ["CR 701.66a", "CR 115.1", "CR 601.2c", "CR 603.7"],
+    "pattern": "earthbend {n:Qty}",
+    "build": {"lower": "earthbend", "n": "$n"},
+    "subject": "none",
+    "needs": ["action:earthbend"],
+    "examples": [
+      {"text": "When ~ enters, earthbend 5.", "expect": [{"kind": "triggered", "trigger": {"on": [{"ev": "zoneChange", "subject": {"self": true}, "to": "battlefield"}]}, "effect": {"targets": [{"id": "t0", "kind": "object", "min": 1, "max": 1, "filter": {"types": ["Land"], "controller": "you"}}], "steps": [{"op": "action", "action": "earthbend", "who": {"ref": "you"}, "n": 5, "subject": {"ref": "target", "id": "t0"}}]}}]},
+      {"text": "Draw a card, then earthbend 6."}
+    ],
+    "counterExamples": [
+      "When ~ enters, earthbend.",
+      "When ~ enters, earthbend 3 unless an opponent pays {2}.",
+      "When ~ enters, waterbend 3."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx6.empower.jace",
+    "kind": "effect",
+    "cr": ["CR 111.4", "CR 306.5b", "CR 122.1"],
+    "pattern": "empower jace {n:Qty}",
+    "build": {"op": "action", "action": "empower", "who": {"ref": "you"}, "n": "$n", "arg": "Jace"},
+    "subject": "none",
+    "needs": ["action:empower"],
+    "examples": [
+      {"text": "Empower Jace 7, then draw a card.", "expect": [{"kind": "spell", "effect": {"targets": [], "steps": [{"op": "action", "action": "empower", "who": {"ref": "you"}, "n": 7, "arg": "Jace"}, {"op": "draw", "who": {"ref": "you"}, "count": 1}]}}]},
+      {"text": "When ~ enters, empower Jace 9."}
+    ],
+    "counterExamples": [
+      "When ~ enters, empower Jace.",
+      "When ~ enters, empower Teferi 2.",
+      "When ~ enters, empower Jace 2 unless an opponent pays {2}."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx6.endure.whereX",
+    "kind": "effect",
+    "cr": ["CR 701.63a", "CR 701.63b", "CR 107.3"],
+    "pattern": "{o:Obj} endures x , where x is {q:Qty}",
+    "build": {"op": "action", "action": "endure", "who": {"ref": "controllerOf", "object": "$o"}, "subject": "$o", "n": "$q"},
+    "subject": "object",
+    "needs": ["action:endure"],
+    "examples": [
+      {"text": "When ~ enters, ~ endures X, where X is the number of Elves you control."},
+      {"text": "Whenever ~ attacks, ~ endures X, where X is the number of cards in your hand."}
+    ],
+    "counterExamples": [
+      "When ~ enters, ~ endures X.",
+      "When ~ enters, ~ endures X, where X is the number of Elves you control and Y is two.",
+      "When ~ enters, ~ endures 2, where X is the number of Elves you control."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx6.earthbend.whereX",
+    "kind": "effect",
+    "cr": ["CR 701.66a", "CR 115.1", "CR 601.2c", "CR 107.3"],
+    "pattern": "earthbend x , where x is {q:Qty}",
+    "build": {"lower": "earthbend", "n": "$q"},
+    "subject": "none",
+    "needs": ["action:earthbend"],
+    "examples": [
+      {"text": "When ~ enters, earthbend X, where X is the number of Elves you control."},
+      {"text": "Earthbend X, where X is the number of cards in your hand."}
+    ],
+    "counterExamples": [
+      "When ~ enters, earthbend X.",
+      "When ~ enters, earthbend X, where X is the number of Elves you control and Y is two.",
+      "When ~ enters, earthbend 2, where X is the number of Elves you control."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx6.empower.jace.whereX",
+    "kind": "effect",
+    "cr": ["CR 111.4", "CR 306.5b", "CR 122.1", "CR 107.3"],
+    "pattern": "empower jace x , where x is {q:Qty}",
+    "build": {"op": "action", "action": "empower", "who": {"ref": "you"}, "n": "$q", "arg": "Jace"},
+    "subject": "none",
+    "needs": ["action:empower"],
+    "examples": [
+      {"text": "When ~ enters, empower Jace X, where X is the number of Elves you control."},
+      {"text": "Empower Jace X, where X is the number of cards in your hand."}
+    ],
+    "counterExamples": [
+      "When ~ enters, empower Jace X.",
+      "When ~ enters, empower Teferi X, where X is the number of Elves you control.",
+      "When ~ enters, empower Jace 2, where X is the number of Elves you control."
+    ],
+    "status": "stable",
+    "since": 7
+  }
+]

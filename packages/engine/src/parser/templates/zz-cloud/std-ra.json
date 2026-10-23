@@ -1,0 +1,74 @@
+[
+  {
+    "id": "sta.stdra.pump.group.foreach.counters.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 122.1"
+    ],
+    "pattern": "{f:Filter} get {pt:PT} for each {k:CounterKind} counter on ~",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k"
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Artifact creatures you control get +1/+0 for each charge counter on ~."
+      },
+      {
+        "text": "Goblins you control get +2/+2 for each oil counter on ~."
+      },
+      {
+        "text": "Other creatures you control get +1/+1 for each verse counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Artifact creatures you control get +1/+0 for each charge counter on it.",
+      "Artifact creatures you control get +1/+0 until end of turn for each charge counter on ~.",
+      "Artifact creatures you control get +1/+0 for each charge counter on ~ and have flying."
+    ]
+  }
+]

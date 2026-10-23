@@ -1,0 +1,4309 @@
+[
+ {
+  "card": "Strategic Betrayal",
+  "expect": "full",
+  "verified": "r4-refs review, by hand against the Oracle text and the rules cited (eff.r4refs.exile.theyControl.andGraveyard): the target opponent chooses a creature they control and exiles it, then every card of their graveyard is exiled (CR 406.1, 608.2d, 404.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "as": "exiledChosen",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "controller": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         },
+         "max": 1,
+         "min": 1,
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "exiledChosen"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "each",
+          "filter": {
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "zone": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Summon: Anima",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.sacrificeChoice.andLoseLife): chapters I-III you draw a card and lose 1 life; chapter IV each opponent sacrifices a creature of their choice, then each opponent loses 3 life (CR 701.21a, 119.3, 608.2e, 714.2); menace",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "chapter",
+      "chapters": [
+       1,
+       2,
+       3
+      ],
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "loseLife",
+         "amount": 1,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     },
+     {
+      "kind": "chapter",
+      "chapters": [
+       4
+      ],
+      "effect": {
+       "steps": [
+        {
+         "op": "sacrificeChoice",
+         "count": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        },
+        {
+         "op": "loseLife",
+         "amount": 3,
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       2
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "menace",
+      "prov": {
+       "by": "keyword",
+       "id": "menace"
+      },
+      "src": [
+       3
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Reverberating Summons",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.becomes.ptSubtypeCreature.with.inAddition.dur): beginning of each combat, intervening if two or more spells cast this turn (CR 603.4), ~ becomes a 3/3 Monk creature with haste keeping its types until end of turn (CR 205.1b, 613.1d, 613.4b, 611.2a); the activated draw two with its three cost parts",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Monk"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "haste"
+              }
+             ]
+            },
+            {
+             "layer": "7b",
+             "power": 3,
+             "toughness": 3
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "cast",
+        "player": "you"
+       },
+       "scope": "turn",
+       "times": {
+        "op": ">=",
+        "value": 2
+       }
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ],
+       "other": [
+        {
+         "kind": "discard",
+         "count": "any",
+         "hand": true
+        },
+        {
+         "kind": "sacrifice",
+         "count": 1,
+         "filter": {
+          "self": true
+         },
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 2,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Grasping Shadows // Shadows' Lair",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.if.thereAreCountersOn): the attacking-alone creature gains deathtouch and lifelink, a dread counter on ~, then if ~ has three or more dread counters it transforms (CR 122.1, 608.2c, 701.27a); the land face's mana and draw abilities",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "event",
+            "role": "attacker"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "deathtouch"
+              },
+              {
+               "kind": "keyword",
+               "keyword": "lifelink"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "kind": "dread",
+         "op": "putCounters",
+         "count": 1,
+         "on": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "op": ">=",
+          "cond": "compare",
+          "left": {
+           "kind": "dread",
+           "q": "counters",
+           "on": {
+            "ref": "self"
+           }
+          },
+          "right": 3
+         },
+         "then": [
+          {
+           "op": "changeFace",
+           "to": "transform",
+           "what": {
+            "ref": "self"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "alone": true,
+         "attacker": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "B"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ],
+       "other": [
+        {
+         "kind": "removeCounters",
+         "count": 1,
+         "counter": "dread",
+         "self": true
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "loseLife",
+         "amount": 1,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       2
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Magitek Infantry",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.search.library.cardNamed): +1/+0 while you control another artifact; {2}{W}: search for a card named Magitek Infantry, onto the battlefield tapped under your control, shuffle (CR 701.23a, 201.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "exists",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "controller": "you",
+         "other": true,
+         "types": [
+          "Artifact"
+         ]
+        }
+       }
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 0
+         }
+        ]
+       }
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "W"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "search",
+         "as": "search",
+         "filter": {
+          "name": "Magitek Infantry"
+         },
+         "max": 1,
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library"
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "tapped": true,
+          "zone": "battlefield"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sporogenic Infection",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.sacrificeChoice.otherThan): enchant creature; when it enters, the target player sacrifices a creature of their choice that is not the enchanted creature (CR 701.21a, 109.2, 303.4); when enchanted creature is dealt damage, destroy it",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      },
+      "keyword": "enchant",
+      "prov": {
+       "by": "keyword",
+       "id": "enchant"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "sacrificeChoice",
+         "count": 1,
+         "filter": {
+          "anyOf": [
+           {
+            "types": [
+             "Creature"
+            ]
+           }
+          ],
+          "not": {
+           "is": {
+            "ref": "attachedTo"
+           }
+          }
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "event",
+          "role": "object"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       2
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "recipient": {
+          "object": {
+           "attachedToSource": true,
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Cruel Calculations",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.draw.x.cardsPutIntoGraveyardFromLibraryThisTurn): draw one card for each zone change this turn of a card owned by the target player from their library to their graveyard (CR 400.7, 404.1, 608.2h, 107.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": {
+          "q": "happenedCount",
+          "event": {
+           "ev": "zoneChange",
+           "from": "library",
+           "subject": {
+            "owner": {
+             "ref": "target",
+             "id": "t0"
+            }
+           },
+           "to": "graveyard"
+          },
+          "scope": "turn"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hidetsugu's Second Rite",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.if.playerHasExactlyLife): if the target player's life total equals 10 as it resolves, 10 damage from ~ to that player (CR 119.1, 608.2c, 120.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "if",
+         "cond": {
+          "op": "==",
+          "cond": "compare",
+          "left": {
+           "q": "life",
+           "of": {
+            "ref": "target",
+            "id": "t0"
+           }
+          },
+          "right": 10
+         },
+         "then": [
+          {
+           "op": "damage",
+           "amount": 10,
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Possessed Goat",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.counters.put.andItBecomes.colorSubtypes.inAddition): {3}, discard a card, activate only once: three +1/+1 counters on ~, then for good it is also black and a Demon (CR 122.1, 105.3, 205.1b, 613.1d-e, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        }
+       ],
+       "other": [
+        {
+         "kind": "discard",
+         "count": 1
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "kind": "+1/+1",
+         "op": "putCounters",
+         "count": 3,
+         "on": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Demon"
+              ]
+             }
+            },
+            {
+             "layer": 5,
+             "colors": {
+              "add": [
+               "B"
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "limit": {
+       "max": 1,
+       "per": "game"
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Binding Negotiation",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.may.put.faceUpExiledCardOwned.graveyard): the target opponent reveals their hand; you may choose a nonland card of it; if you did they discard it, otherwise you may put a face-up card in exile that they own into their graveyard (CR 701.20a, 701.9a, 608.2c, 406.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "reveal",
+         "as": "them",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "zone": "hand"
+          }
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "chosen",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "isCard": true,
+             "notTypes": [
+              "Land"
+             ]
+            }
+           ],
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "any"
+          }
+         },
+         "max": 1,
+         "min": 0,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "chosen"
+         },
+         "else": [
+          {
+           "op": "chooseObjects",
+           "as": "exiledCard",
+           "from": {
+            "ref": "each",
+            "filter": {
+             "faceDown": false,
+             "isCard": true,
+             "owner": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "zone": "exile"
+            }
+           },
+           "max": 1,
+           "min": 0,
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "op": "move",
+           "to": {
+            "zone": "graveyard"
+           },
+           "what": {
+            "ref": "bound",
+            "name": "exiledCard"
+           }
+          }
+         ],
+         "then": [
+          {
+           "op": "discard",
+           "count": 1,
+           "filter": {
+            "is": {
+             "ref": "bound",
+             "name": "chosen"
+            }
+           },
+           "who": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Puca's Eye",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.becomes.chosenColor): when it enters draw a card, choose a color, ~ becomes that color for good (the choice fixed as the effect begins, CR 105.3, 611.2a, 608.2h); the activated draw with its five-colors restriction",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "chooseValue",
+         "as": "chosenColor",
+         "link": "color",
+         "what": "color",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 5,
+             "colors": {
+              "chosen": "color"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "onlyIf": {
+       "op": ">=",
+       "cond": "compare",
+       "left": {
+        "q": "distinct",
+        "among": {
+         "ref": "each",
+         "filter": {
+          "controller": "you"
+         }
+        },
+        "what": "colors"
+       },
+       "right": 5
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Toph, Hardheaded Teacher",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.counters.put.additional.one): enters: may discard, if you did return target instant or sorcery card; whenever you cast a spell, earthbend 1 targeting a land you control, then if the spell is a Lesson one more +1/+1 counter on that land (CR 122.1, 608.2c, 701.65 unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "may",
+         "as": "did",
+         "do": [
+          {
+           "op": "discard",
+           "count": 1,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "move",
+           "to": {
+            "zone": "hand"
+           },
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "isCard": true,
+          "owner": "you",
+          "types": [
+           "Instant",
+           "Sorcery"
+          ],
+          "zone": "graveyard"
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "action",
+         "action": "earthbend",
+         "n": 1,
+         "subject": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "subtypes": [
+            "Lesson"
+           ]
+          },
+          "object": {
+           "ref": "event",
+           "role": "spell"
+          }
+         },
+         "then": [
+          {
+           "kind": "+1/+1",
+           "op": "putCounters",
+           "count": 1,
+           "on": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tellah, Great Sage",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.sacrifice.self.andItDeals): whenever you cast a noncreature spell, a 1/1 colorless Hero token; four or more mana spent: draw two; eight or more: sacrifice ~ and it deals damage equal to the mana spent to each opponent (CR 601.2h, 701.21a, 120.3, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "colors": [],
+          "power": 1,
+          "subtypes": [
+           "Hero"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "op": ">=",
+          "cond": "compare",
+          "left": {
+           "q": "spellManaSpent",
+           "of": {
+            "ref": "event",
+            "role": "spell"
+           }
+          },
+          "right": 4
+         },
+         "then": [
+          {
+           "op": "draw",
+           "count": 2,
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "op": ">=",
+          "cond": "compare",
+          "left": {
+           "q": "spellManaSpent",
+           "of": {
+            "ref": "event",
+            "role": "spell"
+           }
+          },
+          "right": 8
+         },
+         "then": [
+          {
+           "op": "sacrifice",
+           "what": {
+            "ref": "self"
+           }
+          },
+          {
+           "op": "damage",
+           "amount": {
+            "q": "spellManaSpent",
+            "of": {
+             "ref": "event",
+             "role": "spell"
+            }
+           },
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "each",
+            "who": "opponent"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "notTypes": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Kingpin of Crime",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.untilEot.toughnessDamage.group): extort; whenever you attack you may pay 2 life, if you do until end of turn your creatures with toughness greater than power assign combat damage equal to toughness (CR 510.1a, 510.1c, 611.2a, 702.101a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "extort",
+      "prov": {
+       "by": "keyword",
+       "id": "extort"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "pay",
+         "cost": {
+          "other": [
+           {
+            "kind": "payLife",
+            "amount": 2
+           }
+          ]
+         },
+         "then": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "s": "rule",
+             "of": {
+              "anyOf": [
+               {
+                "types": [
+                 "Creature"
+                ]
+               }
+              ],
+              "controller": "you"
+             },
+             "onlyIf": "toughnessGreaterThanPower",
+             "rule": "combatDamageUsesToughness"
+            }
+           ]
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ],
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Magmatic Hellkite",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.player.searches.bf.tappedWithCounters): flying; when it enters, destroy target nonbasic land an opponent controls; its controller (last known information) searches their library for a basic land card, puts it onto the battlefield tapped under their control with a stun counter, shuffles (CR 701.23a, 122.6, 110.2, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "search",
+         "as": "search",
+         "filter": {
+          "supertypes": [
+           "Basic"
+          ],
+          "types": [
+           "Land"
+          ]
+         },
+         "max": 1,
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "zone": "library"
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "controllerOf",
+           "object": {
+            "ref": "target",
+            "id": "t0"
+           }
+          },
+          "counters": [
+           {
+            "kind": "stun",
+            "count": 1
+           }
+          ],
+          "tapped": true,
+          "zone": "battlefield"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "controller": "opponent",
+          "notSupertypes": [
+           "Basic"
+          ],
+          "types": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Wisecrack",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.damage.equalToItsPower.toItself): the target creature deals damage equal to its power to itself; if it is attacking, 2 damage from ~ to its controller (CR 120.3, 608.2h, 506.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "damage",
+         "amount": {
+          "q": "stat",
+          "of": {
+           "ref": "target",
+           "id": "t0"
+          },
+          "stat": "power"
+         },
+         "source": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "attacking": true
+          },
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "then": [
+          {
+           "op": "damage",
+           "amount": 2,
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "controllerOf",
+            "object": {
+             "ref": "target",
+             "id": "t0"
+            }
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Outlaw Stitcher",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.counters.put.forEachSpellCast.otherThanFirst): when it enters, a 2/2 blue and black Zombie Rogue token, then two +1/+1 counters on that token for each spell you cast this turn beyond the first (CR 111.1, 122.1, 601.2i); plot {4}{U}",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "as": "token",
+         "count": 1,
+         "token": {
+          "colors": [
+           "U",
+           "B"
+          ],
+          "power": 2,
+          "subtypes": [
+           "Rogue",
+           "Zombie"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "kind": "+1/+1",
+         "op": "putCounters",
+         "count": {
+          "op": "*",
+          "q": "math",
+          "args": [
+           2,
+           {
+            "op": "max",
+            "q": "math",
+            "args": [
+             0,
+             {
+              "op": "-",
+              "q": "math",
+              "args": [
+               {
+                "q": "spellsCastThisTurn"
+               },
+               1
+              ]
+             }
+            ]
+           }
+          ]
+         },
+         "on": {
+          "ref": "bound",
+          "name": "token"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 4
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        }
+       ]
+      },
+      "keyword": "plot",
+      "prov": {
+       "by": "keyword",
+       "id": "plot"
+      },
+      "src": [
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Avatar's Wrath",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.chooseTarget.thenAirbend.allOther, eff.r4refs.dur.player.cantCast.otherThanHands): up to one target creature, every other creature airbent (CR 115.1, 109.2, 701.65a unverified); until your next turn your opponents can't cast spells except from their hands (CR 601.3, 611.2a); exile ~",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "action",
+         "action": "airbend",
+         "subject": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "not": {
+            "is": {
+             "ref": "target",
+             "id": "t0"
+            }
+           }
+          }
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "untilNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "action": "cast",
+           "mode": "cant",
+           "other": {
+            "not": {
+             "castFrom": "hand"
+            }
+           },
+           "subject": {
+            "ref": "each",
+            "who": "opponent"
+           }
+          }
+         ]
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0,
+       1,
+       2
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Cursed Recording",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.if.thereAreCountersOn.removeThose): whenever you cast an instant or sorcery, a time counter on ~; then if seven or more, remove all time counters and ~ deals 20 damage to you (CR 122.1, 608.2c); {T}: copy the next instant or sorcery you cast this turn (CR 707.10)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "time",
+         "op": "putCounters",
+         "count": 1,
+         "on": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "op": ">=",
+          "cond": "compare",
+          "left": {
+           "kind": "time",
+           "q": "counters",
+           "on": {
+            "ref": "self"
+           }
+          },
+          "right": 7
+         },
+         "then": [
+          {
+           "kind": "time",
+           "op": "removeCounters",
+           "count": "all",
+           "from": {
+            "ref": "self"
+           }
+          },
+          {
+           "op": "damage",
+           "amount": 20,
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "copy",
+           "newTargets": "may",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Last Light of Durin's Day",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.search.handAndOrLibrary.andPutBattlefield): whenever a Mountain you control enters, a quest counter; if six or more, sacrifice ~; if you did, search your hand and/or library for a Dragon card, onto the battlefield; shuffle if the library was searched (CR 701.23a, 608.2c); mountaincycling {2}",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "quest",
+         "op": "putCounters",
+         "count": 1,
+         "on": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "counters": {
+            "kind": "quest",
+            "cmp": {
+             "op": ">=",
+             "value": 6
+            }
+           }
+          },
+          "object": {
+           "ref": "self"
+          }
+         },
+         "then": [
+          {
+           "op": "sacrifice",
+           "as": "did",
+           "what": {
+            "ref": "self"
+           }
+          },
+          {
+           "op": "if",
+           "cond": {
+            "cond": "did",
+            "step": "did"
+           },
+           "then": [
+            {
+             "op": "search",
+             "alsoZones": [
+              "library"
+             ],
+             "as": "search",
+             "filter": {
+              "subtypes": [
+               "Dragon"
+              ]
+             },
+             "max": 1,
+             "who": {
+              "ref": "you"
+             },
+             "zone": "hand"
+            },
+            {
+             "op": "move",
+             "to": {
+              "controller": {
+               "ref": "you"
+              },
+              "zone": "battlefield"
+             },
+             "what": {
+              "ref": "bound",
+              "name": "search"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "shuffle",
+         "ifSearched": true,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "subtypes": [
+           "Mountain"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "filter": {
+       "subtypes": [
+        "Mountain"
+       ],
+       "zone": "library"
+      },
+      "keyword": "typecycling",
+      "prov": {
+       "by": "keyword",
+       "id": "typecycling"
+      },
+      "src": [
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Riptide Gearhulk",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.forEachOpponent.put.ownersLibrary.thirdFromTop): double strike, prowess; when it enters, for each opponent up to one target nonland permanent that player controls goes into its owner's library third from the top (CR 115.1, 601.2c, 401.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "double strike",
+      "prov": {
+       "by": "keyword",
+       "id": "double strike"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "prowess",
+      "prov": {
+       "by": "keyword",
+       "id": "prowess"
+      },
+      "src": [
+       1
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "position": {
+           "nth": 3
+          },
+          "zone": "library"
+         },
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "controller": "opponent",
+          "notTypes": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 0,
+         "perOpponent": true
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       2
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ancient Vendetta",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.search.playerGraveyardHandLibrary.chosenName.exile): choose a card name; search the target opponent's graveyard, hand and library (all three, allZones) for up to four cards with that name, exile them; that player shuffles (CR 701.23a, 201.2, 607.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "chooseValue",
+         "as": "chosenCardName",
+         "link": "chosenCardName",
+         "what": "cardName",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "search",
+         "allZones": true,
+         "alsoZones": [
+          "hand",
+          "library"
+         ],
+         "as": "search",
+         "filter": {
+          "chosen": {
+           "link": "chosenCardName",
+           "quality": "cardName"
+          }
+         },
+         "max": 4,
+         "min": 0,
+         "owner": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "who": {
+          "ref": "you"
+         },
+         "zone": "graveyard"
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Geth's Verdict",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.sacrificeChoice.andLoseLife): the target player sacrifices a creature of their choice and loses 1 life (CR 701.21a, 119.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "sacrificeChoice",
+         "count": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "loseLife",
+         "amount": 1,
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mogg Bombers",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.sacrifice.self.andItDeals): when another creature enters, sacrifice ~ and it deals 3 damage (last known information) to target player or planeswalker (CR 701.21a, 120.3, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "damage",
+         "amount": 3,
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "objectOrPlayer",
+         "filter": {
+          "types": [
+           "Planeswalker"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Beckett Mariner, Impetuous Ensign",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.if.thereAreCountersOn.removeThose): first strike; whenever ~ becomes tapped, a promotion counter; then if three or more, remove them all and ~ deals 2 damage to each opponent (CR 122.1, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "first strike",
+      "prov": {
+       "by": "keyword",
+       "id": "first strike"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "promotion",
+         "op": "putCounters",
+         "count": 1,
+         "on": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "op": ">=",
+          "cond": "compare",
+          "left": {
+           "kind": "promotion",
+           "q": "counters",
+           "on": {
+            "ref": "self"
+           }
+          },
+          "right": 3
+         },
+         "then": [
+          {
+           "kind": "promotion",
+           "op": "removeCounters",
+           "count": "all",
+           "from": {
+            "ref": "self"
+           }
+          },
+          {
+           "op": "damage",
+           "amount": 2,
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "each",
+            "who": "opponent"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "tapped"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Nissa Revane",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.search.library.cardNamed): +1: search for a card named Nissa's Chosen, onto the battlefield, shuffle (CR 701.23a, 201.2); +1: 2 life per Elf; -7: any number of Elf creature cards onto the battlefield",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": 1
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "search",
+         "as": "search",
+         "filter": {
+          "name": "Nissa's Chosen"
+         },
+         "max": 1,
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library"
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "zone": "battlefield"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": 1
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "gainLife",
+         "amount": {
+          "op": "*",
+          "q": "math",
+          "args": [
+           2,
+           {
+            "q": "count",
+            "of": {
+             "ref": "each",
+             "filter": {
+              "controller": "you",
+              "subtypes": [
+               "Elf"
+              ]
+             }
+            }
+           }
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": -7
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "search",
+         "as": "search",
+         "filter": {
+          "subtypes": [
+           "Elf"
+          ],
+          "types": [
+           "Creature"
+          ]
+         },
+         "max": "any",
+         "min": 0,
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library"
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "zone": "battlefield"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       2
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Halcyon Glaze",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.becomes.ptSubtypeCreature.with.inAddition.dur): whenever you cast a creature spell, ~ becomes a 4/4 Illusion creature with flying keeping its types until end of turn (CR 205.1b, 613.4b, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Illusion"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "flying"
+              }
+             ]
+            },
+            {
+             "layer": "7b",
+             "power": 4,
+             "toughness": 4
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Oust",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.put.ownersLibrary.secondFromTop): the target creature goes into its owner's library second from the top, then its controller (last known information) gains 3 life (CR 401.3, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "position": {
+           "nth": 2
+          },
+          "zone": "library"
+         },
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "gainLife",
+         "amount": 3,
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Teferi, Hero of Dominaria",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.put.ownersLibrary.thirdFromTop): +1 draw, untap up to two lands at the next end step; -3 the target nonland permanent into its owner's library third from the top (CR 401.3); -8 the emblem",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": 1
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "draw",
+         "count": 1,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "chooseObjects",
+           "as": "untap",
+           "from": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Land"
+             ]
+            }
+           },
+           "max": 2,
+           "min": 0,
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "op": "untap",
+           "what": {
+            "ref": "bound",
+            "name": "untap"
+           }
+          }
+         ],
+         "when": {
+          "at": "step",
+          "next": true,
+          "step": "end"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": -3
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "position": {
+           "nth": 3
+          },
+          "zone": "library"
+         },
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "notTypes": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "isLoyalty": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": -8
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "createEmblem",
+         "abilities": [
+          {
+           "kind": "triggered",
+           "effect": {
+            "steps": [
+             {
+              "op": "move",
+              "to": {
+               "zone": "exile"
+              },
+              "what": {
+               "ref": "target",
+               "id": "t0"
+              }
+             }
+            ],
+            "targets": [
+             {
+              "kind": "object",
+              "filter": {
+               "controller": "opponent"
+              },
+              "id": "t0",
+              "max": 1,
+              "min": 1
+             }
+            ]
+           },
+           "trigger": {
+            "on": [
+             {
+              "ev": "draw",
+              "player": "you"
+             }
+            ]
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       2
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Charitable Levy",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.if.thereAreCountersOn): noncreature spells cost {1} more; whenever a player casts a noncreature spell, a collection counter on ~, then if three or more, sacrifice ~, if you did draw and you may search for a basic Plains (CR 122.1, 608.2c, 601.2f)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "costMod",
+        "applies": {
+         "caster": "any",
+         "spells": {
+          "notTypes": [
+           "Creature"
+          ],
+          "stackKind": "spell",
+          "zone": "stack"
+         }
+        },
+        "change": {
+         "kind": "increase",
+         "generic": 1
+        }
+       }
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "collection",
+         "op": "putCounters",
+         "count": 1,
+         "on": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "op": ">=",
+          "cond": "compare",
+          "left": {
+           "kind": "collection",
+           "q": "counters",
+           "on": {
+            "ref": "self"
+           }
+          },
+          "right": 3
+         },
+         "then": [
+          {
+           "op": "sacrifice",
+           "as": "did",
+           "what": {
+            "ref": "self"
+           }
+          },
+          {
+           "op": "if",
+           "cond": {
+            "cond": "did",
+            "step": "did"
+           },
+           "then": [
+            {
+             "op": "draw",
+             "count": 1,
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "op": "may",
+             "do": [
+              {
+               "op": "search",
+               "as": "search",
+               "filter": {
+                "subtypes": [
+                 "Plains"
+                ]
+               },
+               "max": 1,
+               "who": {
+                "ref": "you"
+               },
+               "zone": "library"
+              },
+              {
+               "op": "move",
+               "to": {
+                "controller": {
+                 "ref": "you"
+                },
+                "tapped": true,
+                "zone": "battlefield"
+               },
+               "what": {
+                "ref": "bound",
+                "name": "search"
+               }
+              },
+              {
+               "op": "shuffle",
+               "who": {
+                "ref": "you"
+               }
+              }
+             ],
+             "who": {
+              "ref": "you"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "any",
+         "spell": {
+          "notTypes": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Prize Pig",
+  "expect": "full",
+  "verified": "r4-refs review, by hand (eff.r4refs.if.thereAreCountersOn.removeThose): whenever you gain life, that many ribbon counters on ~, then if three or more, remove them all and untap ~; {T}: one mana of any color (CR 122.1, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "kind": "ribbon",
+         "op": "putCounters",
+         "count": {
+          "q": "eventAmount"
+         },
+         "on": {
+          "ref": "self"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "op": ">=",
+          "cond": "compare",
+          "left": {
+           "kind": "ribbon",
+           "q": "counters",
+           "on": {
+            "ref": "self"
+           }
+          },
+          "right": 3
+         },
+         "then": [
+          {
+           "kind": "ribbon",
+           "op": "removeCounters",
+           "count": "all",
+           "from": {
+            "ref": "self"
+           }
+          },
+          {
+           "op": "untap",
+           "what": {
+            "ref": "self"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "life",
+         "change": "gain",
+         "player": "you"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "W",
+           "U",
+           "B",
+           "R",
+           "G"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Azula, Cunning Usurper",
+  "verified": "r4-refs review, by hand, the abilities the parser understands (eff.r4refs.exile.theyControl.thenTheyExileFromGraveyard): firebending 2; when it enters, the target opponent exiles a nontoken creature they control, then a nonland card from their graveyard, each of their choice (CR 406.1, 608.2c-d); std-rx27 review: its static ability (sta.rx27.linked.turn.castFlash.anyType): during your turn you may cast the cards exiled with it (link exiled), as though they had flash, with mana of any type (CR 607.2a, 601.3, 702.8a, 609.4b, 611.3a); CR cites from memory, unverified; played in std-rx27-scenarios.test.ts (synthetic cards)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "firebending",
+      "amount": 2,
+      "text": "Firebending 2"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, target opponent exiles a nontoken creature they control, then they exile a nonland card from their graveyard.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target opponent",
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "token": false,
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "controller": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "exiledChosen"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "exiledChosen"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "link": "exiled"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "graveyard",
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "isCard": true
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "exiledCard"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "exiledCard"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "link": "exiled"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "During your turn, you may cast cards exiled with ~ and you may cast them as though they had flash. Mana of any type can be spent to cast those spells.",
+      "condition": {
+       "cond": "turnOf",
+       "whose": "you"
+      },
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "cast",
+        "of": {
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        },
+        "anyManaType": true
+       },
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "haveFlash",
+        "of": {
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "expect": "full"
+ },
+ {
+  "card": "Command the Stage",
+  "expect": "full",
+  "verified": "r4-refs review (the first ability), updated by std-ri for the graveyard trigger (the intervening \"if\" of the previous turn, scope lastTurn) (eff.r4refs.token.thenCounters.eachOther, trg.at, eff.return.self.gy.hand), by hand against the Oracle text and the rules cited: creates a 2/2 colorless Wizard Soldier token named Cadet, then a +1/+1 counter on each other Wizard token you control (other than the new one, CR 109.2); at the beginning of each upkeep, if an opponent was dealt noncombat damage last turn (history of the previous turn, damage that is not combat damage, to an opponent of the card's owner: CR 603.4, 120.1a), return it from your graveyard to your hand (the ability functions in the graveyard, CR 113.6m)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [],
+          "name": "Cadet",
+          "power": 2,
+          "subtypes": [
+           "Soldier",
+           "Wizard"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "filter": {
+           "controller": "you",
+           "not": {
+            "is": {
+             "name": "b0",
+             "ref": "bound"
+            }
+           },
+           "subtypes": [
+            "Wizard"
+           ],
+           "token": true
+          },
+          "ref": "each"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "combat": false,
+        "ev": "damage",
+        "recipient": {
+         "player": "opponent"
+        }
+       },
+       "scope": "lastTurn"
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep"
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Archangel Avacyn // Avacyn, the Purifier",
+  "verified": "r4-refs review, by hand, the abilities the parser understands (dl.r4refs.nextUpkeep.tail): flash, flying, vigilance; when it enters your creatures gain indestructible until end of turn; when a non-Angel creature you control dies, ~ transforms at the beginning of the next upkeep (CR 603.7, 701.27a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flash",
+      "prov": {
+       "by": "keyword",
+       "id": "flash"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      },
+      "src": [
+       1
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "vigilance",
+      "prov": {
+       "by": "keyword",
+       "id": "vigilance"
+      },
+      "src": [
+       1
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "indestructible"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       2
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "changeFace",
+           "to": "transform",
+           "what": {
+            "ref": "self"
+           }
+          }
+         ],
+         "when": {
+          "at": "step",
+          "next": true,
+          "step": "upkeep"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       3
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "you",
+          "notSubtypes": [
+           "Angel"
+          ],
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "manual",
+         "reason": "contagion: \"each other\" in a sentence that is not understood (design 6.7 T2)"
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "transformed"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Case of the Gateway Express",
+  "verified": "r4-refs review, by hand, the abilities the parser understands (eff.r4refs.eachYouControl.deals.damage): when it enters, choose target creature you don't control; each creature you control deals 1 damage to it, each its own damage (CR 120.1, 120.3); merge wave 8 (r5-fxb line, by hand against the Oracle text): the case is automated by r5-fxb's \"three or more creatures attacked this turn\" (the turn's attacks, each attacking creature once, whoever controlled it; CR 508.1, 719.3a), solved: creatures you control get +1/+0 (CR 719.3c, 613.4c); full only with both lines",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "damage",
+         "amount": 1,
+         "perSource": true,
+         "source": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "controller": "you"
+          }
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "not": {
+           "controller": "you"
+          },
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "case",
+      "solve": {
+       "cond": "happened",
+       "event": {
+        "attacker": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "ev": "attacks"
+       },
+       "scope": "turn",
+       "times": {
+        "op": ">=",
+        "value": 3
+       }
+      },
+      "solved": [
+       {
+        "effects": [
+         {
+          "affects": {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           },
+           "ref": "each"
+          },
+          "mods": [
+           {
+            "layer": "7c",
+            "power": 1,
+            "toughness": 0
+           }
+          ],
+          "s": "continuous"
+         }
+        ],
+        "kind": "static"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "expect": "full"
+ },
+ {
+  "card": "Sarkhan the Masterless",
+  "verified": "r4-refs review, by hand, the abilities the parser understands (eff.r4refs.eachYouControl.deals.damage): whenever a creature attacks you or a planeswalker you control, each Dragon you control deals 1 damage to that creature (CR 120.1, 120.3, 508.1); the -3 token",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "damage",
+         "amount": 1,
+         "perSource": true,
+         "source": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Dragon"
+             ]
+            }
+           ],
+           "controller": "you"
+          }
+         },
+         "to": {
+          "ref": "event",
+          "role": "attacker"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       0
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "defender": "you",
+         "orPlaneswalker": true
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": 1
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "manual",
+         "reason": "contagion: \"until\" in a sentence that is not understood (design 6.7 T2)"
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "loyalty": -3
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "colors": [
+           "R"
+          ],
+          "keywords": [
+           "flying"
+          ],
+          "power": 4,
+          "subtypes": [
+           "Dragon"
+          ],
+          "toughness": 4,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       2
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mornsong Aria",
+  "verified": "r4-refs review, by hand, the abilities the parser understands (eff.r4refs.player.losesLife.searchesAnyCard.hand): at the beginning of each player's draw step that player loses 3 life, searches their library for a card, puts it into their hand, then shuffles (CR 119.3, 701.23a, 504.1, 603.2); the static \"Players can't draw cards or gain life.\" is two \"can't\" restrictions of each player since Standard round 6 (rst.stdr6.players.cant.draw.gainlife, CR 121.1, 119.7, 614.17; cloud-std-r6-review.json)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "who": "player"
+        },
+        "mode": "cant",
+        "action": "draw"
+       },
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "who": "player"
+        },
+        "mode": "cant",
+        "action": "gainLife"
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "loseLife",
+         "amount": 3,
+         "who": {
+          "ref": "event",
+          "role": "player"
+         }
+        },
+        {
+         "op": "search",
+         "as": "search",
+         "filter": {},
+         "max": 1,
+         "who": {
+          "ref": "event",
+          "role": "player"
+         },
+         "zone": "library"
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "event",
+          "role": "player"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "prov": {
+       "by": "template"
+      },
+      "src": [
+       1
+      ],
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "draw"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ],
+  "expect": "full"
+ },
+ {
+  "card": "Ghost Vacuum",
+  "expect": "full",
+  "verified": "r5-refs review (promotes the r4-refs template), by hand against the Oracle text and the rules cited (eff.r5refs.linked.putEach.bf.counter, eff.r4refs.eachOfThem.is.ptSubtype.inAddition): the first ability exiles a target card from a graveyard and records it; the second puts each creature card exiled with the artifact onto the battlefield under its controller's control with a flying counter, and each of them is a 1/1 Spirit in addition to its other types for good (CR 607.2a, 110.2, 122.6, 205.1b, 613.1d, 613.4b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "link": "exiled"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 6
+        }
+       ],
+       "tap": true,
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "self": true
+         },
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           },
+           "zone": "any",
+           "isCard": true,
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ]
+          }
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          },
+          "counters": [
+           {
+            "kind": "flying",
+            "count": 1
+           }
+          ]
+         },
+         "as": "them"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Spirit"
+              ]
+             }
+            },
+            {
+             "layer": "7b",
+             "power": 1,
+             "toughness": 1
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "sorcerySpeed": true
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,13 @@
+# p2-counters-state-1 (lane p2-counters-state): the round's golden cards (test/m5/golden/cards/p2-counters-state-1-review.json)
+Suspended Sentence
+Reality Strobe
+Rousing Refrain
+Cyclical Evolution
+Exuberant Fuseling
+Evolving Adaptive
+Trawler Drake
+Degavolver
+Rakavolver
+Sunscape Battlemage
+Thornscape Battlemage
+Runaway Steam-Kin

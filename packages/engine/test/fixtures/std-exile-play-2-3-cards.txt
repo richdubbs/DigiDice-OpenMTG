@@ -1,0 +1,3 @@
+# std-exile-play-2-3 (lane std-exile-play-2; test/cloud/std-exile-play-2-3, golden std-exile-play-2-3-review.json): exile up to one card of a description from a
+# player's graveyard (a choice); a named cast permission during your turn whose alternative cost is waterbend {X}, X its mana value
+Hama, the Bloodbender

@@ -1,0 +1,25 @@
+# std-ry7 (wave 2, top-down Commander lane ry7; test/cloud/std-ry7, golden cloud-std-ry7-review.json): mana abilities that also draw, draw at the
+# next upkeep or keep the land tapped; keywords spectacle and bestow
+Barbed Sextant
+Boon Satyr
+Cavern Lampad
+Chromanticore
+Cloudcrest Lake
+Darkwater Egg
+Drill Bit
+Ghostblade Eidolon
+Gnarled Scarhide
+Hackrobat
+Hopeful Eidolon
+Lantern-Lit Graveyard
+Mossfire Egg
+Nylea's Emissary
+Nyxborn Eidolon
+Nyxborn Rollicker
+Nyxborn Wolf
+Pinecrest Ridge
+Purphoros's Emissary
+Rafter Demon
+Rix Maadi Reveler
+Skewer the Critics
+Skycloud Egg

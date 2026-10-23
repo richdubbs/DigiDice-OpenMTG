@@ -1,0 +1,11 @@
+# p2-misc-1 (Phase 2 lane p2-misc): the round's golden cards (test/m5/golden/cards/p2-misc-1-review.json)
+Component Collector
+Firmament Sage
+Obsessive Astronomer
+Sunrise Cavalier
+Sunstreak Phoenix
+Vadrik, Astral Archmage
+Lazotep Sliver
+Hushbringer
+Birgi, God of Storytelling // Harnfel, Horn of Bounty
+Sandbar Crocodile

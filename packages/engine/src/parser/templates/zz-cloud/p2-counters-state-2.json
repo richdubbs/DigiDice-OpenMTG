@@ -1,0 +1,36 @@
+[
+  {
+    "id": "eff.p2cs2.effects.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 608.2c"
+    ],
+    "pattern": "{e:Effects} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": "$e"
+    },
+    "examples": [
+      {
+        "text": "{T}: Draw X cards and gain X life, where X is the number of gloom counters on ~."
+      },
+      {
+        "text": "{T}: You gain X life and each opponent loses X life, where X is the number of gloom counters on ~."
+      },
+      {
+        "text": "{2}, {T}: You gain X life and scry X, where X is the number of Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Draw X cards and gain X life, where Y is the number of gloom counters on ~.",
+      "{T}: Draw X cards and gain X life, unless X is the number of gloom counters on ~.",
+      "{T}: Draw X cards and gain X life where X is the number of gloom counters on ~."
+    ],
+    "weak": 1
+  }
+]

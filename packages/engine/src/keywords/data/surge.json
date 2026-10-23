@@ -1,0 +1,45 @@
+{
+  "name": "surge",
+  "rule": "702.117",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this spell for its surge cost if you or a teammate has cast another spell this turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Surge {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "surge",
+          "when": {
+            "cond": "compare",
+            "left": {
+              "q": "spellsCastThisTurn"
+            },
+            "op": ">=",
+            "right": 1
+          }
+        }
+      ]
+    }
+  ]
+}

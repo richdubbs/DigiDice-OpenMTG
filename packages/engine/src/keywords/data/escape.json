@@ -1,0 +1,33 @@
+{
+  "name": "escape",
+  "rule": "702.138",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may cast this card from your graveyard for its escape cost.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Escape {cost}",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "from": "graveyard",
+          "name": "escape"
+        }
+      ]
+    }
+  ]
+}

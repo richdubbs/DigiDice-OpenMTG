@@ -1,0 +1,110 @@
+[
+  {
+    "id": "rep.cmd3.enters.tapped.choose.color.otherThan",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.1d",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a"
+    ],
+    "pattern": "~ enters tapped . as it enters , choose a color other than {c:Color}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "choose": [
+              {
+                "what": "color",
+                "link": "color",
+                "exclude": [
+                  "$c"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "This enchantment enters tapped. As it enters, choose a color other than green."
+      },
+      {
+        "text": "This permanent enters tapped. As it enters, choose a color other than black."
+      }
+    ],
+    "counterExamples": [
+      "This enchantment enters tapped. As it enters, choose a color other than green or black.",
+      "This enchantment enters untapped. As it enters, choose a color other than green.",
+      "This enchantment enters tapped. As it enters, you may choose a color other than green.",
+      "This enchantment enters tapped. As it enters, choose a creature type other than Elf."
+    ]
+  },
+  {
+    "id": "eff.cmd3.mana.or.chosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.1b",
+      "CR 106.4",
+      "CR 607.2d"
+    ],
+    "pattern": "add {t:ManaSym} or one mana of the chosen color",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "chosen",
+        "link": "color",
+        "count": 1,
+        "or": [
+          "$t"
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a color.\n{T}: Add {G} or one mana of the chosen color."
+      },
+      {
+        "text": "As ~ enters, choose a color.\n{1}, {T}: Add {C} or one mana of the chosen color."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G} or one mana of the chosen color.",
+      "As ~ enters, choose a color.\n{T}: Add {G} or two mana of the chosen color.",
+      "As ~ enters, choose a color.\n{T}: Add {G} and one mana of the chosen color.",
+      "As ~ enters, choose a creature type.\n{T}: Add {G} or one mana of the chosen color."
+    ]
+  }
+]

@@ -1,0 +1,119 @@
+[
+  {
+    "id": "eff.stdcombat2.sameFor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 122.1b"
+    ],
+    "pattern": "do the same for {a:Abilities}",
+    "build": {
+      "lower": "sameFor",
+      "what": "$a"
+    },
+    "subject": "none",
+    "consumes": [
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, choose another target creature. If that creature has reach and ~ doesn't, put a reach counter on ~. Do the same for flying and lifelink."
+      },
+      {
+        "text": "When ~ enters, choose target creature an opponent controls. If that creature has menace and ~ doesn't, put a menace counter on ~. Do the same for trample, vigilance, and deathtouch."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, choose another target creature. If that creature has reach and ~ doesn't, put a reach counter on ~. Do the same for ward 2.",
+      "Whenever ~ attacks, put a reach counter on ~. Do the same for flying.",
+      "Do the same for flying and lifelink."
+    ]
+  },
+  {
+    "id": "eff.stdcombat2.durFirst.gains.basept",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gains {a:Abilities} and has base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control gains flying and has base power and toughness 4/1."
+      },
+      {
+        "text": "Tap up to one target creature. Until end of turn, target creature you control gains trample and lifelink and has base power and toughness 6/6."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control gains flying and gets +4/+1.",
+      "Target creature you control gains flying and has base power and toughness 4/1.",
+      "Until end of turn, target creature you control loses flying and has base power and toughness 4/1."
+    ]
+  },
+  {
+    "id": "eff.stdcombat2.mayPay.upToTimes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2d"
+    ],
+    "pattern": "you may pay {m:ManaCost} up to {n:Qty} times",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": "$m"
+      },
+      "upTo": "$n"
+    },
+    "consumes": [
+      "may",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may pay {2} up to two times. When you do, choose up to that many —\n• Fly — ~ gains flying until end of turn.\n• Slash — ~ gets +2/+0 until end of turn."
+      },
+      {
+        "text": "When ~ enters, you may pay {1}{R} up to three times. When you do, choose up to that many —\n• Spark — ~ deals 1 damage to target creature.\n• Mend — You gain 2 life.\n• Lore — Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may pay {2} two times. When you do, choose up to that many —\n• Fly — ~ gains flying until end of turn.\n• Slash — ~ gets +2/+0 until end of turn.",
+      "Whenever ~ attacks, you may pay {2} up to two times. When you do, choose one —\n• Fly — ~ gains flying until end of turn.\n• Slash — ~ gets +2/+0 until end of turn.",
+      "Whenever ~ attacks, you may pay {2} up to two times. When you do, draw that many cards."
+    ]
+  }
+]

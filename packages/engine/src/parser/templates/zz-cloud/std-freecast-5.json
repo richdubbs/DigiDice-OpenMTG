@@ -1,0 +1,87 @@
+[
+  {
+    "id": "sta.stdfreecast5.topCard.hasPlot.manaCost",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.170a",
+      "CR 702.170f",
+      "CR 401.5",
+      "CR 611.3a",
+      "CR 202.1"
+    ],
+    "pattern": "the top card of your library has plot . ( the | its ) plot cost is equal to its mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "plot",
+          "fromTop": true,
+          "plotCost": "manaCost"
+        }
+      ]
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Ward {9}\nThe top card of your library has plot. Its plot cost is equal to its mana cost.\nYou may plot creature cards from the top of your library."
+      },
+      {
+        "text": "Ward {7}\nThe top card of your library has plot. Its plot cost is equal to its mana cost.\nYou may plot artifact cards from the top of your library."
+      }
+    ],
+    "counterExamples": [
+      "The top card of your library has flash. Its plot cost is equal to its mana cost.",
+      "The top card of your library has plot. Its plot cost is equal to its mana value.",
+      "The top card of an opponent's library has plot. Its plot cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "sta.stdfreecast5.plot.fromTop",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.170a",
+      "CR 702.170f",
+      "CR 116.2k",
+      "CR 401.5"
+    ],
+    "pattern": "you may plot {f:Filter} from the top of your library",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "plot",
+          "fromTop": true,
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Ward {9}\nYou may plot creature cards from the top of your library."
+      },
+      {
+        "text": "Ward {9}\nYou may plot instant and sorcery cards from the top of your library."
+      }
+    ],
+    "counterExamples": [
+      "Ward {9}\nYou may cast creature cards from the top of your library.",
+      "Ward {9}\nYou may plot creature cards from your graveyard.",
+      "Ward {9}\nYou may plot creature cards from the top of an opponent's library."
+    ]
+  }
+]

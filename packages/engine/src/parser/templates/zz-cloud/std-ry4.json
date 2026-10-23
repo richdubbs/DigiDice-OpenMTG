@@ -1,0 +1,229 @@
+[
+  {
+    "id": "eff.stdry4.may.have.obj.gain",
+    "kind": "effect",
+    "cr": [
+      "CR 603.5",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "you may have {o:Obj} gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may have target creature gain menace until end of turn."
+      },
+      {
+        "text": "{T}: You may have target Golem gain vigilance and trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You may have target creature gain menace.",
+      "You may have target creature lose menace until end of turn.",
+      "You may have target creature gains menace until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdry4.may.have.objs.gain",
+    "kind": "effect",
+    "cr": [
+      "CR 603.5",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "you may have {o:Objs} gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may have Golems you control gain first strike until end of turn."
+      },
+      {
+        "text": "{T}: You may have Elf creatures you control gain reach and lifelink until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You may have Golems you control gain first strike.",
+      "You may have Golems you control lose first strike until end of turn.",
+      "You may have Golems you control gains first strike until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.stdry4.at.andWhenever",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 503.1"
+    ],
+    "pattern": "at {a:Event} and whenever {b:Event}",
+    "build": {
+      "on": {
+        "$concat": [
+          "$a",
+          "$b"
+        ]
+      }
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep and whenever you cast a green spell, put a +1/+1 counter on this artifact."
+      },
+      {
+        "text": "At the beginning of each end step and whenever a Goblin you control dies, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep or whenever you cast a green spell, put a +1/+1 counter on this artifact.",
+      "At the beginning of your upkeep and you cast a green spell, put a +1/+1 counter on this artifact.",
+      "At the beginning of your upkeep and whenever you cast a green spell, put a +1/+1 counter on this artifact unless an opponent pays {1}."
+    ],
+    "priority": -1,
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdry4.cant.attack.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 508.1",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't attack {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Target Golem can't attack this turn."
+      },
+      {
+        "text": "Target creature an opponent controls can't attack this turn."
+      }
+    ],
+    "counterExamples": [
+      "Target Golem can attack this turn.",
+      "Target Golem can't block this turn.",
+      "Target Golem can't attack or block this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdry4.each.cant.attack.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 508.1",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Objs} can't attack {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Golems your opponents control can't attack this turn."
+      },
+      {
+        "text": "Up to three target creatures can't attack this turn."
+      }
+    ],
+    "counterExamples": [
+      "Golems your opponents control can attack this turn.",
+      "Golems your opponents control can't block this turn.",
+      "Golems your opponents control can't attack or block this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

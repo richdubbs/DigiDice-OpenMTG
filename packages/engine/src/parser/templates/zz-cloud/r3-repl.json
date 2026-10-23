@@ -1,0 +1,693 @@
+[
+  {
+    "id": "rep.r3repl.tokens.typed.triple",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.1",
+      "CR 616.1e"
+    ],
+    "pattern": "if one or more creature tokens would be created under your control , three times that many of those tokens are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you",
+        "token": {
+          "types": [
+            "Creature"
+          ]
+        }
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "mul": 3
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "three times",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more creature tokens would be created under your control, three times that many of those tokens are created instead."
+      },
+      {
+        "text": "Vigilance\nIf one or more creature tokens would be created under your control, three times that many of those tokens are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more creature tokens would be created under an opponent's control, three times that many of those tokens are created instead.",
+      "If one or more creature tokens would be created under your control, twice that many of those tokens are created instead.",
+      "If one or more artifact tokens would be created under your control, three times that many of those tokens are created instead."
+    ]
+  },
+  {
+    "id": "rep.r3repl.dies.exile.whenYouDo",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 700.4",
+      "CR 603.12"
+    ],
+    "pattern": "if {f:Filter} would die , exile it instead . when you do , {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "from": "battlefield",
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            },
+            "then": {
+              "as": "exiled",
+              "do": [
+                {
+                  "op": "reflexive",
+                  "when": {
+                    "did": "exiled"
+                  },
+                  "targets": [],
+                  "do": "$e"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "If a creature an opponent controls would die, exile it instead. When you do, create a 1/1 white Spirit creature token."
+      },
+      {
+        "text": "If a nontoken creature you control would die, exile it instead. When you do, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "If a creature an opponent controls would die, exile it instead. When you do, you may create a 1/1 white Spirit creature token.",
+      "If a creature an opponent controls would die, exile it instead. Then create a 1/1 white Spirit creature token.",
+      "If a creature an opponent controls would die, put it into its owner's hand instead. When you do, you gain 2 life."
+    ]
+  },
+  {
+    "id": "rep.r3repl.dies.insteadExileAndGain",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 700.4",
+      "CR 119.3"
+    ],
+    "pattern": "if {f:Filter} would die , instead exile it and you gain {n:Qty} life",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": "$f",
+        "from": "battlefield",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "to": {
+              "zone": "exile"
+            }
+          },
+          {
+            "op": "gainLife",
+            "who": {
+              "ref": "you"
+            },
+            "amount": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a nontoken creature an opponent controls would die, instead exile it and you gain 3 life."
+      },
+      {
+        "text": "If a creature you control would die, instead exile it and you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "If a nontoken creature an opponent controls would die, instead exile it and you may gain 3 life.",
+      "If a nontoken creature an opponent controls would die, instead exile it and its controller gains 3 life.",
+      "If a nontoken creature an opponent controls would die, instead put it into its owner's hand and you gain 3 life."
+    ]
+  },
+  {
+    "id": "rep.r3repl.mill.plus.opponent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 701.17a"
+    ],
+    "pattern": "if an opponent would mill one or more cards , they mill that many cards plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "mill",
+        "actor": "opponent"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If an opponent would mill one or more cards, they mill that many cards plus two instead."
+      },
+      {
+        "text": "If an opponent would mill one or more cards, they mill that many cards plus one instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would mill one or more cards, you mill that many cards plus two instead.",
+      "If an opponent would mill one or more cards, they mill twice that many cards instead.",
+      "If an opponent would draw one or more cards, they draw that many cards plus two instead."
+    ]
+  },
+  {
+    "id": "rep.r3repl.others.enter.additionalCounter.byManaValue",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 202.3"
+    ],
+    "pattern": "each {f:Filter} enters with an additional {k:CounterKind} counter on it if its mana value is {n:Qty} or less . otherwise , it enters with {m:Qty} additional {k2:CounterKind} counters on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "anyOf": [
+                "$f"
+              ],
+              "manaValue": {
+                "op": "<=",
+                "value": "$n"
+              }
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "anyOf": [
+                "$f"
+              ],
+              "manaValue": {
+                "op": ">",
+                "value": "$n"
+              }
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k2",
+                "count": "$m"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "additional",
+      "if",
+      "otherwise"
+    ],
+    "examples": [
+      {
+        "text": "Each other creature you control enters with an additional +1/+1 counter on it if its mana value is 3 or less. Otherwise, it enters with two additional +1/+1 counters on it."
+      },
+      {
+        "text": "Each Elf you control enters with an additional +1/+1 counter on it if its mana value is 2 or less. Otherwise, it enters with three additional +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Each other creature you control enters with an additional +1/+1 counter on it if its mana value is 3 or greater. Otherwise, it enters with two additional +1/+1 counters on it.",
+      "Each other creature you control enters with an additional +1/+1 counter on it if its power is 3 or less. Otherwise, it enters with two additional +1/+1 counters on it.",
+      "Each other creature you control enters with an additional +1/+1 counter on it if its mana value is 3 or less. Otherwise, it enters tapped."
+    ]
+  },
+  {
+    "id": "rep.r3repl.counters.double.byYou.permanentOrPlayer",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 122.6a",
+      "CR 616.1e"
+    ],
+    "pattern": "if you would put one or more counters on a permanent or player , put twice that many of each of those kinds of counters on that permanent or player instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "on": {},
+            "by": "you"
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "mul": 2
+            }
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "on": {
+              "player": "any"
+            },
+            "by": "you"
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "mul": 2
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that many",
+      "each",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would put one or more counters on a permanent or player, put twice that many of each of those kinds of counters on that permanent or player instead."
+      },
+      {
+        "text": "Flying\nIf you would put one or more counters on a permanent or player, put twice that many of each of those kinds of counters on that permanent or player instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would put one or more counters on a permanent or player, put three times that many of each of those kinds of counters on that permanent or player instead.",
+      "If an opponent would put one or more counters on a permanent or player, put twice that many of each of those kinds of counters on that permanent or player instead.",
+      "If you would put one or more counters on a creature, put twice that many of each of those kinds of counters on that creature instead."
+    ]
+  },
+  {
+    "id": "rep.r3repl.connive.drawFirst",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 614.6",
+      "CR 701.50a",
+      "CR 701.50d",
+      "CR 121.1"
+    ],
+    "pattern": "if a creature you control would connive , instead you draw a card , then that creature connives",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "connive",
+        "object": {
+          "types": [
+            "Creature"
+          ],
+          "controller": "you"
+        }
+      },
+      "body": {
+        "b": "insteadThen",
+        "do": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "If a creature you control would connive, instead you draw a card, then that creature connives."
+      },
+      {
+        "text": "Flying\nIf a creature you control would connive, instead you draw a card, then that creature connives."
+      }
+    ],
+    "counterExamples": [
+      "If a creature an opponent controls would connive, instead you draw a card, then that creature connives.",
+      "If a creature you control would connive, instead you draw two cards, then that creature connives.",
+      "If a creature you control would explore, instead you draw a card, then that creature explores."
+    ]
+  },
+  {
+    "id": "rep.r3repl.damage.noncombat.raiseToSelfPower",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.2b",
+      "CR 208.1"
+    ],
+    "pattern": "if a {c:Color} source you control would deal an amount of noncombat damage less than ~ 's power to an opponent , that source deals damage equal to ~ 's power instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "colors": [
+            "$c"
+          ],
+          "controller": "you"
+        },
+        "recipient": {
+          "player": "opponent"
+        },
+        "combat": false
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "set": {
+            "q": "math",
+            "op": "max",
+            "args": [
+              {
+                "q": "eventAmount"
+              },
+              {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "self"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a green source you control would deal an amount of noncombat damage less than ~'s power to an opponent, that source deals damage equal to ~'s power instead."
+      },
+      {
+        "text": "Trample\nIf a red source you control would deal an amount of noncombat damage less than ~'s power to an opponent, that source deals damage equal to ~'s power instead."
+      }
+    ],
+    "counterExamples": [
+      "If a red source you control would deal an amount of combat damage less than ~'s power to an opponent, that source deals damage equal to ~'s power instead.",
+      "If a red source you control would deal an amount of noncombat damage less than ~'s toughness to an opponent, that source deals damage equal to ~'s toughness instead.",
+      "If a red source you control would deal an amount of noncombat damage less than ~'s power to a creature, that source deals damage equal to ~'s power instead."
+    ]
+  },
+  {
+    "id": "rid.r3repl.instead.damageItself.twice",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "if {c:Cond} , it deals twice that much damage to itself instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                2,
+                "@previous.amount"
+              ]
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "twice",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Target creature deals damage to itself equal to its power. If that creature has trample, it deals twice that much damage to itself instead."
+      },
+      {
+        "text": "Target creature deals damage to itself equal to its power. If it's attacking, it deals twice that much damage to itself instead."
+      }
+    ],
+    "counterExamples": [
+      "Target creature deals damage to itself equal to its power. If that creature has flying, it deals three times that much damage to itself instead.",
+      "Target creature deals damage to itself equal to its power. If that creature has flying, it deals twice that much damage to you instead.",
+      "Target creature deals damage to itself equal to its power. If that creature has flying, you may have it deal twice that much damage to itself instead."
+    ]
+  },
+  {
+    "id": "rep.r3repl.damage.youAndOthers.redirect.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.9",
+      "CR 120.1"
+    ],
+    "pattern": "all damage that would be dealt to you and other permanents you control is dealt to ~ instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": {
+              "ref": "self"
+            }
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "other": true,
+                "controller": "you"
+              }
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": {
+              "ref": "self"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "other",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "All damage that would be dealt to you and other permanents you control is dealt to ~ instead."
+      },
+      {
+        "text": "Defender\nAll damage that would be dealt to you and other permanents you control is dealt to ~ instead."
+      }
+    ],
+    "counterExamples": [
+      "All damage that would be dealt to you and other creatures you control is dealt to ~ instead.",
+      "All combat damage that would be dealt to you and other permanents you control is dealt to ~ instead.",
+      "All damage that would be dealt to you and permanents you control is dealt to ~ instead."
+    ]
+  },
+  {
+    "id": "rep.r3repl.tokens.artifact.plusOne",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1",
+      "CR 111.10i"
+    ],
+    "pattern": "if you would create one or more artifact tokens , instead create those tokens plus an additional {t:TokenDesc}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you",
+        "token": {
+          "types": [
+            "Artifact"
+          ]
+        }
+      },
+      "body": {
+        "b": "modify",
+        "then": {
+          "as": "created",
+          "do": [
+            {
+              "op": "createToken",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1,
+              "token": "$t"
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If you would create one or more artifact tokens, instead create those tokens plus an additional Food token."
+      },
+      {
+        "text": "If you would create one or more artifact tokens, instead create those tokens plus an additional Clue token."
+      }
+    ],
+    "counterExamples": [
+      "If you would create one or more artifact tokens, instead create those tokens plus two additional Food tokens.",
+      "If you would create one or more creature tokens, instead create those tokens plus an additional Food token.",
+      "If you would create one or more artifact tokens, you may instead create those tokens plus an additional Food token."
+    ]
+  }
+]

@@ -1,0 +1,354 @@
+[
+  {
+    "id": "eff.t49.then.damage",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2c"
+    ],
+    "pattern": "then {src:Obj} deal[s] {n:Qty} damage to {to:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n"
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Destroy target artifact. Then ~ deals 3 damage to each creature."
+      },
+      {
+        "text": "Target player discards a card. Then ~ deals 2 damage to each opponent."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target artifact. Then ~ deals 3 damage.",
+      "Destroy target artifact. Then ~ deals 3 damage to each creature unless it is red.",
+      "Destroy target artifact. Then ~ deals 3 damage to each creature instead."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t49.then.damage.equal",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "then {src:Obj} deal[s] damage equal to {n:Qty} to {to:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n"
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature you control gets +1/+0 until end of turn. Then it deals damage equal to its power to target creature you don't control."
+      },
+      {
+        "text": "Target creature you control gets +2/+2 until end of turn. Then that creature deals damage equal to its power to up to one other target creature."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gets +1/+0 until end of turn. Then it deals damage equal to its power.",
+      "Target creature you control gets +1/+0 until end of turn. Then it deals damage equal to its power to each other creature.",
+      "Target creature you control gets +1/+0 until end of turn. Then it deals damage equal to its power to target creature you don't control unless it is red."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t49.damage.eachPower",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 120.3",
+      "CR 608.2h",
+      "CR 115.1"
+    ],
+    "pattern": "{src:Objs} each deal damage equal to their power to {to:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "perSource": true,
+      "to": "$to",
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": {
+          "ref": "subject"
+        }
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Up to three target Elves you control each deal damage equal to their power to target creature an opponent controls."
+      },
+      {
+        "text": "One or two target Goblins you control each deal damage equal to their power to target creature you don't control."
+      }
+    ],
+    "counterExamples": [
+      "Up to two target creatures you control deal damage equal to their power to target creature an opponent controls.",
+      "Up to two target creatures you control each deal damage equal to their toughness to target creature an opponent controls.",
+      "Up to two target creatures you control each deal damage equal to their power."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t49.damage.theyEachPower",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:They} each deal damage equal to their power to {to:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "perSource": true,
+      "to": "$to",
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": {
+          "ref": "subject"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Tap one or two target untapped creatures you control. They each deal damage equal to their power to target creature an opponent controls."
+      },
+      {
+        "text": "Up to two target Goblins you control each get +1/+0 until end of turn. They each deal damage equal to their power to target creature you don't control."
+      }
+    ],
+    "counterExamples": [
+      "Tap one or two target untapped creatures you control. They deal damage equal to their power to target creature an opponent controls.",
+      "Tap one or two target untapped creatures you control. They each deal damage equal to their toughness to target creature an opponent controls.",
+      "Tap one or two target untapped creatures you control. They each deal damage equal to their power."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t49.damage.gainLife.whereX",
+    "cr": [
+      "CR 120.3",
+      "CR 119.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] x damage to {to:Recipient} and you gain x life , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "~ deals X damage to each opponent and you gain X life, where X is the number of creatures you control with power 2 or less."
+      },
+      {
+        "text": "~ deals X damage to target creature and you gain X life, where X is the number of Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "~ deals X damage to each opponent and you gain X life.",
+      "~ deals X damage to each opponent and you lose X life, where X is the number of Elves you control.",
+      "~ deals X damage to each opponent and you gain X life, where X is the number of Elves you control unless it is red."
+    ],
+    "kind": "effect",
+    "since": 8,
+    "status": "stable"
+  },
+  {
+    "id": "eff.t49.draw.damage.gainLife.whereX",
+    "cr": [
+      "CR 121.1",
+      "CR 120.3",
+      "CR 119.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} draw[s] x card[s] , {src:Obj} deal[s] x damage to {to:Recipient} , and you gain x life , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "draw",
+          "who": "$p",
+          "count": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player draws X cards, ~ deals X damage to any target, and you gain X life, where X is the number of Elves you control."
+      },
+      {
+        "text": "Target opponent draws X cards, ~ deals X damage to target creature, and you gain X life, where X is the number of colors of mana spent to cast ~."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws X cards, ~ deals X damage to any target, and you gain X life.",
+      "Target player draws X cards, ~ deals X damage to any target, and you lose X life, where X is the number of Elves you control.",
+      "Target player draws X cards, ~ deals X damage to any target, and you gain X life, where X is the number of Elves you control unless it is red."
+    ],
+    "kind": "effect",
+    "since": 8,
+    "status": "stable"
+  },
+  {
+    "id": "eff.t49.damage.andControllerWhereX",
+    "cr": [
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and x damage to {p:Player} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": "$n",
+          "also": [
+            {
+              "to": "$p",
+              "amount": {
+                "q": "X"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "~ deals 4 damage to target creature and X damage to that creature's controller, where X is the number of Elves you control."
+      },
+      {
+        "text": "~ deals 3 damage to target creature and X damage to that creature's controller, where X is the number of Goblins you control."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 4 damage to target creature and X damage to that creature's controller.",
+      "~ deals 4 damage to target creature and 2 damage to that creature's controller, where X is the number of Elves you control.",
+      "~ deals 4 damage to target creature and X damage to that creature's controller, where X is the number of Elves you control unless it is red."
+    ],
+    "kind": "effect",
+    "since": 8,
+    "status": "stable"
+  },
+  {
+    "id": "eff.t49.damage.eachExceptFor",
+    "cr": [
+      "CR 120.3",
+      "CR 205.2",
+      "CR 608.2b"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to each {f:Filter} except for {x:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "not": "$x"
+        }
+      },
+      "amount": "$n"
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 4 damage to each creature except for tokens you control."
+      },
+      {
+        "text": "~ deals 3 damage to each creature except for creatures you control with reach."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 4 damage to each creature except tokens you control.",
+      "~ deals 4 damage to each creature except for tokens you control unless it is red.",
+      "~ deals 4 damage to target creature except for tokens you control."
+    ],
+    "kind": "effect",
+    "since": 8,
+    "status": "stable"
+  }
+]

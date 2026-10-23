@@ -1,0 +1,192 @@
+[
+  {
+    "id": "trg.t62.entersAndSacrificed",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.6a",
+      "CR 603.10a",
+      "CR 701.21a"
+    ],
+    "pattern": "when ~ enters and when you sacrifice it",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "to": "battlefield"
+        },
+        {
+          "ev": "action",
+          "verb": "sacrifice",
+          "actor": "you",
+          "object": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters and when you sacrifice it, draw a card."
+      },
+      {
+        "text": "When ~ enters and when you sacrifice it, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters or when you sacrifice it, draw a card.",
+      "When ~ enters and when you sacrifice a creature, draw a card.",
+      "When ~ enters and when an opponent sacrifices it, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.t62.andTurnedFaceUp",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 701.40a",
+      "CR 708.2"
+    ],
+    "pattern": "whenever {a:Event} and whenever {g:Filter} is turned face up",
+    "build": {
+      "on": {
+        "$concat": [
+          "$a",
+          [
+            {
+              "ev": "becomes",
+              "what": "turnedFaceUp",
+              "object": "$g"
+            }
+          ]
+        ]
+      }
+    },
+    "consumes": [
+      "whenever",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another Cat you control enters and whenever a Cat you control is turned face up, ~ gets +1/+1 until end of turn."
+      },
+      {
+        "text": "Whenever a creature you control attacks and whenever a Wizard you control is turned face up, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another Cat you control enters or whenever a Cat you control is turned face up, ~ gets +1/+1 until end of turn.",
+      "Whenever another Cat you control enters and whenever a Cat you control is turned face down, ~ gets +1/+1 until end of turn.",
+      "Whenever another Cat you control enters and when a Cat you control is turned face up, ~ gets +1/+1 until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.t62.andSelfOrAnotherTurnedFaceUp",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 701.40a",
+      "CR 708.2"
+    ],
+    "pattern": "whenever {a:Event} and whenever ~ or {g:Filter} is turned face up",
+    "build": {
+      "on": {
+        "$concat": [
+          "$a",
+          [
+            {
+              "ev": "becomes",
+              "what": "turnedFaceUp",
+              "object": {
+                "self": true
+              }
+            },
+            {
+              "ev": "becomes",
+              "what": "turnedFaceUp",
+              "object": "$g"
+            }
+          ]
+        ]
+      }
+    },
+    "consumes": [
+      "whenever",
+      "and",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a face-down permanent you control enters and whenever ~ or another permanent you control is turned face up, draw a card."
+      },
+      {
+        "text": "Whenever a Cat you control enters and whenever ~ or another Cat you control is turned face up, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a face-down permanent you control enters and whenever ~ is turned face up, draw a card.",
+      "Whenever a face-down permanent you control enters and whenever ~ and another permanent you control are turned face up, draw a card.",
+      "Whenever a face-down permanent you control enters or whenever ~ or another permanent you control is turned face up, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.t62.while.hasCounter",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 122.1"
+    ],
+    "pattern": "whenever {e:Event} while ~ has a {k:CounterKind} counter on it",
+    "build": {
+      "on": "$e",
+      "while": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "$k"
+          }
+        }
+      }
+    },
+    "consumes": [
+      "whenever",
+      "while"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another Cat you control enters while ~ has a -1/-1 counter on it, put a +1/+1 counter on ~."
+      },
+      {
+        "text": "Whenever a land you control enters while ~ has a +1/+1 counter on it, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another creature you control enters while ~ has a counter on it, draw a card.",
+      "Whenever another creature you control enters while ~ has two +1/+1 counters on it, draw a card.",
+      "Whenever another creature you control enters while it has a +1/+1 counter on it, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

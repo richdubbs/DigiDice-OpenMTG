@@ -1,0 +1,670 @@
+[
+  {
+    "id": "eff.t26.draw.thenDiscardOfThem",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 121.2",
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 608.2c"
+    ],
+    "pattern": "draw {n:Qty} cards , then discard {m:Qty} of them",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "drawn"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$m",
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "drawn"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Draw two cards, then discard one of them."
+      },
+      {
+        "text": "When ~ dies, draw four cards, then discard two of them."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Draw two cards, then discard a card.",
+      "{T}: Draw two cards, then discard one of them at random.",
+      "{T}: Draw two cards, then target player discards one of them."
+    ]
+  },
+  {
+    "id": "eff.t26.ifStatWasOrLess.token",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 202.3",
+      "CR 111.1",
+      "CR 701.7a"
+    ],
+    "pattern": "if {v:Qty} was {n:Qty} or less , create ( a | an ) {t:TokenDesc}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": "$v",
+        "op": "<=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1,
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature. If its mana value was 3 or less, create a Treasure token."
+      },
+      {
+        "text": "Exile target artifact. If its mana value was 2 or less, create a Clue token."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target creature. If its mana value was 3 or greater, create a Treasure token.",
+      "Destroy target creature. If its mana value was 3 or less, create a tapped Treasure token.",
+      "Destroy target creature. If its mana value was 3 or less, create two Treasure tokens."
+    ]
+  },
+  {
+    "id": "eff.t26.drain.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "each opponent loses x life and you gain x life , where x is {q:Qty}",
+    "priority": 2,
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "amount": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each opponent loses X life and you gain X life, where X is the number of Vampires you control."
+      },
+      {
+        "text": "When ~ dies, each opponent loses X life and you gain X life, where X is the number of colors among permanents you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent loses X life and you gain X life.",
+      "When ~ enters, target opponent loses X life and you gain X life, where X is the number of Vampires you control.",
+      "When ~ enters, each opponent loses X life and you gain X life, where Y is the number of Vampires you control."
+    ]
+  },
+  {
+    "id": "eff.t26.draw.ifCond",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 121.1"
+    ],
+    "pattern": "^ draw a card if {c:Cond}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, draw a card if you control four or more attacking creatures."
+      },
+      {
+        "text": "At the beginning of your end step, draw a card if you've gained 4 or more life this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, draw a card unless you control four or more attacking creatures.",
+      "Whenever ~ attacks, draw two cards if you control four or more attacking creatures.",
+      "Whenever ~ attacks, you gain 1 life and draw a card if you control four or more attacking creatures."
+    ]
+  },
+  {
+    "id": "eff.t26.discardHand.drawDiscardedThisWay",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "discard your hand , then draw cards equal to the number of cards discarded this way",
+    "build": [
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": "hand",
+        "as": "discarded"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "discarded"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, discard your hand, then draw cards equal to the number of cards discarded this way."
+      },
+      {
+        "text": "{3}, {T}: Discard your hand, then draw cards equal to the number of cards discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Discard your hand, then draw cards equal to the number of cards discarded this way plus one.",
+      "Discard your hand, then draw cards equal to the number of cards in your hand.",
+      "Discard your hand, then target player draws cards equal to the number of cards discarded this way."
+    ]
+  },
+  {
+    "id": "eff.t26.discardAny.drawThatManyPlus",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "discard any number of cards , then draw that many cards plus {n:Qty}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "toDiscard"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "as": "discarded"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "math",
+          "op": "+",
+          "args": [
+            {
+              "q": "resultCount",
+              "step": "discarded"
+            },
+            "$n"
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "When ~ leaves the battlefield, discard any number of cards, then draw that many cards plus one."
+      },
+      {
+        "text": "When ~ enters, discard any number of cards, then draw that many cards plus two."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, discard any number of cards, then draw that many cards.",
+      "When ~ dies, discard two cards, then draw that many cards plus one.",
+      "When ~ dies, discard any number of cards, then draw that many cards minus one."
+    ]
+  },
+  {
+    "id": "eff.t26.token.tapped.numberEqual",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 110.5b",
+      "CR 608.2h"
+    ],
+    "pattern": "create a number of tapped {t:TokenDesc} equal to {n:Qty}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "tapped": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, create a number of tapped Food tokens equal to its power."
+      },
+      {
+        "text": "Create a number of tapped 1/1 white Soldier creature tokens equal to the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, create a number of tapped and attacking Treasure tokens equal to its power.",
+      "When ~ dies, create a number of Treasure tokens equal to its power.",
+      "When ~ dies, create a number of untapped Treasure tokens equal to its power."
+    ]
+  },
+  {
+    "id": "eff.t26.token.ifCond",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 111.1",
+      "CR 701.7a"
+    ],
+    "pattern": "^ create ( a | an ) {t:TokenDesc} if {c:Cond}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": "$t",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Create a 2/2 green Wolf creature token if you control a creature with power 4 or greater."
+      },
+      {
+        "text": "At the beginning of your end step, create a Food token if you control three or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Create a 2/2 green Wolf creature token unless you control a creature with power 4 or greater.",
+      "Create two 2/2 green Wolf creature tokens if you control a creature with power 4 or greater.",
+      "You gain 2 life and create a 2/2 green Wolf creature token if you control a creature with power 4 or greater."
+    ]
+  },
+  {
+    "id": "eff.t26.mill.eachOpponent.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "each opponent mills x cards , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "mill",
+          "who": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each end step, each opponent mills X cards, where X is the amount of life you gained this turn."
+      },
+      {
+        "text": "When ~ enters, each opponent mills X cards, where X is the number of Zombies you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent mills X cards.",
+      "When ~ enters, target opponent mills X cards, where X is the number of Zombies you control.",
+      "When ~ enters, each opponent mills X cards, where Y is the number of Zombies you control."
+    ]
+  },
+  {
+    "id": "eff.t26.pump.eachOtherAttacking",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 508.1k"
+    ],
+    "pattern": "each other attacking creature gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "other": true,
+              "attacking": true,
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, each other attacking creature gets +2/+0 until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, each other attacking creature gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, each other attacking creature gets +2/+0.",
+      "Whenever ~ attacks, each other blocking creature gets +2/+0 until end of turn.",
+      "Whenever ~ attacks, each other attacking creature gets +2/+0 until end of turn unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t26.draw.whereX.differentlyNamed",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 107.3",
+      "CR 201.2",
+      "CR 608.2h"
+    ],
+    "pattern": "draw x cards , where x is the number of differently named {f:Filter}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "distinct",
+        "what": "names",
+        "among": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{5}, {T}: Draw X cards, where X is the number of differently named lands you control."
+      },
+      {
+        "text": "Draw X cards, where X is the number of differently named artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Draw X cards, where X is the number of lands you control named Forest.",
+      "Draw X cards, where Y is the number of differently named lands you control.",
+      "Draw two cards, where X is the number of differently named lands you control."
+    ]
+  },
+  {
+    "id": "eff.t26.token.namedCadet.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.4",
+      "CR 701.7a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "create x {pt:BasePT} colorless {s:Subtypes} creature tokens named cadet , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          },
+          "token": {
+            "name": "Cadet",
+            "colors": [],
+            "types": [
+              "Creature"
+            ],
+            "subtypes": "$s",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create X 1/1 colorless Wizard Soldier creature tokens named Cadet, where X is the amount of life you gained this turn."
+      },
+      {
+        "text": "Create X 3/3 colorless Wizard Soldier creature tokens named Cadet, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Create X 2/2 colorless Wizard Soldier creature tokens, where X is the amount of life you gained this turn.",
+      "Create X 2/2 colorless Wizard Soldier creature tokens named Cadet.",
+      "Create X 2/2 colorless Wizard Soldier artifact tokens named Cadet, where X is the amount of life you gained this turn."
+    ]
+  },
+  {
+    "id": "eff.t26.eachOpponent.discardLoseExileTop",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 119.3",
+      "CR 406.1",
+      "CR 401.2",
+      "CR 608.2c"
+    ],
+    "pattern": "each opponent discards a card , loses {n:Qty} life , and exiles the top {m:Qty} cards of their library",
+    "build": [
+      {
+        "op": "discard",
+        "who": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "count": 1
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "amount": "$n"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "count": "$m"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent discards a card, loses 3 life, and exiles the top two cards of their library."
+      },
+      {
+        "text": "Whenever ~ attacks, each opponent discards a card, loses 1 life, and exiles the top four cards of their library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent discards a card, loses 3 life, and exiles the top two cards of their library.",
+      "When ~ enters, each opponent discards a card, loses 3 life, and exiles the top two cards of your library.",
+      "When ~ enters, each opponent discards a card, loses 3 life, and mills two cards."
+    ]
+  }
+]

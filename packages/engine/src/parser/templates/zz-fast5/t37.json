@@ -1,0 +1,290 @@
+[
+  {
+    "id": "eff.t37.monstrosity",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.37a",
+      "CR 701.37b"
+    ],
+    "pattern": "monstrosity {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "monstrosity",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n"
+    },
+    "subject": "none",
+    "needs": [
+      "action:monstrosity"
+    ],
+    "examples": [
+      {
+        "text": "{4}{G}: Monstrosity 3.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{4}{G}: Monstrosity 3.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 4
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "monstrosity",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "n": 3
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{2}{R}{R}: Monstrosity 5."
+      }
+    ],
+    "counterExamples": [
+      "{4}{G}: Monstrosity.",
+      "{4}{G}: Monstrosity 3 unless an opponent pays {3}.",
+      "{4}{G}: Monstrosity target creature 3."
+    ]
+  },
+  {
+    "id": "rep.t37.enters.counter.colorsSpent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2h",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 400.7d"
+    ],
+    "pattern": "~ enters with (a | an) {k:CounterKind} counter on it for each color of mana spent to cast it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "colorsSpent"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a charge counter on it for each color of mana spent to cast it."
+      },
+      {
+        "text": "~ enters with a time counter on it for each color of mana spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a charge counter on it for each creature you control.",
+      "~ enters with a charge counter on it for each opponent you have.",
+      "Target creature enters with a charge counter on it for each color of mana spent to cast it."
+    ]
+  },
+  {
+    "id": "rep.t37.enters.counter.adamant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2h",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 400.7d"
+    ],
+    "pattern": "if at least {n:Qty} {c:Color} mana was spent to cast ~ , ~ enters with (a | an) {k:CounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "wasCast",
+        "spent": {
+          "color": "$c",
+          "atLeast": "$n"
+        }
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "at least"
+    ],
+    "examples": [
+      {
+        "text": "If at least three red mana was spent to cast ~, ~ enters with a +1/+1 counter on it."
+      },
+      {
+        "text": "If at least two blue mana was spent to cast ~, ~ enters with a charge counter on it."
+      }
+    ],
+    "counterExamples": [
+      "If at least three red mana was spent to cast ~, ~ enters with two +1/+1 counters on it.",
+      "If at least three mana was spent to cast ~, ~ enters with a +1/+1 counter on it.",
+      "If at least three red mana was spent to cast ~, ~ enters tapped."
+    ]
+  },
+  {
+    "id": "sta.t37.assignAsUnblocked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1b",
+      "CR 510.1c",
+      "CR 609.4",
+      "CR 604.1"
+    ],
+    "pattern": "you may have ~ assign its combat damage as though it weren't blocked",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "assignAsUnblocked"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "You may have Example Charm assign its combat damage as though it weren't blocked."
+      },
+      {
+        "text": "You may have this permanent assign its combat damage as though it weren't blocked."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ assign its combat damage as though it weren't blocked this turn.",
+      "You may have ~ assign its combat damage as though it had trample.",
+      "You may have target creature assign its combat damage as though it weren't blocked."
+    ]
+  },
+  {
+    "id": "sta.t37.cant.attackblock.alone",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 506.5",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 604.1"
+    ],
+    "pattern": "~ can't attack or block alone",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "alone": true
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "block",
+          "alone": true
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "alone"
+    ],
+    "examples": [
+      {
+        "text": "Example Charm can't attack or block alone."
+      },
+      {
+        "text": "This permanent can't attack or block alone."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack alone, either.",
+      "~ can't attack or be blocked alone.",
+      "Enchanted creature can't attack or block alone."
+    ]
+  }
+]

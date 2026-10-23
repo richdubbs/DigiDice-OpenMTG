@@ -1,0 +1,46 @@
+{
+  "name": "teamwork",
+  "rule": "702.194",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "As an additional cost to cast this spell, you may tap any number of creatures you control with total power {n} or more.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Teamwork {n}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "tapPower",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                },
+                "power": "$amount"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "teamwork"
+        }
+      ]
+    }
+  ]
+}

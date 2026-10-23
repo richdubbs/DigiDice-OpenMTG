@@ -1,0 +1,291 @@
+[
+  {
+    "id": "eff.t17.token.numberEqual",
+    "kind": "effect",
+    "cr": ["CR 111.1", "CR 111.2", "CR 701.7a", "CR 608.2h"],
+    "pattern": "create a number of {t:TokenDesc} equal to {n:Qty}",
+    "build": { "op": "createToken", "who": { "ref": "you" }, "count": "$n", "token": "$t" },
+    "subject": "none",
+    "examples": [
+      { "text": "Create a number of 2/2 white Knight creature tokens equal to your devotion to white." },
+      { "text": "Create a number of Treasure tokens equal to the number of Pirates you control." }
+    ],
+    "counterExamples": [
+      "Create a number of 2/2 white Knight creature tokens.",
+      "Create a number of 2/2 white Knight creature tokens equal to your devotion to white plus target player's life total twice.",
+      "Target opponent creates a number of 2/2 white Knight creature tokens equal to your devotion to white."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.token.numberEqual.opponents",
+    "kind": "effect",
+    "cr": ["CR 111.1", "CR 111.2", "CR 701.7a", "CR 608.2h", "CR 102.3"],
+    "pattern": "create a number of {t:TokenDesc} equal to the number of opponents you have",
+    "build": { "op": "createToken", "who": { "ref": "you" }, "count": { "q": "countPlayers", "of": { "ref": "each", "who": "opponent" } }, "token": "$t" },
+    "subject": "none",
+    "examples": [
+      { "text": "Create a number of Clue tokens equal to the number of opponents you have." },
+      { "text": "Create a number of 1/1 red Devil creature tokens equal to the number of opponents you have." }
+    ],
+    "counterExamples": [
+      "Create a number of Clue tokens equal to the number of players you have.",
+      "Create a number of Clue tokens equal to the number of opponents target player has.",
+      "Create a number of Clue tokens equal to the number of opponents you have attacked this turn."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.token.forEach",
+    "kind": "effect",
+    "cr": ["CR 111.1", "CR 111.2", "CR 701.7a", "CR 608.2h"],
+    "pattern": "create ( a | an ) {t:TokenDesc} for each {f:Filter}",
+    "build": { "op": "createToken", "who": { "ref": "you" }, "count": { "q": "count", "of": { "ref": "each", "filter": "$f" } }, "token": "$t" },
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Create a 1/1 green Squirrel creature token for each Forest you control." },
+      { "text": "Create a 2/2 black Zombie creature token for each artifact you control." },
+      { "text": "Create a 1/1 white Kor Soldier creature token for each Ally you control." }
+    ],
+    "counterExamples": [
+      "Create a 1/1 green Squirrel creature token for each Forest target opponent controls unless it is blue.",
+      "Create two 1/1 green Squirrel creature tokens for each Forest you control.",
+      "Create a 1/1 green Squirrel creature token for each time you attacked this turn."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.token.whereX",
+    "kind": "effect",
+    "cr": ["CR 111.1", "CR 111.2", "CR 701.7a", "CR 107.3", "CR 608.2h"],
+    "pattern": "create {n:Qty} {t:TokenDesc} , where x is {q:Qty}",
+    "build": { "lower": "whereX", "value": "$q", "steps": [{ "op": "createToken", "who": { "ref": "you" }, "count": "$n", "token": "$t" }] },
+    "subject": "none",
+    "examples": [
+      { "text": "Create an X/X green Ooze creature token, where X is the number of creatures you control." },
+      { "text": "Create X 1/1 white Soldier creature tokens, where X is the number of Knights you control." },
+      { "text": "Create an X/X black Horror creature token, where X is the number of cards in your hand." }
+    ],
+    "counterExamples": [
+      "Create an X/X green Ooze creature token with trample.",
+      "Create an X/X green Ooze creature token, where X is the number of creatures target opponent controls unless it is blue.",
+      "Create an X/X green Ooze creature token, where Y is the number of creatures you control."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.token.choice3",
+    "kind": "effect",
+    "cr": ["CR 111.1", "CR 111.10", "CR 701.7a", "CR 608.2d"],
+    "pattern": "create your choice of ( a | an ) {t1:TokenDesc} , ( a | an ) {t2:TokenDesc} , or ( a | an ) {t3:TokenDesc}",
+    "build": [
+      { "op": "chooseValue", "who": { "ref": "you" }, "what": "option", "as": "tokenChoice", "link": "tokenChoice", "options": ["$t1.predefined", "$t2.predefined", "$t3.predefined"] },
+      { "op": "if", "cond": { "cond": "chosen", "link": "tokenChoice", "equals": "$t1.predefined" }, "then": [{ "op": "createToken", "who": { "ref": "you" }, "count": 1, "token": "$t1" }] },
+      { "op": "if", "cond": { "cond": "chosen", "link": "tokenChoice", "equals": "$t2.predefined" }, "then": [{ "op": "createToken", "who": { "ref": "you" }, "count": 1, "token": "$t2" }] },
+      { "op": "if", "cond": { "cond": "chosen", "link": "tokenChoice", "equals": "$t3.predefined" }, "then": [{ "op": "createToken", "who": { "ref": "you" }, "count": 1, "token": "$t3" }] }
+    ],
+    "subject": "none",
+    "examples": [
+      { "text": "Create your choice of a Treasure token, a Map token, or a Blood token." },
+      { "text": "Create your choice of a Gold token, a Food token, or a Clue token." }
+    ],
+    "counterExamples": [
+      "Create your choice of a Treasure token, a Map token, and a Blood token.",
+      "Create a Treasure token, a Map token, or a Blood token.",
+      "Create your choice of a 1/1 white Soldier creature token, a 2/2 black Zombie creature token, or a 3/3 green Beast creature token."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.token.royalRole.attached",
+    "kind": "effect",
+    "cr": ["CR 111.10m", "CR 303.4f", "CR 701.7a"],
+    "pattern": "create a royal role token attached to {o:Obj}",
+    "build": { "op": "createToken", "who": { "ref": "you" }, "count": 1, "token": { "predefined": "Royal Role" }, "attachTo": "$o" },
+    "subject": "none",
+    "examples": [
+      { "text": "Create a Royal Role token attached to target creature you control." },
+      { "text": "Create a Royal Role token attached to target creature an opponent controls." }
+    ],
+    "counterExamples": [
+      "Create two Royal Role tokens attached to target creature you control.",
+      "Create a Royal Role token.",
+      "Create a Wicked Role token attached to target creature you control."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.token.wickedRole.attached",
+    "kind": "effect",
+    "cr": ["CR 111.10q", "CR 303.4f", "CR 701.7a"],
+    "pattern": "create a wicked role token attached to {o:Obj}",
+    "build": { "op": "createToken", "who": { "ref": "you" }, "count": 1, "token": { "predefined": "Wicked Role" }, "attachTo": "$o" },
+    "subject": "none",
+    "examples": [
+      { "text": "Create a Wicked Role token attached to target creature an opponent controls." },
+      { "text": "Create a Wicked Role token attached to target creature you control." }
+    ],
+    "counterExamples": [
+      "Create a Wicked Role token attached to each creature you control.",
+      "Create a Wicked Role token.",
+      "Create a Royal Role token attached to target creature an opponent controls."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.search.revealThatCard.hand",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.20a", "CR 701.24a", "CR 400.3"],
+    "pattern": "search your library for ( a | an ) {f:Filter} card , reveal that card , put it into your hand , then shuffle",
+    "build": [
+      { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "max": 1, "reveal": true, "as": "search" },
+      { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "hand" } },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "examples": [
+      { "text": "Search your library for a Rogue card, reveal that card, put it into your hand, then shuffle." },
+      { "text": "Search your library for an artifact card, reveal that card, put it into your hand, then shuffle." },
+      { "text": "Search your library for a basic Island card, reveal that card, put it into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for a Rogue card, reveal that card, put it onto the battlefield, then shuffle.",
+      "Search your library for a Rogue card, reveal that card, put it into your hand.",
+      "Search your library for two Rogue cards, reveal that card, put it into your hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.search.may.revealThatCard.hand",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.20a", "CR 701.24a", "CR 608.2d"],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card , reveal that card , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": { "ref": "you" },
+      "do": [
+        { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "max": 1, "reveal": true, "as": "search" },
+        { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "hand" } },
+        { "op": "shuffle", "who": { "ref": "you" } }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["may"],
+    "priority": 2,
+    "examples": [
+      { "text": "You may search your library for a Knight card, reveal that card, put it into your hand, then shuffle." },
+      { "text": "You may search your library for an enchantment card, reveal that card, put it into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "You may search your library for a Knight card, reveal that card, put it onto the battlefield, then shuffle.",
+      "You may search your library for a Knight card, put it into your hand, then shuffle.",
+      "Target player may search their library for a Knight card, reveal that card, put it into their hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.search.upTo.basicLandAndOr.bf.tapped",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.24a", "CR 205.4a", "CR 110.2"],
+    "pattern": "search your library for up to {n:Qty} basic land cards and/or {st:Subtypes} cards , put them onto the battlefield tapped , then shuffle",
+    "build": [
+      { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": { "anyOf": [{ "supertypes": ["Basic"], "types": ["Land"] }, { "subtypes": "$st" }] }, "min": 0, "max": "$n", "as": "search" },
+      { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true } },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "consumes": ["up to"],
+    "examples": [
+      { "text": "Search your library for up to three basic land cards and/or Town cards, put them onto the battlefield tapped, then shuffle." },
+      { "text": "Search your library for up to two basic land cards and/or Lair cards, put them onto the battlefield tapped, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for up to two basic land cards and/or Lair cards, put them onto the battlefield, then shuffle.",
+      "Search your library for up to two basic land cards and/or Lair cards, put them into your hand, then shuffle.",
+      "Search your library for two basic land cards and/or Lair cards, put them onto the battlefield tapped, then shuffle."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.search.creature.mvAtMost.bf",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.24a", "CR 202.3", "CR 107.3"],
+    "pattern": "search your library for a creature card with mana value {n:Qty} or less , put it onto the battlefield , then shuffle",
+    "build": [
+      { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": { "types": ["Creature"], "manaValue": { "op": "<=", "value": "$n" } }, "max": 1, "as": "search" },
+      { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "battlefield", "controller": { "ref": "you" } } },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "examples": [
+      { "text": "Search your library for a creature card with mana value 2 or less, put it onto the battlefield, then shuffle." },
+      { "text": "Search your library for a creature card with mana value 4 or less, put it onto the battlefield, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for a creature card with mana value 2 or greater, put it onto the battlefield, then shuffle.",
+      "Search your library for a creature card with mana value 2 or less, put it into your hand, then shuffle.",
+      "Search your library for a creature card with power 2 or less, put it onto the battlefield, then shuffle."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.search.anyNumber.bf",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.24a", "CR 110.2"],
+    "pattern": "search your library for any number of {f:Filter} cards , put them onto the battlefield , then shuffle",
+    "build": [
+      { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "min": 0, "max": "any", "as": "search" },
+      { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "battlefield", "controller": { "ref": "you" } } },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "consumes": ["any number"],
+    "examples": [
+      { "text": "Search your library for any number of Elf creature cards, put them onto the battlefield, then shuffle." },
+      { "text": "Search your library for any number of basic Forest cards, put them onto the battlefield, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for any number of Elf creature cards, put them onto the battlefield tapped, then shuffle.",
+      "Search your library for any number of Elf creature cards, put them into your hand, then shuffle.",
+      "Search your library for two Elf creature cards, put them onto the battlefield, then shuffle."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t17.search.anyNumber.reveal.top.anyOrder",
+    "kind": "effect",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.20a", "CR 701.24a", "CR 401.4"],
+    "pattern": "search your library for any number of {f:Filter} cards , reveal them , then shuffle and put those cards on top in any order",
+    "build": [
+      { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "min": 0, "max": "any", "reveal": true, "as": "search" },
+      { "op": "shuffle", "who": { "ref": "you" } },
+      { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "library", "position": "top", "order": "chosen" } }
+    ],
+    "subject": "none",
+    "consumes": ["any number"],
+    "examples": [
+      { "text": "Search your library for any number of Wizard cards, reveal them, then shuffle and put those cards on top in any order." },
+      { "text": "Search your library for any number of Equipment cards, reveal them, then shuffle and put those cards on top in any order." }
+    ],
+    "counterExamples": [
+      "Search your library for any number of Wizard cards, reveal them, then shuffle and put those cards on the bottom in any order.",
+      "Search your library for any number of Wizard cards, reveal them, then shuffle and put those cards on top in a random order.",
+      "Search your library for any number of Wizard cards, then shuffle and put those cards on top in any order."
+    ],
+    "status": "stable",
+    "since": 5
+  }
+]

@@ -1,0 +1,262 @@
+[
+ {
+  "card": "Sin, Spira's Punishment",
+  "expect": "full",
+  "verified": "std-cardcopy-13 review, by hand against the Oracle text and the rules cited (eff.stdcardcopy13.exile.filterCard.fromGraveyard.atRandom, eff.stdcardcopy13.copy.token.tapped, eff.stdcardcopy1.repeatProcess.again): flying; whenever Sin enters or attacks, one permanent card (artifact, battle, creature, enchantment, land or planeswalker) of your graveyard is chosen at random, no player choosing (CR 608.2d), and exiled; you create a token that's a copy of that card in exile, tapped (CR 707.2, 110.5b, 400.7j); if the exiled card is a land card, the whole process runs again, the condition checked again after each run (CR 608.2c); with no permanent card in your graveyard nothing is exiled, no token is created and the process stops",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword",
+      "text": "Flying"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "chosen",
+         "from": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+             ]
+            }
+           ],
+           "isCard": true,
+           "owner": "you",
+           "zone": "graveyard"
+          },
+          "ref": "each"
+         },
+         "max": 1,
+         "min": 1,
+         "op": "chooseObjects",
+         "random": true,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "name": "chosen",
+          "ref": "bound"
+         }
+        },
+        {
+         "op": "copy",
+         "result": "token",
+         "tapped": true,
+         "what": {
+          "name": "chosen",
+          "ref": "bound"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "isCard": true,
+           "types": [
+            "Land"
+           ]
+          },
+          "object": {
+           "name": "chosen",
+           "ref": "bound"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "again": true,
+           "do": [
+            {
+             "as": "chosen",
+             "from": {
+              "filter": {
+               "anyOf": [
+                {
+                 "types": [
+                  "Artifact",
+                  "Battle",
+                  "Creature",
+                  "Enchantment",
+                  "Land",
+                  "Planeswalker"
+                 ]
+                }
+               ],
+               "isCard": true,
+               "owner": "you",
+               "zone": "graveyard"
+              },
+              "ref": "each"
+             },
+             "max": 1,
+             "min": 1,
+             "op": "chooseObjects",
+             "random": true,
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "op": "move",
+             "to": {
+              "zone": "exile"
+             },
+             "what": {
+              "name": "chosen",
+              "ref": "bound"
+             }
+            },
+            {
+             "op": "copy",
+             "result": "token",
+             "tapped": true,
+             "what": {
+              "name": "chosen",
+              "ref": "bound"
+             },
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "cond": {
+              "cond": "matches",
+              "filter": {
+               "isCard": true,
+               "types": [
+                "Land"
+               ]
+              },
+              "object": {
+               "name": "chosen",
+               "ref": "bound"
+              }
+             },
+             "op": "if",
+             "then": [
+              {
+               "again": true,
+               "do": [],
+               "op": "repeat",
+               "process": true,
+               "times": 1
+              }
+             ]
+            }
+           ],
+           "op": "repeat",
+           "process": true,
+           "times": 1
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "text": "Whenever ~ enters or attacks, exile a permanent card from your graveyard at random, then create a tapped token that's a copy of that card. If the exiled card is a land card, repeat this process.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Romana II",
+  "expect": "full",
+  "verified": "std-cardcopy-13 review, by hand against the Oracle text and the rules cited (eff.stdcardcopy13.copy.token.tapped): vigilance; {1}, {T}: create a token that's a copy of target token that entered the battlefield this turn, tapped (CR 707.2, 111.1, 110.5b; the copiable values of the token are those its creator gave it, CR 707.2, 111.4); Doctor's companion",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword",
+      "text": "Vigilance"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "copy",
+         "result": "token",
+         "tapped": true,
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "enteredThisTurn": true,
+          "token": true
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1,
+         "text": "target token that entered this turn"
+        }
+       ]
+      },
+      "kind": "activated",
+      "text": "{1}, {T}: Create a tapped token that's a copy of target token that entered this turn."
+     },
+     {
+      "keyword": "doctor's companion",
+      "kind": "keyword",
+      "text": "Doctor's companion"
+     }
+    ]
+   }
+  ]
+ }
+]

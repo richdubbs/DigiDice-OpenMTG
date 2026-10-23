@@ -1,0 +1,4 @@
+# p2-replace-events-3 (Phase 2 lane p2-replace-events): the golden cards of the round (golden/cards/p2-replace-events-3-review.json)
+Ugin's Nexus
+Blood Scrivener
+Eligeth, Crossroads Augur

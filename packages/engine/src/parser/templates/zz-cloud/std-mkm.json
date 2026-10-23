@@ -1,0 +1,827 @@
+[
+  {
+    "id": "eff.stdmkm.delay.yournextend.tail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 513.1"
+    ],
+    "pattern": "{e:Effects} at the beginning of your next end step",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "whose": "you",
+        "next": true
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. Draw two cards at the beginning of your next end step."
+      },
+      {
+        "text": "Create a 1/1 white Soldier creature token. Sacrifice it at the beginning of your next end step."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Draw two cards at the beginning of your end step.",
+      "Draw a card. Draw two cards at the beginning of the next end step.",
+      "Draw a card. Draw two cards at the beginning of your next upkeep."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.gainlife.draw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} gain[s] {n:Qty} life and draw[s] {m:Qty} card[s]",
+    "build": [
+      {
+        "op": "gainLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player gains 4 life and draws two cards."
+      },
+      {
+        "text": "Each player gains 3 life and draws a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player gains 4 life and you draw two cards.",
+      "Target player gains 4 life and discards two cards.",
+      "Target player gains 4 life and draws two cards unless they pay {2}."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.lose.gain.trail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{o:Obj} loses {k:Keyword} and gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ],
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}: ~ loses defender and gains flying until end of turn."
+      },
+      {
+        "text": "{1}{R}: Target creature loses flying and gains haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ loses defender and gains flying.",
+      "{2}: ~ gains defender and loses flying until end of turn.",
+      "{2}: ~ loses all abilities and gains flying until end of turn."
+    ]
+  },
+  {
+    "id": "sta.stdmkm.pump.has.blocked.max.one",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} , has {a:Abilities} , and can't be blocked by more than one creature",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+          {
+            "layer": 6,
+            "add": "$a"
+          },
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beBlocked",
+        "max": 1
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+1, has vigilance, and can't be blocked by more than one creature."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1, has trample, and can't be blocked by more than one creature."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+1, has vigilance, and can't be blocked by one creature.",
+      "Equipped creature gets +2/+1, has vigilance, and can block more than one creature.",
+      "Equipped creature gets +2/+1, loses vigilance, and can't be blocked by more than one creature."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.ifsuspected.nolonger.it",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.60a",
+      "CR 701.60b"
+    ],
+    "pattern": "if {o:ItIs} suspected , it's no longer suspected",
+    "build": {
+      "op": "designateObject",
+      "what": "$o",
+      "designation": "unsuspected"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "op:designateObject.unsuspected"
+    ],
+    "examples": [
+      {
+        "text": "Tap target creature. If it's suspected, it's no longer suspected."
+      },
+      {
+        "text": "Untap target creature you control. If it's suspected, it's no longer suspected."
+      }
+    ],
+    "counterExamples": [
+      "Tap target creature. If it's suspected, it's suspected.",
+      "Tap target creature. If it's tapped, it's no longer suspected.",
+      "Tap target creature. If it's suspected, it's no longer suspected until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.ifanysuspected.nolonger.they",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.60a",
+      "CR 701.60b"
+    ],
+    "pattern": "if any of {o:Them} are suspected , they're no longer suspected",
+    "build": {
+      "op": "designateObject",
+      "what": "$o",
+      "designation": "unsuspected"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "op:designateObject.unsuspected"
+    ],
+    "examples": [
+      {
+        "text": "Creatures your opponents control get -1/-0 until end of turn. If any of them are suspected, they're no longer suspected."
+      },
+      {
+        "text": "Tap up to two target creatures. If any of them are suspected, they're no longer suspected."
+      }
+    ],
+    "counterExamples": [
+      "Tap up to two target creatures. If any of them are tapped, they're no longer suspected.",
+      "Tap up to two target creatures. If any of them are suspected, they're suspected.",
+      "Tap up to two target creatures. If all of them are suspected, they're no longer suspected."
+    ]
+  },
+  {
+    "id": "sta.stdmkm.pump.cantbesuspected",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 701.60a",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and can't become suspected",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beSuspected"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "needs": [
+      "rule:beSuspected"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+3 and can't become suspected."
+      },
+      {
+        "text": "Equipped creature gets +2/+0 and can't become suspected."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+3 and can become suspected.",
+      "Enchanted creature gets +1/+3 and can't become tapped.",
+      "Enchanted creature gets +1/+3 and can't become suspected until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.investigate.foreach.lostlife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.16a",
+      "CR 119.3",
+      "CR 120.3a",
+      "CR 608.2h"
+    ],
+    "pattern": "investigate for each opponent who lost life this turn",
+    "build": {
+      "op": "action",
+      "action": "investigate",
+      "who": {
+        "ref": "you"
+      },
+      "n": {
+        "q": "countPlayers",
+        "of": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "lostLifeThisTurn": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "action:investigate",
+      "feature:q.countPlayers.lostLife"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Investigate for each opponent who lost life this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, investigate for each opponent who lost life this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, investigate for each opponent who gained life this turn.",
+      "Whenever ~ attacks, investigate for each opponent who lost life last turn.",
+      "Whenever ~ attacks, investigate once for each opponent who has more cards in hand than you."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.must.attack.or.block",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 508.1d",
+      "CR 509.1c"
+    ],
+    "pattern": "{o:Obj} attacks or blocks {d:Dur} if able",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Target creature an opponent controls attacks or blocks this turn if able."
+      },
+      {
+        "text": "Draw a card. Target creature attacks or blocks this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Target creature attacks or blocks this turn.",
+      "Draw a card. Target creature attacks and blocks this turn if able.",
+      "Draw a card. Target creature can't attack or block this turn.",
+      "Draw a card. Target creature attacks or blocks each combat if able."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.turn.chosen.faceup",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 708.8",
+      "CR 608.2d"
+    ],
+    "pattern": "turn ( a | an ) {f:Filter} face up",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "faceup"
+      },
+      {
+        "op": "changeFace",
+        "what": {
+          "ref": "bound",
+          "name": "faceup"
+        },
+        "to": "faceUp"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:changeFace.faceUp"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. You may turn a creature you control face up."
+      },
+      {
+        "text": "Untap target creature. Turn a creature you control face up."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. You may turn a creature you control face down.",
+      "Draw a card. You may turn target creature you control face up.",
+      "Draw a card. You may turn two creatures you control face up."
+    ]
+  },
+  {
+    "id": "rid.stdmkm.mana.keep.endofturn",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5",
+      "CR 514.2",
+      "CR 608.2c"
+    ],
+    "pattern": "until end of turn , you don't lose this mana as steps and phases end",
+    "build": {
+      "$patchPrevious": {
+        "keep": {
+          "@new": "endOfTurn"
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "until"
+    ],
+    "needs": [
+      "op:addMana.keepEndOfTurn"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, add {G}{G}. Until end of turn, you don't lose this mana as steps and phases end."
+      },
+      {
+        "text": "When ~ enters, add three mana of any one color. Until end of turn, you don't lose this mana as steps and phases end."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, add {G}{G}. Until your next turn, you don't lose this mana as steps and phases end.",
+      "Whenever ~ attacks, add {G}{G}. Until end of turn, you don't lose unspent mana as steps and phases end.",
+      "Whenever ~ attacks, add {G}{G}. Until end of turn, you don't lose this mana as steps end."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.each.opponent.loselife.unless.discard.or.sacrifice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 119.3",
+      "CR 701.9a",
+      "CR 701.21a",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent loses {n:Qty} life unless they discard a card or sacrifice ( a | an ) {f:Filter}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "discard",
+                "count": 1
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "pay",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "cost": {
+                "other": [
+                  {
+                    "kind": "sacrifice",
+                    "filter": "$f",
+                    "count": 1
+                  }
+                ]
+              },
+              "else": [
+                {
+                  "op": "loseLife",
+                  "who": {
+                    "ref": "bound",
+                    "name": "each"
+                  },
+                  "amount": "$n"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Each opponent loses 2 life unless they discard a card or sacrifice an artifact."
+      },
+      {
+        "text": "When ~ enters, each opponent loses 4 life unless they discard a card or sacrifice a creature."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent loses 4 life unless they discard a card and sacrifice a creature.",
+      "When ~ enters, each opponent loses 4 life unless you discard a card or sacrifice a creature.",
+      "When ~ enters, each opponent loses 4 life if they discard a card or sacrifice a creature."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.each.opponent.loselife.unless.they",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 118.12a",
+      "CR 119.3",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent loses {n:Qty} life unless they {c:Cost} [of their choice]",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": "$c",
+          "else": [
+            {
+              "op": "loseLife",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "amount": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each opponent loses 2 life unless they discard a card."
+      },
+      {
+        "text": "{2}: Each opponent loses 1 life unless they sacrifice a creature of their choice."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, each opponent loses 2 life unless you discard a card.",
+      "At the beginning of your upkeep, each opponent gains 2 life unless they discard a card.",
+      "At the beginning of your upkeep, each opponent loses 2 life if they discard a card."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.stdmkm.each.player.loselife.unless.they",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 119.3",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each player loses {n:Qty} life unless they {c:Cost} [of their choice]",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": "$c",
+          "else": [
+            {
+              "op": "loseLife",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "amount": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each player loses 3 life unless they sacrifice a creature of their choice."
+      },
+      {
+        "text": "{2}: Each player loses 1 life unless they discard a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, each player loses 3 life unless you sacrifice a creature.",
+      "At the beginning of your end step, each player gains 3 life unless they sacrifice a creature.",
+      "At the beginning of your end step, each player loses 3 life if they sacrifice a creature."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "sta.stdmkm.self.is.sized.subtype.creature.with.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 205.3a"
+    ],
+    "pattern": "~ is ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Solved -- ~ is a 3/3 Golem creature with vigilance in addition to its other types."
+      },
+      {
+        "text": "~ is a 5/5 Dragon creature with flying and haste in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "~ is a 3/3 Golem creature with vigilance.",
+      "~ is a 3/3 Golem creature with vigilance in addition to its other types until end of turn.",
+      "~ is a 3/3 Golem artifact with vigilance in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.stdmkm.may.suspect.one.of.group",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.60a",
+      "CR 701.60d",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may suspect one of {g:Group}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "is": "$g",
+              "suspected": false
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "suspect"
+        },
+        {
+          "op": "action",
+          "action": "suspect",
+          "who": {
+            "ref": "you"
+          },
+          "subject": {
+            "ref": "bound",
+            "name": "suspect"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "may"
+    ],
+    "needs": [
+      "action:suspect"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more other creatures you control enter, you may suspect one of them."
+      },
+      {
+        "text": "Whenever one or more other creatures you control enter, you may suspect one of the other creatures. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more other creatures you control enter, you may suspect each of them.",
+      "Whenever one or more other creatures you control enter, you may suspect two of them.",
+      "Whenever one or more other creatures you control enter, you may tap one of them."
+    ]
+  }
+]

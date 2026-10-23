@@ -1,0 +1,128 @@
+[
+  {
+    "id": "eff.t55.token.named",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.4",
+      "CR 701.7a",
+      "CR 205.4a"
+    ],
+    "pattern": "[{p:Player}] create[s] {t:NamedToken}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "$when": "p",
+        "then": "$p",
+        "else": {
+          "ref": "you"
+        }
+      },
+      "count": 1,
+      "token": "$t"
+    },
+    "subject": "any",
+    "examples": [
+      {
+        "text": "Create Mowu, a legendary 3/3 green Dog creature token.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "Create Mowu, a legendary 3/3 green Dog creature token.",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1,
+                  "token": {
+                    "name": "Mowu",
+                    "colors": [
+                      "G"
+                    ],
+                    "supertypes": [
+                      "Legendary"
+                    ],
+                    "types": [
+                      "Creature"
+                    ],
+                    "subtypes": [
+                      "Dog"
+                    ],
+                    "power": 3,
+                    "toughness": 3
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Create Angelo, a legendary 1/1 green and white Dog creature token."
+      },
+      {
+        "text": "Target opponent creates Darkstar, a legendary 2/2 white and black Dog creature token."
+      },
+      {
+        "text": "Each player creates Mowu, a legendary 3/3 green Dog creature token."
+      }
+    ],
+    "counterExamples": [
+      "Create Mowu, a legendary 3/3 green Dog creature.",
+      "Create Mowu, legendary 3/3 green Dog creature token.",
+      "Create Mowu a legendary 3/3 green Dog creature token.",
+      "Target opponent creates Darkstar, a legendary 2/2 white and black Dog creature.",
+      "Target opponent creates two Darkstar, a legendary 2/2 white and black Dog creature tokens."
+    ]
+  },
+  {
+    "id": "rst.t55.cant.block.beblockedby",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 604.1",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't block or be blocked by {f:Filter}",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "block",
+        "other": "$f"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": "$f"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't block or be blocked by non-Elf creatures."
+      },
+      {
+        "text": "Enchanted creature can't block or be blocked by creatures with flying."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block or be blocked by non-Elf creatures this turn.",
+      "~ can block or be blocked by non-Elf creatures.",
+      "~ can't block or be blocked."
+    ]
+  }
+]

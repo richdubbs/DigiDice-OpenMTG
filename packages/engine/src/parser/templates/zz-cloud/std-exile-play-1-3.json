@@ -1,0 +1,292 @@
+[
+  {
+    "id": "eff.stdexile3.eachOpponent.exilesFromHand.mayPlay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 406.1",
+      "CR 601.3",
+      "CR 611.2b",
+      "CR 400.7"
+    ],
+    "pattern": "each opponent exiles a card from their hand and may play that card {d:Dur}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "eachOpponent",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "bound",
+            "name": "eachOpponent"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "zone": "hand",
+              "owner": {
+                "ref": "bound",
+                "name": "eachOpponent"
+              }
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "exiledCard"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "exiledCard"
+          },
+          "to": {
+            "zone": "exile"
+          }
+        },
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "permit",
+              "who": {
+                "ref": "bound",
+                "name": "eachOpponent"
+              },
+              "action": "play",
+              "of": {
+                "is": {
+                  "ref": "bound",
+                  "name": "exiledCard"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, each opponent exiles a card from their hand and may play that card for as long as it remains exiled."
+      },
+      {
+        "text": "Whenever ~ attacks, each opponent exiles a card from their hand and may play that card this turn."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, each opponent exiles a card from your hand and may play that card for as long as it remains exiled.",
+      "When this creature enters, each opponent exiles a card from their graveyard and may play that card for as long as it remains exiled.",
+      "When this creature enters, each opponent discards a card and may play that card for as long as it remains exiled."
+    ]
+  },
+  {
+    "id": "rid.stdexile3.eachOpponent.spellCastThisWay.costsMore",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 608.2c",
+      "CR 611.2a"
+    ],
+    "pattern": "each spell cast this way costs {m:ManaCost} more to cast",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "do.2.op": "effect",
+          "do.2.effects.0.s": "permit",
+          "do.2.effects.1": null,
+          "do.3": null
+        },
+        "do": [
+          {},
+          {},
+          {
+            "effects": [
+              {
+                "costChange": {
+                  "@new": {
+                    "kind": "increase",
+                    "mana": "$m"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "forEach",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, each opponent exiles a card from their hand and may play that card for as long as it remains exiled. Each spell cast this way costs {1} more to cast."
+      },
+      {
+        "text": "When this creature enters, each opponent exiles a card from their hand and may play that card this turn. Each spell cast this way costs {2} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, each opponent exiles a card from their hand and may play that card for as long as it remains exiled. Each spell cast this way costs {1} less to cast.",
+      "When this creature enters, each opponent exiles a card from their hand. Each spell cast this way costs {1} more to cast.",
+      "When this creature enters, each opponent exiles a card from their hand and may play that card for as long as it remains exiled. Each creature spell cast this way costs {1} more to cast."
+    ]
+  },
+  {
+    "id": "rid.stdexile3.eachOpponent.landPlayedThisWay.entersTapped",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 305.1",
+      "CR 608.2c",
+      "CR 611.2a"
+    ],
+    "pattern": "each land played this way enters tapped",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "do.2.op": "effect",
+          "do.2.effects.0.s": "permit",
+          "do.2.effects.0.action": "play",
+          "do.2.effects.1": null,
+          "do.3": null
+        },
+        "do": [
+          {},
+          {},
+          {
+            "effects": [
+              {
+                "landsEnterTapped": {
+                  "@new": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "forEach",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, each opponent exiles a card from their hand and may play that card for as long as it remains exiled. Each spell cast this way costs {1} more to cast. Each land played this way enters tapped."
+      },
+      {
+        "text": "When this creature enters, each opponent exiles a card from their hand and may play that card for as long as it remains exiled. Each land played this way enters tapped."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, each opponent exiles a card from their hand and may play that card for as long as it remains exiled. Each land played this way enters untapped.",
+      "When this creature enters, each opponent exiles a card from their hand. Each land played this way enters tapped.",
+      "When this creature enters, each opponent exiles a card from their hand and may play that card for as long as it remains exiled. Each creature played this way enters tapped."
+    ]
+  },
+  {
+    "id": "eff.stdexile3.players.mayPlayOwnExiled.cantPlayFromHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 611.2a",
+      "CR 101.2",
+      "CR 400.3"
+    ],
+    "pattern": "{d:Dur} , players may play cards they exiled this way , and they can't play cards from their hand",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "set",
+                "number": "plural",
+                "participle": "exiled this way",
+                "text": "exiled this way"
+              }
+            }
+          },
+          "ownOnly": true
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "cast",
+          "other": {
+            "castFrom": "hand"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "playLand",
+          "other": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't",
+      "may",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Each player exiles the top five cards of their library. Until your next turn, players may play cards they exiled this way, and they can't play cards from their hand. Activate only as a sorcery."
+      },
+      {
+        "text": "When ~ enters, each player exiles the top three cards of their library. Until end of turn, players may play cards they exiled this way, and they can't play cards from their hand."
+      }
+    ],
+    "counterExamples": [
+      "{T}, Exile ~: Each player exiles the top seven cards of their library. Until your next turn, players may play cards they exiled this way, and they can't play cards from their graveyard.",
+      "{T}, Exile ~: Each player exiles the top seven cards of their library. Until your next turn, players may play cards they exiled this way, and they can't cast spells.",
+      "{T}, Exile ~: Each player draws seven cards. Until your next turn, players may play cards they exiled this way, and they can't play cards from their hand."
+    ]
+  }
+]

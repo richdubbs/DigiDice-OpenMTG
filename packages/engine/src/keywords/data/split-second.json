@@ -1,0 +1,14 @@
+{
+  "name": "split second",
+  "rule": "702.61",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "As long as this spell is on the stack, players can't cast spells or activate abilities that aren't mana abilities.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "rules/timing.ts#splitSecondDenial"
+  ]
+}

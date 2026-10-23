@@ -1,0 +1,100 @@
+[
+  {
+    "id": "eff.stdcardcopy13.exile.filterCard.fromGraveyard.atRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile ( a | an ) {f:Filter} card from your graveyard at random",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile a creature card from your graveyard at random. You may cast that card this turn."
+      },
+      {
+        "text": "{2}, {T}: Exile an artifact card from your graveyard at random, then create a token that's a copy of that card."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Exile an artifact card from your graveyard, then create a token that's a copy of that card.",
+      "{2}, {T}: Exile two artifact cards from your graveyard at random, then create a token that's a copy of each of them.",
+      "{2}, {T}: Exile an artifact card from target player's graveyard at random, then create a token that's a copy of that card."
+    ]
+  },
+  {
+    "id": "eff.stdcardcopy13.copy.token.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 110.5b"
+    ],
+    "pattern": "create a tapped token that's a copy of {o:Obj}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}, {T}: Create a tapped token that's a copy of target artifact you control."
+      },
+      {
+        "text": "Whenever ~ attacks, exile a creature card from your graveyard at random, then create a tapped token that's a copy of that card."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Create a token that's a copy of target artifact you control.",
+      "{3}, {T}: Create two tapped tokens that are copies of target artifact you control.",
+      "{3}, {T}: Create a tapped and attacking token that's a copy of target artifact you control."
+    ]
+  }
+]

@@ -1,0 +1,290 @@
+[
+  {
+    "id": "rid.e11.counter.unless.instead.if",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 702.194b"
+    ],
+    "pattern": "counter that spell unless its controller pays {m:ManaCost} instead if {c:Cond}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "pay",
+            "who": "@previous.who",
+            "cost": {
+              "mana": "$m"
+            },
+            "else": "@previous.else"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "pay",
+    "consumes": [
+      "unless",
+      "instead",
+      "if"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Counter target spell unless its controller pays {1}. Counter that spell unless its controller pays {3} instead if ~ was kicked."
+      },
+      {
+        "text": "Counter target creature spell unless its controller pays {2}. Counter that spell unless its controller pays {5} instead if you control a Wizard."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller pays {1}. Counter that spell unless its controller pays {3} if ~ was kicked.",
+      "Counter target spell unless its controller pays {1}. Counter that spell unless you pay {3} instead if ~ was kicked.",
+      "Counter that spell unless its controller pays {3} instead if ~ was kicked."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.e11.if.counter.unless.instead",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 701.4b"
+    ],
+    "pattern": "if {c:Cond} , counter that spell unless its controller pays {m:ManaCost} instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "pay",
+            "who": "@previous.who",
+            "cost": {
+              "mana": "$m"
+            },
+            "else": "@previous.else"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "pay",
+    "consumes": [
+      "if",
+      "unless",
+      "instead"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Counter target spell unless its controller pays {1}. If ~ was kicked, counter that spell unless its controller pays {3} instead."
+      },
+      {
+        "text": "Counter target noncreature spell unless its controller pays {2}. If you control a Wizard, counter that spell unless its controller pays {6} instead."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller pays {1}. If ~ was kicked, counter that spell unless its controller pays {3}.",
+      "Counter target spell unless its controller pays {1}. If ~ was kicked, counter that spell unless you pay {3} instead.",
+      "If ~ was kicked, counter that spell unless its controller pays {3} instead."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.e11.if.damage.that.instead",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "if {c:Cond} , ( it | ~ ) deals {n:Qty} damage to that creature instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": "$n"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "~ deals 1 damage to target creature. If ~ was kicked, it deals 3 damage to that creature instead."
+      },
+      {
+        "text": "~ deals 2 damage to target attacking creature. If you control a Knight, ~ deals 5 damage to that creature instead."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 1 damage to target creature. If ~ was kicked, it deals 3 damage to that creature.",
+      "~ deals 1 damage to target player. If ~ was kicked, it deals 3 damage to that creature instead.",
+      "~ deals 1 damage to target creature. If ~ was kicked, it deals 3 damage to any target instead."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e11.if.it.also.damage",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 702.194b"
+    ],
+    "pattern": "if {c:Cond} , it also deal[s] {n:Qty} damage to {to:Recipient}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": "$to",
+          "amount": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "~ deals 3 damage to target creature. If ~ was kicked, it also deals 1 damage to that creature's controller."
+      },
+      {
+        "text": "~ deals 2 damage to target creature. If the gift was promised, it also deals 2 damage to you."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to target creature. If ~ was kicked, it deals 1 damage to that creature's controller.",
+      "~ deals 3 damage to target creature. If you control a Wizard, it also deals 1 damage to that creature's controller.",
+      "~ deals 3 damage to target creature. If ~ was kicked, it also deals 1 damage."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.e11.enters.tappedunlesspay.self",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 118.12",
+      "CR 701.4a"
+    ],
+    "pattern": "as ~ enters , you may {c:Cost} . if you don't , ~ enters tapped",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tappedUnlessPay": "$c"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, you may behold a Faerie. If you don't, ~ enters tapped."
+      },
+      {
+        "text": "As ~ enters, you may pay 3 life. If you don't, ~ enters tapped."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, you may behold a Faerie. If you do, ~ enters tapped.",
+      "As ~ enters, behold a Faerie. If you don't, ~ enters tapped.",
+      "As ~ enters, you may behold a Faerie. If you don't, ~ enters tapped and attacking."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e11.behold",
+    "kind": "effect",
+    "cr": [
+      "CR 701.4a"
+    ],
+    "pattern": "behold ( a | an ) {s:Subtypes}",
+    "build": {
+      "op": "action",
+      "action": "behold",
+      "who": {
+        "ref": "you"
+      },
+      "arg": "$s.0"
+    },
+    "subject": "none",
+    "needs": [
+      "action:behold"
+    ],
+    "examples": [
+      {
+        "text": "You may behold a Faerie. If you do, draw a card."
+      },
+      {
+        "text": "You may behold an Elf. If you do, you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "You may behold two Faeries. If you do, draw a card.",
+      "You may behold a creature. If you do, draw a card.",
+      "Target player may behold a Faerie. If they do, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -1,0 +1,343 @@
+[
+  {
+    "id": "eff.stdrx18.becomes.artifact.inaddition.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes an artifact in addition to its other types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target land becomes an artifact in addition to its other types until end of turn."
+      },
+      {
+        "text": "Tap target creature. That creature becomes an artifact in addition to its other types until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Target land becomes an artifact until end of turn.",
+      "Target land becomes an enchantment in addition to its other types until end of turn.",
+      "Target land becomes an artifact creature in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdrx18.becomes.artifact.inaddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Obj} becomes an artifact in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target land becomes an artifact in addition to its other types."
+      },
+      {
+        "text": "Untap target creature. It becomes an artifact in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Target land becomes an artifact.",
+      "Target land becomes an enchantment in addition to its other types.",
+      "Target land becomes an artifact land in addition to its other types."
+    ]
+  },
+  {
+    "id": "sta.stdrx18.attached.basept.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 301.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "( enchanted | equipped ) creature has base power and toughness {pt:BasePT} and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature has base power and toughness 5/5 and has trample."
+      },
+      {
+        "text": "Equipped creature has base power and toughness 1/7 and has reach and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has base power and toughness 5/5 and loses trample.",
+      "Enchanted creature gets +5/+5 and has trample until end of turn.",
+      "Enchanted creature has base power 5 and has trample."
+    ]
+  },
+  {
+    "id": "sta.stdrx18.attached.loseall.noattackblock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 604.1"
+    ],
+    "pattern": "( enchanted | equipped ) creature loses all abilities and can't attack or block",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature loses all abilities and can't attack or block."
+      },
+      {
+        "text": "Flash\nEquipped creature loses all abilities and can't attack or block."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature loses flying and can't attack or block.",
+      "Equipped creature loses all abilities and can't attack.",
+      "Equipped creature loses all abilities and can't block this turn."
+    ]
+  },
+  {
+    "id": "trg.stdrx18.you.cycleOrDiscard.another",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.29a",
+      "CR 701.9a",
+      "CR 603.2",
+      "CR 109.1"
+    ],
+    "pattern": "whenever you cycle or discard another card",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "you",
+          "object": {
+            "other": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cycle or discard another card, you gain 2 life."
+      },
+      {
+        "text": "Whenever you cycle or discard another card, target creature gets -1/-1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cycle or discard another creature card, you gain 2 life.",
+      "Whenever an opponent cycles or discards another card, you gain 2 life.",
+      "Whenever you cycle another card, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdrx18.sacrificeChoice.discard.loseLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 701.9a",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice , discard[s] {k:Qty} card[s] , and lose[s] {m:Qty} life",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$n"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$k"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent sacrifices an artifact of their choice, discards a card, and loses 2 life."
+      },
+      {
+        "text": "Target player sacrifices two creatures of their choice, discards two cards, and loses 5 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices an artifact of your choice, discards a card, and loses 2 life.",
+      "Each opponent sacrifices an artifact of their choice, discards a card, and gains 2 life.",
+      "Each opponent sacrifices an artifact of their choice, discards a card at random, and loses 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdrx18.youAndPlayer.each.createToken",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.2",
+      "CR 115.1",
+      "CR 101.4"
+    ],
+    "pattern": "you and {p:Player} each create {n:Qty} {t:TokenDesc}",
+    "build": [
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "token": "$t"
+      },
+      {
+        "op": "createToken",
+        "who": "$p",
+        "count": "$n",
+        "token": "$t"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You and target opponent each create a Food token."
+      },
+      {
+        "text": "{1}, {T}: You and target player each create a 1/1 white Soldier creature token."
+      }
+    ],
+    "counterExamples": [
+      "You and target opponent each sacrifice a Food token.",
+      "Target opponent creates a Food token.",
+      "You and target opponent each create a Food token tapped."
+    ]
+  }
+]

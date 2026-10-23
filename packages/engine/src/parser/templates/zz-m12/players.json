@@ -1,0 +1,222 @@
+[
+  {
+    "id": "eff.m12.seat.left.gainControl",
+    "kind": "effect",
+    "cr": [
+      "CR 101.4",
+      "CR 103.1",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 800.4b"
+    ],
+    "pattern": "the player to your left gains control of {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "seat",
+                "side": "left"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "ref:seat"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, the player to your left gains control of ~."
+      },
+      {
+        "text": "{2}, {T}: Draw a card. The player to your left gains control of ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, the player to your left gains control of ~ until end of turn.",
+      "At the beginning of your end step, the player to your right gains control of ~."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.m12.seat.right.gainControl",
+    "kind": "effect",
+    "cr": [
+      "CR 101.4",
+      "CR 103.1",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 800.4b"
+    ],
+    "pattern": "the player to your right gains control of {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "seat",
+                "side": "right"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "ref:seat"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Draw a card. The player to your right gains control of ~."
+      },
+      {
+        "text": "At the beginning of your upkeep, the player to your right gains control of ~."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Draw a card. The player to your right gains control of ~ until end of turn.",
+      "{2}, {T}: Draw a card. The player to your left gains control of ~."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.m12.player.mayDraw",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 121.1"
+    ],
+    "pattern": "{p:Player} may draw {n:Qty} card[s]",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "draw",
+          "who": "$p",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature deals combat damage to one of your opponents, its controller may draw a card."
+      },
+      {
+        "text": "Whenever a creature an opponent controls dies, its controller may draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature deals combat damage to one of your opponents, its controller may discard a card.",
+      "Whenever a creature deals combat damage to one of your opponents, its controller draws a card."
+    ],
+    "status": "stable",
+    "since": 8,
+    "weak": 1
+  },
+  {
+    "id": "eff.m12.search.opponentLibrary.toBattlefield",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 110.2",
+      "CR 800.4a"
+    ],
+    "pattern": "search {p:Player} 's library for ( a | an ) {f:Filter} card and put that card onto the battlefield under your control",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "owner": "$p",
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search target opponent's library for a creature card and put that card onto the battlefield under your control. Then that player shuffles."
+      },
+      {
+        "text": "Search target opponent's library for an artifact card and put that card onto the battlefield under your control. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Search target opponent's library for a creature card and put that card into your hand. Then that player shuffles.",
+      "Search target opponent's graveyard for a creature card and put that card onto the battlefield under your control. Then that player shuffles."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.m12.thenPlayerShuffles",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a"
+    ],
+    "pattern": "then {p:Player} shuffles",
+    "build": {
+      "op": "shuffle",
+      "who": "$p"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search target opponent's library for a creature card and put that card onto the battlefield under your control. Then that player shuffles."
+      },
+      {
+        "text": "Search target opponent's library for an enchantment card and put that card onto the battlefield under your control. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Search target opponent's library for a creature card and put that card onto the battlefield under your control. Then you shuffle.",
+      "Search target opponent's library for a creature card and put that card onto the battlefield under your control. Then that player draws a card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

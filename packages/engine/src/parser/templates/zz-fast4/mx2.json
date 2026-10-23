@@ -1,0 +1,367 @@
+[
+  {
+    "id": "eff.mx2.exchange.control.two",
+    "kind": "effect",
+    "cr": [
+      "CR 701.12a",
+      "CR 701.12b"
+    ],
+    "pattern": "exchange control of {o:Pair}",
+    "build": {
+      "op": "exchange",
+      "a": "$o",
+      "b": "$o",
+      "what": "control"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exchange control of two target creatures."
+      },
+      {
+        "text": "Exchange control of two target artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Exchange control of two target creatures until end of turn.",
+      "Exchange control of two target creatures and their life totals."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.mx2.meld.pair",
+    "kind": "effect",
+    "cr": [
+      "CR 701.42a",
+      "CR 712.4a",
+      "CR 603.4"
+    ],
+    "pattern": "exile them , then meld them into {r:Name}",
+    "build": {
+      "op": "action",
+      "action": "meldPair",
+      "who": {
+        "ref": "you"
+      },
+      "arg": "$r"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "If you both own and control ~ and a creature named Midnight Scavengers, exile them, then meld them into Chittering Host."
+      },
+      {
+        "text": "If you both own and control ~ and a creature named Hanweir Garrison, exile them, then meld them into Chittering Host."
+      }
+    ],
+    "counterExamples": [
+      "Exile them, then meld them into Chittering Host until end of turn.",
+      "Exile it, then meld it into Chittering Host."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.mx2.copy.thisAbility",
+    "kind": "effect",
+    "cr": [
+      "CR 707.9a",
+      "CR 707.4",
+      "CR 611.2a",
+      "CR 613.2a"
+    ],
+    "pattern": "{o:Obj} become[s] a copy of {p:Obj} , except it has this ability",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": [
+                {
+                  "thisAbility": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature enters, this creature becomes a copy of that creature, except it has this ability."
+      },
+      {
+        "text": "{2}{U}: This creature becomes a copy of target creature, except it has this ability."
+      }
+    ],
+    "counterExamples": [
+      "This creature becomes a copy of target creature, except it has flying.",
+      "This creature becomes a copy of target creature until end of turn, except it has this ability."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.mx2.copy.retainColor.thisAbility",
+    "kind": "effect",
+    "cr": [
+      "CR 707.9a",
+      "CR 707.9c",
+      "CR 707.4",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} become[s] a copy of {p:Obj} , except it doesn't copy that creature 's color and it has this ability",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": [
+                {
+                  "retain": [
+                    "colors"
+                  ]
+                },
+                {
+                  "thisAbility": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: This creature becomes a copy of target creature, except it doesn't copy that creature's color and it has this ability."
+      },
+      {
+        "text": "{1}{U}: This creature becomes a copy of another target creature, except it doesn't copy that creature's color and it has this ability."
+      }
+    ],
+    "counterExamples": [
+      "This creature becomes a copy of target creature, except it doesn't copy that creature's name and it has this ability.",
+      "This creature becomes a copy of target creature, except it doesn't copy that creature's color."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "sta.mx2.enters.copy.retainColor.has",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 707.5",
+      "CR 707.9a",
+      "CR 707.9c"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield , except it doesn't copy that creature 's color and it has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "retain": [
+                    "colors"
+                  ]
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it doesn't copy that creature's color and it has flying."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it doesn't copy that creature's color and it has \"At the beginning of your upkeep, you gain 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it doesn't copy that creature's name and it has flying.",
+      "You may have ~ enter as a copy of any creature in a graveyard, except it doesn't copy that creature's color and it has flying."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.mx2.may.copy.thisAbility",
+    "kind": "effect",
+    "cr": [
+      "CR 707.9a",
+      "CR 707.4",
+      "CR 608.2d",
+      "CR 611.2a"
+    ],
+    "pattern": "you may have {o:Obj} become a copy of {p:Obj} , except it has this ability",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "1a",
+                  "copyOf": "$p",
+                  "except": [
+                    {
+                      "thisAbility": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may have ~ become a copy of another target creature, except it has this ability."
+      },
+      {
+        "text": "Whenever you cast a spell that targets ~, you may have ~ become a copy of target creature, except it has this ability."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ become a copy of target creature, except it has flying.",
+      "You may have ~ become a copy of target creature until end of turn, except it has this ability."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.mx2.may.copy.retainColor.thisAbility",
+    "kind": "effect",
+    "cr": [
+      "CR 707.9a",
+      "CR 707.9c",
+      "CR 707.4",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become a copy of {p:Obj} , except it doesn't copy that creature 's color and it has this ability",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "1a",
+                  "copyOf": "$p",
+                  "except": [
+                    {
+                      "retain": [
+                        "colors"
+                      ]
+                    },
+                    {
+                      "thisAbility": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may have ~ become a copy of target creature, except it doesn't copy that creature's color and it has this ability."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may have ~ become a copy of another target creature, except it doesn't copy that creature's color and it has this ability."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ become a copy of target creature, except it doesn't copy that creature's name and it has this ability.",
+      "You may have ~ become a copy of target creature, except it doesn't copy that creature's color."
+    ],
+    "status": "stable",
+    "since": 6
+  }
+]

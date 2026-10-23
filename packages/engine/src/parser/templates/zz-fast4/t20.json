@@ -1,0 +1,418 @@
+[
+  {
+    "id": "eff.t20.tapStun.it",
+    "kind": "effect",
+    "cr": [
+      "CR 701.26a",
+      "CR 122.1d",
+      "CR 122.6"
+    ],
+    "pattern": "tap {o:Obj} and put {n:Qty} stun counter[s] on it",
+    "build": [
+      {
+        "op": "tap",
+        "what": "$o"
+      },
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "stun",
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever an artifact you control enters, tap target creature an opponent controls and put a stun counter on it."
+      },
+      {
+        "text": "When ~ enters, tap up to one target artifact and put two stun counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an artifact you control enters, tap target creature an opponent controls and put a +1/+1 counter on it.",
+      "Whenever an artifact you control enters, untap target creature an opponent controls and put a stun counter on it.",
+      "Whenever an artifact you control enters, tap target creature an opponent controls and put a stun counter on ~."
+    ],
+    "status": "stable",
+    "since": 5,
+    "priority": 1
+  },
+  {
+    "id": "eff.t20.stun.eachOfGroup",
+    "kind": "effect",
+    "cr": [
+      "CR 122.1d",
+      "CR 122.6",
+      "CR 608.2c"
+    ],
+    "pattern": "put {n:Qty} stun counter[s] on each of {o:Group}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "stun",
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Tap up to three target artifacts. Put a stun counter on each of them."
+      },
+      {
+        "text": "Tap one or two target creatures an opponent controls. Put two stun counters on each of them."
+      }
+    ],
+    "counterExamples": [
+      "Tap up to three target artifacts. Put a stun counter on one of them.",
+      "Tap up to three target artifacts. Put a shield counter on each of them.",
+      "Tap up to three target artifacts. Remove a stun counter from each of them."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t20.untap.upToChosen",
+    "kind": "effect",
+    "cr": [
+      "CR 701.26b",
+      "CR 608.2d"
+    ],
+    "pattern": "untap up to {n:Qty} {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "untap"
+      },
+      {
+        "op": "untap",
+        "what": {
+          "ref": "bound",
+          "name": "untap"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, untap up to three lands."
+      },
+      {
+        "text": "Draw a card. Untap up to two artifacts."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, untap up to three target lands.",
+      "When ~ enters, tap up to three lands.",
+      "When ~ enters, untap three lands."
+    ],
+    "status": "stable",
+    "since": 5,
+    "consumes": [
+      "up to"
+    ]
+  },
+  {
+    "id": "eff.t20.phaseOut.self",
+    "kind": "effect",
+    "cr": [
+      "CR 702.26b",
+      "CR 702.26g"
+    ],
+    "pattern": "~ phases out",
+    "build": {
+      "op": "phaseOut",
+      "what": {
+        "ref": "self"
+      }
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}{U}: ~ phases out."
+      },
+      {
+        "text": "At the beginning of your upkeep, ~ phases out."
+      }
+    ],
+    "counterExamples": [
+      "{2}{U}: Target creature phases out.",
+      "{2}{U}: ~ phases in.",
+      "{2}{U}: ~ phases out until end of turn."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t20.manifestDread.attachSelf",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.40a",
+      "CR 701.3a",
+      "CR 301.5"
+    ],
+    "pattern": "manifest dread , then attach ~ to that creature",
+    "build": [
+      {
+        "op": "action",
+        "action": "manifestDread",
+        "who": {
+          "ref": "you"
+        },
+        "as": "dread"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "ref": "bound",
+          "name": "dread"
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, manifest dread, then attach ~ to that creature."
+      },
+      {
+        "text": "{3}: Manifest dread, then attach ~ to that creature."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, manifest dread, then attach ~ to target creature.",
+      "When ~ enters, manifest, then attach ~ to that creature.",
+      "When ~ enters, manifest dread, then attach that creature to ~."
+    ],
+    "status": "stable",
+    "since": 5,
+    "priority": 1
+  },
+  {
+    "id": "eff.t20.discover.whereX",
+    "kind": "effect",
+    "cr": [
+      "CR 701.57a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "discover x , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "action",
+          "action": "discover",
+          "who": {
+            "ref": "you"
+          },
+          "n": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "action:discover"
+    ],
+    "examples": [
+      {
+        "text": "Counter target enchantment spell. Discover X, where X is that spell's mana value."
+      },
+      {
+        "text": "Whenever you cast an artifact spell with mana value 4 or greater, discover X, where X is that spell's mana value."
+      }
+    ],
+    "counterExamples": [
+      "Counter target enchantment spell. Discover X.",
+      "Counter target enchantment spell. Discover X, where X is that spell's power.",
+      "Counter target enchantment spell. Scry X, where X is that spell's mana value."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t20.draw.youAndTarget",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 115.1",
+      "CR 101.4"
+    ],
+    "pattern": "you and {p:Player} each draw {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You and target opponent each draw four cards."
+      },
+      {
+        "text": "{2}, {T}: You and target opponent each draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You and target opponent each discard a card.",
+      "Target opponent draws four cards.",
+      "You and target opponent each draw four cards at random."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t20.eachMay.wheel",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 701.9a",
+      "CR 121.1"
+    ],
+    "pattern": "each player may discard their hand and draw {n:Qty} card[s]",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "hand"
+        },
+        {
+          "op": "draw",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player may discard their hand and draw six cards."
+      },
+      {
+        "text": "When ~ dies, each player may discard their hand and draw four cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player discards their hand and draws six cards.",
+      "Each opponent may discard their hand and draw six cards.",
+      "Each player may discard a card and draw six cards."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "sta.t20.untapDuringOthersUntapStep.self",
+    "kind": "static",
+    "cr": [
+      "CR 502.3",
+      "CR 604.1",
+      "CR 701.26b"
+    ],
+    "pattern": "untap ~ during each other player 's untap step",
+    "build": {
+      "s": "rule",
+      "rule": "untapDuringOtherUntapSteps"
+    },
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Untap ~ during each other player's untap step."
+      },
+      {
+        "text": "Flying\nUntap ~ during each other player's untap step."
+      }
+    ],
+    "counterExamples": [
+      "Untap ~ during your untap step.",
+      "Untap ~ during each other player's upkeep.",
+      "Untap all creatures you control during each other player's untap step."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t20.support",
+    "kind": "effect",
+    "cr": [
+      "CR 701.41a",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 109.2"
+    ],
+    "pattern": "support {n:Qty}",
+    "build": {
+      "lower": "support",
+      "n": "$n"
+    },
+    "subject": "none",
+    "needs": [
+      "action:support"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, support 4."
+      },
+      {
+        "text": "Support 3. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, bolster 4.",
+      "When ~ enters, support.",
+      "When ~ enters, support 4 at random."
+    ],
+    "status": "stable",
+    "since": 5
+  }
+]

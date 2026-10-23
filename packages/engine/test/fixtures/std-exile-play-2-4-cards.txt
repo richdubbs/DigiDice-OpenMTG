@@ -1,0 +1,4 @@
+# std-exile-play-2-4 (lane std-exile-play-2; test/cloud/std-exile-play-2-4, golden std-exile-play-2-4-review.json): a free play permission for the cards of a group
+# a comparison picks as the effect begins; for each of those colors, an optional choice of a revealed card of that color, then their exile
+Triple Triad
+Sanar, Innovative First-Year

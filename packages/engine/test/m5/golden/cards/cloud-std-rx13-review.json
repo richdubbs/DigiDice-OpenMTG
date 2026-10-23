@@ -1,0 +1,650 @@
+[
+ {
+  "card": "Hedge Whisperer",
+  "expect": "full",
+  "verified": "std-rx13 review (card wave 2, slice s14; Standard, tuning half), by hand against the Oracle text and the rules cited (sta.stdrx13.mayNotUntap.self; rule mayNotUntap, core/steps.ts): its controller may keep it tapped in their untap step, asked once with the step's other optional permanents before everything untaps simultaneously; the activated ability ({3}{G}, {T}, collect evidence 4, sorcery speed) makes target land you control a 5/5 green Plant Boar creature with haste for as long as Hedge Whisperer remains tapped, still a land (types and subtypes added). (CR 502.3, 604.1, 611.2b, 701.59a, 205.1b, 613.1d; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayNotUntap",
+        "s": "rule"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ],
+       "other": [
+        {
+         "action": "collectEvidence",
+         "arg": 4,
+         "kind": "action"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "as": "b0",
+          "d": "whileSource"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Boar",
+               "Plant"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "colors": {
+              "set": [
+               "G"
+              ]
+             },
+             "layer": 5
+            },
+            {
+             "add": [
+              {
+               "keyword": "haste",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 5,
+             "toughness": 5
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated",
+      "sorcerySpeed": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Endoskeleton",
+  "expect": "full",
+  "verified": "std-rx13 review (card wave 2, slice s14; tuning half), by hand against the Oracle text and the rules cited (sta.stdrx13.mayNotUntap.self): its controller may keep it tapped in their untap step; {2}, {T}: target creature gets +0/+3 for as long as Endoskeleton remains tapped (the effect ends when it untaps or leaves). (CR 502.3, 604.1, 611.2b, 613.4c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayNotUntap",
+        "s": "rule"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "as": "b0",
+          "d": "whileSource"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 0,
+             "toughness": 3
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Flowstone Armor",
+  "expect": "full",
+  "verified": "std-rx13 review (card wave 2, slice s14; tuning half), by hand against the Oracle text and the rules cited (sta.stdrx13.mayNotUntap.self): its controller may keep it tapped in their untap step; {3}, {T}: target creature gets +1/-1 for as long as Flowstone Armor remains tapped. (CR 502.3, 604.1, 611.2b, 613.4c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayNotUntap",
+        "s": "rule"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "as": "b0",
+          "d": "whileSource"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": -1
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hollowmurk Siege",
+  "expect": "full",
+  "verified": "std-rx13 review (card wave 2, slice s14; Standard), by hand against the Oracle text and the rules cited (parser/holes/event.ts counterEvents: 'a counter is put on <obj>', any kind; the Siege's existing modal-choice reading): as it enters, choose Sultai or Abzan; Sultai: whenever a counter of any kind is put on a creature you control, draw a card, at most once each turn; Abzan: whenever you attack, put a +1/+1 counter on target attacking creature and it gains menace until end of turn. (CR 122.1, 603.2, 603.2h, 614.12, 700.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "choose": [
+          {
+           "link": "siege",
+           "options": [
+            "Sultai",
+            "Abzan"
+           ],
+           "what": "option"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "chosenMode": "Sultai",
+      "condition": {
+       "cond": "chosen",
+       "equals": "Sultai",
+       "link": "siege"
+      },
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "effect": {
+             "steps": [
+              {
+               "count": 1,
+               "op": "draw",
+               "who": {
+                "ref": "you"
+               }
+              }
+             ],
+             "targets": []
+            },
+            "kind": "triggered",
+            "limit": {
+             "max": 1,
+             "per": "turn"
+            },
+            "trigger": {
+             "on": [
+              {
+               "change": "put",
+               "ev": "counters",
+               "on": {
+                "controller": "you",
+                "types": [
+                 "Creature"
+                ]
+               }
+              }
+             ]
+            }
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "chosenMode": "Abzan",
+      "condition": {
+       "cond": "chosen",
+       "equals": "Abzan",
+       "link": "siege"
+      },
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "effect": {
+             "steps": [
+              {
+               "count": 1,
+               "kind": "+1/+1",
+               "on": {
+                "id": "t0",
+                "ref": "target"
+               },
+               "op": "putCounters"
+              },
+              {
+               "duration": {
+                "d": "endOfTurn"
+               },
+               "effects": [
+                {
+                 "affects": {
+                  "id": "t0",
+                  "ref": "target"
+                 },
+                 "mods": [
+                  {
+                   "add": [
+                    {
+                     "keyword": "menace",
+                     "kind": "keyword"
+                    }
+                   ],
+                   "layer": 6
+                  }
+                 ],
+                 "s": "continuous"
+                }
+               ],
+               "op": "effect"
+              }
+             ],
+             "targets": [
+              {
+               "filter": {
+                "attacking": true,
+                "types": [
+                 "Creature"
+                ]
+               },
+               "id": "t0",
+               "kind": "object",
+               "max": 1,
+               "min": 1
+              }
+             ]
+            },
+            "kind": "triggered",
+            "trigger": {
+             "batch": true,
+             "on": [
+              {
+               "attacker": {
+                "controller": "you"
+               },
+               "count": {
+                "op": ">=",
+                "value": 1
+               },
+               "ev": "attacks"
+              }
+             ]
+            }
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Great Train Heist",
+  "expect": "full",
+  "verified": "std-rx13 review (card wave 2, slice s14; Standard), by hand against the Oracle text and the rules cited (parser/holes/event.ts damageRecipients: 'that player' as a damage recipient, resolved to the chosen target opponent; eff.t50.whenever.thisTurn, eff.r3choose.choose.targetOpponent): spree with three modes and their additional costs; {2}{R}: untap all creatures you control and, if it is your combat phase, add a combat phase after this one; {2}: creatures you control get +1/+0 and first strike until end of turn; {R}: choose target opponent; until end of turn, whenever a creature you control deals combat damage to that player (fixed as the delayed trigger is created), create a tapped Treasure token. (CR 702.172a, 500.8, 603.7, 603.7c, 608.2c, 510.2, 111.10a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "spree",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "modes": {
+        "max": 3,
+        "min": 1,
+        "options": [
+         {
+          "cost": {
+           "mana": [
+            {
+             "amount": 2,
+             "kind": "generic"
+            },
+            {
+             "color": "R",
+             "kind": "colored"
+            }
+           ]
+          },
+          "program": {
+           "steps": [
+            {
+             "op": "untap",
+             "what": {
+              "filter": {
+               "controller": "you",
+               "types": [
+                "Creature"
+               ]
+              },
+              "ref": "each"
+             }
+            },
+            {
+             "cond": {
+              "cond": "turnOf",
+              "step": [
+               "beginCombat",
+               "declareAttackers",
+               "declareBlockers",
+               "combatDamage",
+               "endCombat"
+              ],
+              "whose": "you"
+             },
+             "op": "if",
+             "then": [
+              {
+               "op": "extraPhase",
+               "phase": "combat"
+              }
+             ]
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "cost": {
+           "mana": [
+            {
+             "amount": 2,
+             "kind": "generic"
+            }
+           ]
+          },
+          "program": {
+           "steps": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "filter": {
+                 "controller": "you",
+                 "types": [
+                  "Creature"
+                 ]
+                },
+                "ref": "each"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 1,
+                 "toughness": 0
+                },
+                {
+                 "add": [
+                  {
+                   "keyword": "first strike",
+                   "kind": "keyword"
+                  }
+                 ],
+                 "layer": 6
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "cost": {
+           "mana": [
+            {
+             "color": "R",
+             "kind": "colored"
+            }
+           ]
+          },
+          "program": {
+           "steps": [
+            {
+             "do": [
+              {
+               "count": 1,
+               "op": "createToken",
+               "tapped": true,
+               "token": {
+                "predefined": "Treasure"
+               },
+               "who": {
+                "ref": "you"
+               }
+              }
+             ],
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "op": "delay",
+             "when": {
+              "at": "event",
+              "event": {
+               "combat": true,
+               "ev": "damage",
+               "recipient": {
+                "player": {
+                 "id": "t0",
+                 "ref": "target"
+                }
+               },
+               "source": {
+                "controller": "you",
+                "types": [
+                 "Creature"
+                ]
+               }
+              }
+             }
+            }
+           ],
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "player",
+             "max": 1,
+             "min": 1,
+             "players": {
+              "who": "opponent"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ }
+]

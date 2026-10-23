@@ -1,0 +1,556 @@
+[
+  {
+    "id": "eff.stdrx32.rst.its.cantActivate.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.5",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 611.2c"
+    ],
+    "pattern": "its activated abilities can't be activated {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "it"
+            }
+          },
+          "mode": "cant",
+          "action": "activate"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Tap target artifact. Its activated abilities can't be activated for as long as it remains tapped."
+      },
+      {
+        "text": "{1}, {T}: Tap target creature an opponent controls. Its activated abilities can't be activated this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Tap target artifact. Its triggered abilities can't be activated for as long as it remains tapped.",
+      "{2}, {T}: Tap target artifact. Its activated abilities can be activated for as long as it remains tapped.",
+      "{2}, {T}: Tap target artifact. Its activated abilities can't be activated unless they're mana abilities."
+    ]
+  },
+  {
+    "id": "eff.stdrx32.itIs.subtype.inaddition.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 305.7",
+      "CR 613.1d",
+      "CR 611.2b"
+    ],
+    "pattern": "{o:ItIs} ( a | an ) {st:Subtypes} in addition to its other types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, put a charge counter on target land. It's a Swamp in addition to its other types for as long as it has a charge counter on it."
+      },
+      {
+        "text": "{T}: Tap target creature. It's a Zombie in addition to its other types for as long as it remains tapped."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Tap target creature. It's a Zombie for as long as it remains tapped.",
+      "{T}: Tap target creature. It's a Zombie in addition to its other colors for as long as it remains tapped.",
+      "{T}: Tap target creature. It's a Zombie creature in addition to its other types for as long as it remains tapped."
+    ]
+  },
+  {
+    "id": "cm.stdrx32.first.spell.each.turn.less.forEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 601.2i",
+      "CR 118.7a",
+      "CR 118.7b",
+      "CR 611.3a"
+    ],
+    "pattern": "the first {f:Filter} you cast each turn costs {m:ManaCost} less to cast for each {g:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                {
+                  "q": "math",
+                  "op": "max",
+                  "args": [
+                    0,
+                    {
+                      "q": "math",
+                      "op": "-",
+                      "args": [
+                        1,
+                        {
+                          "q": "happenedCount",
+                          "event": {
+                            "ev": "cast",
+                            "player": "you",
+                            "spell": {
+                              "types": "$f.types",
+                              "subtypes": "$f.subtypes",
+                              "supertypes": "$f.supertypes",
+                              "colors": "$f.colors",
+                              "colorless": "$f.colorless"
+                            }
+                          },
+                          "scope": "turn"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$g"
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "feature:costMod.times"
+    ],
+    "examples": [
+      {
+        "text": "The first creature spell you cast each turn costs {G} less to cast for each Forest you control."
+      },
+      {
+        "text": "The first instant or sorcery spell you cast each turn costs {1} less to cast for each artifact you control with a charge counter on it."
+      }
+    ],
+    "counterExamples": [
+      "The first creature spell you cast each turn costs {G} more to cast for each Forest you control.",
+      "The second creature spell you cast each turn costs {G} less to cast for each Forest you control.",
+      "Creature spells you cast cost {G} less to cast for each Forest you control."
+    ]
+  },
+  {
+    "id": "sta.stdrx32.targetable.noHexproof.noWard",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 115.1",
+      "CR 702.21a",
+      "CR 603.2"
+    ],
+    "pattern": "{f:Filter} can be the targets of spells and abilities as though they didn't have hexproof . ward abilities of those creatures don't trigger",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "targetableThroughHexproof",
+          "of": "$f"
+        },
+        {
+          "s": "triggerMod",
+          "abilitiesOf": "$f",
+          "additional": 0,
+          "suppress": true,
+          "keyword": "ward"
+        }
+      ]
+    },
+    "consumes": [
+      "not",
+      "as though"
+    ],
+    "needs": [
+      "feature:triggerMod.suppress.keyword"
+    ],
+    "examples": [
+      {
+        "text": "Artifact creatures your opponents control can be the targets of spells and abilities as though they didn't have hexproof. Ward abilities of those creatures don't trigger."
+      },
+      {
+        "text": "Green creatures your opponents control can be the targets of spells and abilities as though they didn't have hexproof. Ward abilities of those creatures don't trigger."
+      }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control can be the targets of spells and abilities as though they didn't have shroud. Ward abilities of those creatures don't trigger.",
+      "Creatures your opponents control can be the targets of spells and abilities as though they didn't have hexproof. Ward abilities of those creatures trigger twice.",
+      "Creatures your opponents control can't be the targets of spells and abilities as though they didn't have hexproof. Ward abilities of those creatures don't trigger."
+    ]
+  },
+  {
+    "id": "sta.stdrx32.basePower.isEqual",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 604.3a",
+      "CR 208.1"
+    ],
+    "pattern": "{o:Obj} 's base power is equal to {n:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Enchanted creature has \"This creature's base power is equal to the number of cards in your hand.\""
+      },
+      {
+        "text": "{2}: ~ gains \"~'s base power is equal to the number of artifacts you control\" until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "~'s base toughness is equal to the number of cards in your hand.",
+      "Until end of turn, ~ gains \"~'s base power is equal to the number of cards in your hand plus one.\"",
+      "Until end of turn, ~ gains \"~'s base power is twice the number of cards in your hand.\""
+    ]
+  },
+  {
+    "id": "eff.stdrx32.pump.gains.attackNoDefender.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.4",
+      "CR 702.3b",
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets {pt:PT} , gains {a:Abilities} and can attack as though it didn't have defender",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "{1}{U}: Until end of turn, target creature you control gets +2/+0, gains \"Whenever this creature attacks, scry 1,\" and can attack as though it didn't have defender."
+      },
+      {
+        "text": "{3}: Until end of turn, target Wall you control gets +1/+1, gains \"Whenever this creature attacks, you gain 1 life,\" and can attack as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}: Until end of turn, target creature you control gets +2/+0, gains \"Whenever this creature attacks, scry 1,\" and can block as though it didn't have defender.",
+      "{1}{U}: Until end of turn, target creature you control gets +2/+0, gains \"Whenever this creature attacks, scry 1,\" and can attack as though it didn't have haste.",
+      "{1}{U}: Until end of turn, target creature you control gets +2/+0, loses flying, and can attack as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "sta.stdrx32.group.have.allActivatedOf.exiledWith",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 607.2a"
+    ],
+    "pattern": "{f:Filter} have all activated abilities of all creature cards exiled with ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "zone": "exile",
+                  "is": {
+                    "ref": "linked",
+                    "link": "exiled"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Elves you control have all activated abilities of all creature cards exiled with ~.\n{1}, {T}: Exile target creature card from an opponent's graveyard."
+      },
+      {
+        "text": "Creatures you control with flying have all activated abilities of all creature cards exiled with ~.\n{3}, {T}: Exile target card from an opponent's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Elves you control have all triggered abilities of all creature cards exiled with ~.\n{1}, {T}: Exile target creature card from an opponent's graveyard.",
+      "Elves you control have all activated abilities of all artifact cards exiled with ~.\n{1}, {T}: Exile target creature card from an opponent's graveyard.",
+      "Elves you control have all activated abilities of all creature cards in your graveyard.\n{1}, {T}: Exile target creature card from an opponent's graveyard."
+    ]
+  },
+  {
+    "id": "sta.stdrx32.spend.anyColor.abilities",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 602.2b",
+      "CR 106.1"
+    ],
+    "pattern": "you may spend mana as though it were mana of any color to activate abilities of {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "spendMana",
+          "asThough": "any color",
+          "of": "$f",
+          "abilities": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "You may spend mana as though it were mana of any color to activate abilities of artifacts you control."
+      },
+      {
+        "text": "You may spend mana as though it were mana of any color to activate abilities of Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "You may spend mana as though it were mana of any type to activate abilities of artifacts you control.",
+      "You may spend mana as though it were mana of any color to cast artifact spells.",
+      "Each opponent may spend mana as though it were mana of any color to activate abilities of artifacts they control."
+    ]
+  },
+  {
+    "id": "eff.stdrx32.attach.targets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 701.3b",
+      "CR 115.1"
+    ],
+    "pattern": "attach {o:Targets} to {to:Obj}",
+    "build": {
+      "op": "attach",
+      "what": "$o",
+      "to": "$to"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, attach any number of target Equipment you control to target creature you control."
+      },
+      {
+        "text": "{2}: Attach up to two target Auras you control to target creature."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, attach any number of target Equipment you control to each creature you control.",
+      "When ~ enters, unattach any number of target Equipment you control.",
+      "When ~ enters, attach all Equipment you control to target creature you control."
+    ]
+  },
+  {
+    "id": "eff.stdrx32.delay.loseControl.ifAttached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.4",
+      "CR 701.3d",
+      "CR 108.4"
+    ],
+    "pattern": "when you lose control of {o:Obj} this turn , if it's attached to a creature you control , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "controlChange",
+          "object": {
+            "is": "$o"
+          },
+          "from": "you"
+        }
+      },
+      "do": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "matches",
+            "object": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "filter": {
+              "attachedToObject": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                }
+              }
+            }
+          },
+          "then": "$x",
+          "intervening": true
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "this turn",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of target Equipment until end of turn. When you lose control of that Equipment this turn, if it's attached to a creature you control, unattach it."
+      },
+      {
+        "text": "Gain control of target Aura until end of turn. When you lose control of that Aura this turn, if it's attached to a creature you control, unattach it."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of target Equipment until end of turn. When you lose control of that Equipment, if it's attached to a creature you control, unattach it.",
+      "Gain control of target Equipment until end of turn. When you gain control of that Equipment this turn, if it's attached to a creature you control, unattach it.",
+      "Gain control of target Equipment until end of turn. When you lose control of that Equipment this turn, if it's attached to a creature an opponent controls, unattach it."
+    ]
+  }
+]

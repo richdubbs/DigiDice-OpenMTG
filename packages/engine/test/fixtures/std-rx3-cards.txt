@@ -1,0 +1,6 @@
+# ---- Standard round rx3 (std-rx3, wave 2 slice s24): "if you draw one or more cards this way", a search for any number of cards, free permissions for named objects
+Transcendent Archaic
+Ugin, Eye of the Storms
+Mana Severance
+Iname, Death Aspect
+Secret Salvage

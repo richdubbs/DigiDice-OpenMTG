@@ -1,0 +1,107 @@
+{
+  "name": "modular",
+  "rule": "702.43",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "replacement",
+    "expands"
+  ],
+  "reminder": "This creature enters with {n} +1/+1 counters on it. When it dies, you may put its +1/+1 counters on target artifact creature.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "~ enters with {n} +1/+1 counters on it.",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "+1/+1",
+                "count": "$amount"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When ~ dies, you may put a +1/+1 counter on target artifact creature for each +1/+1 counter on ~.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "object",
+            "min": 1,
+            "max": 1,
+            "text": "target artifact creature",
+            "filter": {
+              "allTypes": [
+                "Artifact",
+                "Creature"
+              ]
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "target",
+                  "id": "t0"
+                },
+                "kind": "+1/+1",
+                "count": {
+                  "q": "counters",
+                  "on": {
+                    "ref": "event",
+                    "role": "subject"
+                  },
+                  "kind": "+1/+1"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

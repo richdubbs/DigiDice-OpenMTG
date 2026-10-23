@@ -1,0 +1,378 @@
+[
+  {
+    "id": "eff.stdtmt.put.fromHand.bottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 401.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may put {f:Filter} on the bottom of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may put an artifact card from your hand on the bottom of your library."
+      },
+      {
+        "text": "You may put a land card from your hand on the bottom of your library. If you do, draw a card."
+      },
+      {
+        "text": "~ deals 2 damage to any target. You may put a card from your hand on the bottom of your library. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may put two land cards from your hand on the bottom of your library.",
+      "You may put an artifact card from your hand on top of your library.",
+      "Put a land card from your hand on the bottom of your library."
+    ]
+  },
+  {
+    "id": "eff.stdtmt.mana.thatMuch",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 608.2h"
+    ],
+    "pattern": "add {q:Qty} {t:ManaSym}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": "$q"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ is dealt damage, add that much {G}."
+      },
+      {
+        "text": "Whenever you gain life, add that much {W}."
+      },
+      {
+        "text": "When ~ enters, add four {B}."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ is dealt damage, add that much {G}{G}.",
+      "Whenever ~ is dealt damage, add that much mana.",
+      "Whenever ~ is dealt damage, add that much {G} until end of turn.",
+      "When ~ enters, add four {B} for each opponent."
+    ]
+  },
+  {
+    "id": "rid.stdtmt.enters.tapped.attacking.player",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.4",
+      "CR 508.4a",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "it enters tapped and attacking {p:Player}",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "tapped": {
+            "@new": true
+          },
+          "attacking": {
+            "@new": {
+              "defender": "$p"
+            }
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "tapped",
+      "attacking"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, return up to one target creature card from that player's graveyard to the battlefield under your control. It enters tapped and attacking that player."
+      },
+      {
+        "text": "Whenever ~ attacks, put target creature card from your graveyard onto the battlefield under your control. It enters tapped and attacking defending player."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, return up to one target creature card from that player's graveyard to your hand. It enters tapped and attacking that player.",
+      "Whenever ~ deals combat damage to a player, return up to one target creature card from that player's graveyard to the battlefield under your control. It enters tapped.",
+      "It enters tapped and attacking that player."
+    ]
+  },
+  {
+    "id": "eff.stdtmt.draw.forEach.cardType.castThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 205.2a",
+      "CR 601.2i",
+      "CR 608.2h"
+    ],
+    "pattern": "draw a card for each card type among spells you've cast this turn",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "happenedDistinct",
+        "event": {
+          "ev": "cast",
+          "player": "you"
+        },
+        "scope": "turn",
+        "by": "you",
+        "what": "cardTypes"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each end step, draw a card for each card type among spells you've cast this turn."
+      },
+      {
+        "text": "{3}, {T}: Draw a card for each card type among spells you've cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, draw a card for each color among spells you've cast this turn.",
+      "At the beginning of your end step, draw two cards for each card type among spells you've cast this turn.",
+      "At the beginning of your end step, draw a card for each card type among spells you've cast this game."
+    ]
+  },
+  {
+    "id": "eff.stdtmt.control.all",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 110.2"
+    ],
+    "pattern": "gain control of all {f:Filter} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of all creatures your opponents control until end of turn."
+      },
+      {
+        "text": "Gain control of all Goblins."
+      },
+      {
+        "text": "Gain control of all lands target player controls."
+      },
+      {
+        "text": "Gain control of all artifacts until end of turn. Untap them."
+      },
+      {
+        "text": "Gain control of all creatures with power 2 or less until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of all creatures your opponents control unless an opponent pays {3}.",
+      "Gain control of two creatures your opponents control until end of turn.",
+      "Lose control of all creatures your opponents control until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdtmt.linked.returnOne.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} card exiled with ~ to the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true,
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return a creature card exiled with ~ to the battlefield under your control."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifacts an opponent controls.\nWhen ~ dies, return an artifact card exiled with ~ to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return a creature card exiled with ~ to your hand.",
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return two creature cards exiled with ~ to the battlefield under your control.",
+      "When ~ leaves the battlefield, return a creature card exiled with ~ to the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.stdtmt.linked.returnOthers.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "return each other card exiled with ~ to its owner 's hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "any",
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "returned"
+            }
+          }
+        }
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return a creature card exiled with ~ to the battlefield under your control. Return each other card exiled with ~ to its owner's hand."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifacts an opponent controls.\nWhen ~ dies, return an artifact card exiled with ~ to the battlefield under your control. Return each other card exiled with ~ to its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return a creature card exiled with ~ to the battlefield under your control. Return each other card exiled with ~ to your hand.",
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return each other card exiled with ~ to its owner's hand.",
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return a creature card exiled with ~ to the battlefield under your control. Return each card exiled with ~ to its owner's hand."
+    ]
+  }
+]

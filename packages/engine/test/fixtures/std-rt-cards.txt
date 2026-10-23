@@ -1,0 +1,4 @@
+# std-rt (Standard card wave 2, slice s4): the round's golden cards (test/m5/golden/cards/cloud-std-rt-review.json)
+Season of the Bold
+Reno and Rude
+Gonti, Canny Acquisitor

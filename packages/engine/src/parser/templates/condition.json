@@ -1,0 +1,24 @@
+[
+  {
+    "id": "cond.if",
+    "kind": "effect",
+    "cr": ["CR 608.2c", "CR 608.2h", "CR 118.12"],
+    "pattern": "if {c:Cond} , {e:Effects}",
+    "build": { "op": "if", "cond": "$c", "then": "$e" },
+    "consumes": ["if"],
+    "examples": [
+      { "text": "If you control an Elf, draw two cards.", "expect": { "targets": [], "steps": [{ "op": "if", "cond": { "cond": "exists", "of": { "ref": "each", "filter": { "subtypes": ["Elf"], "controller": "you" } } }, "then": [{ "op": "draw", "who": { "ref": "you" }, "count": 2 }] }] } },
+      { "text": "If it's your turn, draw three cards." },
+      { "text": "If you control two or more artifacts, target player draws two cards." },
+      { "text": "If there are seven or more cards in your graveyard, draw a card." }
+    ],
+    "counterExamples": [
+      "If you control an Elf, draw two cards instead.",
+      "If you would draw a card, draw four cards instead.",
+      "Unless you control an Elf, draw two cards.",
+      "If you control an Elf, you may draw two cards unless it is blue."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

@@ -1,0 +1,235 @@
+[
+  {
+    "id": "eff.m12.vote.words",
+    "kind": "effect",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38b",
+      "CR 701.38d"
+    ],
+    "pattern": "starting with you , each player votes for {w:VoteWords}",
+    "build": {
+      "op": "action",
+      "action": "vote",
+      "who": {
+        "ref": "you"
+      },
+      "choices": "$w"
+    },
+    "subject": "none",
+    "needs": [
+      "action:vote",
+      "feature:vote.words"
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for carnage or homage. If carnage gets more votes, destroy all nonland permanents. If homage gets more votes or the vote is tied, draw a card."
+      },
+      {
+        "text": "Starting with you, each player votes for time or knowledge. If time gets more votes, take an extra turn after this one. If knowledge gets more votes or the vote is tied, draw three cards."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player votes for death or torture. If death gets more votes, each opponent sacrifices a creature of their choice. If torture gets more votes or the vote is tied, each opponent loses 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each player votes for carnage or carnage.",
+      "Starting with you, each player votes for carnage or banana.",
+      "Starting with you, each player votes for carnage. If carnage gets more votes, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.m12.vote.objects",
+    "kind": "effect",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38b"
+    ],
+    "pattern": "starting with you , each player votes for ( a | an ) {f:Filter}",
+    "build": {
+      "op": "action",
+      "action": "vote",
+      "who": {
+        "ref": "you"
+      },
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:vote"
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for a nonland permanent you don't control. Exile each permanent with the most votes or tied for most votes."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player votes for a creature you don't control. Destroy each creature with the most votes or tied for most votes."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each player votes for target creature. Exile each permanent with the most votes or tied for most votes.",
+      "Exile each permanent with the most votes or tied for most votes."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m12.vote.additional",
+    "kind": "static",
+    "cr": [
+      "CR 701.38d"
+    ],
+    "pattern": "while voting , you get an additional vote",
+    "build": {
+      "s": "rule",
+      "rule": "additionalVote"
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "While voting, you get an additional vote."
+      },
+      {
+        "text": "Flying\nWhile voting, you get an additional vote."
+      }
+    ],
+    "counterExamples": [
+      "While voting, you get two additional votes.",
+      "While voting, each opponent gets an additional vote."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m12.vote.mayAdditional",
+    "kind": "static",
+    "cr": [
+      "CR 701.38d"
+    ],
+    "pattern": "while voting , you may vote an additional time",
+    "build": {
+      "s": "rule",
+      "rule": "mayVoteAdditional"
+    },
+    "consumes": [
+      "may",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "While voting, you may vote an additional time."
+      },
+      {
+        "text": "Flying\nWhile voting, you may vote an additional time."
+      }
+    ],
+    "counterExamples": [
+      "While voting, you may vote two additional times.",
+      "While voting, each opponent may vote an additional time."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.m12.vote.votersMayScry",
+    "kind": "effect",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.22a",
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "you and each opponent who voted for a choice you voted for may scry {n:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "voters",
+        "agree": true,
+        "andYou": true
+      },
+      "do": [
+        {
+          "op": "scry",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever players finish voting, you and each opponent who voted for a choice you voted for may scry 1."
+      },
+      {
+        "text": "Whenever players finish voting, you and each opponent who voted for a choice you voted for may scry 3."
+      }
+    ],
+    "counterExamples": [
+      "Whenever players finish voting, you and each opponent who voted for a choice you voted for may surveil 1.",
+      "Whenever players finish voting, you and each opponent who voted for a choice you didn't vote for may scry 1.",
+      "Whenever players finish voting, you and each opponent who voted for a choice you voted for scry 1."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.m12.vote.youScryX",
+    "kind": "effect",
+    "cr": [
+      "CR 701.22a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "you scry x , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "scry",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever players finish voting, you scry X, where X is the number of opponents who voted for a choice you voted for."
+      },
+      {
+        "text": "Whenever players finish voting, draw a card. You scry X, where X is the number of opponents who voted for a choice you didn't vote for."
+      }
+    ],
+    "counterExamples": [
+      "Whenever players finish voting, you surveil X, where X is the number of opponents who voted for a choice you voted for.",
+      "Whenever players finish voting, you scry X.",
+      "Whenever players finish voting, you scry X, where X is the number of opponents who voted for a choice you voted for, then draw X cards."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

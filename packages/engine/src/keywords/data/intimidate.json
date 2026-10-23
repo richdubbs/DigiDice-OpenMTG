@@ -1,0 +1,18 @@
+{
+  "name": "intimidate",
+  "rule": "702.13",
+  "params": [],
+  "mechanisms": [
+    "flag",
+    "hook"
+  ],
+  "reminder": "This creature can't be blocked except by artifact creatures and/or creatures that share a color with it.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "hooks": [
+    "canBeBlocked"
+  ],
+  "readers": [
+    "rules/combat-rules.ts#blockDenial"
+  ]
+}

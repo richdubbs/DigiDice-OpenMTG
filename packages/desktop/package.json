@@ -1,0 +1,21 @@
+{
+  "name": "@openmtg/desktop",
+  "version": "0.2.8",
+  "private": true,
+  "license": "MIT",
+  "author": "DigiDice LLC",
+  "description": "The OpenMTG desktop app for Windows (Electron): the local server and the client in one program window, with an installer and automatic updates (unofficial fan project).",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@openmtg/cards": "*",
+    "@openmtg/server": "*"
+  },
+  "devDependencies": {
+    "electron": "44.5.1",
+    "electron-builder": "26.17.0",
+    "electron-updater": "6.8.10"
+  }
+}

@@ -1,0 +1,347 @@
+[
+  {
+    "id": "eff.m11.token.forEachCommanderCast",
+    "kind": "effect",
+    "cr": [
+      "CR 903.8",
+      "CR 111.1",
+      "CR 608.2c"
+    ],
+    "pattern": "create ( a | an ) {t:TokenDesc} for each time you've cast ( your | a ) commander from the command zone this game",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "commanderCasts"
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "Create a 1/1 white Human Soldier creature token for each time you've cast a commander from the command zone this game."
+      },
+      {
+        "text": "Create a 1/1 green Elf Warrior creature token for each time you've cast your commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "Create a 1/1 white Human Soldier creature token for each time you've cast a commander this game.",
+      "Create a 1/1 white Human Soldier creature token for each time an opponent has cast a commander from the command zone this game.",
+      "Create a 1/1 white Human Soldier creature token for each time you've cast a commander from the command zone this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.m11.pump.forEachCommanderCast",
+    "kind": "effect",
+    "cr": [
+      "CR 903.8",
+      "CR 611.2a",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Objs} get +1/+1 {d:Dur} for each time you've cast ( your | a ) commander from the command zone this game",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "commanderCasts"
+              },
+              "toughness": {
+                "q": "commanderCasts"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "Pirates you control get +1/+1 until end of turn for each time you've cast a commander from the command zone this game."
+      },
+      {
+        "text": "Creatures you control get +1/+1 until end of turn for each time you've cast your commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "Pirates you control get +1/+1 until end of turn for each time you've cast a commander this game.",
+      "Pirates you control get +1/+1 until end of turn for each time you've cast a spell from the command zone this game.",
+      "Pirates you control get +2/+2 until end of turn for each time you've cast a commander from the command zone this game."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m11.anthem.aCommanderCasts",
+    "kind": "static",
+    "cr": [
+      "CR 903.8",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "{f:Filter} get +1/+1 for each time you've cast a commander from the command zone this game",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "commanderCasts"
+          },
+          "toughness": {
+            "q": "commanderCasts"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "Goblins you control get +1/+1 for each time you've cast a commander from the command zone this game."
+      },
+      {
+        "text": "Other creatures you control get +1/+1 for each time you've cast a commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "Goblins you control get +1/+1 for each time you've cast a commander this game.",
+      "Goblins you control get +1/+1 for each time an opponent has cast a commander from the command zone this game.",
+      "Goblins you control get +1/+1 until end of turn for each time you've cast a commander from the command zone this game."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m11.enters.counter.forEachCommanderCast",
+    "kind": "static",
+    "cr": [
+      "CR 903.8",
+      "CR 614.1c",
+      "CR 122.6"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it for each time you've cast ( your | a ) commander from the command zone this game",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "commanderCasts"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it for each time you've cast a commander from the command zone this game."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on it for each time you've cast your commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it for each time you've cast a commander this game.",
+      "~ enters with a +1/+1 counter on it for each time an opponent has cast a commander from the command zone this game.",
+      "~ enters with a +1/+1 counter on target creature for each time you've cast a commander from the command zone this game."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m11.enters.counters.nForEachCommanderCast",
+    "kind": "static",
+    "cr": [
+      "CR 903.8",
+      "CR 614.1c",
+      "CR 122.6"
+    ],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counters on it for each time you've cast ( your | a ) commander from the command zone this game",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "math",
+                  "op": "*",
+                  "args": [
+                    "$n",
+                    {
+                      "q": "commanderCasts"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with two +1/+1 counters on it for each time you've cast your commander from the command zone this game."
+      },
+      {
+        "text": "~ enters with three +1/+1 counters on it for each time you've cast a commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with two +1/+1 counters on it for each time you've cast your commander this game.",
+      "~ enters with two +1/+1 counters on it for each time an opponent has cast their commander from the command zone this game.",
+      "~ enters with two +1/+1 counters on it for each time you've cast your commander from the command zone this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m11.spells.less.forEachCommanderCast",
+    "kind": "static",
+    "cr": [
+      "CR 903.8",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} you cast cost {m:ManaCost} less to cast for each time you've cast ( your | a ) commander from the command zone this game",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "commanderCasts"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "Instant and sorcery spells you cast cost {1} less to cast for each time you've cast a commander from the command zone this game."
+      },
+      {
+        "text": "Creature spells you cast cost {1} less to cast for each time you've cast your commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "Instant and sorcery spells you cast cost {1} more to cast for each time you've cast a commander from the command zone this game.",
+      "Instant and sorcery spells your opponents cast cost {1} less to cast for each time you've cast a commander from the command zone this game.",
+      "Instant and sorcery spells you cast cost {1} less to cast for each time you've cast a commander this game."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m11.deckConstruction.canBeCommander",
+    "kind": "static",
+    "cr": [
+      "CR 903.3a",
+      "CR 113.6n"
+    ],
+    "pattern": "~ can be your commander",
+    "build": {
+      "s": "deckConstruction",
+      "rule": "canBeCommander"
+    },
+    "examples": [
+      {
+        "text": "~ can be your commander."
+      },
+      {
+        "text": "Flying\n~ can be your commander."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be your commander.",
+      "~ can be your commander's companion.",
+      "Target creature can be your commander."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

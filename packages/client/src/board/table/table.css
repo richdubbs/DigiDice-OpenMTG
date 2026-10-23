@@ -1,0 +1,591 @@
+/*
+ * M12-4a (docs/design/m12-multiplayer.md 5.1, 5.2): the shared table and the two other layouts of a game with three or four players. A two-player game
+ * never gets `data-layout` other than "duel", so nothing here applies to it.
+ *
+ * Card pictures: as everywhere on the board, nothing here filters, blends, fades or covers a card picture. A player who left is dimmed on their disc, plate
+ * and mat only (their cards are gone; at the end of the game the last loser keeps theirs, undimmed).
+ */
+
+/* A registered length (as arena.css's card widths): computed where it is declared, against the table (the size container), and inherited as pixels. */
+@property --cw-seat {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 60px;
+}
+
+/* ---- the shared table ----------------------------------------------------------------------------------------------------------- */
+
+/* The arena around the table stays (room, horizon, pillars, vignette); the two-sided floor, mats and emblem give way to the table plane's own. */
+.game-board[data-layout='shared'] .arena-floor,
+.game-board[data-layout='shared'] .arena-mat,
+.game-board[data-layout='shared'] .arena-decal {
+  display: none;
+}
+
+.table-shared {
+  /* A card on a seat, in the table plane's own pixels (the camera's perspective makes the far seats smaller on screen). */
+  --cw-seat: clamp(34px, min(13cqh, 9cqw), 130px);
+  --midline: 46%;
+  padding: 0;
+}
+
+.table-shared[data-players='3'] {
+  --cw-seat: clamp(36px, min(13.5cqh, 9.5cqw), 136px);
+}
+
+/* The table area: the scene and everything that lies on it or over it, above the HUD strip. */
+.table-area {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* One layer of the scene: its perspective, and the 2D pan of its picture (useTableCamera writes both). The floor and the cards are two such layers. */
+.table-scene {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
+  transform-origin: 50% 50%;
+}
+
+.table-floor {
+  z-index: 0;
+}
+
+.table-area > .fx-under {
+  z-index: 1;
+}
+
+.table-area > .fx-arrows {
+  z-index: 2;
+}
+
+.table-cards {
+  z-index: 3;
+}
+
+/*
+ * The table plane under the camera: one flat element (its children get no 3D transform of their own, so the browser composites the whole plane as one
+ * layer and moving the camera is a transform on that layer, no layout).
+ */
+.table-camera {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.table-turn {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 30px minmax(0, 1fr);
+  padding: 1% 1.2%;
+  transform-origin: 50% 50%;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 2.4%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.table-band {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+/* The seats on the card layer: transparent, so the arrows and impacts below show between the cards. */
+.table-plane .seat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  min-height: 0;
+  padding: 4px 8px;
+  pointer-events: auto;
+}
+
+.table-plane .seat > .battlefield {
+  flex: 1 1 0;
+}
+
+.table-plane .seat .bf-row {
+  --cw-row: var(--cw-seat);
+}
+
+/* A near seat's cards step up toward the middle when they attack or block (the far seats' step down, as the top side's do). */
+.table-plane .seat-near .board-card.is-attacking {
+  --combat-y: calc(var(--row-cw, var(--cw-seat)) * -0.13);
+}
+
+.table-plane .seat-near .board-card.is-blocking {
+  --combat-y: calc(var(--row-cw, var(--cw-seat)) * -0.12);
+}
+
+/* Another player's disc, piles and hand on their seat, along their own edge of the table. */
+.table-plane .seat .seat-hud {
+  flex: none;
+  --disc: clamp(40px, 8cqh, 76px);
+  --pile-w: clamp(22px, 3.8cqh, 36px);
+  --back-w: clamp(18px, 3.4cqh, 30px);
+}
+
+.table-plane .seat-near > .seat-hud {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+}
+
+.table-plane .seat .seat-cluster {
+  padding-bottom: 0;
+}
+
+/* The name plate: the player's number (keys 1-4), name and place in turn order; the button that looks from their seat. */
+.seat-plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: none;
+  min-width: 0;
+}
+
+.game-board .seat-plate-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 1px 10px 1px 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--neon-2-rgb), 0.55);
+  background: rgba(10, 4, 24, 0.82);
+  color: #f2e8ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 12px rgba(var(--neon-2-rgb), 0.25);
+  --btn-depth: 0px;
+}
+
+.seat.is-own .seat-plate-button {
+  border-color: rgba(var(--neon-rgb), 0.6);
+  box-shadow: 0 0 12px rgba(var(--neon-rgb), 0.28);
+}
+
+.seat-plate.is-viewing .seat-plate-button {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35), 0 0 16px rgba(var(--neon-rgb), 0.5);
+}
+
+.seat-key {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 10px;
+}
+
+.seat-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seat-rel {
+  color: rgba(232, 220, 255, 0.72);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.seat-arrow {
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.seat-placement,
+.seat-out-label {
+  padding: 1px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(200, 200, 220, 0.4);
+  background: rgba(20, 22, 30, 0.88);
+  color: #d8d8e4;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* A player who left: their plate and disc greyed (no card picture is ever dimmed; their cards are gone, D9). */
+.seat-plate.is-out .seat-plate-button,
+.seat.is-out .player-panel,
+.side-top.is-out .player-panel,
+.opponent-strip.is-out .player-panel {
+  opacity: 0.45;
+  filter: grayscale(1);
+  transition: opacity 600ms ease, filter 600ms ease;
+}
+
+.side-top.is-out > .seat-out-label {
+  align-self: center;
+  margin-top: 4px;
+}
+
+/* ---- the floor layer: the grid, each seat's mat, the emblem --------------------------------------------------------------------- */
+
+.table-floor-grid {
+  position: absolute;
+  inset: -4% -3%;
+  border-radius: 28px;
+  border: 1px solid rgba(var(--neon-rgb), 0.35);
+  background-color: rgba(3, 8, 22, 0.55);
+  background-image:
+    linear-gradient(0deg, rgba(var(--neon-rgb), 0.34) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(var(--neon-rgb), 0.34) 2px, transparent 2px),
+    linear-gradient(0deg, rgba(var(--neon-rgb), 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--neon-rgb), 0.1) 1px, transparent 1px);
+  background-size:
+    160px 160px,
+    160px 160px,
+    40px 40px,
+    40px 40px;
+  background-position: 50% 50%;
+  box-shadow: 0 0 40px rgba(var(--neon-rgb), 0.18), inset 0 0 80px rgba(0, 0, 0, 0.6);
+}
+
+.seat-mat {
+  position: relative;
+  border-radius: 14px;
+  border: 1.5px solid rgba(var(--neon-2-rgb), 0.42);
+  background: linear-gradient(180deg, rgba(74, 26, 122, 0.16), rgba(40, 8, 60, 0.3));
+  box-shadow: 0 0 18px rgba(var(--neon-2-rgb), 0.18), inset 0 0 0 1px rgba(255, 170, 255, 0.08);
+}
+
+.seat-mat.is-own {
+  border-color: rgba(var(--neon-rgb), 0.5);
+  background: linear-gradient(180deg, rgba(28, 90, 168, 0.18), rgba(13, 58, 128, 0.1));
+  box-shadow: 0 0 18px rgba(var(--neon-rgb), 0.22), inset 0 0 0 1px rgba(170, 230, 255, 0.08);
+}
+
+.seat-mat.is-out {
+  opacity: 0.3;
+  transition: opacity 900ms ease;
+}
+
+.table-emblem {
+  width: min(46%, 520px);
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--neon-rgb), 0.5);
+  box-shadow: 0 0 22px rgba(var(--neon-rgb), 0.35), inset 0 0 18px rgba(var(--neon-2-rgb), 0.25);
+}
+
+.table-band .center-line {
+  width: 96%;
+}
+
+.table-band .result-banner {
+  position: absolute;
+  top: -26px;
+}
+
+/* ---- screen-space parts of the shared table ------------------------------------------------------------------------------------ */
+
+/* The viewer's HUD strip under the table: the disc and piles bottom-left, the hand in the middle column, the prompt's action buttons bottom-right. */
+.table-hud.side-bottom {
+  position: relative;
+  z-index: 5;
+  flex: none;
+  grid-template-rows: auto;
+  padding: 0 12px 2px;
+}
+
+.table-hud .seat-cluster,
+.table-hud .hand,
+.table-hud .table-actions {
+  grid-row: 1;
+}
+
+/* The camera's chips and the layout switch, at the table's top left (never in the rail). */
+.table-chips {
+  position: absolute;
+  z-index: 7;
+  left: 10px;
+  top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  max-width: 60%;
+}
+
+.table-chips-flat {
+  top: var(--midline, 47%);
+  translate: 0 -50%;
+}
+
+.table-layout-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(2, 8, 22, 0.7);
+  border: 1px solid rgba(var(--neon-rgb), 0.25);
+}
+
+.game-board .table-chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--neon-rgb), 0.35);
+  background: rgba(2, 8, 22, 0.78);
+  color: #dff4ff;
+  font-size: 11px;
+  font-weight: 700;
+  --btn-depth: 0px;
+}
+
+.game-board .table-chip[aria-pressed='true'] {
+  border-color: var(--neon);
+  background: rgba(var(--neon-rgb), 0.22);
+  color: #fff;
+}
+
+.game-board .table-chip.is-primary {
+  border-color: #fff;
+  background: rgba(var(--neon-rgb), 0.35);
+}
+
+.table-layout-switch .table-chip {
+  border-color: transparent;
+}
+
+/* Where a drawn card is shown on its way to the hand (Animator showcaseSpot): the right of the near half. */
+.table-showcase {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 40%;
+  height: 52%;
+  pointer-events: none;
+}
+
+.table-shared .table-stack {
+  top: 46%;
+}
+
+/* ---- compact faces (far seats, strips) ------------------------------------------------------------------------------------------ */
+
+.compact-face {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  padding: 3px 4px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 2px solid var(--frame, #8a8a96);
+  background: linear-gradient(180deg, rgba(20, 24, 36, 0.96), rgba(8, 10, 18, 0.96));
+  color: #f4f4fa;
+  overflow: hidden;
+  box-shadow: var(--card-depth);
+}
+
+.compact-face.frame-w {
+  --frame: #e8e0c0;
+}
+
+.compact-face.frame-u {
+  --frame: #3a8ee0;
+}
+
+.compact-face.frame-b {
+  --frame: #8a7a9a;
+}
+
+.compact-face.frame-r {
+  --frame: #e2563a;
+}
+
+.compact-face.frame-g {
+  --frame: #3aa25a;
+}
+
+.compact-face.frame-multi {
+  --frame: #d8b440;
+}
+
+.cf-name {
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.compact-face .board-mana-cost {
+  transform: scale(0.8);
+  transform-origin: 0 50%;
+}
+
+.cf-pt {
+  align-self: flex-end;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ---- opponents across the top (data-seats 3, 4): each top seat compact ----------------------------------------------------------- */
+
+.game-board[data-layout='acrossTop'][data-seats='3'] .arena-stage,
+.game-board[data-layout='acrossTop'][data-seats='4'] .arena-stage {
+  /* the creatures' width; the row behind them is 0.78 of it (board.css) */
+  --cw-far: clamp(32px, min(8.4cqh, 5.5cqw), 100px);
+  --disc: clamp(42px, 9cqh, 80px);
+}
+
+.game-board[data-layout='acrossTop'][data-seats='4'] .arena-stage {
+  --cw-far: clamp(30px, min(7.7cqh, 4.3cqw), 86px);
+}
+
+.game-board[data-layout='acrossTop'] .board-top > .side + .side {
+  border-left: 1px solid rgba(var(--neon-2-rgb), 0.18);
+  padding-left: 6px;
+}
+
+/* ---- one focused opponent: the others as strips ------------------------------------------------------------------------------- */
+
+.board-top-focused {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.board-top-focused > .side {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.opponent-strips {
+  display: flex;
+  gap: 8px;
+  flex: none;
+  min-width: 0;
+}
+
+.opponent-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--neon-2-rgb), 0.3);
+  background: rgba(14, 4, 26, 0.55);
+  cursor: pointer;
+  --disc: clamp(34px, 6cqh, 52px);
+  --cw-row: clamp(26px, min(5cqh, 3.2cqw), 52px);
+}
+
+.opponent-strip:hover {
+  border-color: rgba(var(--neon-2-rgb), 0.6);
+}
+
+.game-board .strip-focus {
+  padding: 1px 8px;
+  font-size: 10px;
+}
+
+.strip-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.strip-creatures {
+  flex: 1 1 0;
+  min-height: 0;
+  justify-content: flex-start;
+}
+
+.strip-creatures .board-card {
+  flex-direction: column;
+}
+
+/* ---- commander damage at a table of four (PlayerPanel: the highest three lines, "+N", the whole table) ----------------------------- */
+
+.game-board .stat-commander-more {
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  --btn-depth: 0px;
+}
+
+.commander-table {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  bottom: calc(100% + 6px);
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(var(--neon-rgb), 0.45);
+  background: rgba(3, 10, 26, 0.96);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.panel-top .commander-table {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+
+.commander-table table {
+  border-collapse: collapse;
+  margin-bottom: 6px;
+}
+
+.commander-table th,
+.commander-table td {
+  padding: 2px 8px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.commander-table th[scope='row'] {
+  text-align: left;
+}
+
+.commander-table td.is-high {
+  color: #ffb070;
+  font-weight: 800;
+}

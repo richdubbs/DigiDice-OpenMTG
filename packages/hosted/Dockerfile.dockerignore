@@ -1,0 +1,21 @@
+# What the hosted image's build never sees (BuildKit reads <Dockerfile>.dockerignore next to the Dockerfile; the context is the repository root).
+# Working copies' dependencies, caches, card data, rules, data directories, secrets and everything else that is not the server's source.
+**/node_modules
+**/.cache
+**/data
+**/dist
+**/release
+.git
+.env
+.env.*
+!.env.example
+**/*.log
+rules
+docs
+scripts
+packages/*/test
+packages/client
+packages/desktop
+packages/server/src
+packages/ai/src
+packages/ladder/src

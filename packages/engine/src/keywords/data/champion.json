@@ -1,0 +1,100 @@
+{
+  "name": "champion",
+  "rule": "702.72",
+  "params": [
+    {
+      "name": "filter",
+      "type": "filter"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this enters, sacrifice it unless you exile another {filter} you control. When this leaves the battlefield, that card returns to the battlefield.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, sacrifice it unless you exile another {filter} you control.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "pay",
+            "who": {
+              "ref": "you"
+            },
+            "cost": {
+              "other": [
+                {
+                  "kind": "exileFrom",
+                  "zone": "battlefield",
+                  "count": 1,
+                  "filter": {
+                    "controller": "you",
+                    "other": true,
+                    "anyOf": [
+                      "$filter"
+                    ]
+                  },
+                  "link": "champion"
+                }
+              ]
+            },
+            "else": [
+              {
+                "op": "sacrifice",
+                "what": {
+                  "ref": "self"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "triggered",
+      "text": "When ~ leaves the battlefield, return the exiled card to the battlefield under its owner's control.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "linked",
+              "link": "champion"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": "owner"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,522 @@
+[
+  {
+    "id": "eff.t63.cast.noncreature.fromHand.free",
+    "kind": "effect",
+    "cr": [
+      "CR 601.2",
+      "CR 608.2g",
+      "CR 118.9",
+      "CR 118.9d",
+      "CR 107.3b"
+    ],
+    "pattern": "you may cast a noncreature spell from your hand without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Creature",
+              "Land"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: You may cast a noncreature spell from your hand without paying its mana cost."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may cast a noncreature spell from your hand without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: You may cast a spell from your hand without paying its mana cost.",
+      "{1}, {T}: You may cast a noncreature spell from your graveyard without paying its mana cost.",
+      "{1}, {T}: You may cast a noncreature spell from your hand.",
+      "{1}, {T}: You may cast a noncreature spell from your hand without paying its mana cost this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t63.cast.target.thisTurn",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast {o:Obj} this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{T}: You may cast target Elf creature card from your graveyard this turn."
+      },
+      {
+        "text": "{2}, {T}: You may cast target artifact card from your graveyard this turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: You may cast target Elf creature card from your graveyard until your next turn.",
+      "{T}: You may cast target Elf creature card from your graveyard.",
+      "{T}: You may cast target Elf creature card from your graveyard this turn without paying its mana cost.",
+      "{T}: You may play target Elf creature card from your graveyard this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.t63.first.spell.less.flash",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 601.2i",
+      "CR 118.7a",
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 611.3a"
+    ],
+    "pattern": "the first {f:Filter} you cast each turn costs {m:ManaCost} less to cast and can be cast as though it had flash",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "happened",
+          "event": {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "types": "$f.types",
+              "allTypes": "$f.allTypes",
+              "notTypes": "$f.notTypes",
+              "subtypes": "$f.subtypes",
+              "notSubtypes": "$f.notSubtypes",
+              "supertypes": "$f.supertypes",
+              "notSupertypes": "$f.notSupertypes",
+              "colors": "$f.colors",
+              "notColors": "$f.notColors",
+              "colorless": "$f.colorless",
+              "multicolored": "$f.multicolored",
+              "monocolored": "$f.monocolored",
+              "keyword": "$f.keyword",
+              "notKeyword": "$f.notKeyword",
+              "manaValue": "$f.manaValue"
+            }
+          },
+          "scope": "turn"
+        }
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "The first artifact spell you cast each turn costs {1} less to cast and can be cast as though it had flash."
+      },
+      {
+        "text": "The first instant or sorcery spell you cast each turn costs {2} less to cast and can be cast as though it had flash."
+      }
+    ],
+    "counterExamples": [
+      "The first artifact spell you cast each turn costs {1} less to cast and can be cast as though it had haste.",
+      "The first artifact spell you cast each turn costs {1} more to cast and can be cast as though it had flash.",
+      "The second artifact spell you cast each turn costs {1} less to cast and can be cast as though it had flash.",
+      "The first artifact spell an opponent casts each turn costs {1} less to cast and can be cast as though it had flash."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.t63.first.spell.yourTurns.less",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 601.2i",
+      "CR 118.7a",
+      "CR 611.3a",
+      "CR 500.1"
+    ],
+    "pattern": "the first {f:Filter} you cast during each of your turns costs {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "turnOf",
+            "whose": "you"
+          },
+          {
+            "cond": "not",
+            "of": {
+              "cond": "happened",
+              "event": {
+                "ev": "cast",
+                "player": "you",
+                "spell": {
+                  "types": "$f.types",
+                  "allTypes": "$f.allTypes",
+                  "notTypes": "$f.notTypes",
+                  "subtypes": "$f.subtypes",
+                  "notSubtypes": "$f.notSubtypes",
+                  "supertypes": "$f.supertypes",
+                  "notSupertypes": "$f.notSupertypes",
+                  "colors": "$f.colors",
+                  "notColors": "$f.notColors",
+                  "colorless": "$f.colorless",
+                  "multicolored": "$f.multicolored",
+                  "monocolored": "$f.monocolored",
+                  "keyword": "$f.keyword",
+                  "notKeyword": "$f.notKeyword",
+                  "manaValue": "$f.manaValue"
+                }
+              },
+              "scope": "turn"
+            }
+          }
+        ]
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first artifact spell you cast during each of your turns costs {1} less to cast."
+      },
+      {
+        "text": "The first non-Elf creature spell with flying you cast during each of your turns costs {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "The first artifact spell you cast during each of your turns costs {1} more to cast.",
+      "The second artifact spell you cast during each of your turns costs {1} less to cast.",
+      "The first artifact spell you cast during each opponent's turn costs {1} less to cast.",
+      "The first artifact spell an opponent casts during each of your turns costs {1} less to cast."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.t63.ability.less.attackedWith",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7a",
+      "CR 508.1"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate if you attacked with ( a | an ) {f:Filter} this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "happenedCount",
+                  "event": {
+                    "ev": "attacks",
+                    "attacker": {
+                      "types": "$f.types",
+                      "allTypes": "$f.allTypes",
+                      "notTypes": "$f.notTypes",
+                      "subtypes": "$f.subtypes",
+                      "notSubtypes": "$f.notSubtypes",
+                      "supertypes": "$f.supertypes",
+                      "notSupertypes": "$f.notSupertypes",
+                      "colors": "$f.colors",
+                      "notColors": "$f.notColors",
+                      "colorless": "$f.colorless",
+                      "keyword": "$f.keyword",
+                      "notKeyword": "$f.notKeyword",
+                      "manaValue": "$f.manaValue",
+                      "power": "$f.power",
+                      "toughness": "$f.toughness",
+                      "counters": "$f.counters",
+                      "token": "$f.token",
+                      "controller": "you"
+                    }
+                  },
+                  "scope": "turn"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: Draw a card. This ability costs {2} less to activate if you attacked with a Goblin this turn."
+      },
+      {
+        "text": "{3}, {T}, Sacrifice ~: Destroy target artifact. This ability costs {1} less to activate if you attacked with a creature this turn."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Draw a card. This ability costs {2} more to activate if you attacked with a Goblin this turn.",
+      "{4}, {T}: Draw a card. This ability costs {2} less to activate if you attacked this turn.",
+      "{4}, {T}: Draw a card. This ability costs {2} less to activate if an opponent attacked with a Goblin this turn.",
+      "{4}, {T}: Draw a card. This ability costs {2} less to activate unless you attacked with a Goblin this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.t63.ability.less.control",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7a",
+      "CR 122.1"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate if you control ( a | an ) {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "types": "$f.types",
+                      "allTypes": "$f.allTypes",
+                      "notTypes": "$f.notTypes",
+                      "subtypes": "$f.subtypes",
+                      "notSubtypes": "$f.notSubtypes",
+                      "supertypes": "$f.supertypes",
+                      "notSupertypes": "$f.notSupertypes",
+                      "colors": "$f.colors",
+                      "notColors": "$f.notColors",
+                      "colorless": "$f.colorless",
+                      "keyword": "$f.keyword",
+                      "notKeyword": "$f.notKeyword",
+                      "manaValue": "$f.manaValue",
+                      "power": "$f.power",
+                      "toughness": "$f.toughness",
+                      "counters": "$f.counters",
+                      "token": "$f.token",
+                      "controller": "you"
+                    }
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Draw a card. This ability costs {2} less to activate if you control a legendary creature."
+      },
+      {
+        "text": "{3}, {T}: Draw a card. This ability costs {1} less to activate if you control a Goblin."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Draw a card. This ability costs {2} more to activate if you control a legendary creature.",
+      "{3}, {T}: Draw a card. This ability costs {2} less to activate if an opponent controls a legendary creature.",
+      "{3}, {T}: Draw a card. This ability costs {2} less to activate unless you control a legendary creature.",
+      "{3}, {T}: Draw a card. This ability costs {2} less to activate if you control two or more legendary creatures.",
+      "{3}, {T}: Draw a card. This ability costs {2} less to activate if you control a creature with a +1/+1 counter on it and a Goblin."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.t63.enters.tapped.notYourTurn",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 500.1"
+    ],
+    "pattern": "~ enters tapped if it's not your turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "tappedUnless": {
+              "cond": "turnOf",
+              "whose": "you"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "~ enters tapped if it's not your turn."
+      },
+      {
+        "text": "~ enters tapped if it's not your turn.\nFlash"
+      }
+    ],
+    "counterExamples": [
+      "~ enters tapped if it's your turn.",
+      "~ enters tapped if it's not an opponent's turn.",
+      "~ enters tapped unless it's not your turn.",
+      "~ enters untapped if it's not your turn."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

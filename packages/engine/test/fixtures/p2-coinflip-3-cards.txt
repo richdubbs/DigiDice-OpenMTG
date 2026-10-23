@@ -1,0 +1,4 @@
+# p2-coinflip-3: the golden cards of the round (test/m5/golden/cards/cloud-p2-coinflip-3-review.json)
+Tomb Tyrant
+Goblin Traprunner
+Apathy

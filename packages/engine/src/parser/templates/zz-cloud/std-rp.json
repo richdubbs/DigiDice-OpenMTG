@@ -1,0 +1,324 @@
+[
+  {
+    "id": "sta.stdrp.prevent.all.to.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 614.1a",
+      "CR 604.1"
+    ],
+    "pattern": "prevent all damage that would be dealt to {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to blocking creatures you control."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to enchantment creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all noncombat damage that would be dealt to blocking creatures you control.",
+      "Prevent all damage that would be dealt to blocking creatures you control this turn.",
+      "Prevent all damage that would be dealt by blocking creatures you control.",
+      "Prevent the next 1 damage that would be dealt to blocking creatures you control."
+    ]
+  },
+  {
+    "id": "eff.stdrp.becomes.subtype.with.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}{G}: Target land becomes a 3/3 Elemental creature with reach until end of turn. It's still a land."
+      },
+      {
+        "text": "{1}{W}, {T}: Target land you control becomes a 2/4 Spirit Soldier creature with vigilance and lifelink until end of turn. It's still a land."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: Target land becomes a 3/3 Elemental creature with reach. It's still a land.",
+      "{2}{G}: Target land becomes a 3/3 Elemental artifact creature with reach until end of turn.",
+      "{2}{G}: Target land becomes a 3/3 Elemental creature with reach until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdrp.becomes.color.subtype.with.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}{B}, {T}: Target land you control becomes a 2/2 black Bat creature with flying until end of turn. It's still a land."
+      },
+      {
+        "text": "{3}{R}: Target land becomes a 4/2 red Elemental Warrior creature with haste and menace until end of turn. It's still a land."
+      }
+    ],
+    "counterExamples": [
+      "{1}{B}, {T}: Target land you control becomes a 2/2 black Bat creature with flying. It's still a land.",
+      "{1}{B}, {T}: Target land you control becomes a 2/2 black Bat artifact creature with flying until end of turn.",
+      "{1}{B}, {T}: Target land you control becomes a 2/2 black and red Bat creature with flying until end of turn. It's still a land."
+    ]
+  },
+  {
+    "id": "eff.stdrp.becomes.twoColor.subtype.with.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c1:Color} and {c2:Color} {st:Subtypes} creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{G}{U}, {T}: Target land you control becomes a 3/4 green and blue Frog creature with hexproof until end of turn. It's still a land."
+      },
+      {
+        "text": "{2}{W}{B}: Target land becomes a 4/3 white and black Knight creature with first strike and lifelink until end of turn. It's still a land."
+      }
+    ],
+    "counterExamples": [
+      "{G}{U}, {T}: Target land you control becomes a 3/4 green and blue Frog creature with hexproof. It's still a land.",
+      "{G}{U}, {T}: Target land you control becomes a 3/4 green and blue Frog artifact creature with hexproof until end of turn.",
+      "{G}{U}, {T}: Target land you control becomes a 3/4 green Frog creature with hexproof until end of turn. It's still a land."
+    ]
+  },
+  {
+    "id": "eff.stdrp.becomes.color.subtype.artifact.with.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} artifact creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}{U}: ~ becomes a 3/3 blue Drake artifact creature with flying until end of turn."
+      },
+      {
+        "text": "{2}{R}{R}: ~ becomes a 5/2 red Dwarf Berserker artifact creature with trample and haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}{U}: ~ becomes a 3/3 blue Drake artifact creature with flying.",
+      "{3}{U}: ~ becomes a 3/3 blue Drake creature with flying until end of turn.",
+      "{3}{U}: ~ becomes a 3/3 Drake artifact creature with flying until end of turn."
+    ]
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "name": "equip",
+  "rule": "702.6",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    },
+    {
+      "name": "filter",
+      "type": "filter",
+      "optional": true
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}: Attach to target creature you control. Equip only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{printed}",
+      "cost": "$cost",
+      "sorcerySpeed": true,
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "object",
+            "filter": {
+              "$ifParam": "filter",
+              "then": "$filter",
+              "else": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you"
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "text": {
+              "$ifParam": "filter",
+              "then": "target creature",
+              "else": "target creature you control"
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "attach",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "ref": "target",
+              "id": "t0"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

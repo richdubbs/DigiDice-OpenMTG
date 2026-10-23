@@ -1,0 +1,761 @@
+[
+  {
+    "id": "rep.m6.enters.copy.pt",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 707.9d",
+      "CR 613.4b"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield , except it's {pt:BasePT}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it's 5/5."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any artifact creature on the battlefield, except it's 3/4."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it's 5/5 and it has flying.",
+      "You may have ~ enter as a copy of any creature in a graveyard, except it's 5/5.",
+      "You may have ~ enter as a copy of any creature on the battlefield, except it gets +5/+5."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rep.m6.enters.copy.additionalCounters",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9e",
+      "CR 122.6"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield , except it enters with {n:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "additional": [
+                {
+                  "counters": [
+                    {
+                      "kind": "$k",
+                      "count": "$n"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it enters with X additional +1/+1 counters on it."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any artifact on the battlefield, except it enters with two additional +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it enters with X additional +1/+1 counters on it and it has flying.",
+      "You may have ~ enter as a copy of any creature on the battlefield, except it enters with X fewer +1/+1 counters on it.",
+      "You may have ~ enter as a copy of any creature in a graveyard, except it enters with two additional +1/+1 counters on it."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rep.m6.enters.copy.sparkDouble",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 707.9e",
+      "CR 306.5b"
+    ],
+    "pattern": "you may have ~ enter as a copy of a {f:Filter} , except it enters with an additional {k:CounterKind} counter on it if it's a creature , it enters with an additional loyalty counter on it if it's a planeswalker , and it isn't legendary",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "layer": 4,
+                  "supertypes": {
+                    "remove": [
+                      "Legendary"
+                    ]
+                  }
+                }
+              ],
+              "additional": [
+                {
+                  "if": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "counters": [
+                    {
+                      "kind": "$k",
+                      "count": 1
+                    }
+                  ]
+                },
+                {
+                  "if": {
+                    "types": [
+                      "Planeswalker"
+                    ]
+                  },
+                  "counters": [
+                    {
+                      "kind": "loyalty",
+                      "count": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of a creature or planeswalker you control, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker, and it isn't legendary."
+      },
+      {
+        "text": "You may have ~ enter as a copy of a creature or planeswalker an opponent controls, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker, and it isn't legendary."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of a creature or planeswalker you control, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker.",
+      "You may have ~ enter as a copy of a creature or planeswalker you control, except it enters with an additional +1/+1 counter on it if it's a creature, it enters with an additional loyalty counter on it if it's a planeswalker, and it is legendary."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rep.m6.enters.copy.ofSelf",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 616.1c"
+    ],
+    "pattern": "{f:Filter} enter as a copy of ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": {
+                "self": true
+              },
+              "optional": false
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creatures you control enter as a copy of ~."
+      },
+      {
+        "text": "Artifact creatures you control enter as a copy of ~."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control enter as a copy of target creature.",
+      "Creatures you control enter tapped.",
+      "Creatures you control may enter as a copy of ~."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rep.m6.damage.double.any",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 120.3"
+    ],
+    "pattern": "if a source would deal damage to a permanent or player , it deals double that damage to that permanent or player instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to a permanent or player, it deals double that damage to that permanent or player instead."
+      },
+      {
+        "text": "If a source would deal damage to a permanent or player, it deals double that damage to that permanent or player instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to a permanent or player, it deals triple that damage to that permanent or player instead.",
+      "If a source you control would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.",
+      "If a source would deal damage to a creature, it deals double that damage to that creature instead."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rep.m6.damage.coloredSource.player.plus",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 105.2"
+    ],
+    "pattern": "if a {c:Color} source would deal damage to a player , it deals that much damage plus {n:Qty} to that player instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "colors": [
+            "$c"
+          ]
+        },
+        "recipient": {
+          "player": "any"
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a red source would deal damage to a player, it deals that much damage plus 1 to that player instead."
+      },
+      {
+        "text": "If a green source would deal damage to a player, it deals that much damage plus 2 to that player instead."
+      }
+    ],
+    "counterExamples": [
+      "If a red source would deal damage to a player, it deals that much damage minus 1 to that player instead.",
+      "If a red source would deal damage to a creature, it deals that much damage plus 1 to that creature instead.",
+      "If a red source would deal damage to an opponent, it deals that much damage plus 1 to that player instead."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.skip.nextDraw",
+    "kind": "effect",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 614.10a",
+      "CR 504.1"
+    ],
+    "pattern": "{p:Player} skips their next draw step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "step",
+            "step": "draw",
+            "whose": "$p"
+          },
+          "body": {
+            "b": "skip"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "skip"
+    ],
+    "needs": [
+      "feature:shield.skip"
+    ],
+    "examples": [
+      {
+        "text": "Target player skips their next draw step."
+      },
+      {
+        "text": "Draw a card. Target opponent skips their next draw step."
+      }
+    ],
+    "counterExamples": [
+      "Target player skips their next untap step.",
+      "Target player skips their draw step.",
+      "Target player skips their next two draw steps."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rep.m6.draw.emptyLibrary.win",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.4",
+      "CR 104.2b"
+    ],
+    "pattern": "if you would draw a card while your library has no cards in it , you win the game instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "you"
+      },
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "zoneSize",
+          "zone": "library",
+          "of": {
+            "ref": "you"
+          }
+        },
+        "op": "==",
+        "right": 0
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "winGame",
+            "who": {
+              "ref": "you"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card while your library has no cards in it, you win the game instead."
+      },
+      {
+        "text": "Flying\nIf you would draw a card while your library has no cards in it, you win the game instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card while your library has no cards in it, you lose the game instead.",
+      "If an opponent would draw a card while their library has no cards in it, you win the game instead.",
+      "If you would draw a card, you win the game instead."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rep.m6.damage.you.redirect",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.9",
+      "CR 120.3"
+    ],
+    "pattern": "all damage that would be dealt to you is dealt to {o:Obj} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "player": "you"
+        }
+      },
+      "body": {
+        "b": "redirect",
+        "to": "$o"
+      }
+    },
+    "consumes": [
+      "all",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nAll damage that would be dealt to you is dealt to enchanted creature instead."
+      },
+      {
+        "text": "Enchant creature you control\nAll damage that would be dealt to you is dealt to enchanted creature instead."
+      }
+    ],
+    "counterExamples": [
+      "All damage that would be dealt to you this turn is dealt to enchanted creature instead.",
+      "All combat damage that would be dealt to you is dealt to enchanted creature instead.",
+      "All damage that would be dealt to enchanted creature is dealt to you instead."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.copy.token.ptColorSubtype",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 111.1",
+      "CR 205.1b"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's a {pt:BasePT} {c:Color} {st:Subtypes}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature, except it's a 1/1 green Frog."
+      },
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's a 2/2 blue Bird."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it's a 1/1 green Frog in addition to its other types.",
+      "Create a token that's a copy of target creature, except it's a 1/1 green Frog and it has flying.",
+      "Create a token that's a copy of target creature, except it's green."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rep.m6.enters.copy.subtypeAndAbility",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 205.1b"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield , except it's an {st:Subtypes} in addition to its other types and it has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "layer": 4,
+                  "subtypes": {
+                    "add": "$st"
+                  }
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it's an Illusion in addition to its other types and it has \"When this creature becomes the target of a spell or ability, sacrifice it.\""
+      },
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it's an Elf in addition to its other types and it has \"At the beginning of your upkeep, you gain 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it's an Illusion and it has \"When this creature becomes the target of a spell or ability, sacrifice it.\"",
+      "You may have ~ enter as a copy of any creature in a graveyard, except it's an Illusion in addition to its other types and it has \"When this creature becomes the target of a spell or ability, sacrifice it.\""
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "sta.m6.nonbasic.mountains",
+    "kind": "static",
+    "cr": [
+      "CR 305.7",
+      "CR 613.1d",
+      "CR 205.1a"
+    ],
+    "pattern": "nonbasic lands are mountains",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Land"
+          ],
+          "notSupertypes": [
+            "Basic"
+          ]
+        }
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": [
+              "Mountain"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Nonbasic lands are Mountains."
+      },
+      {
+        "text": "Flying\nNonbasic lands are Mountains."
+      }
+    ],
+    "counterExamples": [
+      "Nonbasic lands are Islands.",
+      "Basic lands are Mountains.",
+      "Nonbasic lands are Mountains in addition to their other land types."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "sta.m6.eachLand.addType",
+    "kind": "static",
+    "cr": [
+      "CR 305.7",
+      "CR 613.1d",
+      "CR 205.1b"
+    ],
+    "pattern": "each land is a {st:Subtypes} in addition to its other land types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Land"
+          ]
+        }
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each land is a Swamp in addition to its other land types."
+      },
+      {
+        "text": "Each land is a Forest in addition to its other land types."
+      }
+    ],
+    "counterExamples": [
+      "Each land is a Swamp.",
+      "Each creature is a Swamp in addition to its other land types.",
+      "Each land you control is a Swamp in addition to its other land types."
+    ],
+    "status": "stable",
+    "since": 6
+  }
+]

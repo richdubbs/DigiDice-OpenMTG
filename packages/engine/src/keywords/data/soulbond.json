@@ -1,0 +1,11 @@
+{
+  "name": "soulbond",
+  "rule": "702.95",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.",
+  "multiple": "independent",
+  "status": "planned"
+}

@@ -1,0 +1,448 @@
+[
+  {
+    "id": "eff.cont.pump.each",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.4c"],
+    "pattern": "{o:Objs} get {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "Creatures you control get +3/+2 until end of turn." },
+      { "text": "Goblins you control get +1/+0 until end of turn." }
+    ],
+    "counterExamples": [
+      "Creatures you control get +2/+1.",
+      "Creatures you control get +2/+1 until end of turn unless it's your turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.grant",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.1f"],
+    "pattern": "{o:Obj} gains {a:Abilities} {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "add": "$a" }] }] },
+    "subject": "object",
+    "examples": [
+      { "text": "Target Golem gains flying until end of turn." },
+      { "text": "Target creature you control gains indestructible and trample until end of turn." }
+    ],
+    "counterExamples": [
+      "Target creature gains flying.",
+      "Target creature loses flying until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.grant.each",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.1f"],
+    "pattern": "{o:Objs} gain {a:Abilities} {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "add": "$a" }] }] },
+    "subject": "object",
+    "examples": [
+      { "text": "Golems you control gain trample until end of turn." },
+      { "text": "Creatures you control gain vigilance and lifelink until end of turn." }
+    ],
+    "counterExamples": [
+      "Creatures you control gain trample.",
+      "Creatures you control lose trample until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.pumpgrant",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.4c", "CR 613.1f"],
+    "pattern": "{o:Obj} gets {pt:PT} and gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }, { "layer": 6, "add": "$a" }] }]
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "Target creature gets +4/+1 and gains first strike until end of turn." },
+      { "text": "Target creature gets +1/+4 and gains reach and vigilance until end of turn." }
+    ],
+    "counterExamples": [
+      "Target creature gets +3/+0 and gains first strike.",
+      "Target creature gets +3/+0 and loses first strike until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.pumpgrant.each",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.4c", "CR 613.1f"],
+    "pattern": "{o:Objs} get {pt:PT} and gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }, { "layer": 6, "add": "$a" }] }]
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "Creatures you control get +1/+1 and gain haste until end of turn." },
+      { "text": "Golems you control get +2/+0 and gain menace until end of turn." }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+1 and gain haste.",
+      "Creatures you control get +1/+1 and lose haste until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.loseall",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.1f"],
+    "pattern": "{o:Obj} loses all abilities {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "removeAll": true }] }] },
+    "subject": "object",
+    "consumes": ["all"],
+    "examples": [
+      { "text": "Target creature loses all abilities until end of turn." },
+      { "text": "Target artifact creature loses all abilities until end of turn." }
+    ],
+    "counterExamples": [
+      "Target creature loses flying until end of turn.",
+      "Target creature gains all abilities until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.base",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.4b"],
+    "pattern": "{o:Obj} has base power and toughness {pt:BasePT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "Target creature has base power and toughness 3/5 until end of turn." },
+      { "text": "Target Golem has base power and toughness 0/4 until end of turn." }
+    ],
+    "counterExamples": [
+      "Target creature has base power and toughness +1/+1 until end of turn.",
+      "Target creature gets base power and toughness 1/1 until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.becomes.alltypes",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 205.1a", "CR 613.1d", "CR 613.4b", "CR 702.73a"],
+    "pattern": "{o:Obj} becomes a {pt:BasePT} creature with all creature types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [{ "layer": 4, "types": { "set": ["Creature"] }, "subtypes": { "all": true } }, { "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["all"],
+    "examples": [
+      { "text": "~ becomes a 4/4 creature with all creature types until end of turn." },
+      { "text": "Target land becomes a 2/5 creature with all creature types until end of turn." }
+    ],
+    "counterExamples": [
+      "~ becomes a 4/4 creature with all creature types.",
+      "~ becomes a 4/4 creature with flying until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.becomes.creature",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 205.1a", "CR 613.1d", "CR 613.4b"],
+    "pattern": "{o:Obj} becomes a {pt:BasePT} creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [{ "layer": 4, "types": { "set": ["Creature"] } }, { "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "Target artifact becomes a 5/5 creature until end of turn." },
+      { "text": "~ becomes a 3/2 creature until end of turn." }
+    ],
+    "counterExamples": [
+      "Target artifact becomes a 5/5 creature.",
+      "Target artifact becomes a +5/+5 creature until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.becomes.subtype",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 205.1a", "CR 613.1d", "CR 613.4b"],
+    "pattern": "{o:Obj} becomes a {pt:BasePT} {st:Subtypes} creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [{ "layer": 4, "types": { "set": ["Creature"] }, "subtypes": { "set": "$st" } }, { "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "Target land becomes a 4/4 Elemental creature until end of turn." },
+      { "text": "~ becomes a 2/3 Bird Soldier creature until end of turn." }
+    ],
+    "counterExamples": [
+      "Target land becomes a 4/4 Elemental creature.",
+      "Target land becomes a 4/4 Elementals creature until end of turn."
+    ],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.becomes.color.subtype",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 205.1a", "CR 613.1d", "CR 613.1e", "CR 613.4b"],
+    "pattern": "{o:Obj} becomes a {pt:BasePT} {c:Color} {st:Subtypes} creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            { "layer": 4, "types": { "set": ["Creature"] }, "subtypes": { "set": "$st" } },
+            { "layer": 5, "colors": { "set": ["$c"] } },
+            { "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "~ becomes a 3/3 blue Bird creature until end of turn." },
+      { "text": "Target land becomes a 6/2 red Elemental creature until end of turn." }
+    ],
+    "counterExamples": [
+      "~ becomes a 3/3 blue Bird creature.",
+      "~ becomes a 3/3 blue Bird artifact until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.elk",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 205.1a", "CR 613.1d", "CR 613.1e", "CR 613.1f", "CR 613.4b"],
+    "pattern": "{o:Obj} loses all abilities and becomes a {c:Color} {st:Subtypes} creature with base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": { "d": "permanent" },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            { "layer": 4, "types": { "set": ["Creature"] }, "subtypes": { "set": "$st" } },
+            { "layer": 5, "colors": { "set": ["$c"] } },
+            { "layer": 6, "removeAll": true },
+            { "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["all"],
+    "examples": [
+      { "text": "Target creature loses all abilities and becomes a blue Frog creature with base power and toughness 1/1." },
+      { "text": "Target artifact or creature loses all abilities and becomes a white Rabbit creature with base power and toughness 2/2." }
+    ],
+    "counterExamples": [
+      "Target creature loses all abilities and becomes a blue Frog creature with base power and toughness 1/1 until end of turn.",
+      "Target creature loses flying and becomes a blue Frog creature with base power and toughness 1/1."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.color",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.1e", "CR 105.3"],
+    "pattern": "{o:Obj} becomes {c:Color} {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 5, "colors": { "set": ["$c"] } }] }] },
+    "subject": "object",
+    "examples": [
+      { "text": "Target creature becomes black until end of turn." },
+      { "text": "Target artifact becomes green until end of turn." }
+    ],
+    "counterExamples": [
+      "Target creature becomes black.",
+      "Target creature becomes black and green until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.control",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.1b"],
+    "pattern": "gain control of {o:Obj} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": { "$when": "d", "then": "$d", "else": { "d": "permanent" } },
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 2, "controller": { "ref": "you" } }] }]
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "Gain control of target creature until end of turn." },
+      { "text": "Gain control of target artifact." }
+    ],
+    "counterExamples": [
+      "Gain control of target creature unless its controller pays {3}.",
+      "Lose control of target creature until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.switch",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.4d"],
+    "pattern": "switch {o:Obj} 's power and toughness {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7d", "switchPT": true }] }] },
+    "subject": "none",
+    "examples": [
+      { "text": "Switch target Golem's power and toughness until end of turn." },
+      { "text": "Switch target artifact creature's power and toughness until end of turn." }
+    ],
+    "counterExamples": [
+      "Switch target creature's power and toughness.",
+      "Switch target creature's power and loyalty until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.pump.foreach",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 611.2d", "CR 613.4c"],
+    "pattern": "{o:Obj} gets +1/+1 {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": { "q": "count", "of": { "ref": "each", "filter": "$f" } },
+              "toughness": { "q": "count", "of": { "ref": "each", "filter": "$f" } }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Target creature gets +1/+1 until end of turn for each Elf you control." },
+      { "text": "Target creature gets +1/+1 until end of turn for each creature card in your graveyard." }
+    ],
+    "counterExamples": [
+      "Target creature gets +1/+1 for each Elf you control.",
+      "Target creature gets +2/+2 until end of turn for each Elf you control.",
+      "Target creature gets +1/+1 until end of turn for each other Elf."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.pump.foreach.power",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 611.2d", "CR 613.4c"],
+    "pattern": "{o:Obj} gets +1/+0 {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": { "q": "count", "of": { "ref": "each", "filter": "$f" } } }] }]
+    },
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~ gets +1/+0 until end of turn for each artifact you control." },
+      { "text": "Target creature gets +1/+0 until end of turn for each Golem you control." }
+    ],
+    "counterExamples": [
+      "~ gets +0/+1 until end of turn for each artifact you control.",
+      "~ gets +1/+0 for each artifact you control."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cont.pump.each.foreach",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 611.2d", "CR 613.4c"],
+    "pattern": "{o:Objs} get +1/+1 {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": { "q": "count", "of": { "ref": "each", "filter": "$f" } },
+              "toughness": { "q": "count", "of": { "ref": "each", "filter": "$f" } }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Creatures you control get +1/+1 until end of turn for each Wizard you control." },
+      { "text": "Golems you control get +1/+1 until end of turn for each artifact you control." }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+1 for each Wizard you control.",
+      "Creatures you control get +2/+1 until end of turn for each Wizard you control."
+    ],
+    "status": "experimental",
+    "since": 1
+  }
+]

@@ -1,0 +1,298 @@
+[
+  {
+    "id": "eff.stdrx34.becomes.colorOfChoice.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.3",
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1e"
+    ],
+    "pattern": "{o:Obj} becomes the color of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "chosenColor",
+        "link": "chosenColor"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "W"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "W"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "U"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "U"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "B"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "B"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "R"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "R"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "G"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "G"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}{U}: Target creature becomes the color of your choice until end of turn."
+      },
+      {
+        "text": "When ~ enters, target permanent becomes the color of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}: Target creature becomes the color of your choice and gains hexproof until end of turn.",
+      "{1}{U}: Target creature becomes the colors of your choice until end of turn.",
+      "{1}{U}: Target creature becomes all colors until end of turn."
+    ]
+  },
+  {
+    "id": "sta.stdrx34.otherturns.pump",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 500.1"
+    ],
+    "pattern": "during turns other than yours , {o:Obj} get[s] {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "turnOf",
+          "whose": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During turns other than yours, ~ gets +1/+3."
+      },
+      {
+        "text": "During turns other than yours, enchanted creature gets +0/+4."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, ~ gets +1/+3 until end of turn.",
+      "During turns other than yours, ~ gets +1/+3 until end of turn.",
+      "During turns other than yours, ~ gets +1/+3 for each Wall you control."
+    ]
+  },
+  {
+    "id": "sta.stdrx34.otherturns.anthem",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 500.1"
+    ],
+    "pattern": "during turns other than yours , {f:Filter} get {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "turnOf",
+          "whose": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During turns other than yours, Walls you control get +0/+3."
+      },
+      {
+        "text": "During turns other than yours, other creatures you control get +1/+1."
+      }
+    ],
+    "counterExamples": [
+      "During your opponent's turn, Walls you control get +0/+3.",
+      "During turns other than yours, Walls you control get +0/+3 until end of turn."
+    ]
+  }
+]

@@ -1,0 +1,874 @@
+[
+  {
+    "id": "eff.r3refs.search.orCard.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 205.4a",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} or {g:Filter} card , reveal it",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {
+        "anyOf": [
+          "$f",
+          "$g"
+        ]
+      },
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for an artifact or basic land card, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, search your library for a Goblin or snow land card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an artifact or basic land card, put it into your hand, then shuffle.",
+      "Search your library for an artifact or basic land card, reveal them, put them into your hand, then shuffle.",
+      "Search your library for an artifact and basic land card, reveal it, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r3refs.search.andReveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card and reveal it",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for an artifact card and reveal it. Put it into your hand. Then shuffle."
+      },
+      {
+        "text": "Search your library for an instant or sorcery card and reveal it. If it's an instant card, put it into your hand. Otherwise, put it on top of your library. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an artifact card and reveal them. Put it into your hand. Then shuffle.",
+      "Search your library for two artifact cards and reveal them. Put them into your hand. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r3refs.put.bf.tapped.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 110.2",
+      "CR 614.1c"
+    ],
+    "pattern": "^ put {o:Obj} onto the battlefield tapped if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for an artifact or land card and reveal it. Put it onto the battlefield tapped if it's a land card. Otherwise, put it into your hand. Then shuffle."
+      },
+      {
+        "text": "{2}, {T}: Search your library for an instant or land card and reveal it. Put it onto the battlefield tapped if it's a land card. Otherwise, put it into your hand. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an artifact or land card and reveal it. Put it onto the battlefield tapped unless it's a land card. Otherwise, put it into your hand. Then shuffle.",
+      "Search your library for an artifact or land card and reveal it. Put it onto the battlefield if it's a land card. Otherwise, put it into your hand. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r3refs.linked.putOne.ownersHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 400.3"
+    ],
+    "pattern": "put a card exiled with ~ into its owner 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "linkedReturned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "linkedReturned"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target cards from graveyards.\n{1}{W}, {T}: Put a card exiled with ~ into its owner's hand."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library.\nWhenever ~ attacks, put a card exiled with ~ into its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target cards from graveyards.\n{1}{W}, {T}: Put a card exiled with ~ into your hand.",
+      "When ~ enters, exile up to two target cards from graveyards.\n{1}{W}, {T}: Put each card exiled with ~ into its owner's hand.",
+      "{1}{W}, {T}: Put a card exiled with ~ into its owner's hand."
+    ]
+  },
+  {
+    "id": "eff.r3refs.counters.put.onChosen.youControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 115.10"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on ( a | an ) {f:Filter} you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "countersOn"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "countersOn"
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put two +1/+1 counters on a Forest you control. It becomes a 0/0 Elemental creature with reach. It's still a land."
+      },
+      {
+        "text": "When ~ enters, put a +1/+1 counter on a creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Put two +1/+1 counters on target Forest you control. It becomes a 0/0 Elemental creature with reach. It's still a land.",
+      "When ~ enters, put two +1/+1 counters on each Forest you control.",
+      "When ~ enters, put a +1/+1 counter on a creature an opponent controls."
+    ]
+  },
+  {
+    "id": "eff.r3refs.ownerOf.secondFromTopOrBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.3",
+      "CR 108.3",
+      "CR 608.2d",
+      "CR 400.3"
+    ],
+    "pattern": "the owner of {o:Obj} puts it into their library second from the top or on the bottom",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        },
+        "what": "option",
+        "options": [
+          "second from the top",
+          "bottom"
+        ],
+        "as": "libraryPlace",
+        "link": "libraryPlace"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "libraryPlace",
+          "equals": "second from the top"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "library",
+              "position": {
+                "nth": 2
+              }
+            }
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "libraryPlace",
+          "equals": "bottom"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "library",
+              "position": "bottom"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "The owner of target tapped creature puts it into their library second from the top or on the bottom."
+      },
+      {
+        "text": "The owner of target attacking creature puts it into their library second from the top or on the bottom. You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "The owner of target tapped creature puts it into their library second from the top.",
+      "The owner of target tapped creature puts it into their library third from the top or on the bottom.",
+      "The controller of target tapped creature puts it into their library second from the top or on the bottom."
+    ]
+  },
+  {
+    "id": "eff.r3refs.search.libraryAndOrGraveyard.battlefield.additionalCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23d",
+      "CR 110.2",
+      "CR 122.6",
+      "CR 614.1c"
+    ],
+    "pattern": "search your library and/or graveyard for {f:DiscardDesc} and put it onto the battlefield with {n:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "alsoZones": [
+          "graveyard"
+        ],
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "counters": [
+            {
+              "kind": "$k",
+              "count": "$n"
+            }
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:search.alsoZones"
+    ],
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Search your library and/or graveyard for a Dragon card and put it onto the battlefield with two additional +1/+1 counters on it. If you search your library this way, shuffle."
+      },
+      {
+        "text": "When ~ enters, search your library and/or graveyard for an Elf card and put it onto the battlefield with an additional +1/+1 counter on it. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library and/or graveyard for a Dragon card and put it onto the battlefield. If you search your library this way, shuffle.",
+      "Search your library and/or graveyard for a Dragon card and put it into your hand with two additional +1/+1 counters on it. If you search your library this way, shuffle.",
+      "Search your library and/or graveyard for a Dragon card and put it onto the battlefield tapped with two additional +1/+1 counters on it. If you search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.r3refs.draw.additional.forEachOpponent.handAtMost",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 504.1",
+      "CR 402.1",
+      "CR 102.1"
+    ],
+    "pattern": "draw an additional card for each opponent who has {n:Qty} or fewer cards in hand",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "countPlayers",
+        "of": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "sizeIs": {
+          "zone": "hand",
+          "op": "<=",
+          "n": "$n"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your draw step, draw an additional card for each opponent who has three or fewer cards in hand."
+      },
+      {
+        "text": "At the beginning of your draw step, draw an additional card for each opponent who has two or fewer cards in hand."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your draw step, draw an additional card for each opponent who has three or more cards in hand.",
+      "At the beginning of your draw step, draw an additional card for each player who has three or fewer cards in hand.",
+      "At the beginning of your draw step, draw an additional card for each opponent who has three or fewer cards in their graveyard."
+    ]
+  },
+  {
+    "id": "eff.r3refs.each.opponent.discards.unless.they",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 701.9a",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent discards {n:Qty} cards unless they {c:Cost}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": "$c",
+          "else": [
+            {
+              "op": "discard",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "count": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent discards two cards unless they discard a creature card."
+      },
+      {
+        "text": "At the beginning of your upkeep, each opponent discards three cards unless they pay 4 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent discards two cards unless you discard a creature card.",
+      "When ~ enters, each opponent discards two cards if they discard a creature card.",
+      "When ~ enters, each opponent mills two cards unless they discard a creature card."
+    ]
+  },
+  {
+    "id": "eff.r3refs.search.graveyardHandLibrary.twoNames.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 201.2",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "search your graveyard , hand [,] and/or library for a card named {a:Name} and/or a card named {b:Name} and put them onto the battlefield",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "filter": {
+          "anyOf": [
+            {
+              "name": "$a"
+            },
+            {
+              "name": "$b"
+            }
+          ]
+        },
+        "min": 0,
+        "max": 2,
+        "differentNames": true,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:search.alsoZones",
+      "op:search.differentNames"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your graveyard, hand and/or library for a card named Llanowar Elves and/or a card named Elvish Mystic and put them onto the battlefield. If you search your library this way, shuffle."
+      },
+      {
+        "text": "Search your graveyard, hand, and/or library for a card named Ornithopter and/or a card named Memnite and put them onto the battlefield. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your graveyard, hand, and/or library for a card named Ornithopter and a card named Memnite and put them onto the battlefield. If you search your library this way, shuffle.",
+      "Search your graveyard, hand, and/or library for a card named Ornithopter and/or a card named Memnite and put them into your hand. If you search your library this way, shuffle.",
+      "Search your graveyard and/or library for a card named Ornithopter and/or a card named Memnite and put them onto the battlefield. If you search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.r3refs.each.player.sacrifice.otherCreatures.notSharingTypeWithChosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 205.3m",
+      "CR 608.2c",
+      "CR 101.4",
+      "CR 109.2"
+    ],
+    "pattern": "each player sacrifices all other creatures they control that don't share a creature type with the chosen creature they control",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "controller": {
+          "ref": "iterating"
+        },
+        "not": {
+          "anyOf": [
+            {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            },
+            {
+              "sharesWith": {
+                "with": {
+                  "ref": "each",
+                  "filter": {
+                    "is": {
+                      "ref": "bound",
+                      "name": "chosen"
+                    },
+                    "controller": {
+                      "ref": "iterating"
+                    }
+                  }
+                },
+                "quality": "creatureType"
+              }
+            }
+          ]
+        }
+      },
+      "count": 1,
+      "mode": "all"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "all",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "For each player, you choose a creature with power 2 or greater that player controls. Then each player sacrifices all other creatures they control that don't share a creature type with the chosen creature they control."
+      },
+      {
+        "text": "For each player, choose a creature with flying that player controls. Then each player sacrifices all other creatures they control that don't share a creature type with the chosen creature they control."
+      }
+    ],
+    "counterExamples": [
+      "For each player, you choose a creature with power 2 or greater that player controls. Then each player sacrifices all other creatures they control that share a creature type with the chosen creature they control.",
+      "For each player, you choose a creature with power 2 or greater that player controls. Then each player sacrifices all other creatures they control that don't share a color with the chosen creature they control.",
+      "Each player sacrifices all other creatures they control that don't share a creature type with the chosen creature they control."
+    ]
+  },
+  {
+    "id": "eff.r3refs.flicker.anyNumber.youControl.owner",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 400.7",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "exile any number of {f:Filter} you control , then return them to the battlefield under their owner 's control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "flickerChosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "flickerChosen"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "flickered"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "flickered"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Exile any number of artifacts you control, then return them to the battlefield under their owner's control."
+      },
+      {
+        "text": "When ~ enters, exile any number of lands you control, then return them to the battlefield under their owner's control."
+      }
+    ],
+    "counterExamples": [
+      "Exile any number of artifacts you control, then return them to the battlefield under your control.",
+      "Exile two artifacts you control, then return them to the battlefield under their owner's control.",
+      "Exile any number of artifacts you control, then return them to your hand."
+    ]
+  },
+  {
+    "id": "eff.r3refs.repeatProcess.moreTimes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 107.3"
+    ],
+    "pattern": "repeat this process {n:Count} more times",
+    "build": {
+      "op": "repeat",
+      "times": "$n",
+      "process": true,
+      "do": []
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile any number of artifacts you control, then return them to the battlefield under their owner's control. Then repeat this process two more times."
+      },
+      {
+        "text": "Exile any number of lands you control, then return them to the battlefield under their owner's control. Then repeat this process three more times."
+      }
+    ],
+    "counterExamples": [
+      "Exile any number of artifacts you control, then return them to the battlefield under their owner's control. Then repeat this process two times.",
+      "Then repeat this process two more times."
+    ]
+  },
+  {
+    "id": "eff.r3refs.mayHave.self.become.legendaryEquipment.everflame",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 201.2",
+      "CR 205.1a",
+      "CR 205.4",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have ~ become a legendary equipment artifact named everflame , heroes' legacy",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "self"
+              },
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "set": [
+                      "Artifact"
+                    ]
+                  },
+                  "subtypes": {
+                    "set": [
+                      "Equipment"
+                    ]
+                  },
+                  "supertypes": {
+                    "add": [
+                      "Legendary"
+                    ]
+                  },
+                  "named": "Everflame, Heroes' Legacy"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "named",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may have ~ become a legendary Equipment artifact named Everflame, Heroes' Legacy."
+      },
+      {
+        "text": "{4}: You may have ~ become a legendary Equipment artifact named Everflame, Heroes' Legacy. If you do, it gains equip {2}."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you may have ~ become a legendary Equipment artifact named Someone Else.",
+      "At the beginning of your end step, you may have ~ become an Equipment artifact named Everflame, Heroes' Legacy.",
+      "At the beginning of your end step, you may have ~ become a legendary Equipment artifact named Everflame, Heroes' Legacy until end of turn."
+    ]
+  },
+  {
+    "id": "eff.r3refs.gains.abilities.losesAllOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 611.2a",
+      "CR 702.6a"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} and loses all other abilities",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target creature gains flying and loses all other abilities."
+      },
+      {
+        "text": "{2}: ~ gains equip {1} and \"Equipped creature gets +1/+1\" and loses all other abilities."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target creature gains flying and loses all other abilities until end of turn.",
+      "When ~ enters, target creature gains flying and loses all abilities.",
+      "When ~ enters, target creature loses flying and gains all other abilities."
+    ]
+  }
+]

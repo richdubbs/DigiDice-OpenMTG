@@ -1,0 +1,972 @@
+[
+  {
+    "id": "eff.t34.may.haveLoseLife",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 119.3"
+    ],
+    "pattern": "you may have {p:Player} lose {n:Qty} life",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature an opponent controls dies, you may have that player lose 2 life."
+      },
+      {
+        "text": "Whenever ~ attacks, you may have target player lose 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, target player may lose 3 life.",
+      "Whenever ~ attacks, you may have target player gain 3 life.",
+      "Whenever ~ attacks, you may have target player lose 3 life unless they pay {1}."
+    ]
+  },
+  {
+    "id": "eff.t34.gainLifeAndEnergy.1",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 122.1",
+      "CR 107.14"
+    ],
+    "pattern": "{p:Player} gain[s] {n:Qty} life and get[s] {e}",
+    "build": [
+      {
+        "op": "gainLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "putCounters",
+        "on": "$p",
+        "kind": "energy",
+        "count": 1
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ enters, you gain 2 life and get {E}."
+      },
+      {
+        "text": "Target player gains 4 life and gets {E}."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you gain 2 life or get {E}.",
+      "When ~ enters, you gain 2 life and get {E}{E}.",
+      "When ~ enters, you lose 2 life and get {E}."
+    ]
+  },
+  {
+    "id": "eff.t34.gainLifeAndEnergy.3",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 122.1",
+      "CR 107.14"
+    ],
+    "pattern": "{p:Player} gain[s] {n:Qty} life and get[s] {e}{e}{e}",
+    "build": [
+      {
+        "op": "gainLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "putCounters",
+        "on": "$p",
+        "kind": "energy",
+        "count": 3
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ enters, you gain 4 life and get {E}{E}{E}."
+      },
+      {
+        "text": "{1}, {T}: You gain 2 life and get {E}{E}{E}."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you gain 4 life or get {E}{E}{E}.",
+      "When ~ enters, you gain 4 life and get {E}{E}.",
+      "When ~ enters, you lose 4 life and get {E}{E}{E}."
+    ]
+  },
+  {
+    "id": "eff.t34.thenIf",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 603.4"
+    ],
+    "pattern": "then if {c:Cond} , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Target player discards a card. Then if you control a Goblin, surveil 1."
+      },
+      {
+        "text": "Draw two cards. Then if you control an artifact, scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. Then if you control an artifact, scry 2 instead.",
+      "Draw two cards. Then unless you control an artifact, scry 2.",
+      "Draw two cards. Then if you control an artifact, scry 2 unless an opponent pays {1}."
+    ]
+  },
+  {
+    "id": "eff.t34.surveil.whereX.then",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.25a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "then surveil x , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "surveil",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Put a +1/+1 counter on target creature. Then surveil X, where X is the number of counters on it."
+      },
+      {
+        "text": "Draw a card. Then surveil X, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Then surveil X.",
+      "Draw a card. Then scry X, where X is the number of creatures you control.",
+      "Draw a card. Then surveil X, where Y is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.t34.if.gainSurveilInvestigate",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.25a",
+      "CR 701.16a"
+    ],
+    "pattern": "if {c:Cond} , you gain {n:Qty} life , surveil {m:Qty} , then investigate",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$n"
+        },
+        {
+          "op": "surveil",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$m"
+        },
+        {
+          "op": "action",
+          "action": "investigate",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "then"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Draw a card. If a creature died this turn, you gain 3 life, surveil 1, then investigate."
+      },
+      {
+        "text": "If you control an artifact, you gain 1 life, surveil 2, then investigate."
+      }
+    ],
+    "counterExamples": [
+      "If you control an artifact, you gain 1 life, surveil 2, then investigate twice.",
+      "If you control an artifact, you gain 1 life, scry 2, then investigate.",
+      "Unless you control an artifact, you gain 1 life, surveil 2, then investigate."
+    ]
+  },
+  {
+    "id": "eff.t34.damage.unlessTheyPayCost",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 118.3",
+      "CR 120.3"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {p:Player} unless they {c:Cost} [of their choice]",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "else": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, ~ deals 3 damage to that player unless they sacrifice a creature of their choice."
+      },
+      {
+        "text": "{2}, {T}: ~ deals 2 damage to target player unless they discard a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, ~ deals 2 damage to target player unless you discard a card.",
+      "Whenever ~ attacks, ~ deals 2 damage to target player if they discard a card.",
+      "Whenever ~ attacks, ~ deals 2 damage to target creature unless they discard a card."
+    ]
+  },
+  {
+    "id": "eff.t34.loseLife.unlessTheyPayCost",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 118.3",
+      "CR 119.3"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life unless they {c:Cost} [of their choice]",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "else": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent draws a card, that player loses 2 life unless they discard a card."
+      },
+      {
+        "text": "When ~ enters, target opponent loses 4 life unless they sacrifice a creature of their choice."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent loses 4 life unless you sacrifice a creature.",
+      "When ~ enters, target opponent gains 4 life unless they sacrifice a creature of their choice.",
+      "When ~ enters, target opponent loses 4 life if they sacrifice a creature of their choice."
+    ]
+  },
+  {
+    "id": "eff.t34.loseLife.unlessSacrificeOrDiscard",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 118.3",
+      "CR 119.3",
+      "CR 701.21a",
+      "CR 701.9a"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life unless they sacrifice ( a | an ) {f:Filter} of their choice or discard a card",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "pay",
+          "who": "$p",
+          "cost": {
+            "other": [
+              {
+                "kind": "discard",
+                "count": 1
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "loseLife",
+              "who": "$p",
+              "amount": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent loses 2 life unless they sacrifice a nonland permanent of their choice or discard a card."
+      },
+      {
+        "text": "Whenever an opponent casts a spell, that player loses 1 life unless they sacrifice a creature of their choice or discard a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent loses 2 life unless they sacrifice a nonland permanent of their choice and discard a card.",
+      "When ~ enters, target opponent loses 2 life unless you sacrifice a nonland permanent or discard a card.",
+      "When ~ enters, target opponent loses 2 life if they sacrifice a nonland permanent of their choice or discard a card."
+    ]
+  },
+  {
+    "id": "eff.t34.damage.unlessControllerHasDamage",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 608.2d",
+      "CR 120.3"
+    ],
+    "pattern": "~ deal[s] {n:Qty} damage to {o:Obj} unless that creature 's controller has ~ deal {m:Qty} damage to them",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "do": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "amount": "$m"
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": "$o",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 4 damage to target creature unless that creature's controller has ~ deal 6 damage to them."
+      },
+      {
+        "text": "{2}, {T}: ~ deals 2 damage to target creature unless that creature's controller has ~ deal 3 damage to them."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 4 damage to target creature unless that creature's controller pays {2}.",
+      "~ deals 4 damage to target creature and that creature's controller has ~ deal 6 damage to them.",
+      "~ deals 4 damage to target creature unless you have ~ deal 6 damage to you."
+    ]
+  },
+  {
+    "id": "eff.t34.damage.anyTargetAndEachOfUpToOthers",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 115.3",
+      "CR 115.4",
+      "CR 601.2c"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:AnyTarget} and {m:Qty} damage to {r:OtherTargets}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$r",
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "other",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, ~ deals 3 damage to any target and 2 damage to each of up to two other targets."
+      },
+      {
+        "text": "~ deals 5 damage to any target and 1 damage to each of up to three other targets."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 5 damage to any target and 1 damage to each of three other targets.",
+      "~ deals 5 damage to any target or 1 damage to each of up to three other targets.",
+      "~ deals 5 damage to each creature and 1 damage to each of up to three other targets."
+    ]
+  },
+  {
+    "id": "eff.t34.damage.equalNoncreatureSpellsTheyCast",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 601.2i",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to {p:Player} equal to the number of noncreature spells they've cast this turn",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$p",
+      "amount": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "cast",
+          "spell": {
+            "notTypes": [
+              "Creature"
+            ]
+          }
+        },
+        "scope": "turn",
+        "by": "$p"
+      }
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Whenever a player casts an instant spell, ~ deals damage to that player equal to the number of noncreature spells they've cast this turn."
+      },
+      {
+        "text": "Whenever an opponent casts a noncreature spell, ~ deals damage to that player equal to the number of noncreature spells they've cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts a noncreature spell, ~ deals damage to that player equal to the number of creature spells they've cast this turn.",
+      "Whenever a player casts a noncreature spell, ~ deals damage to that player equal to the number of noncreature spells you've cast this turn.",
+      "Whenever a player casts a noncreature spell, ~ deals damage to each player equal to the number of noncreature spells they've cast this turn."
+    ]
+  },
+  {
+    "id": "eff.t34.drawAndLoseLife.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "you draw x cards and lose x life , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "You draw X cards and lose X life, where X is the number of colors of mana spent to cast ~."
+      },
+      {
+        "text": "You draw X cards and lose X life, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "You draw X cards and gain X life, where X is the number of creatures you control.",
+      "You draw X cards and lose X life.",
+      "You draw X cards and lose Y life, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.t34.discard.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} discard[s] x cards , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "discard",
+          "who": "$p",
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player discards X cards, where X is the number of colors of mana spent to cast ~."
+      },
+      {
+        "text": "Each opponent discards X cards, where X is the number of Zombies you control."
+      }
+    ],
+    "counterExamples": [
+      "Target player discards X cards.",
+      "Target player draws X cards, where X is the number of Zombies you control.",
+      "Target player discards X cards at random, where X is the number of Zombies you control."
+    ]
+  },
+  {
+    "id": "eff.t34.loseLife.eachOpponentLifeLostThisTurn",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 120.3a",
+      "CR 608.2f"
+    ],
+    "pattern": "each opponent loses life equal to the life ( they | that player ) lost this turn",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "amount": {
+            "q": "lifeLostThisTurn",
+            "of": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each opponent loses life equal to the life they lost this turn."
+      },
+      {
+        "text": "{3}{B}, {T}: Each opponent loses life equal to the life that player lost this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each end step, each opponent loses life equal to the life you lost this turn.",
+      "At the beginning of each end step, each opponent gains life equal to the life they lost this turn.",
+      "At the beginning of each end step, each opponent loses life equal to the life they gained this turn."
+    ]
+  },
+  {
+    "id": "eff.t34.eachOpponentDraws.thenYouDrawPerOpponentWhoDrew",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 121.2",
+      "CR 608.2c"
+    ],
+    "pattern": "each opponent draws a card , then you draw a card for each opponent who drew a card this way",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "count": 1,
+        "as": "drew"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "drew"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Each opponent draws a card, then you draw a card for each opponent who drew a card this way."
+      },
+      {
+        "text": "When ~ enters, each opponent draws a card, then you draw a card for each opponent who drew a card this way."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent draws a card, then you draw a card for each opponent.",
+      "Each opponent draws two cards, then you draw a card for each opponent who drew a card this way.",
+      "Each opponent draws a card, then you discard a card for each opponent who drew a card this way."
+    ]
+  },
+  {
+    "id": "eff.t34.putAnyNumberFromHandOnBottom.thenDrawThatManyPlus",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "put any number of cards from your hand on the bottom of your library , then draw that many cards plus {n:Qty}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        },
+        "as": "moved"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "math",
+          "op": "+",
+          "args": [
+            {
+              "q": "resultCount",
+              "step": "moved"
+            },
+            "$n"
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "{1}{U}: Put any number of cards from your hand on the bottom of your library, then draw that many cards plus one."
+      },
+      {
+        "text": "Put any number of cards from your hand on the bottom of your library, then draw that many cards plus two."
+      }
+    ],
+    "counterExamples": [
+      "Put any number of cards from your hand on top of your library, then draw that many cards plus one.",
+      "Put any number of cards from your hand on the bottom of your library, then draw that many cards.",
+      "Put any number of cards from your graveyard on the bottom of your library, then draw that many cards plus one."
+    ]
+  },
+  {
+    "id": "eff.t34.shuffleHandIntoLibrary.thenDrawThatMany",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "shuffle the cards from your hand into your library , then draw that many cards",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "you"
+          }
+        },
+        "as": "shuffled"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "shuffled"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "{1}{U}, {T}: Shuffle the cards from your hand into your library, then draw that many cards."
+      },
+      {
+        "text": "{3}, {T}: Shuffle the cards from your hand into your library, then draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Shuffle the cards from your graveyard into your library, then draw that many cards.",
+      "Shuffle the cards from your hand into your library, then draw that many cards plus one.",
+      "Shuffle the cards from your hand into your library, then discard that many cards."
+    ]
+  },
+  {
+    "id": "eff.t34.eachPlayerShufflesHand.thenDrawsThatMany",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2f"
+    ],
+    "pattern": "each player shuffles the cards from their hand into their library , then draws that many cards",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": "hand",
+              "owner": {
+                "ref": "bound",
+                "name": "each"
+              }
+            }
+          },
+          "to": {
+            "zone": "library",
+            "owner": {
+              "ref": "bound",
+              "name": "each"
+            }
+          },
+          "as": "shuffled"
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          }
+        },
+        {
+          "op": "draw",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "count": {
+            "q": "resultCount",
+            "step": "shuffled"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player shuffles the cards from their hand into their library, then draws that many cards."
+      },
+      {
+        "text": "{2}, {T}: Each player shuffles the cards from their hand into their library, then draws that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player shuffles the cards from their graveyard into their library, then draws that many cards.",
+      "Each player shuffles the cards from their hand into their library, then draws seven cards.",
+      "Each opponent shuffles the cards from their hand into their library, then draws that many cards."
+    ]
+  }
+]

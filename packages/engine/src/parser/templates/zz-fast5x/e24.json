@@ -1,0 +1,230 @@
+[
+  {
+    "id": "sta.e24.enters.counters.onSelf",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 122.6", "CR 201.5"],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counter[s] on ~",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "counters": [{ "kind": "$k", "count": "$n" }] }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "~ enters with a stun counter on ~." },
+      { "text": "~ enters with three +1/+1 counters on ~." },
+      { "text": "~ enters with two charge counters on ~." }
+    ],
+    "counterExamples": [
+      "~ enters with three +1/+1 counters on target creature.",
+      "~ enters with three +1/+1 counters on ~ for each Elf you control.",
+      "Target creature enters with three +1/+1 counters on ~."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e24.return.self.owner.counters",
+    "kind": "effect",
+    "cr": ["CR 400.7e", "CR 614.1c", "CR 122.6", "CR 110.2", "CR 201.5"],
+    "pattern": "return ~ to the battlefield under ~ 's owner 's control with {c:Qty} {k:CounterKind} counter[s] on ~",
+    "build": {
+      "op": "move",
+      "what": { "ref": "self" },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "counters": [{ "kind": "$k", "count": "$c" }]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "When ~ dies, return ~ to the battlefield under ~'s owner's control with two +1/+1 counters on ~." },
+      { "text": "When ~ dies, return ~ to the battlefield under ~'s owner's control with a shield counter on ~." }
+    ],
+    "counterExamples": [
+      "When ~ dies, return ~ to the battlefield under your control with two +1/+1 counters on ~.",
+      "When ~ dies, return ~ to the battlefield under ~'s owner's control with two +1/+1 counters on target creature.",
+      "When ~ dies, return ~ to ~'s owner's hand with two +1/+1 counters on ~."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e24.return.self.gy.bf.counter.onSelf",
+    "kind": "effect",
+    "cr": ["CR 113.6m", "CR 400.7", "CR 614.1c", "CR 122.6", "CR 201.5"],
+    "pattern": "return ~ from your graveyard to the battlefield with ( a | an ) {k:CounterKind} counter on ~",
+    "build": {
+      "op": "move",
+      "what": { "ref": "self" },
+      "to": {
+        "zone": "battlefield",
+        "controller": { "ref": "you" },
+        "counters": [{ "kind": "$k", "count": 1 }]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "{4}{B}: Return ~ from your graveyard to the battlefield with a finality counter on ~." },
+      { "text": "{2}{G}{G}: Return ~ from your graveyard to the battlefield with a +1/+1 counter on ~. Activate only as a sorcery." }
+    ],
+    "counterExamples": [
+      "{4}{B}: Return ~ from your graveyard to the battlefield with two finality counters on ~.",
+      "{4}{B}: Return ~ from your graveyard to your hand with a finality counter on ~.",
+      "{4}{B}: Return ~ from your graveyard to the battlefield with a finality counter on target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e24.return.self.gy.bf.tapped.counter.onSelf",
+    "kind": "effect",
+    "cr": ["CR 113.6m", "CR 400.7", "CR 614.1c", "CR 122.6", "CR 201.5"],
+    "pattern": "return ~ from your graveyard to the battlefield tapped with ( a | an ) {k:CounterKind} counter on ~",
+    "build": {
+      "op": "move",
+      "what": { "ref": "self" },
+      "to": {
+        "zone": "battlefield",
+        "controller": { "ref": "you" },
+        "tapped": true,
+        "counters": [{ "kind": "$k", "count": 1 }]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "{5}{B}: Return ~ from your graveyard to the battlefield tapped with a +1/+1 counter on ~." },
+      { "text": "{3}{W}: Return ~ from your graveyard to the battlefield tapped with a shield counter on ~. Activate only as a sorcery." }
+    ],
+    "counterExamples": [
+      "{3}{W}: Return ~ from your graveyard to the battlefield with a shield counter on ~ tapped.",
+      "{3}{W}: Return ~ from your graveyard to the battlefield tapped with two shield counters on ~.",
+      "{3}{W}: Return ~ from your graveyard to your hand tapped with a shield counter on ~."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e24.put.self.lib.bottom.owner",
+    "kind": "effect",
+    "cr": ["CR 400.3", "CR 401.4", "CR 400.7e", "CR 201.5"],
+    "pattern": "put ~ on the bottom of ~ 's owner 's library",
+    "build": { "op": "move", "what": { "ref": "self" }, "to": { "zone": "library", "position": "bottom" } },
+    "subject": "none",
+    "examples": [
+      { "text": "When ~ dies, put ~ on the bottom of ~'s owner's library." },
+      { "text": "{2}: Put ~ on the bottom of ~'s owner's library." }
+    ],
+    "counterExamples": [
+      "When ~ dies, put ~ on the top of ~'s owner's library.",
+      "When ~ dies, put ~ into ~'s owner's hand.",
+      "When ~ dies, put target creature on the bottom of ~'s owner's library."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "abl.e24.pregame.begin.self",
+    "kind": "static",
+    "cr": ["CR 103.6", "CR 103.6a", "CR 113.6", "CR 201.5"],
+    "pattern": "if ~ is in your opening hand , you may begin the game with ~ on the battlefield",
+    "build": { "kind": "static", "zone": ["hand"], "effects": [{ "s": "pregame", "action": "beginOnBattlefield", "optional": true }] },
+    "consumes": ["if", "may"],
+    "examples": [
+      { "text": "If ~ is in your opening hand, you may begin the game with ~ on the battlefield." },
+      { "text": "If this creature is in your opening hand, you may begin the game with ~ on the battlefield." }
+    ],
+    "counterExamples": [
+      "If ~ is in your opening hand, you may begin the game with ~ in exile.",
+      "If ~ is in your graveyard, you may begin the game with ~ on the battlefield.",
+      "If ~ is in your opening hand, you begin the game with ~ on the battlefield and lose 2 life."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e24.self.pump.foreach.equipment.attachedToSelf",
+    "priority": 1,
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 301.5", "CR 201.5"],
+    "pattern": "~ gets {pt:PT} for each equipment attached to ~",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "self" },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": { "q": "math", "op": "*", "args": ["$pt.p", { "q": "count", "of": { "ref": "each", "filter": { "subtypes": ["Equipment"], "attachedToObject": { "ref": "self" } } } }] },
+          "toughness": { "q": "math", "op": "*", "args": ["$pt.t", { "q": "count", "of": { "ref": "each", "filter": { "subtypes": ["Equipment"], "attachedToObject": { "ref": "self" } } } }] }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~ gets +2/+0 for each Equipment attached to ~." },
+      { "text": "~ gets +1/+1 for each Equipment attached to ~." }
+    ],
+    "counterExamples": [
+      "~ gets +2/+0 for each Aura attached to ~.",
+      "~ gets +2/+0 for each Equipment you control.",
+      "~ gets +2/+0 for each Equipment attached to target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e24.self.unblockable.ownPowerAtMost",
+    "kind": "static",
+    "cr": ["CR 509.1b", "CR 208.1", "CR 604.1", "CR 611.3a", "CR 201.5"],
+    "pattern": "~ can't be blocked if ~ 's power is {n:Qty} or less",
+    "build": {
+      "s": "restrict",
+      "subject": { "ref": "self" },
+      "mode": "cant",
+      "action": "beBlocked",
+      "when": { "cond": "compare", "left": { "q": "stat", "stat": "power", "of": { "ref": "self" } }, "op": "<=", "right": "$n" }
+    },
+    "consumes": ["if", "can't"],
+    "examples": [
+      { "text": "~ can't be blocked if ~'s power is 1 or less." },
+      { "text": "~ can't be blocked if ~'s power is 3 or less." }
+    ],
+    "counterExamples": [
+      "~ can't be blocked if ~'s power is 3 or greater.",
+      "~ can't be blocked if ~'s toughness is 3 or less.",
+      "~ can't block if ~'s power is 3 or less."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e24.owner.shufflesSelf.draws",
+    "kind": "effect",
+    "cr": ["CR 701.24a", "CR 608.2n", "CR 400.3", "CR 121.1", "CR 201.5"],
+    "pattern": "~ 's owner shuffles ~ into their library and draws {n:Qty} card[s]",
+    "build": [
+      { "op": "move", "what": { "ref": "self" }, "to": { "zone": "library", "owner": { "ref": "ownerOf", "object": { "ref": "self" } } } },
+      { "op": "shuffle", "who": { "ref": "ownerOf", "object": { "ref": "self" } } },
+      { "op": "draw", "who": { "ref": "ownerOf", "object": { "ref": "self" } }, "count": "$n" }
+    ],
+    "subject": "none",
+    "examples": [
+      { "text": "{6}: ~'s owner shuffles ~ into their library and draws three cards." },
+      { "text": "{2}{U}: ~'s owner shuffles ~ into their library and draws a card." }
+    ],
+    "counterExamples": [
+      "{6}: ~'s owner shuffles ~ into their library and discards three cards.",
+      "{6}: ~'s owner shuffles ~ into their graveyard and draws three cards.",
+      "{6}: Target player shuffles ~ into their library and draws three cards."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

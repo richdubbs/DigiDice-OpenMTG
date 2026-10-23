@@ -1,0 +1,55 @@
+[
+  {
+    "id": "kw.stdfreecast4.disguise.reducedPer",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.168a",
+      "CR 702.168d",
+      "CR 116.2b",
+      "CR 601.2f",
+      "CR 118.7"
+    ],
+    "pattern": "disguise {c:Cost} . this cost is reduced by {m:ManaCost} for each {f:Filter}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "disguise",
+      "cost": "$c",
+      "costChange": {
+        "kind": "reduce",
+        "generic": {
+          "q": "math",
+          "op": "*",
+          "args": [
+            "$m.0.amount",
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            }
+          ]
+        },
+        "floor": "zero"
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Disguise {4}{U}. This cost is reduced by {1} for each artifact you control."
+      },
+      {
+        "text": "Disguise {6}{G}. This cost is reduced by {1} for each creature card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Disguise {4}{U}. This cost is increased by {1} for each artifact you control.",
+      "Disguise {4}{U}. This ability costs {1} less to activate for each artifact you control.",
+      "Disguise {4}{U}. This cost is reduced by {1} for each artifact an opponent controls and you control."
+    ]
+  }
+]

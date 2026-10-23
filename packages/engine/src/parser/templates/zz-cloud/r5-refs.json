@@ -1,0 +1,824 @@
+[
+  {
+    "id": "eff.r5refs.put.bf.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "^ put {o:Obj} onto the battlefield if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, you may search your library for an enchantment card and reveal it. Put it onto the battlefield if its mana value is 3 or less. Otherwise, put it into your hand. If you search your library this way, shuffle."
+      },
+      {
+        "text": "Search your library for a creature card and reveal it. Put it onto the battlefield if its power is 2 or less. Otherwise, put it into your hand. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a creature card and reveal it. Put it onto the battlefield unless its power is 2 or less. Otherwise, put it into your hand. Then shuffle.",
+      "Search your library for a creature card and reveal it. Put it onto the battlefield tapped if its power is 2 or less. Otherwise, put it into your hand. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r5refs.untilYourNextTurn.whenever",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7b",
+      "CR 603.7c",
+      "CR 611.2a",
+      "CR 500.1"
+    ],
+    "pattern": "until your next turn , whenever {e:Event} , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": "$e.0"
+      },
+      "do": "$x",
+      "duration": {
+        "d": "untilNextTurn",
+        "whose": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Until your next turn, whenever a creature attacks you, it gets -2/-0 until end of turn."
+      },
+      {
+        "text": "{2}{W}: Until your next turn, whenever a creature an opponent controls attacks, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, whenever a creature attacks you, it gets -2/-0.",
+      "Until end of your next turn, whenever a creature attacks you, it gets -2/-0 until end of turn.",
+      "Until your next turn, when a creature attacks you, it gets -2/-0 until end of turn."
+    ],
+    "consumes": [
+      "until",
+      "whenever"
+    ]
+  },
+  {
+    "id": "eff.r5refs.eachPlayer.chooses.totalPower.sacrificesOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.21a",
+      "CR 109.2",
+      "CR 608.2c"
+    ],
+    "pattern": "each player chooses any number of creatures they control with total power {n:Qty} or less , then sacrifices all other creatures they control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": {
+              "ref": "iterating"
+            }
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "groupLimit": {
+          "stat": "power",
+          "cmp": {
+            "op": "<=",
+            "value": "$n"
+          }
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "chosen"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "controller": {
+            "ref": "iterating"
+          },
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "chosen"
+            }
+          }
+        },
+        "count": 1,
+        "mode": "all"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "all",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Each player chooses any number of creatures they control with total power 3 or less, then sacrifices all other creatures they control."
+      },
+      {
+        "text": "When this creature enters, each player chooses any number of creatures they control with total power 6 or less, then sacrifices all other creatures they control."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses any number of creatures they control with total power 3 or greater, then sacrifices all other creatures they control.",
+      "Each player chooses any number of creatures they control with total toughness 3 or less, then sacrifices all other creatures they control.",
+      "Each player chooses any number of creatures they control with total power 3 or less, then sacrifices all creatures they control."
+    ]
+  },
+  {
+    "id": "eff.r5refs.eachMay.shuffleHandGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.24a",
+      "CR 400.3"
+    ],
+    "pattern": "each player may shuffle their hand and graveyard into their library",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": "hand",
+              "owner": {
+                "ref": "iterating"
+              }
+            }
+          },
+          "to": {
+            "zone": "library",
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": "graveyard",
+              "owner": {
+                "ref": "iterating"
+              }
+            }
+          },
+          "to": {
+            "zone": "library",
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "iterating"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player may shuffle their hand and graveyard into their library. Each player who does draws six cards."
+      },
+      {
+        "text": "When this creature enters, each player may shuffle their hand and graveyard into their library. Each player who does draws three cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player may shuffle their hand into their library. Each player who does draws six cards.",
+      "Each player may shuffle their graveyard into their library. Each player who does draws six cards.",
+      "Each opponent may shuffle their hand and graveyard into their library. Each player who does draws six cards."
+    ]
+  },
+  {
+    "id": "rid.r5refs.eachWhoDoes.draw",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 121.1"
+    ],
+    "pattern": "each player who does draw[s] {n:Qty} cards",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "who.ref": "each",
+          "who.who": "player",
+          "otherwise": null
+        },
+        "do": {
+          "@append": [
+            {
+              "op": "draw",
+              "who": {
+                "ref": "iterating"
+              },
+              "count": "$n"
+            }
+          ]
+        }
+      }
+    },
+    "attachTo": "may",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player may shuffle their hand and graveyard into their library. Each player who does draws six cards."
+      },
+      {
+        "text": "Each player may shuffle their hand and graveyard into their library. Each player who does draws two cards. You draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player may discard their hand. Each player who doesn't draws four cards.",
+      "Draw a card. Each player who does draws four cards.",
+      "You may discard your hand. Each player who does draws four cards."
+    ]
+  },
+  {
+    "id": "eff.r5refs.linked.play",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 611.3a"
+    ],
+    "pattern": "you may play ( cards exiled with ~ | lands and cast spells from among cards exiled with ~ )",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "play",
+      "of": {
+        "is": {
+          "ref": "linked",
+          "link": "exiled"
+        }
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top two cards of target opponent's library.\nYou may play cards exiled with ~."
+      },
+      {
+        "text": "{3}, {T}: Exile the top card of your library and you lose 1 life.\nYou may play cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top two cards of target opponent's library.\nYou may play cards from exile.",
+      "When ~ enters, exile the top two cards of target opponent's library.\nYou may look at cards exiled with ~ during your turn.",
+      "{3}, {T}: Exile the top card of your library and you lose 1 life.\nYou may play artifacts from among cards exiled with ~."
+    ]
+  },
+  {
+    "id": "eff.r5refs.linked.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 611.3a"
+    ],
+    "pattern": "you may cast spells from among cards exiled with ~",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "cast",
+      "of": {
+        "is": {
+          "ref": "linked",
+          "link": "exiled"
+        }
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target cards from your graveyard.\nYou may cast spells from among cards exiled with ~."
+      },
+      {
+        "text": "{2}{U}, {T}: Exile the top card of target player's library.\nYou may cast spells from among cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target cards from your graveyard.\nYou may cast spells from among cards in exile.",
+      "When ~ enters, exile up to two target cards from your graveyard.\nYou may cast creature spells from among cards exiled with ~."
+    ]
+  },
+  {
+    "id": "eff.r5refs.linked.putEach.bf.counter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2",
+      "CR 122.6",
+      "CR 614.1c"
+    ],
+    "pattern": "put each {f:Filter} card exiled with ~ onto the battlefield under your control with ( a | an ) {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "any",
+          "isCard": true,
+          "anyOf": [
+            "$f"
+          ]
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{1}{B}, {T}: Exile target creature card from a graveyard. You gain 1 life.\n{4}, {T}: Put each creature card exiled with this artifact onto the battlefield under your control with a +1/+1 counter on it."
+      },
+      {
+        "text": "When this creature enters, exile up to two target artifact cards from an opponent's graveyard.\nWhen this creature dies, put each artifact card exiled with this creature onto the battlefield under your control with a shield counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{1}{B}, {T}: Exile target creature card from a graveyard. You gain 1 life.\n{4}, {T}: Put each creature card exiled with this artifact onto the battlefield under its owner's control with a +1/+1 counter on it.",
+      "{1}{B}, {T}: Exile target creature card from a graveyard. You gain 1 life.\n{4}, {T}: Put each creature card from exile onto the battlefield under your control with a +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.r5refs.anotherOfEachKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2c",
+      "CR 701.34a"
+    ],
+    "pattern": "for each kind of counter on {o:Recipient} , give that permanent or player another counter of that kind",
+    "build": {
+      "op": "action",
+      "action": "anotherOfEachKind",
+      "subject": "$o",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: For each kind of counter on target permanent or player, give that permanent or player another counter of that kind. Activate only as a sorcery."
+      },
+      {
+        "text": "When this creature dies, for each kind of counter on target permanent or player, give that permanent or player another counter of that kind."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: For each kind of counter on target permanent or player, give that permanent or player two counters of that kind.",
+      "{2}, {T}: For each kind of counter on target permanent or player, remove a counter of that kind from that permanent or player.",
+      "{2}, {T}: For each counter on target permanent or player, give that permanent or player another counter of that kind."
+    ]
+  },
+  {
+    "id": "eff.r5refs.player.may.exile.n.fromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} may exile {n:Qty} card[s] from the top of their library",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "topCards",
+            "player": "$p",
+            "count": "$n"
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an artifact creature is dealt damage, its controller may exile that many cards from the top of their library. They may play those cards until the end of their next turn."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player may exile two cards from the top of their library."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's upkeep, that player may exile two cards from the bottom of their library.",
+      "At the beginning of each opponent's upkeep, that player may exile two cards from the top of your library.",
+      "At the beginning of each opponent's upkeep, that player may reveal two cards from the top of their library."
+    ]
+  },
+  {
+    "id": "eff.r5refs.they.may.play.group.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 305.1",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "they may play {o:Group} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "any",
+              "number": "plural",
+              "text": "they"
+            }
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an artifact creature is dealt damage, its controller may exile that many cards from the top of their library. They may play those cards until the end of their next turn."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player may exile two cards from the top of their library. They may play those cards this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's upkeep, that player may exile two cards from the top of their library. They may look at those cards this turn.",
+      "At the beginning of each opponent's upkeep, that player may exile two cards from the top of their library. They may play those lands this turn."
+    ]
+  },
+  {
+    "id": "eff.r5refs.eachPlayer.exiles.allButBottom.faceDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.1",
+      "CR 406.3",
+      "CR 608.2c",
+      "CR 101.4",
+      "CR 107.1b"
+    ],
+    "pattern": "each player exiles all but the bottom {n:Qty} cards of their library face down",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "exiler",
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "topCards",
+            "player": {
+              "ref": "iterating"
+            },
+            "count": {
+              "q": "math",
+              "op": "max",
+              "args": [
+                0,
+                {
+                  "q": "math",
+                  "op": "-",
+                  "args": [
+                    {
+                      "q": "zoneSize",
+                      "zone": "library",
+                      "of": {
+                        "ref": "iterating"
+                      }
+                    },
+                    "$n"
+                  ]
+                }
+              ]
+            }
+          },
+          "to": {
+            "zone": "exile",
+            "faceDown": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, each player exiles all but the bottom four cards of their library face down."
+      },
+      {
+        "text": "Each player exiles all but the bottom ten cards of their library face down."
+      }
+    ],
+    "counterExamples": [
+      "Each player exiles all but the top ten cards of their library face down.",
+      "Each player exiles all but the bottom ten cards of their library.",
+      "Each player exiles the bottom ten cards of their library face down."
+    ]
+  },
+  {
+    "id": "eff.r5refs.self.becomes.subtype.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 613.1d"
+    ],
+    "pattern": "~ becomes ( a | an ) {st:Subtypes}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{G}: This creature becomes a Wolf. Put a +1/+1 counter on it. Activate only once."
+      },
+      {
+        "text": "{1}{B}: This creature becomes a Zombie. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: This creature becomes a Wolf in addition to its other types. Activate only once.",
+      "{2}{G}: This creature becomes a 3/3 Wolf. Activate only once.",
+      "{1}{B}: This creature becomes a Zombie until end of turn. Activate only as a sorcery."
+    ]
+  },
+  {
+    "id": "eff.r5refs.next.cast.itGains.untilEot",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7b",
+      "CR 603.7c",
+      "CR 400.7a",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , it gains {a:Abilities} until end of turn",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "endOfTurn"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "event",
+                "role": "spell"
+              },
+              "mods": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{1}{R}: When you next cast a creature spell this turn, it gains haste until end of turn."
+      },
+      {
+        "text": "When this creature enters, when you next cast an artifact creature spell this turn, it gains trample and haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{R}: When you next cast a creature spell this turn, it gains haste.",
+      "{1}{R}: Whenever you cast a creature spell this turn, it gains haste until end of turn.",
+      "{1}{R}: When you next cast a creature spell this turn, copy it."
+    ]
+  },
+  {
+    "id": "eff.r5refs.forEachOtherPlayer.exile.oppTarget",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 102.3",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 406.1"
+    ],
+    "pattern": "for each other player , exile {o:OppTarget}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, for each other player, exile up to one target artifact that player controls."
+      },
+      {
+        "text": "For each other player, exile up to one target nonland permanent that player controls."
+      }
+    ],
+    "counterExamples": [
+      "For each other player, exile up to one target nonland permanent you control.",
+      "For each other player, return up to one target nonland permanent that player controls to its owner's hand.",
+      "For each other player, exile up to two target nonland permanents that player controls."
+    ]
+  }
+]

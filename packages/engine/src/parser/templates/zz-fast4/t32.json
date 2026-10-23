@@ -1,0 +1,413 @@
+[
+  {
+    "id": "cm.t32.self.less.anotherSpell",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.2f", "CR 601.2i", "CR 604.5", "CR 118.7a"],
+    "pattern": "~ costs {m:ManaCost} less to cast if you've cast another spell this turn",
+    "build": {
+      "kind": "static",
+      "zone": ["stack"],
+      "condition": { "cond": "compare", "left": { "q": "spellsCastThisTurn" }, "op": ">=", "right": 1 },
+      "effects": [{ "s": "costMod", "applies": { "self": true, "caster": "you" }, "change": { "kind": "reduce", "mana": "$m", "floor": "zero" } }]
+    },
+    "consumes": ["if", "another"],
+    "examples": [
+      { "text": "~ costs {4} less to cast if you've cast another spell this turn." },
+      { "text": "~ costs {1} less to cast if you've cast another spell this turn.\nDraw two cards." }
+    ],
+    "counterExamples": [
+      "~ costs {3} more to cast if you've cast another spell this turn.",
+      "~ costs {3} less to cast if you've cast another creature spell this turn.",
+      "~ costs {3} less to cast if an opponent has cast another spell this turn.",
+      "~ costs {3} less to cast unless you've cast another spell this turn."
+    ]
+  },
+  {
+    "id": "cm.t32.self.less.opponentsControl",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.2f", "CR 604.5", "CR 118.7a", "CR 102.3"],
+    "pattern": "~ costs {m:ManaCost} less to cast if your opponents control {n:Qty} or more {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": ["stack"],
+      "condition": {
+        "cond": "compare",
+        "left": { "q": "count", "of": { "ref": "each", "filter": { "types": "$f.types", "subtypes": "$f.subtypes", "supertypes": "$f.supertypes", "colors": "$f.colors", "controller": "opponent" } } },
+        "op": ">=",
+        "right": "$n"
+      },
+      "effects": [{ "s": "costMod", "applies": { "self": true, "caster": "you" }, "change": { "kind": "reduce", "mana": "$m", "floor": "zero" } }]
+    },
+    "consumes": ["if"],
+    "examples": [
+      { "text": "~ costs {2} less to cast if your opponents control four or more artifacts." },
+      { "text": "~ costs {1} less to cast if your opponents control two or more Elves.\nTrample" }
+    ],
+    "counterExamples": [
+      "~ costs {2} less to cast if your opponents control four or fewer artifacts.",
+      "~ costs {2} less to cast if you control four or more artifacts and your opponents control four or more artifacts.",
+      "~ costs {2} less to cast if your opponents control four or more tapped artifacts.",
+      "~ costs {2} less to cast unless your opponents control four or more artifacts."
+    ]
+  },
+  {
+    "id": "cm.t32.self.less.totalToughness",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.2f", "CR 604.5", "CR 118.7a", "CR 208.1", "CR 107.1b"],
+    "pattern": "~ costs {m:ManaCost} less to cast if {f:Filter} have total toughness {n:Qty} or greater",
+    "build": {
+      "kind": "static",
+      "zone": ["stack"],
+      "condition": { "cond": "compare", "left": { "q": "stat", "stat": "toughness", "of": { "ref": "each", "filter": "$f" }, "sum": true }, "op": ">=", "right": "$n" },
+      "effects": [{ "s": "costMod", "applies": { "self": true, "caster": "you" }, "change": { "kind": "reduce", "mana": "$m", "floor": "zero" } }]
+    },
+    "consumes": ["if"],
+    "examples": [
+      { "text": "~ costs {2} less to cast if creatures you control have total toughness 12 or greater." },
+      { "text": "~ costs {1} less to cast if Walls you control have total toughness 6 or greater.\nTrample" }
+    ],
+    "counterExamples": [
+      "~ costs {2} less to cast if creatures you control have total toughness 12 or less.",
+      "~ costs {2} less to cast if creatures you control have total power 12 or greater.",
+      "~ costs {2} less to cast if creatures you control have total toughness 12 or greater and you control a Wall.",
+      "~ costs {2} more to cast if creatures you control have total toughness 12 or greater."
+    ]
+  },
+  {
+    "id": "cm.t32.self.less.cardsLeftGraveyard",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.2f", "CR 604.5", "CR 118.7a", "CR 400.3", "CR 603.10a"],
+    "pattern": "~ costs {m:ManaCost} less to cast if {n:Qty} or more cards left your graveyard this turn",
+    "build": {
+      "kind": "static",
+      "zone": ["stack"],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": { "self": true, "caster": "you" },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "math",
+                  "op": "floorDiv",
+                  "args": [{ "q": "happenedCount", "event": { "ev": "zoneChange", "subject": { "isCard": true, "owner": "you" }, "from": "graveyard" }, "scope": "turn" }, "$n"]
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": ["if"],
+    "needs": ["feature:costMod.times"],
+    "examples": [
+      { "text": "~ costs {1} less to cast if one or more cards left your graveyard this turn." },
+      { "text": "~ costs {4} less to cast if three or more cards left your graveyard this turn.\nDraw a card." }
+    ],
+    "counterExamples": [
+      "~ costs {2} more to cast if one or more cards left your graveyard this turn.",
+      "~ costs {2} less to cast if one or more cards left an opponent's graveyard this turn.",
+      "~ costs {2} less to cast if one or more creature cards left your graveyard this turn.",
+      "~ costs {2} less to cast if one or more cards were put into your graveyard this turn."
+    ]
+  },
+  {
+    "id": "cm.t32.self.more.ifTargets",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.2c", "CR 601.2f", "CR 604.5", "CR 118.7"],
+    "pattern": "~ costs {m:ManaCost} more to cast if it targets ( a | an ) {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": ["stack"],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": { "self": true, "caster": "you" },
+          "change": { "kind": "increase", "mana": "$m", "times": { "q": "math", "op": "min", "args": [1, { "q": "spellTargetCount", "filter": "$f" }] } }
+        }
+      ]
+    },
+    "consumes": ["if"],
+    "needs": ["feature:costMod.times", "feature:spellTargetCount.filter"],
+    "examples": [
+      { "text": "~ costs {2} more to cast if it targets a legendary creature." },
+      { "text": "~ costs {3} more to cast if it targets a Wizard.\nDestroy target creature." },
+      { "text": "~ costs {1} more to cast if it targets an untapped creature.\nTap target creature." }
+    ],
+    "counterExamples": [
+      "~ costs {3} more to cast unless it targets a Wizard.",
+      "~ costs {3} more to cast if it targets two Wizards.",
+      "~ costs {3} more to cast for each Wizard it targets."
+    ]
+  },
+  {
+    "id": "cm.t32.spells.less.you.manaValue",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.2f", "CR 118.7a", "CR 202.3", "CR 611.3a"],
+    "pattern": "{f:Filter} you cast with mana value {n:Qty} or greater cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": { "types": "$f.types", "subtypes": "$f.subtypes", "supertypes": "$f.supertypes", "colors": "$f.colors", "colorless": "$f.colorless", "stackKind": "spell", "zone": "stack", "manaValue": { "op": ">=", "value": "$n" } },
+            "caster": "you"
+          },
+          "change": { "kind": "reduce", "mana": "$m", "floor": "zero" }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "Colorless spells you cast with mana value 6 or greater cost {2} less to cast." },
+      { "text": "Creature spells you cast with mana value 5 or greater cost {1} less to cast." }
+    ],
+    "counterExamples": [
+      "Colorless spells you cast with mana value 6 or greater cost {2} more to cast.",
+      "Colorless spells you cast with mana value 6 or less cost {2} less to cast.",
+      "Colorless spells your opponents cast with mana value 6 or greater cost {2} less to cast.",
+      "Untapped colorless spells you cast with mana value 6 or greater cost {2} less to cast."
+    ]
+  },
+  {
+    "id": "cm.t32.each.spell.more.exceptControllersTurn",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 611.3a", "CR 102.1", "CR 500.1"],
+    "pattern": "each spell costs {m:ManaCost} more to cast except during its controller 's turn",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [
+        { "s": "costMod", "applies": { "spells": { "not": { "controller": { "ref": "active" } } }, "caster": "any" }, "change": { "kind": "increase", "mana": "$m" } }
+      ]
+    },
+    "consumes": ["each", "except"],
+    "examples": [
+      { "text": "Each spell costs {2} more to cast except during its controller's turn." },
+      { "text": "Each spell costs {1}{U} more to cast except during its controller's turn." }
+    ],
+    "counterExamples": [
+      "Each spell costs {2} less to cast except during its controller's turn.",
+      "Each spell costs {2} more to cast during its controller's turn.",
+      "Each creature spell costs {2} more to cast except during its controller's turn.",
+      "Each spell costs {2} more to cast except during your turn."
+    ]
+  },
+  {
+    "id": "cm.t32.first.spell.each.turn.less",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.2f", "CR 601.2i", "CR 118.7a", "CR 611.3a"],
+    "pattern": "the first {f:Filter} you cast each turn costs {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": { "spells": "$f", "caster": "you" },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "max",
+              "args": [
+                0,
+                {
+                  "q": "math",
+                  "op": "-",
+                  "args": [
+                    1,
+                    {
+                      "q": "happenedCount",
+                      "event": { "ev": "cast", "player": "you", "spell": { "types": "$f.types", "subtypes": "$f.subtypes", "supertypes": "$f.supertypes", "colors": "$f.colors", "colorless": "$f.colorless" } },
+                      "scope": "turn"
+                    }
+                  ]
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": ["each"],
+    "needs": ["feature:costMod.times"],
+    "examples": [
+      { "text": "The first enchantment spell you cast each turn costs {2} less to cast." },
+      { "text": "The first instant or sorcery spell you cast each turn costs {1} less to cast." }
+    ],
+    "counterExamples": [
+      "The first creature spell you cast each turn costs {2} more to cast.",
+      "The first creature spell an opponent casts each turn costs {2} less to cast.",
+      "The second creature spell you cast each turn costs {2} less to cast.",
+      "The first creature spell you cast each turn costs {2} less to cast and has haste."
+    ]
+  },
+  {
+    "id": "cm.t32.alternative.mana.ifAfter",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 118.9", "CR 601.2b", "CR 601.2f"],
+    "pattern": "you may pay {m:ManaCost} rather than pay ~ 's mana cost if {w:Cond}",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "alternativeCost", "cost": { "mana": "$m" }, "name": "alternative", "when": "$w" }] },
+    "consumes": ["if", "may", "rather than"],
+    "examples": [
+      { "text": "You may pay {G} rather than pay ~'s mana cost if there are ten or more creatures on the battlefield." },
+      { "text": "You may pay {1}{R} rather than pay ~'s mana cost if you control a Goblin." }
+    ],
+    "counterExamples": [
+      "You may pay {G} rather than pay ~'s mana cost unless there are ten or more creatures on the battlefield.",
+      "You may pay {G} in addition to ~'s mana cost if there are ten or more creatures on the battlefield.",
+      "You may pay {G} rather than pay ~'s mana cost if there are ten or more creatures on the battlefield and that player loses 2 life."
+    ]
+  },
+  {
+    "id": "cm.t32.alternative.free.if",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 118.9", "CR 601.2b", "CR 601.2f", "CR 107.3b"],
+    "pattern": "if {w:Cond} , you may cast ~ without paying its mana cost",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "alternativeCost", "cost": {}, "name": "alternative", "when": "$w" }] },
+    "consumes": ["if", "may"],
+    "examples": [
+      { "text": "If you control two or more Wizards, you may cast ~ without paying its mana cost." },
+      { "text": "If an opponent controls an Elf and you control a Goblin, you may cast ~ without paying its mana cost.\nDraw two cards." },
+      { "text": "If you control a Wizard, you may cast ~ without paying its mana cost.\nCounter target spell." }
+    ],
+    "counterExamples": [
+      "If you control a Wizard, you may cast ~ from your graveyard without paying its mana cost.",
+      "If you control a Wizard, you may cast ~ without paying its mana cost this turn.",
+      "If you control a Wizard, you may cast target instant card without paying its mana cost."
+    ]
+  },
+  {
+    "id": "rst.t32.cast.self.combat",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.3", "CR 101.2", "CR 506.1"],
+    "pattern": "cast ~ only during combat",
+    "build": {
+      "kind": "static",
+      "zone": ["stack"],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": { "ref": "self" },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": { "cond": "turnOf", "whose": "any", "step": ["beginCombat", "declareAttackers", "declareBlockers", "combatDamage", "endCombat"] }
+        }
+      ]
+    },
+    "consumes": ["only"],
+    "examples": [
+      { "text": "Cast ~ only during combat." },
+      { "text": "Cast ~ only during combat.\nTarget creature gets +3/+3 until end of turn." },
+      { "text": "Cast ~ only during combat.\nDestroy target attacking creature." }
+    ],
+    "counterExamples": [
+      "Cast ~ only during combat on your turn.",
+      "Cast ~ only during combat after blockers are declared.",
+      "Cast ~ only before combat."
+    ]
+  },
+  {
+    "id": "rst.t32.cast.self.unless",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.3", "CR 101.2", "CR 604.5"],
+    "pattern": "you can't cast ~ unless {c:Cond}",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "restrict", "subject": { "ref": "self" }, "mode": "onlyIf", "action": "cast", "when": "$c" }] },
+    "consumes": ["can't", "unless"],
+    "examples": [
+      { "text": "You can't cast ~ unless there are five or more cards in your graveyard.\nFlying" },
+      { "text": "You can't cast ~ unless you control a Wizard.\nTrample" }
+    ],
+    "counterExamples": [
+      "You can't cast ~ if there are five or more cards in your graveyard.",
+      "Your opponents can't cast ~ unless there are five or more cards in your graveyard.",
+      "You can't cast ~ unless there are five or more cards in your graveyard this turn."
+    ]
+  },
+  {
+    "id": "rst.t32.opponents.cast.onlyFromHand",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.3", "CR 601.2a", "CR 101.2", "CR 102.3"],
+    "pattern": "your opponents can't cast spells from anywhere other than their hands",
+    "build": { "s": "restrict", "subject": { "ref": "each", "who": "opponent" }, "mode": "cant", "action": "cast", "other": { "not": { "castFrom": "hand" } } },
+    "consumes": ["can't", "other"],
+    "examples": [
+      { "text": "Your opponents can't cast spells from anywhere other than their hands." },
+      { "text": "Flying\nYour opponents can't cast spells from anywhere other than their hands." }
+    ],
+    "counterExamples": [
+      "Your opponents can't cast spells from their hands.",
+      "Your opponents can't cast spells from anywhere other than their hands this turn.",
+      "Your opponents can't cast creature spells from anywhere other than their hands."
+    ]
+  },
+  {
+    "id": "rst.t32.yourTurn.opponents.castActivate",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": ["CR 601.3", "CR 602.5", "CR 605.1a", "CR 101.2", "CR 109.2", "CR 611.3a"],
+    "pattern": "during your turn , your opponents can't cast spells or activate abilities of {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        { "s": "restrict", "subject": { "ref": "each", "who": "opponent" }, "mode": "cant", "action": "cast", "when": { "cond": "turnOf", "whose": "you" } },
+        {
+          "s": "restrict",
+          "subject": { "ref": "each", "who": "opponent" },
+          "mode": "cant",
+          "action": "activate",
+          "other": { "types": "$f.types", "zone": "battlefield" },
+          "when": { "cond": "turnOf", "whose": "you" }
+        }
+      ]
+    },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "During your turn, your opponents can't cast spells or activate abilities of artifacts or creatures." },
+      { "text": "During your turn, your opponents can't cast spells or activate abilities of lands, creatures, or planeswalkers." }
+    ],
+    "counterExamples": [
+      "During your turn, your opponents can't cast spells or activate abilities of tapped artifacts.",
+      "During your turn, your opponents can't cast spells and can't activate abilities of artifacts.",
+      "During your turn, you can't cast spells or activate abilities of artifacts."
+    ]
+  }
+]

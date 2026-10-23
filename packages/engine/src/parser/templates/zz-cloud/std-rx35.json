@@ -1,0 +1,424 @@
+[
+  {
+    "id": "eff.stdrx35.draw.thenPutOneBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 401.4",
+      "CR 400.7",
+      "CR 608.2c"
+    ],
+    "pattern": "draw {n:Qty} card[s] , then put ( a | one ) card from your hand on the bottom of your library",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "bottom"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "bottom"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, draw two cards, then put a card from your hand on the bottom of your library."
+      },
+      {
+        "text": "{2}, {T}: Draw a card, then put a card from your hand on the bottom of your library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, draw two cards, then put a card from your graveyard on the bottom of your library.",
+      "When ~ enters, draw two cards, then put a card from your hand on top of your library.",
+      "When ~ enters, draw two cards, then put two cards from your hand on the bottom of your library in any order.",
+      "When ~ enters, draw two cards, then put a card from your hand on the bottom of target player's library."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.stdrx35.prevent.nextSourceOfChoice.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 609.7b",
+      "CR 615.1",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 608.2d"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to you {d:Dur} , prevent that damage",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{1}{W}, {T}: The next time a source of your choice would deal damage to you this turn, prevent that damage."
+      },
+      {
+        "text": "{3}: The next time a source of your choice would deal damage to you this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "{1}{W}: The next time a source of your choice would deal damage to you, prevent that damage.",
+      "{1}{W}: The next time a source of an opponent's choice would deal damage to you this turn, prevent that damage.",
+      "{1}{W}: The next time a source of your choice would deal damage to you this turn, prevent half that damage.",
+      "{1}{W}: The next time a green source of your choice would deal damage to you this turn, prevent that damage."
+    ]
+  },
+  {
+    "id": "eff.stdrx35.prevent.nextSourceOfChoice.you.gainLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 609.7b",
+      "CR 615.1",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 608.2d",
+      "CR 615.5"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to you {d:Dur} , prevent that damage . you gain life equal to the damage prevented this way",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all",
+              "then": [
+                {
+                  "op": "gainLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": {
+                    "q": "preventedAmount"
+                  }
+                }
+              ]
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "choice",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "{2}{W}, {T}: The next time a source of your choice would deal damage to you this turn, prevent that damage. You gain life equal to the damage prevented this way."
+      },
+      {
+        "text": "{W}{W}: The next time a source of your choice would deal damage to you this turn, prevent that damage. You gain life equal to the damage prevented this way."
+      }
+    ],
+    "counterExamples": [
+      "{2}{W}: The next time a source of your choice would deal damage to you this turn, prevent that damage. You lose life equal to the damage prevented this way.",
+      "{2}{W}: The next time a source of your choice would deal damage to you this turn, prevent that damage. Target player gains life equal to the damage prevented this way.",
+      "{2}{W}: The next time a source of your choice would deal damage to you this turn, prevent that damage. You gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdrx35.prevent.nextSourceOfChoice.obj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 609.7b",
+      "CR 615.1",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 608.2d"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to {o:Obj} {d:Dur} , prevent that damage",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "object": {
+                  "is": "$o"
+                }
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{W}, {T}: The next time a source of your choice would deal damage to target creature this turn, prevent that damage."
+      },
+      {
+        "text": "{2}: The next time a source of your choice would deal damage to target artifact creature this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "{W}: The next time a source of your choice would deal damage to target creature, prevent that damage.",
+      "{W}: The next time a source of your choice would deal damage to each creature this turn, prevent that damage.",
+      "{W}: The next time a source of your choice would deal damage to target creature this turn, that damage is dealt to ~ instead."
+    ]
+  },
+  {
+    "id": "eff.stdrx35.prevent.nextSourceOfChoice.any",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 609.7b",
+      "CR 615.1",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 608.2d"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to {r:AnyTarget} {d:Dur} , prevent that damage",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "object": {
+                  "is": "$r"
+                },
+                "player": "$r"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{1}{W}, {T}: The next time a source of your choice would deal damage to any target this turn, prevent that damage."
+      },
+      {
+        "text": "{2}{W}: The next time a source of your choice would deal damage to any target this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "{W}: The next time a source of your choice would deal damage to any target, prevent that damage.",
+      "{W}: The next time a source of your choice would deal damage to one or two targets this turn, prevent that damage.",
+      "{W}: The next time a source of your choice would deal damage to any target this turn, prevent half that damage."
+    ]
+  }
+]

@@ -1,0 +1,322 @@
+[
+  {
+    "id": "eff.t18.removeFromCombat",
+    "kind": "effect",
+    "cr": [
+      "CR 506.4"
+    ],
+    "pattern": "remove {o:Obj} from combat",
+    "build": {
+      "op": "removeFromCombat",
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ becomes blocked, untap it and remove it from combat."
+      },
+      {
+        "text": "{2}{W}: Remove target blocking creature from combat."
+      },
+      {
+        "text": "Whenever ~ blocks, remove it from combat."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes blocked, you may untap it and remove it from the battlefield.",
+      "{2}{W}: Remove target blocking creature from combat unless its controller pays {1}.",
+      "Whenever ~ blocks, remove each creature from combat."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t18.may.untapRemoveFromCombat",
+    "kind": "effect",
+    "cr": [
+      "CR 603.5",
+      "CR 608.2d",
+      "CR 701.26b",
+      "CR 506.4"
+    ],
+    "pattern": "you may untap {o:Obj} and remove {p:Obj} from combat",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "untap",
+          "what": "$o"
+        },
+        {
+          "op": "removeFromCombat",
+          "what": "$p"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Whenever a Bird you control becomes blocked, you may untap it and remove it from combat."
+      },
+      {
+        "text": "Whenever a creature you control with flying becomes blocked, you may untap it and remove it from combat."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes blocked by a creature, untap it and remove it from combat.",
+      "Whenever ~ becomes blocked, you may tap it and remove it from combat.",
+      "Whenever ~ becomes blocked, you may untap it or remove it from combat."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t18.shuffle.self.ownersLibrary",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a",
+      "CR 608.2n",
+      "CR 400.3"
+    ],
+    "pattern": "shuffle ~ into its owner 's library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "self"
+            }
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": {
+            "ref": "self"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "~ deals 4 damage to any target. Shuffle ~ into its owner's library."
+      },
+      {
+        "text": "You gain 6 life. Shuffle ~ into its owner's library."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 4 damage to any target. Shuffle ~ into your library.",
+      "You gain 6 life. Put ~ on top of its owner's library.",
+      "You gain 6 life. Shuffle ~ into its owner's graveyard."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t18.lead.pumpForEach.grant",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets +1/+1 for each {f:Filter} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              },
+              "toughness": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature gets +1/+1 for each Elf you control and gains vigilance."
+      },
+      {
+        "text": "Until end of turn, target creature gets +1/+1 for each artifact you control and gains haste."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature gets +2/+2 for each Elf you control and gains vigilance.",
+      "Until end of turn, target creature gets +1/+1 for each Elf you control or gains vigilance.",
+      "Until end of turn, target creature gets +1/+1 for each Elf you control and loses vigilance."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t18.counters.eachOfGroup",
+    "kind": "effect",
+    "cr": [
+      "CR 122.1a",
+      "CR 122.6",
+      "CR 608.2c"
+    ],
+    "pattern": "put {n:Qty} +1/+1 counter[s] on each of {o:Group}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "+1/+1",
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack with one or more Elves, put a +1/+1 counter on each of them."
+      },
+      {
+        "text": "Whenever you attack with two or more Knights, put two +1/+1 counters on each of them."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack with one or more Elves, put a +1/+1 counter on one of them.",
+      "Whenever you attack with one or more Elves, remove a +1/+1 counter from each of them.",
+      "Whenever you attack with one or more Elves, put a -1/-1 counter on each of them."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t18.pump.forEachBlocking",
+    "kind": "effect",
+    "cr": [
+      "CR 509.1g",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} for each {f:Filter} blocking {b:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": {
+                        "types": "$f.types",
+                        "subtypes": "$f.subtypes",
+                        "notSubtypes": "$f.notSubtypes",
+                        "colors": "$f.colors",
+                        "notColors": "$f.notColors",
+                        "controller": "$f.controller",
+                        "blockingObject": "$b"
+                      }
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": {
+                        "types": "$f.types",
+                        "subtypes": "$f.subtypes",
+                        "notSubtypes": "$f.notSubtypes",
+                        "colors": "$f.colors",
+                        "notColors": "$f.notColors",
+                        "controller": "$f.controller",
+                        "blockingObject": "$b"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes blocked, it gets +4/+4 until end of turn for each creature blocking it."
+      },
+      {
+        "text": "Whenever ~ becomes blocked, it gets +1/+0 until end of turn for each creature blocking it."
+      },
+      {
+        "text": "Whenever an Elf you control becomes blocked, it gets +2/+1 until end of turn for each creature blocking it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes blocked, it gets +2/+2 until end of turn for each creature blocking it beyond the first.",
+      "Whenever ~ becomes blocked, it gets +2/+2 until end of turn for each creature attacking it.",
+      "Whenever ~ becomes blocked, it gets +2/+2 for each creature blocking it."
+    ],
+    "status": "stable",
+    "since": 5
+  }
+]

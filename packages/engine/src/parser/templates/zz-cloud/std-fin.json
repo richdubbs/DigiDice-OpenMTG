@@ -1,0 +1,790 @@
+[
+  {
+    "id": "eff.stdfin.mill.halfLibraryRoundedDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 107.1a"
+    ],
+    "pattern": "{p:Player} mill[s] half their library , rounded down",
+    "build": {
+      "op": "mill",
+      "who": "$p",
+      "count": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          {
+            "q": "zoneSize",
+            "zone": "library",
+            "of": "$p"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent mills half their library, rounded down."
+      },
+      {
+        "text": "Whenever ~ becomes tapped, target player mills half their library, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent mills half their library, rounded up.",
+      "When ~ enters, target opponent mills half their library.",
+      "When ~ enters, target opponent mills half your library, rounded down."
+    ]
+  },
+  {
+    "id": "eff.stdfin.then.group.gain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "then {o:Objs} gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Create a 1/1 white Soldier creature token. Then creatures you control gain vigilance until end of turn."
+      },
+      {
+        "text": "You gain 2 life. Then Goblins you control gain haste and menace until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Create a 1/1 white Soldier creature token. Then creatures you control gain vigilance.",
+      "Create a 1/1 white Soldier creature token. Then creatures you control lose vigilance until end of turn.",
+      "Create a 1/1 white Soldier creature token. Then target creature gains vigilance until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdfin.destroy.all.attachedTo",
+    "kind": "effect",
+    "priority": 1,
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 301.5",
+      "CR 303.4",
+      "CR 608.2c"
+    ],
+    "pattern": "destroy all {f:Filter} attached to {o:Obj}",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "attachedToObject": "$o"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 3 damage to target creature. Destroy all Equipment attached to that creature."
+      },
+      {
+        "text": "Whenever ~ attacks, destroy all Auras attached to target creature."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to target creature. Destroy all Equipment.",
+      "~ deals 3 damage to target creature. Exile all Equipment attached to that creature.",
+      "~ deals 3 damage to target creature. Destroy all Equipment attached to that creature at end of combat."
+    ]
+  },
+  {
+    "id": "eff.stdfin.destroy.upTo.attachedTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 301.5",
+      "CR 303.4",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "destroy up to {n:Qty} {f:Filter} attached to {o:Obj}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "attachedToObject": "$o"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "destroy"
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "bound",
+          "name": "destroy"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 4 damage to target creature. Destroy up to one Equipment attached to that creature."
+      },
+      {
+        "text": "Tap target creature. Destroy up to two Auras attached to that creature."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 4 damage to target creature. Destroy up to one target Equipment attached to that creature.",
+      "~ deals 4 damage to target creature. Destroy one Equipment attached to that creature.",
+      "~ deals 4 damage to target creature. Exile up to one Equipment attached to that creature."
+    ]
+  },
+  {
+    "id": "eff.stdfin.damage.andItself.whereXItsPower",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 115.4",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] x damage to {to:Recipient} and x damage to itself , where x is its power",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": "$src"
+      },
+      "also": [
+        {
+          "to": "$src",
+          "amount": {
+            "q": "stat",
+            "stat": "power",
+            "of": "$src"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature you control deals X damage to target creature an opponent controls and X damage to itself, where X is its power."
+      },
+      {
+        "text": "When ~ enters, target creature you control deals X damage to any other target and X damage to itself, where X is its power."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control deals X damage to any other target and X damage to you, where X is its power.",
+      "Target creature you control deals X damage to any other target and X damage to itself, where X is its toughness.",
+      "Target creature you control deals X damage to any other target or X damage to itself, where X is its power."
+    ]
+  },
+  {
+    "id": "eff.stdfin.search.may.orBasicLand.reveal.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 205.4c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} or basic land card , reveal it , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              "$f",
+              {
+                "types": [
+                  "Land"
+                ],
+                "supertypes": [
+                  "Basic"
+                ]
+              }
+            ]
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for a Wizard or basic land card, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ dies, you may search your library for an artifact or basic land card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for a Wizard or land card, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for a Wizard or basic land card, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for a Wizard or basic land card, reveal it, put it onto the battlefield, then shuffle."
+    ],
+    "priority": 2
+  },
+  {
+    "id": "trg.stdfin.when.duringYourTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.4",
+      "CR 500.1"
+    ],
+    "pattern": "( when | whenever ) {e:Event} during your turn",
+    "build": {
+      "on": "$e",
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent loses life during your turn, put a +1/+1 counter on ~."
+      },
+      {
+        "text": "Whenever a Goblin you control dies during your turn, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent loses life during an opponent's turn, put a +1/+1 counter on ~.",
+      "Whenever an opponent loses life during your turn, put a +1/+1 counter on ~ unless that player pays {2}.",
+      "Whenever an opponent loses life during your next turn, put a +1/+1 counter on ~."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.stdfin.draw.equal.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} draw[s] cards equal to {n:Qty}",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever a Goblin you control dies, you draw cards equal to its toughness."
+      },
+      {
+        "text": "At the beginning of your upkeep, target player draws cards equal to the number of Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a Goblin you control dies, you draw cards equal to its toughness unless an opponent pays {2}.",
+      "Whenever a Goblin you control dies, you discard cards equal to its toughness.",
+      "Whenever a Goblin you control dies, you draw cards equal to its toughness for each opponent."
+    ]
+  },
+  {
+    "id": "eff.stdfin.counters.put.equalTo.before",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "put a number of {k:CounterKind} counters equal to {q:Qty} on {o:Objs}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$q"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your end step, put a number of +1/+1 counters equal to ~'s toughness on up to one other target creature."
+      },
+      {
+        "text": "Whenever ~ attacks, put a number of +1/+1 counters equal to the number of Elves you control on target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, put a number of +1/+1 counters equal to ~'s toughness on up to one other target creature instead.",
+      "At the beginning of your end step, remove a number of +1/+1 counters equal to ~'s toughness from up to one other target creature.",
+      "At the beginning of your end step, put a number of +1/+1 counters equal to ~'s toughness on up to one other target creature unless its controller pays {1}."
+    ]
+  },
+  {
+    "id": "eff.stdfin.may.reveal.putIntoHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.20a",
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal {o:Obj} and put it into your hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "reveal",
+          "who": {
+            "ref": "you"
+          },
+          "what": "$o"
+        },
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, look at the top card of your library. If it's a land card, you may reveal it and put it into your hand."
+      },
+      {
+        "text": "{T}: Look at the top card of your library. If it's an Elf card, you may reveal it and put it into your hand."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Look at the top card of your library. If it's an Elf card, you may reveal it and put it onto the battlefield.",
+      "{T}: Look at the top card of your library. If it's an Elf card, reveal it and put it into your hand.",
+      "{T}: Look at the top card of your library. If it's an Elf card, you may reveal it and put it into your graveyard."
+    ]
+  },
+  {
+    "id": "trg.stdfin.whenever.andWhenever",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2"
+    ],
+    "pattern": "whenever {a:Event} and whenever {b:Event}",
+    "build": {
+      "on": {
+        "$concat": [
+          "$a",
+          "$b"
+        ]
+      }
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ or another Goblin you control enters and whenever an artifact you control enters, you gain 1 life."
+      },
+      {
+        "text": "Whenever you cast a red spell and whenever a Mountain you control enters, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ or another Goblin you control enters or whenever an artifact you control enters, you gain 1 life.",
+      "Whenever ~ or another Goblin you control enters and an artifact you control enters, you gain 1 life.",
+      "Whenever you cast a red spell and whenever a Mountain you control enters, put a +1/+1 counter on ~ unless an opponent pays {1}."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.stdfin.cast.now",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast {o:Obj}",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "optional": true
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile the top card of your library. You may cast it. If you don't, you gain 2 life."
+      },
+      {
+        "text": "{T}: Exile the top card of your library. You may cast that card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top card of your library. You may play it. If you don't, you gain 2 life.",
+      "Whenever ~ attacks, exile the top card of your library. You may cast it this turn. If you don't, you gain 2 life.",
+      "Whenever ~ attacks, exile the top card of your library. You may cast it without paying its mana cost. If you don't, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdfin.basepower.becomesEqual.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 608.2h",
+      "CR 208.1"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} 's base power becomes equal to {n:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, ~'s base power becomes equal to the number of Forests you control."
+      },
+      {
+        "text": "Whenever ~ attacks, until end of turn, target creature's base power becomes equal to the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, ~'s base toughness becomes equal to the number of Forests you control.",
+      "{2}: ~'s base power becomes equal to the number of Forests you control.",
+      "{2}: Until end of turn, ~'s power becomes equal to the number of Forests you control."
+    ]
+  },
+  {
+    "id": "eff.stdfin.shuffle.objs.intoYourLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 401.4"
+    ],
+    "pattern": "shuffle {o:Objs} into your library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "you"
+          }
+        },
+        "as": "shuffled"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{4}, {T}: Shuffle all creature cards from your graveyard into your library. You gain life equal to the number of cards shuffled into your library this way."
+      },
+      {
+        "text": "When ~ enters, shuffle all instant and sorcery cards from your graveyard into your library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, shuffle all instant and sorcery cards from your graveyard into its owner's library.",
+      "When ~ enters, exile all instant and sorcery cards from your graveyard into your library.",
+      "When ~ enters, shuffle all instant and sorcery cards from your graveyard into your hand."
+    ]
+  },
+  {
+    "id": "eff.stdfin.attach.anyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 701.3b",
+      "CR 608.2d"
+    ],
+    "pattern": "attach any number of {f:Filter} to {to:Obj}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "attachChoice"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "bound",
+          "name": "attachChoice"
+        },
+        "to": "$to"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may attach any number of Auras you control to target creature you control."
+      },
+      {
+        "text": "Whenever ~ attacks, attach any number of Equipment you control to it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, attach any number of Equipment you control to each creature you control.",
+      "Whenever ~ attacks, unattach any number of Equipment you control.",
+      "Whenever ~ attacks, attach any number of Equipment you control to it at random."
+    ]
+  },
+  {
+    "id": "eff.stdfin.attach.one",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 701.3b",
+      "CR 608.2d"
+    ],
+    "pattern": "attach ( a | an ) {f:Filter} to {to:Obj}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "attachChoice"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "bound",
+          "name": "attachChoice"
+        },
+        "to": "$to"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}: Attach an Equipment you control to target creature you control."
+      },
+      {
+        "text": "When ~ enters, you may attach an Aura you control to it."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Attach an Equipment you control to each creature you control.",
+      "{1}: Attach two Equipment you control to target creature you control.",
+      "{1}: Attach an Equipment you control to target creature you control at random."
+    ]
+  },
+  {
+    "id": "eff.stdfin.if.unattach.nextEnd",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.3d",
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 608.2c"
+    ],
+    "pattern": "if {c:Cond} , unattach {o:Obj} at the beginning of the next end step",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "delay",
+          "when": {
+            "at": "step",
+            "step": "end",
+            "next": true
+          },
+          "do": [
+            {
+              "op": "attach",
+              "what": "$o",
+              "to": null
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may attach an Equipment you control to target creature you control. If you do, unattach it at the beginning of the next end step."
+      },
+      {
+        "text": "{2}: Attach an Aura you control to target creature. If you control a Wizard, unattach it at the beginning of the next end step."
+      }
+    ],
+    "counterExamples": [
+      "You may attach an Equipment you control to target creature you control. If you do, unattach it at the beginning of your next upkeep.",
+      "You may attach an Equipment you control to target creature you control. If you do, sacrifice it at the beginning of the next end step unless you pay {1}.",
+      "You may attach an Equipment you control to target creature you control. If you do, unattach it at the beginning of each end step."
+    ]
+  }
+]

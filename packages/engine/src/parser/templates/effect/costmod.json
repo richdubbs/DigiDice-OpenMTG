@@ -1,0 +1,201 @@
+[
+  {
+    "id": "cm.spells.more.any",
+    "kind": "static",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 604.1", "CR 113.6"],
+    "pattern": "{f:Filter} cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [{ "s": "costMod", "applies": { "spells": "$f", "caster": "any" }, "change": { "kind": "increase", "generic": "$m.0.amount" } }]
+    },
+    "examples": [
+      { "text": "Creature spells cost {3} more to cast." },
+      { "text": "Artifact spells cost {3} more to cast." }
+    ],
+    "counterExamples": [
+      "Creature spells cost {2} less to cast.",
+      "Creature spells you cast cost {2} more to cast.",
+      "Creature spells cost {G} more to cast."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.spells.less.any",
+    "kind": "static",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 604.1", "CR 113.6"],
+    "pattern": "{f:Filter} cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [{ "s": "costMod", "applies": { "spells": "$f", "caster": "any" }, "change": { "kind": "reduce", "generic": "$m.0.amount", "floor": "zero" } }]
+    },
+    "examples": [
+      { "text": "Artifact spells cost {2} less to cast." },
+      { "text": "Golem spells cost {1} less to cast." }
+    ],
+    "counterExamples": [
+      "Artifact spells cost {1} more to cast.",
+      "Artifact spells you cast cost {1} less to cast."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.spells.less.you",
+    "kind": "static",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 604.1", "CR 113.6"],
+    "pattern": "{f:Filter} you cast cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [{ "s": "costMod", "applies": { "spells": "$f", "caster": "you" }, "change": { "kind": "reduce", "generic": "$m.0.amount", "floor": "zero" } }]
+    },
+    "examples": [
+      { "text": "Creature spells you cast cost {3} less to cast." },
+      { "text": "Golem spells you cast cost {2} less to cast." }
+    ],
+    "counterExamples": [
+      "Creature spells you cast cost {1} more to cast.",
+      "Creature spells your opponents cast cost {1} less to cast.",
+      "Creature spells you cast cost {1} less to cast this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.spells.more.you",
+    "kind": "static",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 604.1", "CR 113.6"],
+    "pattern": "{f:Filter} you cast cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [{ "s": "costMod", "applies": { "spells": "$f", "caster": "you" }, "change": { "kind": "increase", "mana": "$m" } }]
+    },
+    "examples": [
+      { "text": "Noncreature spells you cast cost {1} more to cast." },
+      { "text": "Creature spells you cast cost {2} more to cast." }
+    ],
+    "counterExamples": [
+      "Noncreature spells you cast cost {1} less to cast.",
+      "Noncreature spells your opponents cast cost {1} more to cast."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.spells.more.opp",
+    "kind": "static",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 604.1", "CR 113.6"],
+    "pattern": "{f:Filter} your opponents cast cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [{ "s": "costMod", "applies": { "spells": "$f", "caster": "opponent" }, "change": { "kind": "increase", "generic": "$m.0.amount" } }]
+    },
+    "examples": [
+      { "text": "Noncreature spells your opponents cast cost {3} more to cast." },
+      { "text": "Creature spells your opponents cast cost {2} more to cast." }
+    ],
+    "counterExamples": [
+      "Noncreature spells your opponents cast cost {1} less to cast.",
+      "Noncreature spells you cast cost {1} more to cast."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.self.less.foreach",
+    "kind": "static",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 604.5", "CR 113.6"],
+    "pattern": "~ costs {m:ManaCost} less to cast for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": ["stack"],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": { "self": true, "caster": "you" },
+          "change": {
+            "kind": "reduce",
+            "generic": { "q": "math", "op": "*", "args": ["$m.0.amount", { "q": "count", "of": { "ref": "each", "filter": "$f" } }] },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": ["each"],
+    "examples": [
+      { "text": "~ costs {1} less to cast for each artifact you control." },
+      { "text": "~ costs {2} less to cast for each Wizard you control." }
+    ],
+    "counterExamples": [
+      "~ costs {1} more to cast for each artifact you control.",
+      "~ costs {1} less to cast for each artifact you control this turn.",
+      "~ costs {1} less to activate for each artifact you control."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.cm.spells.less.you",
+    "kind": "effect",
+    "cr": ["CR 601.2f", "CR 118.7", "CR 611.2a"],
+    "pattern": "{f:Filter} you cast this turn cost {m:ManaCost} less to cast",
+    "build": {
+      "op": "effect",
+      "duration": { "d": "endOfTurn" },
+      "effects": [{ "s": "costMod", "applies": { "spells": "$f", "caster": "you" }, "change": { "kind": "reduce", "generic": "$m.0.amount", "floor": "zero" } }]
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "Creature spells you cast this turn cost {2} less to cast." },
+      { "text": "Artifact spells you cast this turn cost {1} less to cast." }
+    ],
+    "counterExamples": [
+      "Creature spells you cast this turn cost {2} more to cast.",
+      "Creature spells you cast cost {2} less to cast."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.additional",
+    "kind": "static",
+    "cr": ["CR 118.8", "CR 601.2b", "CR 601.2f", "CR 113.6d"],
+    "pattern": "as an additional cost to cast ~ , {c:Cost}",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "additionalCost", "cost": "$c" }] },
+    "consumes": ["additional"],
+    "examples": [
+      { "text": "As an additional cost to cast ~, sacrifice two artifacts." },
+      { "text": "As an additional cost to cast ~, discard three cards." }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, you may sacrifice an artifact.",
+      "As an additional cost to activate ~, sacrifice an artifact.",
+      "As an alternative cost to cast ~, sacrifice an artifact."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.additional.optional",
+    "kind": "static",
+    "cr": ["CR 118.8", "CR 601.2b", "CR 113.6d"],
+    "pattern": "as an additional cost to cast ~ , you may {c:Cost}",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "additionalCost", "cost": "$c", "optional": true }] },
+    "consumes": ["additional", "may"],
+    "examples": [
+      { "text": "As an additional cost to cast ~, you may pay 4 life." },
+      { "text": "As an additional cost to cast ~, you may sacrifice a Golem." }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, pay 4 life.",
+      "As an additional cost to cast ~, you must pay 4 life."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

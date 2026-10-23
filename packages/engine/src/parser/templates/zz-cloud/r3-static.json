@@ -1,0 +1,809 @@
+[
+  {
+    "id": "sta.r3static.group.attack.nodefender",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 702.3b"
+    ],
+    "pattern": "{f:Filter} can attack as though they didn't have defender",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Artifact creatures you control can attack as though they didn't have defender."
+      },
+      {
+        "text": "Creatures you control with power 2 or less can attack as though they didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "Artifact creatures you control can block as though they didn't have defender.",
+      "Artifact creatures you control can attack as though they didn't have flying.",
+      "Artifact creatures you control can attack this turn as though they didn't have defender."
+    ]
+  },
+  {
+    "id": "sta.r3static.deckConstruction.anyNumber",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 100.2a",
+      "CR 113.6n"
+    ],
+    "pattern": "a deck can have any number of cards named ( ~ | {nm:Name} )",
+    "build": {
+      "s": "deckConstruction",
+      "rule": "anyNumber"
+    },
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "A deck can have any number of cards named ~."
+      },
+      {
+        "text": "As long as you control three or more Forests, ~ gets +2/+1.\nA deck can have any number of cards named ~."
+      }
+    ],
+    "counterExamples": [
+      "A deck can have up to seven cards named ~.",
+      "A deck can't have any number of cards named ~.",
+      "A deck can have any number of cards named Test Hound."
+    ]
+  },
+  {
+    "id": "sta.r3static.deckConstruction.upTo",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 100.2a",
+      "CR 113.6n"
+    ],
+    "pattern": "a deck can have up to {n:Qty} cards named ( ~ | {nm:Name} )",
+    "build": {
+      "s": "deckConstruction",
+      "rule": "upTo",
+      "value": "$n"
+    },
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "A deck can have up to five cards named ~."
+      },
+      {
+        "text": "As long as you control three or more Forests, ~ gets +2/+1.\nA deck can have up to eleven cards named ~."
+      }
+    ],
+    "counterExamples": [
+      "A deck can have any number of cards named Test Hound.",
+      "A deck can have at least five cards named ~.",
+      "A deck can have up to five cards named Test Hound."
+    ]
+  },
+  {
+    "id": "sta.r3static.anthem.foreach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.1"
+    ],
+    "pattern": "{f:Filter} get {pt:PT} for each {g:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$g"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$g"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Elves you control get +1/+1 for each Forest you control."
+      },
+      {
+        "text": "Other Goblins you control get +1/+0 for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Elves you control get +1/+1 for each Forest you control until end of turn.",
+      "Elves you control get +1/+1 for each Forest you control or Island you control.",
+      "Elves you control have +1/+1 for each Forest you control."
+    ]
+  },
+  {
+    "id": "sta.r3static.anthem.foreach.two",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.1"
+    ],
+    "pattern": "{f:Filter} get {pt:PT} for each {g:Filter} and each {h:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "math",
+                "op": "+",
+                "args": [
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$g"
+                    }
+                  },
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$h"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "math",
+                "op": "+",
+                "args": [
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$g"
+                    }
+                  },
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$h"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Elves you control get +1/+1 for each Druid you control and each Druid card in your graveyard."
+      },
+      {
+        "text": "Artifact creatures you control get +1/+0 for each Wizard you control and each Wizard card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Elves you control get +1/+1 for each Druid you control or each Druid card in your graveyard.",
+      "Elves you control get +1/+1 until end of turn for each Druid you control and each Druid card in your graveyard.",
+      "Elves you control get +1/+1 for each Druid you control and each Druid card in an opponent's graveyard."
+    ]
+  },
+  {
+    "id": "sta.r3static.triggerMod.selfOrEquipment.equipped",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 611.3a",
+      "CR 301.5"
+    ],
+    "pattern": "as long as ~ is equipped , if a triggered ability of ~ or an equipment attached to it triggers , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Equipment"
+            ],
+            "attachedToObject": {
+              "ref": "self"
+            }
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "triggerMod",
+          "abilitiesOf": {
+            "anyOf": [
+              {
+                "self": true
+              },
+              {
+                "subtypes": [
+                  "Equipment"
+                ],
+                "attachedToObject": {
+                  "ref": "self"
+                }
+              }
+            ]
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is equipped, if a triggered ability of ~ or an Equipment attached to it triggers, that ability triggers an additional time."
+      },
+      {
+        "text": "Vigilance\nAs long as ~ is equipped, if a triggered ability of ~ or an Equipment attached to it triggers, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is equipped, if a triggered ability of ~ or an Equipment attached to it triggers, that ability triggers two additional times.",
+      "As long as ~ is enchanted, if a triggered ability of ~ or an Equipment attached to it triggers, that ability triggers an additional time.",
+      "As long as ~ is equipped, if an activated ability of ~ or an Equipment attached to it is activated, that ability triggers an additional time."
+    ]
+  },
+  {
+    "id": "sta.r3static.aslong.grant.mustBeBlocked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1c"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} has {a:Abilities} and must be blocked if able",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "must",
+      "if able",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "As long as equipped creature is attacking, it has trample and must be blocked if able."
+      },
+      {
+        "text": "As long as ~ is tapped, it has deathtouch and must be blocked if able."
+      }
+    ],
+    "counterExamples": [
+      "As long as equipped creature is attacking, it has trample and can't be blocked.",
+      "As long as equipped creature is attacking, it has trample and must be blocked by two or more creatures if able.",
+      "As long as equipped creature is attacking, it loses trample and must be blocked if able."
+    ]
+  },
+  {
+    "id": "sta.r3static.legendRule.exempt.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 704.5j",
+      "CR 604.1"
+    ],
+    "pattern": "the legend rule doesn't apply to {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "legendRuleExempt",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "The \"legend rule\" doesn't apply to Elves you control."
+      },
+      {
+        "text": "The \"legend rule\" doesn't apply to artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "The \"legend rule\" doesn't apply to Elves you control this turn.",
+      "The \"legend rule\" applies to Elves you control.",
+      "The \"world rule\" doesn't apply to Elves you control."
+    ]
+  },
+  {
+    "id": "sta.r3static.legendRule.exempt.all",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 704.5j",
+      "CR 604.1"
+    ],
+    "pattern": "the legend rule doesn't apply",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "legendRuleExempt"
+        }
+      ]
+    },
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Flying\nThe \"legend rule\" doesn't apply."
+      },
+      {
+        "text": "{T}: Add {C}.\nThe \"legend rule\" doesn't apply."
+      }
+    ],
+    "counterExamples": [
+      "Flying\nThe \"legend rule\" applies.",
+      "Flying\nThe \"world rule\" doesn't apply.",
+      "Flying\nThe \"legend rule\" doesn't apply this turn."
+    ]
+  },
+  {
+    "id": "eff.r3static.legendRule.exempt.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 704.5j",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "the legend rule doesn't apply to {f:Filter} this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "legendRuleExempt",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. The \"legend rule\" doesn't apply to permanents you control this turn."
+      },
+      {
+        "text": "{4}: Untap ~. The \"legend rule\" doesn't apply to creatures you control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. The \"legend rule\" doesn't apply to permanents you control.",
+      "Draw a card. The \"legend rule\" applies to permanents you control this turn.",
+      "Draw a card. The \"world rule\" doesn't apply to permanents you control this turn."
+    ],
+    "subject": "none"
+  },
+  {
+    "id": "sta.r3static.noLossForZeroLife",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 704.5a",
+      "CR 104.3b"
+    ],
+    "pattern": "you don't lose the game for having 0 or less life",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "noLossForZeroLife"
+        }
+      ]
+    },
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Flying\nYou don't lose the game for having 0 or less life."
+      },
+      {
+        "text": "{T}: Add {C}.\nYou don't lose the game for having 0 or less life."
+      }
+    ],
+    "counterExamples": [
+      "Flying\nYou don't lose the game for having 0 or less poison counters.",
+      "Flying\nYou can't lose the game.",
+      "Flying\nYou don't lose the game for having 0 or less life this turn."
+    ]
+  },
+  {
+    "id": "sta.r3static.noMaxHand.noLossForZeroLife",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.2",
+      "CR 704.5a",
+      "CR 104.3b"
+    ],
+    "pattern": "you have no maximum hand size and don't lose the game for having 0 or less life",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "handSizeNoLimit",
+          "player": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "rule",
+          "rule": "noLossForZeroLife"
+        }
+      ]
+    },
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Flying\nYou have no maximum hand size and don't lose the game for having 0 or less life."
+      },
+      {
+        "text": "{T}: Add {C}.\nYou have no maximum hand size and don't lose the game for having 0 or less life."
+      }
+    ],
+    "counterExamples": [
+      "Flying\nYou have no maximum hand size and can't lose the game.",
+      "Flying\nYou have no maximum hand size.",
+      "Flying\nYour maximum hand size is seven and you don't lose the game for having 0 or less life."
+    ]
+  },
+  {
+    "id": "sta.r3static.self.flash.aslong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.8a",
+      "CR 113.6e",
+      "CR 601.3d",
+      "CR 611.3a"
+    ],
+    "pattern": "~ has flash as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "library",
+        "stack"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "flash",
+                  "text": "Flash"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "~ has flash as long as you control a Forest."
+      },
+      {
+        "text": "As long as you control three or more Forests, ~ gets +2/+1.\n~ has flash as long as you control two or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "~ has flash unless you control a Forest.",
+      "~ has haste as long as you control a Forest.",
+      "~ has flash as long as you control a Forest until end of turn."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "rid.r3static.token.theTokensHave",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.2",
+      "CR 111.4",
+      "CR 608.2c"
+    ],
+    "pattern": "the tokens have {a:Abilities}",
+    "build": {
+      "$patchPrevious": {
+        "token": {
+          "abilities": {
+            "@new": "$a"
+          }
+        }
+      }
+    },
+    "attachTo": "createToken",
+    "examples": [
+      {
+        "text": "Create two 1/1 colorless Servo artifact creature tokens. The tokens have \"This token can't block.\""
+      },
+      {
+        "text": "When ~ enters, create X 1/1 white Spirit creature tokens, where X is the number of artifacts you control. The tokens have \"This token can't block.\""
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. The tokens have \"{T}: Add {C}.\"",
+      "Create two 1/1 colorless Servo artifact creature tokens. The tokens have \"{T}: Add {C}.\" until end of turn.",
+      "Create two 1/1 colorless Servo artifact creature tokens with \"{T}: Add {C}.\" The tokens have \"{T}: Add {C}{C}.\""
+    ]
+  },
+  {
+    "id": "sta.r3static.grant.twoGroups",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "{f:Filter} and {g:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ],
+              "zone": "any"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Elf creatures you control and Aura spells you control have lifelink."
+      },
+      {
+        "text": "Wizard creatures you control and instant spells you control have deathtouch."
+      }
+    ],
+    "counterExamples": [
+      "Elf creatures you control and Aura spells you control have lifelink until end of turn.",
+      "Elf creatures you control or Aura spells you control have lifelink.",
+      "Elf creatures you control and Aura spells you control lose lifelink."
+    ]
+  },
+  {
+    "id": "sta.r3static.powerUp.additionalActivation",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.5b",
+      "CR 702.193a"
+    ],
+    "pattern": "each power-up ability of {f:Filter} can be activated an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "additionalActivation",
+          "keyword": "power-up",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Each power-up ability of creatures you control can be activated an additional time."
+      },
+      {
+        "text": "As long as you control three or more Forests, ~ gets +2/+1.\nEach power-up ability of artifacts you control can be activated an additional time."
+      }
+    ],
+    "counterExamples": [
+      "Each power-up ability of creatures you control can be activated two additional times.",
+      "Each exhaust ability of creatures you control can be activated an additional time.",
+      "Each power-up ability of creatures you control can't be activated."
+    ]
+  },
+  {
+    "id": "sta.r3static.negativePower.assignsAsPositive",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 107.1b"
+    ],
+    "pattern": "if ~ 's power is negative , ~ assigns combat damage as though ~ 's power were positive",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "negativePowerAssignsAsPositive"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "If ~'s power is negative, ~ assigns combat damage as though ~'s power were positive."
+      },
+      {
+        "text": "Trample\nIf ~'s power is negative, ~ assigns combat damage as though ~'s power were positive."
+      }
+    ],
+    "counterExamples": [
+      "If ~'s power is positive, ~ assigns combat damage as though ~'s power were negative.",
+      "If ~'s toughness is negative, ~ assigns combat damage as though ~'s toughness were positive.",
+      "If ~'s power is negative, ~ deals combat damage as though ~'s power were positive."
+    ]
+  }
+]

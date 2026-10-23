@@ -1,0 +1,384 @@
+[
+ {
+  "card": "Zoyowa Lava-Tongue",
+  "expect": "full",
+  "verified": "std-rw6 review (card wave 2, slice s6; Standard, both halves open), by hand against the Oracle text and the rules cited (eff.stdrw6.eachOpponentMay.discardOrSacrifice, rid.stdrw6.eachOpponentWhoDidnt.damage; render/steps-flow.ts#eachUnlessThey, family each-may-who-didnt): deathtouch; at the beginning of your end step, if you descended this turn (a permanent card was put into your graveyard from anywhere), for each opponent in turn: that player may discard a card, or else may sacrifice a permanent of their choice, and if they did neither, Zoyowa deals 3 damage to them (the source is Zoyowa, so its deathtouch and any lifelink apply; a cost a player can't pay is not offered). The choices are asked one opponent at a time, as family each-unless-they reads 'unless they discard a card or sacrifice a permanent' (CR 101.4, 118.12, 118.3, 120.3, 603.4, 608.2c, 608.2d, 700.11, 701.9a, 701.21a, 702.2b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "deathtouch",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "cost": {
+            "other": [
+             {
+              "count": 1,
+              "kind": "discard"
+             }
+            ]
+           },
+           "else": [
+            {
+             "cost": {
+              "other": [
+               {
+                "count": 1,
+                "filter": {},
+                "kind": "sacrifice"
+               }
+              ]
+             },
+             "else": [
+              {
+               "amount": 3,
+               "op": "damage",
+               "source": {
+                "ref": "self"
+               },
+               "to": {
+                "name": "b0",
+                "ref": "bound"
+               }
+              }
+             ],
+             "op": "pay",
+             "who": {
+              "name": "b0",
+              "ref": "bound"
+             }
+            }
+           ],
+           "op": "pay",
+           "who": {
+            "name": "b0",
+            "ref": "bound"
+           }
+          }
+         ],
+         "op": "forEach",
+         "over": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "q": "descendedThisTurn"
+       },
+       "op": ">=",
+       "right": 1
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Aang, Swift Savior // Aang and La, Ocean's Fury",
+  "expect": "full",
+  "verified": "std-rw6 review (card wave 2, slice s6; Standard, both halves open), by hand against the Oracle text and the rules cited (the Obj reading 'target <type> or spell' of parser/holes/object.ts with eff.e10.airbend; render/refs.ts#specPhrase, family spell-or-permanent-order; effects/handlers/airbend.ts airbends a spell): front face flash, flying; when Aang enters, airbend up to one target that is another creature on the battlefield or a spell on the stack (not an ability): it is exiled (a spell leaves the stack, not countered) and while the card stays exiled its owner may cast it for {2} rather than its mana cost; waterbend {8}: transform Aang. Back face reach, trample; whenever Aang and La attack, put a +1/+1 counter on each tapped creature you control (CR 701.65a, 701.65b, 701.67a, 115.1, 109.2, 405.1, 712.18, 702.19b, 702.17b, 508.1m, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flash",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "action": "airbend",
+         "op": "action",
+         "subject": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "anyOf": [
+           {
+            "stackKind": "spell",
+            "zone": "stack"
+           },
+           {
+            "types": [
+             "Creature"
+            ]
+           }
+          ],
+          "other": true,
+          "zone": [
+           "battlefield",
+           "stack"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "other": [
+        {
+         "action": "waterbend",
+         "arg": 8,
+         "kind": "action"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "changeFace",
+         "to": "transform",
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "keyword": "reach",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "filter": {
+           "controller": "you",
+           "tapped": true,
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Alacrian Armory",
+  "expect": "full",
+  "verified": "std-rw6 review (card wave 2, slice s6; Standard, both halves open), by hand against the Oracle text and the rules cited (eff.stdrw6.eot.saddledIfMount.creatureIfVehicle, eff.stdeoe.choose.targets, sta.anthem.grant; render/fold.ts#saddledOrCreatureByType, family saddled-or-creature-by-type): creatures you control get +0/+1 and have vigilance; at the beginning of combat on your turn, choose up to one target Mount or Vehicle you control; if it's a Mount it becomes saddled (which lasts until end of turn), and if it's a Vehicle it becomes an artifact creature until end of turn (a permanent that is both gets both) (CR 702.171b, 301.7b, 205.1b, 611.2a, 608.2c, 115.1, 507.1, 702.20b, 613.4c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 0,
+          "toughness": 1
+         },
+         {
+          "add": [
+           {
+            "keyword": "vigilance",
+            "kind": "keyword"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "subtypes": [
+            "Mount"
+           ]
+          },
+          "object": {
+           "id": "t0",
+           "ref": "target"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "designation": "saddled",
+           "op": "designateObject",
+           "what": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ]
+        },
+        {
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "subtypes": [
+            "Vehicle"
+           ]
+          },
+          "object": {
+           "id": "t0",
+           "ref": "target"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "mods": [
+              {
+               "layer": 4,
+               "types": {
+                "add": [
+                 "Artifact",
+                 "Creature"
+                ]
+               }
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "subtypes": [
+           "Mount",
+           "Vehicle"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

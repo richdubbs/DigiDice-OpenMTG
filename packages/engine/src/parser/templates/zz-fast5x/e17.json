@@ -1,0 +1,352 @@
+[
+  {
+    "id": "eff.e17.gainlife.if",
+    "kind": "effect",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "^ you gain {n:Qty} life if {c:Cond}",
+    "build": {
+      "op": "gainLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": "$n",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control enters, you gain 2 life if this is the first time this ability has resolved this turn."
+      },
+      {
+        "text": "At the beginning of your end step, you gain 3 life if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control enters, you gain 2 life unless this is the first time this ability has resolved this turn.",
+      "Whenever a creature you control enters, target player gains 2 life if this is the first time this ability has resolved this turn.",
+      "Whenever a creature you control enters, you gain 2 life for each creature you control if this is the first time this ability has resolved this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e17.surveil.if",
+    "kind": "effect",
+    "cr": [
+      "CR 701.25a",
+      "CR 608.2c"
+    ],
+    "pattern": "^ surveil {n:Qty} if {c:Cond}",
+    "build": {
+      "op": "surveil",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an artifact you control enters, surveil 1 if this is the first time this ability has resolved this turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, surveil 2 if you control a Wizard."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an artifact you control enters, surveil 1 unless this is the first time this ability has resolved this turn.",
+      "Whenever an artifact you control enters, scry 1 if this is the first time this ability has resolved this turn.",
+      "Whenever an artifact you control enters, surveil if this is the first time this ability has resolved this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e17.then.draw.if",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "then draw a card if {c:Cond}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, target creature you control gets +1/+0 until end of turn. Then draw a card if this is the second time this ability has resolved this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, you gain 1 life. Then draw a card if you control a Rabbit."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you gain 1 life. Then draw two cards if you control a Rabbit.",
+      "Whenever ~ attacks, you gain 1 life. Then draw a card unless you control a Rabbit.",
+      "Whenever ~ attacks, you gain 1 life. Then target player draws a card if you control a Rabbit."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e17.search.may.gy",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for a card , put it into your graveyard , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {},
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "graveyard"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may search your library for a card, put it into your graveyard, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for a card, put it into your graveyard, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for a card, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for two cards, put them into your graveyard, then shuffle.",
+      "When ~ enters, target player may search their library for a card, put it into their graveyard, then shuffle."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e17.may.put.permanentFromHand",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 110.4"
+    ],
+    "pattern": "you may put a permanent card from your hand onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may put a permanent card from your hand onto the battlefield."
+      },
+      {
+        "text": "When ~ dies, you may put a permanent card from your hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, you may put a permanent card from your graveyard onto the battlefield.",
+      "When ~ dies, you may put two permanent cards from your hand onto the battlefield.",
+      "When ~ dies, put a permanent card from your hand onto the battlefield."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e17.put.fromAGraveyard",
+    "kind": "effect",
+    "cr": [
+      "CR 404.1",
+      "CR 110.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card from a graveyard onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, put a creature card from a graveyard onto the battlefield under your control."
+      },
+      {
+        "text": "At the beginning of your upkeep, put an artifact card from a graveyard onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put a creature card from your graveyard onto the battlefield under your control.",
+      "When ~ enters, put a creature card from a graveyard into your hand.",
+      "When ~ enters, put two creature cards from a graveyard onto the battlefield under your control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e17.pump.additional.if",
+    "kind": "effect",
+    "cr": [
+      "CR 613.4c",
+      "CR 611.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Obj} gets an additional {pt:PT} {d:Dur} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ],
+      "duration": "$d",
+      "guard": "$c"
+    },
+    "subject": "object",
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets -2/-2 until end of turn. That creature gets an additional -1/-1 until end of turn if you control a Rogue."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. That creature gets an additional +2/+2 until end of turn if you controlled an Elf as you cast ~."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets -2/-2 until end of turn. That creature gets -1/-1 until end of turn unless you control a Rogue.",
+      "Target creature gets -2/-2 until end of turn. Target creature gets an additional -1/-1 until end of turn if you control a Rogue.",
+      "Target creature gets -2/-2 until end of turn. That creature gets an additional -1/-1 if you control a Rogue."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

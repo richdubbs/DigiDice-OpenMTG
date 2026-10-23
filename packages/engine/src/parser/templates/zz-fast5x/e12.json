@@ -1,0 +1,707 @@
+[
+  {
+    "id": "eff.e12.suspect",
+    "kind": "effect",
+    "cr": [
+      "CR 701.60a",
+      "CR 701.60c",
+      "CR 701.60d"
+    ],
+    "pattern": "suspect {o:Objs}",
+    "build": {
+      "op": "action",
+      "action": "suspect",
+      "who": {
+        "ref": "you"
+      },
+      "subject": "$o"
+    },
+    "subject": "none",
+    "needs": [
+      "action:suspect"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, suspect it.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, suspect it.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "suspect",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "subject": {
+                    "ref": "self"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Draw a card. Suspect up to one target creature."
+      },
+      {
+        "text": "When ~ enters, suspect up to one target creature you control."
+      },
+      {
+        "text": "When this Aura enters, suspect enchanted creature."
+      }
+    ],
+    "counterExamples": [
+      "Suspect target player.",
+      "Suspect up to one target creature until end of turn.",
+      "Suspect each creature unless its controller pays {2}."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e12.collectEvidence",
+    "kind": "effect",
+    "cr": [
+      "CR 701.59a",
+      "CR 701.59b"
+    ],
+    "pattern": "collect evidence {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "collectEvidence",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n"
+    },
+    "subject": "none",
+    "needs": [
+      "action:collectEvidence"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may collect evidence 5.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, you may collect evidence 5.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "may",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "do": [
+                    {
+                      "op": "action",
+                      "action": "collectEvidence",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "n": 5
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Whenever ~ attacks, you may collect evidence 2. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Collect evidence 3 unless an opponent pays {1}.",
+      "Collect evidence target creature.",
+      "Target opponent collects evidence 3."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.e12.additional.collectEvidence",
+    "kind": "static",
+    "cr": [
+      "CR 701.59a",
+      "CR 701.59b",
+      "CR 701.59c",
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 607.2i"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may collect evidence {n:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "action",
+                "action": "collectEvidence",
+                "arg": "$n"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "collectEvidence"
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "may"
+    ],
+    "priority": 1,
+    "needs": [
+      "action:collectEvidence"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, you may collect evidence 7.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "As an additional cost to cast ~, you may collect evidence 7.",
+            "zone": [
+              "stack"
+            ],
+            "effects": [
+              {
+                "s": "additionalCost",
+                "cost": {
+                  "other": [
+                    {
+                      "kind": "action",
+                      "action": "collectEvidence",
+                      "arg": 7
+                    }
+                  ]
+                },
+                "optional": true,
+                "name": "collectEvidence"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "As an additional cost to cast ~, you may collect evidence 3."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, collect evidence 6.",
+      "As an additional cost to cast ~, you may collect evidence 6 or pay {2}.",
+      "As an additional cost to activate ~, you may collect evidence 6."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.e12.self.less.evidence",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 701.59c",
+      "CR 118.7",
+      "CR 604.5"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast if evidence was collected",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "wasCast",
+        "kicked": "collectEvidence"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "action:collectEvidence"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {3} less to cast if evidence was collected.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "~ costs {3} less to cast if evidence was collected.",
+            "zone": [
+              "stack"
+            ],
+            "condition": {
+              "cond": "wasCast",
+              "kicked": "collectEvidence"
+            },
+            "effects": [
+              {
+                "s": "costMod",
+                "applies": {
+                  "self": true,
+                  "caster": "you"
+                },
+                "change": {
+                  "kind": "reduce",
+                  "generic": 3,
+                  "floor": "zero"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "~ costs {1} less to cast if evidence was collected."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {2} more to cast if evidence was collected.",
+      "~ costs {B} less to cast if evidence was collected.",
+      "~ costs {2} less to cast if it's bargained or evidence was collected."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e12.noLongerSuspected",
+    "kind": "effect",
+    "cr": [
+      "CR 701.60a"
+    ],
+    "pattern": "{o:Objs} ( is | are ) no longer suspected",
+    "build": {
+      "op": "designateObject",
+      "what": "$o",
+      "designation": "unsuspected"
+    },
+    "subject": "object",
+    "needs": [
+      "op:designateObject.unsuspected"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, all suspected creatures are no longer suspected.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, all suspected creatures are no longer suspected.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "designateObject",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "suspected": true,
+                      "types": [
+                        "Creature"
+                      ]
+                    }
+                  },
+                  "designation": "unsuspected"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{1}: ~ is no longer suspected."
+      },
+      {
+        "text": "{2}: Target creature is no longer suspected."
+      }
+    ],
+    "counterExamples": [
+      "All suspected creatures are no longer suspected until end of turn.",
+      "All suspected creatures are suspected.",
+      "All suspected creatures are no longer tapped."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e12.mayExileAndCollect",
+    "kind": "effect",
+    "cr": [
+      "CR 701.59a",
+      "CR 701.59b",
+      "CR 608.2d",
+      "CR 118.12"
+    ],
+    "pattern": "you may exile {o:Obj} and collect evidence {n:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "exile"
+          }
+        },
+        {
+          "op": "action",
+          "action": "collectEvidence",
+          "who": {
+            "ref": "you"
+          },
+          "n": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 1,
+    "needs": [
+      "action:collectEvidence"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, you may exile it and collect evidence 6. If you do, draw two cards."
+      },
+      {
+        "text": "When ~ dies, you may exile it and collect evidence 2.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ dies, you may exile it and collect evidence 2.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "may",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "do": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "event",
+                        "role": "subject"
+                      },
+                      "to": {
+                        "zone": "exile"
+                      }
+                    },
+                    {
+                      "op": "action",
+                      "action": "collectEvidence",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "n": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, exile it and collect evidence 6.",
+      "When ~ dies, you may exile it or collect evidence 6.",
+      "When ~ dies, you may exile it and collect evidence 6 unless an opponent pays {1}."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e12.mayHaveNoLongerSuspected",
+    "kind": "effect",
+    "cr": [
+      "CR 701.60a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become no longer suspected",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "designateObject",
+          "what": "$o",
+          "designation": "unsuspected"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "needs": [
+      "op:designateObject.unsuspected"
+    ],
+    "examples": [
+      {
+        "text": "Put a +1/+1 counter on target suspected creature you control. You may have it become no longer suspected."
+      },
+      {
+        "text": "When ~ enters, you may have target creature become no longer suspected.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, you may have target creature become no longer suspected.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "object",
+                  "min": 1,
+                  "max": 1,
+                  "text": "target creature",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  }
+                }
+              ],
+              "steps": [
+                {
+                  "op": "may",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "do": [
+                    {
+                      "op": "designateObject",
+                      "what": {
+                        "ref": "target",
+                        "id": "t0"
+                      },
+                      "designation": "unsuspected"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "counterExamples": [
+      "You may have target creature become suspected.",
+      "You may have target creature become no longer suspected until end of turn.",
+      "You have target creature become no longer suspected."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.e12.additional.collectEvidence.less",
+    "kind": "static",
+    "cr": [
+      "CR 701.59a",
+      "CR 701.59c",
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 607.2i"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may collect evidence {n:Qty} . ~ costs {m:ManaCost} less to cast if evidence was collected",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "action",
+                "action": "collectEvidence",
+                "arg": "$n"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "collectEvidence"
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "kickCount",
+              "name": "collectEvidence"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "may",
+      "if"
+    ],
+    "priority": 1,
+    "needs": [
+      "action:collectEvidence"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, you may collect evidence 5. ~ costs {1} less to cast if evidence was collected.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "As an additional cost to cast ~, you may collect evidence 5. ~ costs {1} less to cast if evidence was collected.",
+            "zone": [
+              "stack"
+            ],
+            "effects": [
+              {
+                "s": "additionalCost",
+                "cost": {
+                  "other": [
+                    {
+                      "kind": "action",
+                      "action": "collectEvidence",
+                      "arg": 5
+                    }
+                  ]
+                },
+                "optional": true,
+                "name": "collectEvidence"
+              },
+              {
+                "s": "costMod",
+                "applies": {
+                  "self": true,
+                  "caster": "you"
+                },
+                "change": {
+                  "kind": "reduce",
+                  "mana": [
+                    {
+                      "kind": "generic",
+                      "amount": 1
+                    }
+                  ],
+                  "times": {
+                    "q": "kickCount",
+                    "name": "collectEvidence"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "As an additional cost to cast ~, you may collect evidence 8. ~ costs {3} less to cast if evidence was collected."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, you may collect evidence 5. ~ costs {1} more to cast if evidence was collected.",
+      "As an additional cost to cast ~, collect evidence 5. ~ costs {1} less to cast if evidence was collected.",
+      "As an additional cost to cast ~, you may collect evidence 5. ~ costs {1} less to cast."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

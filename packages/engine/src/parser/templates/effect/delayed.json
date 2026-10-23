@@ -1,0 +1,109 @@
+[
+  {
+    "id": "dl.nextEnd.lead",
+    "kind": "effect",
+    "cr": ["CR 603.7", "CR 603.7a", "CR 513.1"],
+    "pattern": "at the beginning of the next end step , {e:Effects}",
+    "build": { "op": "delay", "when": { "at": "step", "step": "end", "next": true }, "do": "$e" },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw a card. At the beginning of the next end step, draw two cards." },
+      { "text": "Exile target creature. At the beginning of the next end step, return it to the battlefield under its owner's control." }
+    ],
+    "counterExamples": [
+      "At the beginning of each end step, draw a card.",
+      "At the beginning of the next end step, target player draws a card.",
+      "At the beginning of the next end step, draw a card for each Elf you control unless it is blue.",
+      "At the beginning of your next end step, draw a card."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "dl.nextEnd.tail",
+    "kind": "effect",
+    "cr": ["CR 603.7", "CR 603.7a", "CR 513.1"],
+    "pattern": "{e:Effects} at the beginning of the next end step",
+    "build": { "op": "delay", "when": { "at": "step", "step": "end", "next": true }, "do": "$e" },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw a card. Draw two cards at the beginning of the next end step." },
+      { "text": "Target player draws three cards at the beginning of the next end step." }
+    ],
+    "counterExamples": [
+      "Draw a card at the beginning of each end step.",
+      "Draw a card at the beginning of your next upkeep step."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "dl.yourNextEnd.lead",
+    "kind": "effect",
+    "cr": ["CR 603.7", "CR 603.7a", "CR 513.1"],
+    "pattern": "at the beginning of your next end step , {e:Effects}",
+    "build": { "op": "delay", "when": { "at": "step", "step": "end", "whose": "you", "next": true }, "do": "$e" },
+    "subject": "none",
+    "examples": [{ "text": "Draw a card. At the beginning of your next end step, draw two cards." }],
+    "counterExamples": [
+      "At the beginning of your end step, draw a card.",
+      "At the beginning of the next end step, draw a card unless it is blue."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "dl.yourNextUpkeep.lead",
+    "kind": "effect",
+    "cr": ["CR 603.7", "CR 603.7a", "CR 503.1"],
+    "pattern": "at the beginning of your next upkeep , {e:Effects}",
+    "build": { "op": "delay", "when": { "at": "step", "step": "upkeep", "whose": "you", "next": true }, "do": "$e" },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw a card. At the beginning of your next upkeep, draw two cards." },
+      { "text": "At the beginning of your next upkeep, target player draws three cards." }
+    ],
+    "counterExamples": ["At the beginning of your upkeep, draw a card.", "At the beginning of each upkeep, draw a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "dl.yourNextUpkeep.tail",
+    "kind": "effect",
+    "cr": ["CR 603.7", "CR 603.7a", "CR 503.1"],
+    "pattern": "{e:Effects} at the beginning of your next upkeep",
+    "build": { "op": "delay", "when": { "at": "step", "step": "upkeep", "whose": "you", "next": true }, "do": "$e" },
+    "subject": "none",
+    "examples": [{ "text": "Draw a card. Draw two cards at the beginning of your next upkeep." }],
+    "counterExamples": [
+      "Draw a card at the beginning of your upkeep.",
+      "Draw a card at the beginning of the next upkeep each turn."
+    ],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "dl.endOfCombat.lead",
+    "kind": "effect",
+    "cr": ["CR 603.7", "CR 603.7a", "CR 511.1"],
+    "pattern": "at end of combat , {e:Effects}",
+    "build": { "op": "delay", "when": { "at": "endOfCombat" }, "do": "$e" },
+    "subject": "none",
+    "examples": [{ "text": "Draw a card. At end of combat, draw two cards." }],
+    "counterExamples": ["At the beginning of combat, draw a card.", "At end of turn, draw a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "dl.endOfCombat.tail",
+    "kind": "effect",
+    "cr": ["CR 603.7", "CR 603.7a", "CR 511.1"],
+    "pattern": "{e:Effects} at end of combat",
+    "build": { "op": "delay", "when": { "at": "endOfCombat" }, "do": "$e" },
+    "subject": "none",
+    "examples": [{ "text": "Draw a card. Draw two cards at end of combat." }, { "text": "You gain 2 life. You gain 3 life at end of combat." }],
+    "counterExamples": ["Draw a card at the beginning of combat.", "Draw a card at end of turn."],
+    "status": "stable",
+    "since": 1
+  }
+]

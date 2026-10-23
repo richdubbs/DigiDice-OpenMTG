@@ -1,0 +1,21 @@
+{
+  "name": "enchant",
+  "rule": "702.5",
+  "params": [
+    {
+      "name": "filter",
+      "type": "filter"
+    }
+  ],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "",
+  "multiple": "cumulative",
+  "status": "implemented",
+  "readers": [
+    "rules/attachment.ts#auraTargetProgram",
+    "rules/attachment.ts#auraCanEnchantObject",
+    "rules/attachment.ts#enchantRestriction"
+  ]
+}

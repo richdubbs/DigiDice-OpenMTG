@@ -1,0 +1,163 @@
+[
+  {
+    "id": "eff.stdrx5.put.bf.tapped.yours.additionalCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 110.5b",
+      "CR 122.6",
+      "CR 614.1c"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield tapped under your control with {n:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "{3}{B}, {T}: Put target creature card from a graveyard onto the battlefield tapped under your control with two additional +1/+1 counters on it."
+      },
+      {
+        "text": "When ~ enters, put target creature card from your graveyard onto the battlefield tapped under your control with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{3}{B}, {T}: Put target creature card from a graveyard onto the battlefield under your control with two additional +1/+1 counters on it.",
+      "{3}{B}, {T}: Put target creature card from a graveyard onto the battlefield tapped under its owner's control with two additional +1/+1 counters on it.",
+      "{3}{B}, {T}: Put target creature card from a graveyard into your hand tapped under your control with two additional +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.stdrx5.becomes.pt.subtype.artifactcreature.noDuration",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ enters, target artifact you control becomes a 4/4 Golem artifact creature."
+      },
+      {
+        "text": "{2}, {T}: Put a +1/+1 counter on target artifact. It becomes a 1/1 Thopter artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target artifact you control becomes a 4/4 Golem artifact creature until end of turn.",
+      "When ~ enters, target artifact you control becomes a 4/4 Golem creature.",
+      "When ~ enters, target artifact you control becomes a 4/4 Golem artifact creature with flying."
+    ]
+  },
+  {
+    "id": "rep.stdrx5.enters.choose.numberBetween",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 107.1"
+    ],
+    "pattern": "as ~ enters , choose a number between {lo:Count} and {hi:Count}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "number",
+                "link": "chosenNumber",
+                "min": "$lo",
+                "max": "$hi"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose a number between 0 and 5.\nFlying"
+      },
+      {
+        "text": "As this artifact enters, choose a number between 2 and 8."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a number greater than 2.",
+      "As ~ enters, choose two numbers between 0 and 5.",
+      "As ~ enters, an opponent chooses a number between 0 and 5."
+    ]
+  }
+]

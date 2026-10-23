@@ -1,0 +1,1272 @@
+[
+  {
+    "id": "eff.r4dig.exile.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 401.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "exile {o:Objs} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Exile the top X cards of your library, where X is the number of Elves you control. You may play those cards this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top X cards of target opponent's library, where X is ~'s power."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top X cards of your library, where Y is the number of Elves you control.",
+      "{T}: Exile the top X cards of your library, unless X is the number of Elves you control.",
+      "{T}: Exile the top X cards of your library face down, where X is the number of Elves you control."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.r4dig.player.exileTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 401.1",
+      "CR 109.5"
+    ],
+    "pattern": "{p:Player} exile[s] the top {n:Qty} card[s] of their library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": "$n"
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent exiles the top three cards of their library."
+      },
+      {
+        "text": "{2}, {T}: Target player exiles the top two cards of their library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent exiles the top three cards of your library.",
+      "When ~ enters, each opponent exiles the top three cards of their graveyard.",
+      "When ~ enters, each opponent exiles the top three cards of their library face down."
+    ]
+  },
+  {
+    "id": "eff.r4dig.player.exileTop.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 401.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} exile[s] the top x cards of their library , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "topCards",
+            "player": "$p",
+            "count": {
+              "q": "X"
+            }
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{X}, {T}: Target player exiles the top X cards of their library, where X is the number of cards in your hand."
+      },
+      {
+        "text": "When ~ enters, each opponent exiles the top X cards of their library, where X is the number of Rogues you control."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: Target player exiles the top X cards of their library, where Y is the number of cards in your hand.",
+      "{X}, {T}: Target player exiles the top X cards of your library, where X is the number of cards in your hand.",
+      "{X}, {T}: Target player exiles the top X cards of their library face down, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.r4dig.reveal.top.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "reveal the top x cards of your library , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "reveal",
+          "who": {
+            "ref": "you"
+          },
+          "what": {
+            "ref": "topCards",
+            "player": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "X"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, reveal the top X cards of your library, where X is ~'s power."
+      },
+      {
+        "text": "{T}: Reveal the top X cards of your library, where X is the number of Wizards you control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Reveal the top X cards of your library, where Y is the number of Wizards you control.",
+      "{T}: Reveal the top X cards of target player's library, where X is the number of Wizards you control.",
+      "{T}: Reveal the top X cards of your library, unless X is the number of Wizards you control."
+    ]
+  },
+  {
+    "id": "eff.r4dig.search.desc.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for {f:SearchDesc} , reveal it",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for an enchantment card with mana value 2 or less, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ dies, search your library for a creature card with toughness 3 or less, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an enchantment card with mana value 2 or less, reveal them, put it into your hand, then shuffle.",
+      "Search your library for two enchantment cards, reveal it, put it into your hand, then shuffle.",
+      "Search target player's library for an enchantment card, reveal it, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r4dig.search.namedOr.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 201.2"
+    ],
+    "pattern": "search your library for a card named {a:Name} or {b:Name} , reveal it",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {
+        "anyOf": [
+          {
+            "name": "$a"
+          },
+          {
+            "name": "$b"
+          }
+        ]
+      },
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for a card named Island or Forest, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "{2}, {T}: Search your library for a card named Plains or Swamp, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, search your library for a card named Island and Forest, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, search your library for a card not named Island or Forest, reveal it, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r4dig.search.basicLandType.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 205.3i",
+      "CR 305.6"
+    ],
+    "pattern": "search your library for a land card with a basic land type , reveal it",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {
+        "types": [
+          "Land"
+        ],
+        "subtypes": [
+          "Plains",
+          "Island",
+          "Swamp",
+          "Mountain",
+          "Forest"
+        ]
+      },
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for a land card with a basic land type, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ dies, you may search your library for a land card with a basic land type, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, search your library for a land card without a basic land type, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, search your library for a land card with two basic land types, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, search your library for a land card with a basic land type, reveal them, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r4dig.search.differentNames.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 201.2"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards ( that have | with ) different names , reveal them",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "min": 0,
+      "max": "$n",
+      "differentNames": true,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for up to three basic land cards with different names, reveal them, put them into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for up to two artifact cards with different names, reveal them, put them into your hand, then shuffle. You lose 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two creature cards with the same name, reveal them, put them into your hand, then shuffle.",
+      "Search your library for two creature cards with different names, reveal it, put it into your hand, then shuffle."
+    ],
+    "consumes": [
+      "up to",
+      "different"
+    ]
+  },
+  {
+    "id": "eff.r4dig.dig.mayReveal.upTo.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "you may reveal up to {n:Qty} {f:CardsDesc} from among {g:Seen} and put them into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top six cards of your library. You may reveal up to two artifact cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal up to three land cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, look at the top six cards of your library. You may reveal up to two artifact cards from among them and put them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "When ~ enters, look at the top six cards of your library. You may reveal two artifact cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.r4dig.dig.putUpTo.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "put up to {n:Qty} {f:CardsDesc} from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. Put up to two artifact cards with mana value 2 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top eight cards of your library. Put up to three land cards from among them onto the battlefield. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put two artifact cards from among them onto the battlefield.",
+      "Look at the top six cards of your library. Put up to two artifact cards from among them into your hand and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.r4dig.milled.mayPutUpTo.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may put up to {n:Qty} {f:CardsDesc} from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill five cards. You may put up to two artifact and/or enchantment cards from among the milled cards into your hand."
+      },
+      {
+        "text": "Mill three cards. You may put up to two land cards from among them into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill five cards. You may put up to two artifact cards from among the milled cards onto the battlefield.",
+      "Mill five cards. You may put two artifact cards from among the milled cards into your hand."
+    ]
+  },
+  {
+    "id": "eff.r4dig.milled.putAll.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c"
+    ],
+    "pattern": "[ then ] put all {f:CardsDesc} from among {g:Milled} into your hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "is": "$g",
+          "zone": "any"
+        }
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Mill six cards. Then put all creature cards with power 2 or less from among the milled cards into your hand."
+      },
+      {
+        "text": "Mill four cards. Put all land cards from among the milled cards into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill six cards. Then put all creature cards from among the milled cards onto the battlefield.",
+      "Mill six cards. Then put two creature cards from among the milled cards into your hand."
+    ]
+  },
+  {
+    "id": "eff.r4dig.return.orCard.graveyard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 404.1"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} card or ( a | an ) {g:Filter} card from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, mill two cards, then you may return an artifact card or a creature card from your graveyard to your hand."
+      },
+      {
+        "text": "When ~ enters, return an instant card or a sorcery card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, return an instant card and a sorcery card from your graveyard to your hand.",
+      "When ~ enters, return an instant card or a sorcery card from your graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.r4dig.exile.cardFromAGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.13a",
+      "CR 404.1",
+      "CR 608.2d"
+    ],
+    "pattern": "exile a card from a graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Surveil 1, then exile a card from a graveyard."
+      },
+      {
+        "text": "{T}: Exile a card from a graveyard. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile a card from your hand.",
+      "{T}: Exile two cards from a graveyard.",
+      "{1}, {T}: Exile target card from a graveyard. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.r4dig.reveal.fromHand.one",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 402.3",
+      "CR 608.2d"
+    ],
+    "pattern": "reveal {f:DiscardDesc} from your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, you may reveal a Wizard card from your hand. If you do, draw a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may reveal an artifact card from your hand. If you do, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may reveal a Wizard card from your graveyard. If you do, draw a card.",
+      "When ~ enters, you may reveal two Wizard cards from your hand. If you do, draw a card.",
+      "When ~ enters, you may reveal your hand. If you do, draw a card."
+    ]
+  },
+  {
+    "id": "eff.r4dig.reveal.target",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 708.2",
+      "CR 115.1"
+    ],
+    "pattern": "reveal {o:Targets}",
+    "build": {
+      "op": "reveal",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}: Reveal target face-down creature. If it's a creature card, you may turn it face up."
+      },
+      {
+        "text": "{1}, {T}: Reveal target face-down permanent you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Reveal the top card of target player's library.",
+      "{1}, {T}: Reveal target player's hand."
+    ]
+  },
+  {
+    "id": "eff.r4dig.revealUntil.x",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "reveal cards from the top of your library until you reveal x {f:CardsDesc} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "revealUntil",
+          "who": {
+            "ref": "you"
+          },
+          "filter": "$f",
+          "count": {
+            "q": "X"
+          },
+          "as": "hit",
+          "revealed": "revealed"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, reveal cards from the top of your library until you reveal X land cards, where X is the number of Elves you control. Put those land cards into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "{4}, {T}: Reveal cards from the top of your library until you reveal X creature cards, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Reveal cards from the top of your library until you reveal X creature cards, where Y is the number of cards in your hand.",
+      "{4}, {T}: Reveal cards from the top of target player's library until they reveal X creature cards, where X is the number of cards in your hand.",
+      "{4}, {T}: Exile cards from the top of your library until you exile X creature cards, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.r4dig.revealUntil.putAny.battlefield.restOfRevealed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "put any number of those permanent cards onto the battlefield , then put the rest of the revealed cards on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "hit"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "random",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, reveal cards from the top of your library until you reveal X permanent cards, where X is the number of Elves you control. Put any number of those permanent cards onto the battlefield, then put the rest of the revealed cards on the bottom of your library in a random order."
+      },
+      {
+        "text": "{5}, {T}: Reveal cards from the top of your library until you reveal X permanent cards, where X is the number of cards in your hand. Put any number of those permanent cards onto the battlefield, then put the rest of the revealed cards on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, reveal cards from the top of your library until you reveal X permanent cards, where X is the number of Elves you control. Put any number of those permanent cards into your hand, then put the rest of the revealed cards on the bottom of your library in a random order.",
+      "When ~ enters, reveal cards from the top of your library until you reveal X permanent cards, where X is the number of Elves you control. Put two of those permanent cards onto the battlefield, then put the rest of the revealed cards on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.r4dig.player.reveals.cardsFromHand.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 402.3",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} reveals x cards from their hand , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "chooseObjects",
+          "who": "$p",
+          "from": {
+            "ref": "each",
+            "filter": {
+              "zone": "hand",
+              "owner": "$p"
+            }
+          },
+          "min": {
+            "q": "X"
+          },
+          "max": {
+            "q": "X"
+          },
+          "as": "picked"
+        },
+        {
+          "op": "reveal",
+          "who": "$p",
+          "what": {
+            "ref": "bound",
+            "name": "picked"
+          },
+          "as": "them"
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent reveals X cards from their hand, where X is the number of Rogues you control."
+      },
+      {
+        "text": "{2}, {T}: Target player reveals X cards from their hand, where X is the number of cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Target player reveals X cards from their graveyard, where X is the number of cards in your graveyard.",
+      "{2}, {T}: Target player reveals X cards from their hand, where Y is the number of cards in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.r4dig.destroy.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 608.2c"
+    ],
+    "pattern": "destroy {o:Objs} if {c:Cond}",
+    "build": {
+      "op": "destroy",
+      "what": "$o",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature. Mill three cards, then destroy the chosen creature if its mana value is less than or equal to the number of cards in your graveyard."
+      },
+      {
+        "text": "Choose target artifact. Surveil 1, then destroy the chosen artifact if its mana value is 2 or less."
+      },
+      {
+        "text": "Whenever you gain life, ~ explores. Then destroy all other creatures if its power is exactly 20."
+      },
+      {
+        "text": "Draw a card. Then destroy all creatures if you control four or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Choose target artifact. Surveil 1, then destroy the chosen artifact unless its mana value is 2 or less.",
+      "Choose target artifact. Surveil 1, then exile the chosen artifact if its mana value is 2 or less.",
+      "Draw a card. Then destroy all creatures unless you control four or more artifacts.",
+      "Draw a card. Then exile all creatures if you control four or more artifacts.",
+      "Draw a card. Then destroy all creatures if you control four or more artifacts instead."
+    ]
+  },
+  {
+    "id": "eff.r4dig.castFromGraveyard.exileSelf.transformed.finality",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 608.2n",
+      "CR 712.14a",
+      "CR 122.1",
+      "CR 400.7"
+    ],
+    "pattern": "if ~ was cast from a graveyard , exile it , then put it onto the battlefield transformed under its owner 's control with a finality counter on it",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "wasCast",
+        "from": "graveyard"
+      },
+      "then": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "self"
+          },
+          "to": {
+            "zone": "exile"
+          },
+          "as": "selfExiled"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "selfExiled"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": "owner",
+            "transformed": true,
+            "counters": [
+              {
+                "kind": "finality",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. If this spell was cast from a graveyard, exile it, then put it onto the battlefield transformed under its owner's control with a finality counter on it."
+      },
+      {
+        "text": "Scry 2. If this spell was cast from a graveyard, exile it, then put it onto the battlefield transformed under its owner's control with a finality counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If this spell was cast from your hand, exile it, then put it onto the battlefield transformed under its owner's control with a finality counter on it.",
+      "Draw a card. If this spell was cast from a graveyard, exile it, then put it onto the battlefield under its owner's control with a finality counter on it.",
+      "Draw a card. If this spell was cast from a graveyard, exile it, then put it onto the battlefield transformed under your control with a shield counter on it."
+    ]
+  },
+  {
+    "id": "eff.r4dig.look.topN.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 401.1"
+    ],
+    "pattern": "look at the top {n:Qty} cards of {p:Player} 's library",
+    "build": {
+      "op": "look",
+      "who": {
+        "ref": "you"
+      },
+      "at": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top three cards of target opponent's library. Exile one of them face down and put the rest on the bottom of their library in a random order."
+      },
+      {
+        "text": "{2}, {T}: Look at the top two cards of target player's library."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Look at the top two cards of target player's graveyard.",
+      "{2}, {T}: Reveal the top two cards of target player's library."
+    ]
+  },
+  {
+    "id": "eff.r4dig.exileNOfThem.faceDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 406.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "exile {n:Qty} of {g:Seen} face down",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top five cards of target opponent's library, exile two of them face down, then put the rest on the bottom of their library in a random order."
+      },
+      {
+        "text": "Look at the top three cards of your library. Exile one of them face down and put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of your library. Exile one of them and put the rest on the bottom of your library in a random order.",
+      "Look at the top three cards of your library. Exile up to one of them face down and put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.r4dig.dig.rest.theirBottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {r:Rest} on the bottom of their library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top five cards of target opponent's library, exile two of them face down, then put the rest on the bottom of their library in a random order."
+      },
+      {
+        "text": "{T}: Look at the top four cards of target player's library, exile one of them face down, then put the rest on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Look at the top four cards of target player's library, exile one of them face down, then put the rest on top of their library in a random order.",
+      "{T}: Look at the top four cards of target player's library, exile one of them face down, then put the rest into their graveyard in a random order."
+    ]
+  },
+  {
+    "id": "eff.r4dig.player.looksAtTopCard.exilesItFaceDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 406.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} looks at the top card of {q:Player} 's library and exiles it face down",
+    "build": [
+      {
+        "op": "look",
+        "who": "$p",
+        "at": {
+          "ref": "topCards",
+          "player": "$q",
+          "count": 1
+        },
+        "as": "seen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "seen"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, defending player looks at the top card of target player's library and exiles it face down."
+      },
+      {
+        "text": "{T}: Target opponent looks at the top card of target player's library and exiles it face down."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, defending player looks at the top card of target player's library and exiles it.",
+      "Whenever ~ attacks, defending player looks at the top two cards of target player's library and exiles it face down."
+    ]
+  }
+]

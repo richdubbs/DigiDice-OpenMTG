@@ -1,0 +1,359 @@
+[
+  {
+    "id": "eff.stdrx23.prevent.byGroup",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all damage that would be dealt ( {d:Dur} by {g:Filter} | by {g:Filter} {d:Dur} )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g"
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt this turn by artifact creatures your opponents control."
+      },
+      {
+        "text": "Draw a card. Prevent all damage that would be dealt by red creatures this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt this turn by red creatures.",
+      "Prevent all damage that would be dealt this turn to red creatures.",
+      "Prevent the next 3 damage that would be dealt this turn by red creatures.",
+      "Prevent all damage that would be dealt by target red creature this turn."
+    ]
+  },
+  {
+    "id": "eff.stdrx23.prevent.combat.byGroup",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.1"
+    ],
+    "pattern": "prevent all combat damage that would be dealt ( {d:Dur} by {g:Filter} | by {g:Filter} {d:Dur} )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": "$g"
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt this turn by artifact creatures your opponents control."
+      },
+      {
+        "text": "Draw a card. Prevent all combat damage that would be dealt by creatures with power 5 or greater this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt this turn by creatures with power 5 or greater.",
+      "Prevent all combat damage that would be dealt this turn to creatures with power 5 or greater.",
+      "Prevent all noncombat damage that would be dealt this turn by red creatures.",
+      "Prevent all combat damage that would be dealt by target red creature this turn."
+    ]
+  },
+  {
+    "id": "eff.stdrx23.damage.eachOpponent.theirCount",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2f",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to each opponent equal to the number of {f:Filter} that player controls",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "eachPlayer",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "eachPlayer"
+          },
+          "amount": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals damage to each opponent equal to the number of tapped lands that player controls."
+      },
+      {
+        "text": "{2}{R}, {T}: ~ deals damage to each opponent equal to the number of artifacts that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals damage to each opponent equal to the number of tapped lands you control.",
+      "When ~ enters, it deals damage to each player equal to the number of tapped lands that player controls.",
+      "When ~ enters, it deals 2 damage to each opponent equal to the number of tapped lands that player controls."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.stdrx23.damage.eachPlayer.twiceTheirCount",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2f",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to each player equal to twice the number of {f:Filter} that player controls",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "eachPlayer",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "eachPlayer"
+          },
+          "amount": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              2,
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      "$f"
+                    ],
+                    "controller": {
+                      "ref": "iterating"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "twice"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals damage to each player equal to twice the number of tapped lands that player controls."
+      },
+      {
+        "text": "{2}{R}, {T}: ~ deals damage to each player equal to twice the number of artifacts that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals damage to each player equal to twice the number of tapped lands you control.",
+      "When ~ enters, it deals damage to each opponent equal to twice the number of tapped lands that player controls.",
+      "When ~ enters, it deals damage to each player equal to the number of tapped lands that player controls."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.stdrx23.extraTurns.n",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.7"
+    ],
+    "pattern": "{p:Player} take[s] {n:Qty} extra turns after this one",
+    "build": {
+      "op": "extraTurn",
+      "who": "$p",
+      "count": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "extra"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target player takes three extra turns after this one."
+      },
+      {
+        "text": "Draw a card. You take two extra turns after this one."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Target player takes an extra turn after this one.",
+      "Target player takes three extra turns.",
+      "Target player takes three extra turns after this one instead."
+    ]
+  },
+  {
+    "id": "eff.stdrx23.permit.extraLands.n.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.2",
+      "CR 305.2a",
+      "CR 611.2a"
+    ],
+    "pattern": "you may play ( up to {n:Qty} | {n:Qty} ) additional lands this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "playLand",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "additional",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. You may play up to two additional lands this turn."
+      },
+      {
+        "text": "You gain 3 life. You may play four additional lands this turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. You may play an additional land this turn.",
+      "Draw a card. You may play two additional lands on each of your turns.",
+      "Target player may play two additional lands this turn."
+    ]
+  },
+  {
+    "id": "sta.stdrx23.nonbasic.areSubtype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 305.7",
+      "CR 613.1d",
+      "CR 205.1a"
+    ],
+    "pattern": "nonbasic lands are {st:PluralSubtype}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Land"
+          ],
+          "notSupertypes": [
+            "Basic"
+          ]
+        }
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Nonbasic lands are Swamps."
+      },
+      {
+        "text": "Nonbasic lands are Forests."
+      }
+    ],
+    "counterExamples": [
+      "Basic lands are Swamps.",
+      "Nonbasic lands are Swamps in addition to their other land types.",
+      "Nonbasic lands you control are Swamps."
+    ]
+  }
+]

@@ -1,0 +1,115 @@
+[
+  {
+    "id": "eff.p2cf2.draw.thenDiscard.random",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] {n:Qty} card[s] , then discard[s] {m:Qty} card[s] at random",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$m",
+        "mode": "random"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Target player draws three cards, then discards two cards at random."
+      },
+      {
+        "text": "When ~ enters, each player draws a card, then discards a card at random."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws three cards, then discards two cards.",
+      "Target player draws three cards, then you discard two cards at random.",
+      "Target player draws three cards, then mills two cards at random."
+    ]
+  },
+  {
+    "id": "eff.p2cf2.player.reveals.atRandom.thenLosesLife.mv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2d",
+      "CR 119.3",
+      "CR 202.3"
+    ],
+    "pattern": "{p:Player} reveal[s] a card at random from their hand , then lose[s] life equal to that card 's mana value",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "picked"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "bound",
+          "name": "picked"
+        },
+        "as": "them"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": {
+            "ref": "bound",
+            "name": "picked"
+          }
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Target player reveals a card at random from their hand, then loses life equal to that card's mana value."
+      },
+      {
+        "text": "Whenever ~ attacks, defending player reveals a card at random from their hand, then loses life equal to that card's mana value."
+      }
+    ],
+    "counterExamples": [
+      "Target player reveals a card from their hand, then loses life equal to that card's mana value.",
+      "Target player reveals a card at random from their hand, then gains life equal to that card's mana value.",
+      "Target player reveals a card at random from their hand, then loses life equal to that card's power."
+    ]
+  }
+]

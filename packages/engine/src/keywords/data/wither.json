@@ -1,0 +1,14 @@
+{
+  "name": "wither",
+  "rule": "702.80",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "This deals damage to creatures in the form of -1/-1 counters.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "rules/damage.ts#dealDamage"
+  ]
+}

@@ -1,0 +1,724 @@
+[
+  {
+    "id": "rep.p2re1.counters.plus.eachKind.passive",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6"
+    ],
+    "pattern": "if one or more counters would be put on {f:Filter} , that many plus {n:Qty} of each of those kinds of counters are put on that permanent instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "on": "$f"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "each",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more counters would be put on a land you control, that many plus one of each of those kinds of counters are put on that permanent instead."
+      },
+      {
+        "text": "If one or more counters would be put on an enchantment or artifact you control, that many plus two of each of those kinds of counters are put on that permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more counters would be put on a land you control, that many plus one of each of those kinds of counters are put on that permanent.",
+      "If one or more counters would be put on a land you control, twice that many of each of those kinds of counters are put on that permanent instead.",
+      "If one or more counters would be removed from a land you control, that many plus one of each of those kinds of counters are put on that permanent instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.counters.plus.eachKind.player.you",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 122.1"
+    ],
+    "pattern": "if you would get one or more counters , you get that many plus {n:Qty} of each of those kinds of counters instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "on": {
+          "player": "you"
+        }
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "each",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would get one or more counters, you get that many plus two of each of those kinds of counters instead."
+      },
+      {
+        "text": "If you would get one or more counters, you get that many plus three of each of those kinds of counters instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would get one or more counters, you get that many plus two of each of those kinds of counters.",
+      "If an opponent would get one or more counters, they get that many plus two of each of those kinds of counters instead.",
+      "If you would get one or more counters, you get twice that many of each of those kinds of counters instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.counters.plus.kind.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6"
+    ],
+    "pattern": "if one or more {k:CounterKind} counters would be put on ~ , that many plus {n:Qty} {k2:CounterKind} counters are put on it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "on": {
+          "self": true
+        },
+        "kind": "$k"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more +1/+1 counters would be put on ~, that many plus two +1/+1 counters are put on it instead."
+      },
+      {
+        "text": "If one or more charge counters would be put on ~, that many plus one charge counters are put on it instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more +1/+1 counters would be put on ~, that many plus two +1/+1 counters are put on it.",
+      "If one or more +1/+1 counters would be put on ~, twice that many +1/+1 counters are put on it instead.",
+      "If one or more +1/+1 counters would be removed from ~, that many plus two +1/+1 counters are put on it instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.counters.plus.eachKind.byYou.orYourself",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 122.1"
+    ],
+    "pattern": "if you would put one or more counters on {f:Filter} or on yourself , put that many plus {n:Qty} of each of those kinds of counters on that permanent or player instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "on": "$f",
+            "by": "you"
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "add": "$n"
+            }
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "on": {
+              "player": "you"
+            },
+            "by": "you"
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "add": "$n"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "each",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would put one or more counters on a land you control or on yourself, put that many plus one of each of those kinds of counters on that permanent or player instead."
+      },
+      {
+        "text": "If you would put one or more counters on an artifact or enchantment you control or on yourself, put that many plus two of each of those kinds of counters on that permanent or player instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would put one or more counters on a land you control or on yourself, put that many plus one of each of those kinds of counters on that permanent or player.",
+      "If you would put one or more counters on a land you control or on an opponent, put that many plus one of each of those kinds of counters on that permanent or player instead.",
+      "If you would put one or more counters on a land you control or on yourself, put twice that many of each of those kinds of counters on that permanent or player instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.counters.minus.kind",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6"
+    ],
+    "pattern": "if one or more {k:CounterKind} counters would be put on {f:Filter} , that many {k2:CounterKind} counters minus {n:Qty} are put on it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "on": "$f",
+        "kind": "$k"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": {
+            "q": "math",
+            "op": "-",
+            "args": [
+              0,
+              "$n"
+            ]
+          }
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "minus",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more -1/-1 counters would be put on an artifact you control, that many -1/-1 counters minus one are put on it instead."
+      },
+      {
+        "text": "If one or more poison counters would be put on a land you control, that many poison counters minus two are put on it instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more -1/-1 counters would be put on an artifact you control, that many -1/-1 counters minus one are put on it.",
+      "If one or more -1/-1 counters would be put on an artifact you control, that many -1/-1 counters plus one are put on it instead.",
+      "If one or more -1/-1 counters would be removed from an artifact you control, that many -1/-1 counters minus one are put on it instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.tokens.plusAdditional.passive",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.1"
+    ],
+    "pattern": "if one or more tokens would be created under your control , those tokens plus an additional {t:TokenDesc} are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "body": {
+        "b": "modify",
+        "then": {
+          "as": "created",
+          "do": [
+            {
+              "op": "createToken",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1,
+              "token": "$t"
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "additional",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more tokens would be created under your control, those tokens plus an additional Treasure token are created instead."
+      },
+      {
+        "text": "If one or more tokens would be created under your control, those tokens plus an additional 1/1 white Soldier creature token are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more tokens would be created under your control, those tokens plus an additional Treasure token are created.",
+      "If one or more tokens would be created under an opponent's control, those tokens plus an additional Treasure token are created instead.",
+      "If one or more tokens would be created under your control, three times that many of those tokens are created instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.tokens.artifact.plusAdditional.passive",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.1"
+    ],
+    "pattern": "if one or more artifact tokens would be created under your control , those tokens plus an additional {t:TokenDesc} are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you",
+        "token": {
+          "types": [
+            "Artifact"
+          ]
+        }
+      },
+      "body": {
+        "b": "modify",
+        "then": {
+          "as": "created",
+          "do": [
+            {
+              "op": "createToken",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1,
+              "token": "$t"
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "additional",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more artifact tokens would be created under your control, those tokens plus an additional 2/2 colorless Golem artifact creature token are created instead."
+      },
+      {
+        "text": "If one or more artifact tokens would be created under your control, those tokens plus an additional 1/1 colorless Servo artifact creature token are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more artifact tokens would be created under your control, those tokens plus an additional Clue token are created.",
+      "If one or more creature tokens would be created under your control, those tokens plus an additional Clue token are created instead.",
+      "If one or more artifact tokens would be created under an opponent's control, those tokens plus an additional Clue token are created instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.life.gainNone.player",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 119.3"
+    ],
+    "pattern": "if a player would gain life , ( that player gains | they gain ) no life instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "life",
+        "change": "gain",
+        "player": "any"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "set": 0
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "no",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a player would gain life, they gain no life instead."
+      },
+      {
+        "text": "Haste, reach\nIf a player would gain life, they gain no life instead."
+      }
+    ],
+    "counterExamples": [
+      "If a player would gain life, they gain no life.",
+      "If a player would lose life, they gain no life instead.",
+      "If you would gain life, they gain no life instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.mill.twice.opponent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 701.17a"
+    ],
+    "pattern": "if an opponent would mill one or more cards , ( they mill | that player mills ) twice that many cards instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "mill",
+        "actor": "opponent"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If an opponent would mill one or more cards, that player mills twice that many cards instead."
+      },
+      {
+        "text": "Haste, reach\nIf an opponent would mill one or more cards, that player mills twice that many cards instead."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would mill one or more cards, that player mills twice that many cards.",
+      "If an opponent would mill one or more cards, that player mills that many cards plus two instead.",
+      "If you would mill one or more cards, that player mills twice that many cards instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.life.twice.while",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 119.3"
+    ],
+    "pattern": "if you would gain life while {c:Cond} , you gain twice that much life instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "life",
+        "change": "gain",
+        "player": "you"
+      },
+      "condition": "$c",
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would gain life while you have 10 or less life, you gain twice that much life instead."
+      },
+      {
+        "text": "If you would gain life while you control a Cleric, you gain twice that much life instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would gain life while you have 10 or less life, you gain twice that much life.",
+      "If you would lose life while you have 10 or less life, you gain twice that much life instead.",
+      "If you would gain life while you have 10 or less life, you gain three times that much life instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.draw.two.while",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 121.1"
+    ],
+    "pattern": "if you would draw a card while {c:Cond} , draw two cards instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "you"
+      },
+      "condition": "$c",
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 2
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card while you control a Wizard, draw two cards instead."
+      },
+      {
+        "text": "If you would draw a card while you have 5 or less life, draw two cards instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card while you control a Wizard, draw two cards.",
+      "If an opponent would draw a card while you control a Wizard, draw two cards instead.",
+      "If you would draw a card while you control a Wizard, draw three cards instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.dur.replacement",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 614.1a"
+    ],
+    "pattern": "{d:Dur} , {r:ReplStatic}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": "$r"
+    },
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Until end of turn, if one or more tokens would be created under your control, twice that many of those tokens are created instead."
+      },
+      {
+        "text": "{2}: Until end of turn, if one or more counters would be put on a land you control, that many plus one of each of those kinds of counters are put on that permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, if one or more tokens would be created under your control, twice that many of those tokens are created.",
+      "Until end of turn, creatures you control get +1/+1.",
+      "Until end of turn, if this creature would die, exile it instead."
+    ]
+  },
+  {
+    "id": "rep.p2re1.enters.payInstead.orGraveyard",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 614.12",
+      "CR 118.12"
+    ],
+    "pattern": "if ~ would enter , {c:Cost} instead . if you do , put ~ onto the battlefield . if you don't , put it into its owner 's graveyard",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "insteadThen",
+            "do": [
+              {
+                "op": "pay",
+                "who": {
+                  "ref": "you"
+                },
+                "cost": "$c",
+                "as": "paid",
+                "mandatory": true
+              }
+            ],
+            "if": {
+              "cond": "did",
+              "step": "paid"
+            },
+            "otherwise": {
+              "zone": "graveyard"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If ~ would enter, sacrifice two Forests instead. If you do, put ~ onto the battlefield. If you don't, put it into its owner's graveyard."
+      },
+      {
+        "text": "If ~ would enter, pay 4 life instead. If you do, put ~ onto the battlefield. If you don't, put it into its owner's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would enter, sacrifice a Forest instead. If you do, put ~ onto the battlefield. If you don't, put it into its owner's hand.",
+      "If ~ would enter, sacrifice a Forest instead. If you do, put ~ onto the battlefield.",
+      "If ~ would leave, sacrifice a Forest instead. If you do, put ~ onto the battlefield. If you don't, put it into its owner's graveyard."
+    ]
+  },
+  {
+    "id": "rep.p2re1.enters.mayPayInstead.orGraveyard",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 614.12",
+      "CR 118.12"
+    ],
+    "pattern": "if ~ would enter , you may {c:Cost} instead . if you do , put ~ onto the battlefield . if you don't , put it into its owner 's graveyard",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "insteadThen",
+            "do": [
+              {
+                "op": "pay",
+                "who": {
+                  "ref": "you"
+                },
+                "cost": "$c",
+                "as": "paid"
+              }
+            ],
+            "if": {
+              "cond": "did",
+              "step": "paid"
+            },
+            "otherwise": {
+              "zone": "graveyard"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "If ~ would enter, you may discard a creature card instead. If you do, put ~ onto the battlefield. If you don't, put it into its owner's graveyard."
+      },
+      {
+        "text": "If ~ would enter, you may pay 3 life instead. If you do, put ~ onto the battlefield. If you don't, put it into its owner's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would enter, you may discard a creature card instead. If you do, put ~ onto the battlefield. If you don't, exile it.",
+      "If ~ would enter, you may discard a creature card. If you do, put ~ onto the battlefield. If you don't, put it into its owner's graveyard.",
+      "If ~ would enter, you may discard a creature card instead. If you don't, put ~ onto the battlefield. If you do, put it into its owner's graveyard."
+    ]
+  }
+]

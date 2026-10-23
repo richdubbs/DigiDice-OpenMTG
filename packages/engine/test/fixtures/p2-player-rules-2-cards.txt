@@ -1,0 +1,9 @@
+# p2-player-rules-2 (Phase 2 lane p2-player-rules; test/cloud/p2-player-rules-2, golden p2-player-rules-2-review.json)
+# clash with an opponent, if you win (CR 701.30)
+Research the Deep
+Revive the Fallen
+Release the Ants
+Redeem the Lost
+Weed Strangle
+Nath's Elite
+Paperfin Rascal

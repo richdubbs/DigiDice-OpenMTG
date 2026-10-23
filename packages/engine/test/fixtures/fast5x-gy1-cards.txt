@@ -1,0 +1,15 @@
+# GY1: "You may play lands from your graveyard." as a static ability (CR 305.1, 305.2, 305.9, 116.2a, 404.1).
+# After editing: npm run cards -- fixtures
+
+# ---- The permission and nothing else, or with abilities that are automated
+Crucible of Worlds
+Ramunap Excavator
+Perennial Behemoth
+Icetill Explorer
+Mole Man, Moloid Master
+Ancient Greenwarden
+
+# ---- With another blocker (stay partial or manual)
+Conduit of Worlds
+Szarel, Genesis Shepherd
+Glacierwood Siege

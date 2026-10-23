@@ -1,0 +1,3 @@
+# p2-counters-state-3 (lane p2-counters-state): the round's golden cards (test/m5/golden/cards/p2-counters-state-3-review.json)
+Rumbling Crescendo
+Recantation

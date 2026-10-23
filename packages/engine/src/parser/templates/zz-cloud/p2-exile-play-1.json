@@ -1,0 +1,341 @@
+[
+  {
+    "id": "eff.p2ep1.cast.linked.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 406.1"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from among cards exiled with ( ~ | it ) without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target nonland card from an opponent's graveyard.\n{2}, {T}, Sacrifice ~: You may cast a spell from among cards exiled with ~ without paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top card of defending player's library.\nWhenever ~ deals combat damage to a player, you may cast an instant spell from among cards exiled with it without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target nonland card from an opponent's graveyard.\n{2}, {T}, Sacrifice ~: You may cast a spell from among cards exiled with ~.",
+      "When ~ enters, exile target nonland card from an opponent's graveyard.\n{2}, {T}, Sacrifice ~: You may cast a spell from among cards in exile without paying its mana cost.",
+      "When ~ enters, exile target nonland card from an opponent's graveyard.\n{2}, {T}, Sacrifice ~: You may cast two spells from among cards exiled with ~ without paying their mana costs."
+    ]
+  },
+  {
+    "id": "sta.p2ep1.players.cantCast.sameName",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 601.2",
+      "CR 604.1",
+      "CR 201.2"
+    ],
+    "pattern": "players can't cast spells with the same name as {o:Obj}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "cast",
+      "other": {
+        "zone": "stack",
+        "sharesWith": {
+          "with": "$o",
+          "quality": "name"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Players can't cast spells with the same name as enchanted permanent."
+      },
+      {
+        "text": "Players can't cast spells with the same name as ~."
+      }
+    ],
+    "counterExamples": [
+      "Players can't cast spells with a different name than ~.",
+      "Players can't cast spells with the same mana value as ~.",
+      "Your opponents can't cast spells with the same name as ~."
+    ],
+    "consumes": [
+      "can't",
+      "same"
+    ]
+  },
+  {
+    "id": "sta.p2ep1.costmod.less.shareCardType.exiled",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 205.2a"
+    ],
+    "pattern": "{f:Filter} you cast that share a card type with the exiled card cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                "$f"
+              ],
+              "sharesWith": {
+                "with": {
+                  "ref": "linked",
+                  "link": "exiled"
+                },
+                "quality": "cardType"
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "When ~ enters, you may exile a nonland card from your hand.\nCreature spells you cast that share a card type with the exiled card cost {1} less to cast."
+      },
+      {
+        "text": "When ~ enters, exile target artifact or enchantment card from a graveyard.\nSpells you cast that share a card type with the exiled card cost {3} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target artifact or enchantment card from a graveyard.\nSpells you cast that share a card type with the exiled card cost {3} more to cast.",
+      "When ~ enters, exile target artifact or enchantment card from a graveyard.\nSpells you cast that share a color with the exiled card cost {3} less to cast.",
+      "When ~ enters, exile target artifact or enchantment card from a graveyard.\nSpells your opponents cast that share a card type with the exiled card cost {3} less to cast."
+    ]
+  },
+  {
+    "id": "sta.p2ep1.spells.cast.fromExile.convoke",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 702.51a"
+    ],
+    "pattern": "{f:Filter} you cast from exile have convoke",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack",
+          "castFrom": "exile"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "convoke",
+              "text": "convoke"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Noncreature spells you cast from exile have convoke."
+      },
+      {
+        "text": "Creature spells you cast from exile have convoke."
+      }
+    ],
+    "counterExamples": [
+      "Noncreature spells you cast from your hand have convoke.",
+      "Noncreature spells your opponents cast from exile have convoke.",
+      "Noncreature spells you cast from exile have flash."
+    ]
+  },
+  {
+    "id": "sta.p2ep1.yourTurn.if.play.linked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 604.1",
+      "CR 305.1",
+      "CR 601.3"
+    ],
+    "pattern": "during your turn , if {c:Cond} , you may play lands and cast spells from among cards exiled with ~",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "turnOf",
+            "whose": "you"
+          },
+          "$c"
+        ]
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "during",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes tapped, exile the top card of your library.\nDuring your turn, if you gained life this turn, you may play lands and cast spells from among cards exiled with ~."
+      },
+      {
+        "text": "At the beginning of your end step, exile the top two cards of your library.\nDuring your turn, if a creature died this turn, you may play lands and cast spells from among cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes tapped, exile the top card of your library.\nDuring each opponent's turn, if you gained life this turn, you may play lands and cast spells from among cards exiled with ~.",
+      "Whenever ~ becomes tapped, exile the top card of your library.\nDuring your turn, if you gained life this turn, you may play lands from among cards exiled with ~.",
+      "Whenever ~ becomes tapped, exile the top card of your library.\nDuring your turn, you may play lands and cast spells from among cards in exile."
+    ]
+  },
+  {
+    "id": "sta.p2ep1.play.linked.asLongAs",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 305.1",
+      "CR 601.3"
+    ],
+    "pattern": "you may play cards exiled with ~ as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile the top card of your library.\nYou may play cards exiled with ~ as long as you control a Pirate."
+      },
+      {
+        "text": "Whenever ~ becomes tapped, exile the top card of your library.\nYou may play cards exiled with ~ as long as you have 10 or less life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top card of your library.\nYou may cast spells exiled with ~ as long as you control a Pirate.",
+      "Whenever ~ attacks, exile the top card of your library.\nYou may play cards exiled with ~ until end of turn.",
+      "Whenever ~ attacks, exile the top card of your library.\nYour opponents may play cards exiled with ~ as long as you control a Pirate."
+    ]
+  }
+]

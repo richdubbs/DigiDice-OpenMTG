@@ -1,0 +1,51 @@
+{
+  "name": "saddle",
+  "rule": "702.171",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Tap any number of other creatures you control with total power {n} or more: This Mount becomes saddled until end of turn. Saddle only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "Saddle {n}",
+      "sorcerySpeed": true,
+      "cost": {
+        "other": [
+          {
+            "kind": "tapPower",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            },
+            "power": "$amount",
+            "other": true,
+            "as": "saddle"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "designateObject",
+            "what": {
+              "ref": "self"
+            },
+            "designation": "saddled"
+          }
+        ]
+      }
+    }
+  ]
+}

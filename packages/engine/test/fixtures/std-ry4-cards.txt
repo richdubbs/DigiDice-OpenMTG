@@ -1,0 +1,39 @@
+# std-ry4 (wave 2 top-down, Commander lane ry4; test/cloud/std-ry4, golden cloud-std-ry4-review.json): 'a card named <combo piece>', X of an additional cost,
+# 'you may have <objects> gain ...', 'At the beginning of your upkeep and whenever ...', '<object(s)> can't attack <duration>'
+Academic Dispute
+Angrath's Fury
+Basri's Aegis
+Chandra's Firemaw
+Change of Heart
+Channeled Force
+Devastating Dreams
+Devastating Summons
+Dovin's Dismissal
+Eliminate the Competition
+Elspeth's Devotee
+Ethereal Elk
+Firestorm
+Gideon's Battle Cry
+Gideon's Resolve
+Goldmane Griffin
+Harvest Pyre
+Haunting Misery
+Highland Berserker
+Infernal Harvest
+Intimidation Bolt
+Jace's Ruse
+Joraga Bard
+Kinsbaile Balloonist
+Liliana's Influence
+Martyred Rusalka
+Nahiri's Sacrifice
+Netter en-Dal
+Niambi, Faithful Healer
+Oko's Hospitality
+Ral's Dispersal
+Raven Clan War-Axe
+Rowan's Stalwarts
+Shrine of Piercing Vision
+Turbulent Dreams
+Vengeful Dreams
+Visage of Bolas

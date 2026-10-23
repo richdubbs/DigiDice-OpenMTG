@@ -1,0 +1,1275 @@
+[
+  {
+    "id": "eff.e25.manifestDread.player",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.40a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} manifest[s] dread",
+    "build": {
+      "op": "action",
+      "action": "manifestDread",
+      "who": "$p"
+    },
+    "subject": "player",
+    "needs": [
+      "action:manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact. Its controller manifests dread."
+      },
+      {
+        "text": "Target opponent manifests dread."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent manifests dread twice.",
+      "Target opponent manifests the top card of their library.",
+      "Target opponent manifests bread.",
+      "Each player manifests dread."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.manifestDread.linkedOwner",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a",
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 608.2h"
+    ],
+    "pattern": "the exiled card 's owner manifest[s] dread",
+    "build": {
+      "op": "action",
+      "action": "manifestDread",
+      "who": {
+        "ref": "ownerOf",
+        "object": {
+          "ref": "linked",
+          "link": "exiled"
+        }
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "needs": [
+      "action:manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature an opponent controls.\nWhen ~ leaves the battlefield, the exiled card's owner manifests dread."
+      },
+      {
+        "text": "When ~ enters, exile up to one target artifact.\nWhen ~ leaves the battlefield, the exiled card's owner manifests dread."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature.\nWhen ~ leaves the battlefield, the exiled cards' owner manifests dread.",
+      "When ~ enters, exile target creature.\nWhen ~ leaves the battlefield, the exiled card's controller manifests dread."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.manifestDread.counters",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.40a",
+      "CR 608.2c",
+      "CR 122.1"
+    ],
+    "pattern": "manifest dread , then put {n:Qty} {k:CounterKind} counter[s] on that creature",
+    "build": [
+      {
+        "op": "action",
+        "action": "manifestDread",
+        "who": {
+          "ref": "you"
+        },
+        "as": "dread"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dread"
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:manifestDread"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Manifest dread, then put a +1/+1 counter on that creature.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "Manifest dread, then put a +1/+1 counter on that creature.",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "manifestDread",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "as": "dread"
+                },
+                {
+                  "op": "putCounters",
+                  "on": {
+                    "ref": "bound",
+                    "name": "dread"
+                  },
+                  "kind": "+1/+1",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "When ~ enters, manifest dread, then put four +1/+1 counters on that creature."
+      }
+    ],
+    "counterExamples": [
+      "Manifest dread, then put a +1/+1 counter on target creature.",
+      "Manifest dread, then put a +1/+1 counter on each creature you control.",
+      "Manifest, then put a +1/+1 counter on that creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.manifestDread.times.counters",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.40a",
+      "CR 608.2c",
+      "CR 107.3",
+      "CR 122.1"
+    ],
+    "pattern": "manifest dread {t:Qty} times , then put {n:Qty} {k:CounterKind} counter[s] on each of those creatures",
+    "build": [
+      {
+        "op": "action",
+        "action": "manifestDread",
+        "who": {
+          "ref": "you"
+        },
+        "n": "$t",
+        "as": "dread"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dread"
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:manifestDread",
+      "feature:action.manifestDread.n"
+    ],
+    "consumes": [
+      "each"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Manifest dread X times, then put X +1/+1 counters on each of those creatures."
+      },
+      {
+        "text": "Manifest dread three times, then put two +1/+1 counters on each of those creatures."
+      }
+    ],
+    "counterExamples": [
+      "Manifest dread X times, then put X +1/+1 counters on each creature you control.",
+      "Manifest X times, then put X +1/+1 counters on each of those creatures.",
+      "Manifest dread X times, then put X +1/+1 counters on target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.shuffleEnchanted.manifestDread",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a",
+      "CR 303.4",
+      "CR 608.2h",
+      "CR 701.62a"
+    ],
+    "pattern": "shuffle enchanted creature into its owner 's library , then manifest dread",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "attachedTo"
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": {
+            "ref": "attachedTo"
+          }
+        }
+      },
+      {
+        "op": "action",
+        "action": "manifestDread",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "needs": [
+      "action:manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\n{5}: Shuffle enchanted creature into its owner's library, then manifest dread."
+      },
+      {
+        "text": "Enchant creature\n{2}{U}, Sacrifice ~: Shuffle enchanted creature into its owner's library, then manifest dread."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\n{5}: Shuffle enchanted creature into your library, then manifest dread.",
+      "Enchant creature\n{5}: Shuffle enchanted creature into its owner's library, then manifest.",
+      "Enchant creature\n{5}: Put enchanted creature on top of its owner's library, then manifest dread."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.cloak.top.attachSelf",
+    "kind": "effect",
+    "cr": [
+      "CR 701.58a",
+      "CR 701.3a",
+      "CR 301.5",
+      "CR 608.2c"
+    ],
+    "pattern": "cloak the top card of your library , then attach ~ to it",
+    "build": [
+      {
+        "op": "action",
+        "action": "cloak",
+        "who": {
+          "ref": "you"
+        },
+        "as": "cloaked"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "ref": "bound",
+          "name": "cloaked"
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "needs": [
+      "action:cloak"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, cloak the top card of your library, then attach ~ to it."
+      },
+      {
+        "text": "{4}: Cloak the top card of your library, then attach ~ to it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, cloak the top card of your library, then attach ~ to target creature.",
+      "When ~ enters, manifest the top card of your library, then attach ~ to it.",
+      "When ~ enters, cloak the top card of your library, then attach it to ~."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.shuffleEnchanted",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a",
+      "CR 303.4",
+      "CR 608.2h"
+    ],
+    "pattern": "shuffle enchanted creature into its owner 's library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "attachedTo"
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": {
+            "ref": "attachedTo"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Enchant creature\n{3}: Shuffle enchanted creature into its owner's library."
+      },
+      {
+        "text": "Enchant creature\n{1}{U}, Sacrifice ~: Shuffle enchanted creature into its owner's library."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\n{3}: Shuffle enchanted creature into your library.",
+      "Enchant creature\n{3}: Put enchanted creature on top of its owner's library."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.cloak.fromHand",
+    "kind": "effect",
+    "cr": [
+      "CR 701.58a",
+      "CR 402.3",
+      "CR 608.2d"
+    ],
+    "pattern": "cloak a card from your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "cloaking"
+      },
+      {
+        "op": "action",
+        "action": "cloak",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "bound",
+          "name": "cloaking"
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:cloak"
+    ],
+    "examples": [
+      {
+        "text": "Cloak a card from your hand."
+      },
+      {
+        "text": "At the beginning of your end step, cloak a card from your hand."
+      }
+    ],
+    "counterExamples": [
+      "Cloak two cards from your hand.",
+      "Cloak a card from your graveyard.",
+      "Cloak a creature card from your hand."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.look.cloak.restBottomRandom",
+    "kind": "effect",
+    "cr": [
+      "CR 701.20e",
+      "CR 701.58a",
+      "CR 701.58e",
+      "CR 608.2c",
+      "CR 401.4"
+    ],
+    "pattern": "look at the top {m:Qty} cards of your library , cloak {n:Qty} of them , and put the rest on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$m"
+        },
+        "as": "seen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "seen"
+            },
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "cloaking"
+      },
+      {
+        "op": "action",
+        "action": "cloak",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "bound",
+          "name": "cloaking"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "seen"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "cloaking"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:cloak"
+    ],
+    "consumes": [
+      "random"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library, cloak two of them, and put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library, cloak one of them, and put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library, cloak two of them, and put the rest on the bottom of your library in any order.",
+      "Look at the top six cards of your library, cloak two of them, and put the rest into your graveyard.",
+      "Look at the top six cards of your library, manifest two of them, and put the rest on the bottom of your library in a random order."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rst.e25.cantTurnFaceUp.yourTurn",
+    "kind": "static",
+    "cr": [
+      "CR 708.7",
+      "CR 101.2",
+      "CR 614.17"
+    ],
+    "pattern": "{o:Objs} can't be turned face up during your turn",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTurnedFaceUp",
+      "when": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Permanents your opponents control can't be turned face up during your turn."
+      },
+      {
+        "text": "Creatures your opponents control can't be turned face up during your turn."
+      }
+    ],
+    "counterExamples": [
+      "Permanents your opponents control can't be turned face down during your turn.",
+      "Permanents your opponents control can be turned face up during your turn.",
+      "Permanents your opponents control can't be turned face up during your upkeep."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rst.e25.cantTurnFaceUp",
+    "kind": "static",
+    "cr": [
+      "CR 708.7",
+      "CR 101.2",
+      "CR 614.17"
+    ],
+    "pattern": "{o:Objs} can't be turned face up",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTurnedFaceUp"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Face-down creatures can't be turned face up."
+      },
+      {
+        "text": "Permanents your opponents control can't be turned face up."
+      }
+    ],
+    "counterExamples": [
+      "Face-down creatures can't be turned face down.",
+      "Face-down creatures can be turned face up."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "static.e25.entersOrFaceUp.counters.whereX",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.1e",
+      "CR 614.12",
+      "CR 708.11",
+      "CR 122.6"
+    ],
+    "pattern": "as ~ enters or is turned face up , put x {k:CounterKind} counters on it , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "becomes",
+            "what": "turnedFaceUp",
+            "object": {
+              "self": true
+            }
+          },
+          "body": {
+            "b": "during",
+            "do": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "needs": [
+      "body:during",
+      "feature:replace.on.turnFaceUp"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters or is turned face up, put X +1/+1 counters on it, where X is the number of other creatures you control."
+      },
+      {
+        "text": "As ~ enters or is turned face up, put X +1/+1 counters on it, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters or is turned face up, put X +1/+1 counters on target creature, where X is the number of other creatures you control.",
+      "As ~ enters, put X +1/+1 counters on it, where X is the number of other creatures you control.",
+      "When ~ enters or is turned face up, put X +1/+1 counters on it, where X is the number of other creatures you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "static.e25.entersOrFaceUp.counters",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.1e",
+      "CR 614.12",
+      "CR 708.11",
+      "CR 122.6"
+    ],
+    "pattern": "as ~ enters or is turned face up , put {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "becomes",
+            "what": "turnedFaceUp",
+            "object": {
+              "self": true
+            }
+          },
+          "body": {
+            "b": "during",
+            "do": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "needs": [
+      "body:during",
+      "feature:replace.on.turnFaceUp"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters or is turned face up, put two +1/+1 counters on it."
+      },
+      {
+        "text": "As ~ enters or is turned face up, put a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters or is turned face up, put two +1/+1 counters on target creature.",
+      "When ~ enters or is turned face up, put two +1/+1 counters on it."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.discard.unless",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.9a",
+      "CR 603.4"
+    ],
+    "pattern": "discard {n:Qty} card[s] unless {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "not",
+        "of": "$c"
+      },
+      "then": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Discard a card unless you turned a permanent face up this turn."
+      },
+      {
+        "text": "At the beginning of your end step, you may draw a card. If you do, discard a card unless a permanent entered the battlefield face down under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Discard a card unless you pay {2}.",
+      "Draw a card. Discard a card if you turned a permanent face up this turn.",
+      "Draw a card. Discard a card unless a permanent entered the battlefield face up under your control this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e25.look.faceDown.opponents",
+    "kind": "static",
+    "cr": [
+      "CR 708.5",
+      "CR 609.4",
+      "CR 400.2"
+    ],
+    "pattern": "you may look at face-down creatures your opponents control any time",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "lookAt",
+      "of": {
+        "types": [
+          "Creature"
+        ],
+        "faceDown": true,
+        "controller": "opponent"
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may look at face-down creatures your opponents control any time."
+      },
+      {
+        "text": "Flying\nYou may look at face-down creatures your opponents control any time."
+      }
+    ],
+    "counterExamples": [
+      "You may look at face-down creatures you control any time.",
+      "You may look at face-up creatures your opponents control any time.",
+      "You may look at face-down creatures your opponents control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e25.look.faceDown.notYours",
+    "kind": "static",
+    "cr": [
+      "CR 708.5",
+      "CR 609.4",
+      "CR 400.2"
+    ],
+    "pattern": "you may look at face-down creatures you don't control any time",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "lookAt",
+      "of": {
+        "types": [
+          "Creature"
+        ],
+        "faceDown": true,
+        "not": {
+          "controller": "you"
+        }
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may look at face-down creatures you don't control any time."
+      },
+      {
+        "text": "Vigilance\nYou may look at face-down creatures you don't control any time."
+      }
+    ],
+    "counterExamples": [
+      "You may look at face-down creatures you control any time.",
+      "You may look at face-down creatures you don't control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.eot.look.faceDown.notYours",
+    "kind": "effect",
+    "cr": [
+      "CR 708.5",
+      "CR 609.4",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "until end of turn , you may look at face-down creatures you don't control any time",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "lookAt",
+          "of": {
+            "types": [
+              "Creature"
+            ],
+            "faceDown": true,
+            "not": {
+              "controller": "you"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{1}: Until end of turn, you may look at face-down creatures you don't control any time."
+      },
+      {
+        "text": "Draw a card. Until end of turn, you may look at face-down creatures you don't control any time."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Until your next turn, you may look at face-down creatures you don't control any time.",
+      "{1}: Until end of turn, you may look at face-down creatures you control any time."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.return.faceDown.thenFaceUp",
+    "kind": "effect",
+    "cr": [
+      "CR 708.3",
+      "CR 708.7",
+      "CR 708.8",
+      "CR 110.4a",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "return {o:Obj} to the battlefield face down under its owner 's control if it's a permanent card , then turn it face up",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "is": "$o",
+            "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+            ],
+            "isCard": true,
+            "zone": "any"
+          }
+        }
+      },
+      "then": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "battlefield",
+            "faceDown": true,
+            "controller": "owner"
+          },
+          "as": "returned"
+        },
+        {
+          "op": "changeFace",
+          "what": {
+            "ref": "bound",
+            "name": "returned"
+          },
+          "to": "faceUp"
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "op:changeFace.faceUp"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Whenever a face-down creature you control dies, return it to the battlefield face down under its owner's control if it's a permanent card, then turn it face up."
+      },
+      {
+        "text": "When ~ dies, return it to the battlefield face down under its owner's control if it's a permanent card, then turn it face up."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a face-down creature you control dies, return it to the battlefield face down under your control if it's a permanent card, then turn it face up.",
+      "Whenever a face-down creature you control dies, return it to the battlefield face down under its owner's control if it's a creature card, then turn it face up.",
+      "Whenever a face-down creature you control dies, return it to the battlefield under its owner's control if it's a permanent card, then turn it face up."
+    ],
+    "status": "stable",
+    "since": 8,
+    "consumes": [
+      "if"
+    ]
+  },
+  {
+    "id": "eff.e25.cloak.top.player",
+    "kind": "effect",
+    "cr": [
+      "CR 701.58a",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "cloak the top card of {p:Player} 's library",
+    "build": {
+      "op": "action",
+      "action": "cloak",
+      "who": {
+        "ref": "you"
+      },
+      "subject": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": 1
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:cloak"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, cloak the top card of that player's library."
+      },
+      {
+        "text": "Cloak the top card of target opponent's library."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, cloak the top two cards of that player's library.",
+      "Whenever ~ deals combat damage to a player, manifest the top card of that player's library.",
+      "Whenever ~ deals combat damage to a player, cloak the top card of that player's graveyard."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.exilePile.cloak",
+    "kind": "effect",
+    "cr": [
+      "CR 406.3",
+      "CR 701.58a",
+      "CR 701.58e",
+      "CR 701.24a",
+      "CR 608.2c"
+    ],
+    "pattern": "exile any number of {f:Filter} in a face-down pile , shuffle that pile , then cloak them",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "pile"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "pile"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "exiledPile"
+      },
+      {
+        "op": "action",
+        "action": "cloak",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "bound",
+          "name": "exiledPile"
+        },
+        "arg": "shuffle"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:cloak",
+      "feature:action.cloak.shuffle"
+    ],
+    "consumes": [
+      "any number"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Exile any number of face-up creatures you control with disguise in a face-down pile, shuffle that pile, then cloak them."
+      },
+      {
+        "text": "Exile any number of face-up creatures you control with morph in a face-down pile, shuffle that pile, then cloak them."
+      }
+    ],
+    "counterExamples": [
+      "Exile any number of face-up creatures you control with disguise in a face-down pile, then cloak them.",
+      "Exile any number of face-up creatures you control with disguise in a face-down pile, shuffle that pile, then manifest them.",
+      "Exile two face-up creatures you control with disguise in a face-down pile, shuffle that pile, then cloak them."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.exile.faceDown",
+    "kind": "effect",
+    "cr": [
+      "CR 406.3",
+      "CR 406.3a",
+      "CR 701.13a"
+    ],
+    "pattern": "exile {o:Objs} face down",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile",
+        "faceDown": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile the top card of your library face down."
+      },
+      {
+        "text": "Search your library for a card, exile it face down, then shuffle."
+      },
+      {
+        "text": "Exile the top two cards of target opponent's library face down."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top card of your library face up.",
+      "Whenever ~ attacks, exile the top card of your graveyard face down until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.e25.you.manifestDread",
+    "kind": "trigger",
+    "cr": [
+      "CR 701.62b",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you manifest dread",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "manifestDread",
+          "actor": "you"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you manifest dread, draw a card.",
+        "expect": {
+          "on": [
+            {
+              "ev": "action",
+              "verb": "manifestDread",
+              "actor": "you"
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever you manifest dread, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you manifest, draw a card.",
+      "Whenever an opponent manifests dread, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e25.dread.binnedToHand",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.62b",
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "put a card you put into your graveyard this way into your hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "event",
+        "role": "subject"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:ev.action.manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you manifest dread, put a card you put into your graveyard this way into your hand."
+      },
+      {
+        "text": "Flying\nWhenever you manifest dread, put a card you put into your graveyard this way into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you manifest dread, put a card from your graveyard into your hand.",
+      "Whenever you manifest dread, put a card you put into your graveyard this way on top of your library."
+    ],
+    "status": "stable",
+    "since": 8,
+    "consumes": [
+      "this way"
+    ]
+  }
+]

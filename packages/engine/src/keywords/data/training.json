@@ -1,0 +1,63 @@
+{
+  "name": "training",
+  "rule": "702.149",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ and at least one other creature with power greater than ~'s power attack, put a +1/+1 counter on ~.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ],
+        "while": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "attacking": true,
+              "other": true,
+              "power": {
+                "op": ">",
+                "value": {
+                  "q": "stat",
+                  "stat": "power",
+                  "of": {
+                    "ref": "self"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "+1/+1",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

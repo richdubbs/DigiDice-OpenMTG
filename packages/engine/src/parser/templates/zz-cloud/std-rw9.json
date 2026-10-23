@@ -1,0 +1,52 @@
+[
+  {
+    "id": "eff.stdrw9.dig.anyNumber.bf.tapped.rest.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 404.1"
+    ],
+    "pattern": "put any number of {f:Filter} cards from among {g:Seen} onto the battlefield tapped and {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": { "ref": "you" },
+        "from": { "ref": "each", "filter": { "anyOf": ["$f"], "is": "$g", "zone": "library" } },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": { "ref": "bound", "name": "chosen" },
+        "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": { "zone": "graveyard" }
+      }
+    ],
+    "consumes": ["any number"],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. Put any number of land cards from among them onto the battlefield tapped and the rest into your graveyard."
+      },
+      {
+        "text": "Whenever ~ attacks, look at the top three cards of your library. You may put one of them into your hand. Then put any number of Forest cards from among them onto the battlefield tapped and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. Put any number of land cards from among them onto the battlefield tapped and the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. Put any number of land cards from among them into your hand and the rest into your graveyard.",
+      "Look at the top five cards of your library. Put any number of land cards from among them onto the battlefield and the rest into your graveyard.",
+      "Look at the top five cards of your library. Put a land card from among them onto the battlefield tapped and the rest into your graveyard."
+    ]
+  }
+]

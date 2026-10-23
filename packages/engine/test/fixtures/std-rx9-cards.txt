@@ -1,0 +1,5 @@
+# std-rx9 (wave 2, slice s18; test/cloud/std-rx9, golden cloud-std-rx9-review.json; Oko is listed in fast5x-e24-cards.txt): the chosen type in an emblem (Oko);
+# "As ~ enters, choose a basic land type. Then you may pay 2 life. If you don't, it enters tapped." and "~ is the chosen type" (Multiversal Passage);
+# "You may cast creature spells from your graveyard using their sneak abilities" (Ninja Teen)
+Multiversal Passage
+Ninja Teen

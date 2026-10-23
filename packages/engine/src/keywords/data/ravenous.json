@@ -1,0 +1,80 @@
+{
+  "name": "ravenous",
+  "rule": "702.156",
+  "params": [],
+  "mechanisms": [
+    "replacement",
+    "expands"
+  ],
+  "reminder": "This creature enters with X +1/+1 counters on it. If X is 5 or more, draw a card when it enters.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "~ enters with X +1/+1 counters on it.",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "+1/+1",
+                "count": {
+                  "q": "X"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, if X is 5 or more, draw a card.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "compare",
+        "left": {
+          "q": "X"
+        },
+        "op": ">=",
+        "right": 5
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

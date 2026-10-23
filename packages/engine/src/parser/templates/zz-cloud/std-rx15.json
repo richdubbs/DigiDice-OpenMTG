@@ -1,0 +1,164 @@
+[
+  {
+    "id": "eff.stdrx15.becomes.subtype.basept.permanent",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: ~ becomes an Elf Druid with base power and toughness 3/4."
+      },
+      {
+        "text": "{1}{G}: If ~ is a Druid, it becomes an Elf Shaman with base power and toughness 5/5."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ becomes an Elf Druid with base power and toughness 3/4 until end of turn.",
+      "{2}: ~ becomes an Elf Druid in addition to its other types.",
+      "{2}: ~ becomes an Elf Druid with base power and toughness 3/4 and gains flying."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdrx15.becomes.subtype.basept.with.permanent",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} and {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}: If ~ is a Shaman, it becomes an Elf Avatar with base power and toughness 6/6 and trample."
+      },
+      {
+        "text": "{4}: ~ becomes a Kor Monk with base power and toughness 4/4 and protection from each of your opponents."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes an Elf Avatar with base power and toughness 6/6 and trample until end of turn.",
+      "{3}: ~ becomes an Elf Avatar with base power and toughness 6/6 and loses trample.",
+      "{3}: ~ becomes an Elf Avatar with base power and toughness 6/6."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdrx15.self.equipAbilities.costLess",
+    "kind": "static",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2f",
+      "CR 602.2b"
+    ],
+    "pattern": "~'s equip abilities cost {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "keyword": "equip",
+              "kind": "activated",
+              "source": {
+                "self": true
+              }
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "examples": [
+      {
+        "text": "Equip {3}\n~'s equip abilities cost {1} less to activate."
+      },
+      {
+        "text": "Equip {4}\n~'s equip abilities cost {3} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "Equip {3}\n~'s equip abilities cost {1} more to activate.",
+      "Equip {3}\n~'s crew abilities cost {1} less to activate.",
+      "Equip {3}\n~'s equip abilities cost {1} less to activate if it targets a legendary creature."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -1,0 +1,1836 @@
+[
+ {
+  "card": "Iroas, God of Victory",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (Commander precon, tuning half), by hand against the Oracle text and the rules cited (sta.stdrp.prevent.all.to.filter): indestructible; not a creature while devotion to red and white is under seven; creatures you control have menace; a static prevention of all damage that would be dealt to attacking creatures you control (CR 702.12b, 700.5, 613.1d, 702.110a, 615.1, 614.1a, 604.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "indestructible",
+      "kind": "keyword"
+     },
+     {
+      "condition": {
+       "cond": "compare",
+       "left": {
+        "of": {
+         "ref": "you"
+        },
+        "q": "devotion",
+        "to": [
+         "R",
+         "W"
+        ]
+       },
+       "op": "<",
+       "right": 7
+      },
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "types": {
+           "remove": [
+            "Creature"
+           ]
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "keyword": "menace",
+            "kind": "keyword"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effects": [
+       {
+        "body": {
+         "amount": "all",
+         "b": "prevent"
+        },
+        "replaces": {
+         "ev": "damage",
+         "recipient": {
+          "object": {
+           "attacking": true,
+           "controller": "you",
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Emmara Tandris",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (Commander precon, tuning half), by hand (sta.stdrp.prevent.all.to.filter): a static prevention of all damage that would be dealt to creature tokens you control, any source, combat or not (CR 615.1, 614.1a, 604.1, 111.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "amount": "all",
+         "b": "prevent"
+        },
+        "replaces": {
+         "ev": "damage",
+         "recipient": {
+          "object": {
+           "controller": "you",
+           "token": true,
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rescue Retriever",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (sta.stdrp.prevent.all.to.filter): flash; when it enters, a +1/+1 counter on each other Soldier you control; a static prevention of all damage that would be dealt to other attacking Soldiers you control (CR 702.8a, 603.6a, 122.1, 615.1, 109.2, 604.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flash",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "filter": {
+           "controller": "you",
+           "other": true,
+           "subtypes": [
+            "Soldier"
+           ]
+          },
+          "ref": "each"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effects": [
+       {
+        "body": {
+         "amount": "all",
+         "b": "prevent"
+        },
+        "replaces": {
+         "ev": "damage",
+         "recipient": {
+          "object": {
+           "attacking": true,
+           "controller": "you",
+           "other": true,
+           "subtypes": [
+            "Soldier"
+           ]
+          }
+         }
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Llanowar Loamspeaker",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.subtype.with.dur): a mana ability for one mana of any color; {T}: target land you control becomes a 3/3 Elemental creature with haste until end of turn and is still a land (types and subtypes added, not set), only as a sorcery (CR 605.1a, 611.2a, 205.1b, 613.1d, 613.1f, 613.4b, 602.5d; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "W",
+           "U",
+           "B",
+           "R",
+           "G"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Elemental"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "add": [
+              {
+               "keyword": "haste",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 3,
+             "toughness": 3
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated",
+      "sorcerySpeed": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Avalanche Caller",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.subtype.with.dur): {2}: target snow land you control becomes a 4/4 Elemental creature with hexproof and haste until end of turn, still a land (CR 611.2a, 205.1b, 205.4f, 613.1d, 613.1f, 613.4b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Elemental"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "add": [
+              {
+               "keyword": "hexproof",
+               "kind": "keyword"
+              },
+              {
+               "keyword": "haste",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 4,
+             "toughness": 4
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "supertypes": [
+           "Snow"
+          ],
+          "types": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Elemental Uprising",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.subtype.with.dur): target land you control becomes a 4/4 Elemental creature with haste until end of turn, still a land, and must be blocked this turn if able (CR 611.2a, 205.1b, 613.1d, 613.1f, 613.4b, 509.1c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Elemental"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "add": [
+              {
+               "keyword": "haste",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 4,
+             "toughness": 4
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "action": "beBlocked",
+           "mode": "mustIfAble",
+           "s": "restrict",
+           "subject": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Silvanus's Invoker",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.subtype.with.dur): Conjure Elemental is an ability word; {8}: untap target land you control, it becomes an 8/8 Elemental creature with trample and haste until end of turn, still a land (CR 207.2c, 611.2a, 205.1b, 613.1d, 613.1f, 613.4b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 8,
+         "kind": "generic"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Elemental"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "add": [
+              {
+               "keyword": "trample",
+               "kind": "keyword"
+              },
+              {
+               "keyword": "haste",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 8,
+             "toughness": 8
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Faerie Conclave",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (Commander precon lane P, tuning half), by hand (eff.stdrp.becomes.color.subtype.with.dur): enters tapped; {T}: add {U}; {1}{U}: it becomes a 2/1 blue Faerie creature with flying until end of turn, still a land (color set, layer 5) (CR 614.1c, 605.1a, 611.2a, 205.1b, 613.1d, 613.1e, 613.1f, 613.4b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "tapped": true
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "U"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Faerie"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "colors": {
+              "set": [
+               "U"
+              ]
+             },
+             "layer": 5
+            },
+            {
+             "add": [
+              {
+               "keyword": "flying",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 2,
+             "toughness": 1
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Spawning Pool",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.color.subtype.with.dur): enters tapped; {T}: add {B}; {1}{B}: it becomes a 1/1 black Skeleton creature with \"{B}: Regenerate this creature\" until end of turn, still a land (CR 614.1c, 605.1a, 611.2a, 205.1b, 613.1d, 613.1e, 613.1f, 613.4b, 701.15a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "tapped": true
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "B"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Skeleton"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "colors": {
+              "set": [
+               "B"
+              ]
+             },
+             "layer": 5
+            },
+            {
+             "add": [
+              {
+               "cost": {
+                "mana": [
+                 {
+                  "color": "B",
+                  "kind": "colored"
+                 }
+                ]
+               },
+               "effect": {
+                "steps": [
+                 {
+                  "op": "regenerate",
+                  "what": {
+                   "ref": "self"
+                  }
+                 }
+                ],
+                "targets": []
+               },
+               "kind": "activated"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 1,
+             "toughness": 1
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Nantuko Monastery",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.twoColor.subtype.with.dur): {T}: add {C}; Threshold is an ability word: {G}{W}: it becomes a 4/4 green and white Insect Monk creature with first strike until end of turn, still a land, activated only with seven or more cards in your graveyard (CR 605.1a, 207.2c, 611.2a, 205.1b, 613.1d, 613.1e, 613.4b, 602.5b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "C"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "G",
+         "kind": "colored"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Insect",
+               "Monk"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "colors": {
+              "set": [
+               "W",
+               "G"
+              ]
+             },
+             "layer": 5
+            },
+            {
+             "add": [
+              {
+               "keyword": "first strike",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 4,
+             "toughness": 4
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated",
+      "onlyIf": {
+       "atLeast": 7,
+       "cond": "exists",
+       "of": {
+        "filter": {
+         "isCard": true,
+         "owner": "you",
+         "zone": "graveyard"
+        },
+        "ref": "each"
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Weatherseed Totem",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.color.subtype.artifact.with.dur): {T}: add {G}; it becomes a 5/3 green Treefolk artifact creature with trample until end of turn (types added); when it is put into a graveyard from the battlefield, if it was a creature, return it to its owner's hand (CR 605.1a, 611.2a, 205.1b, 613.1d, 613.1e, 613.4b, 603.10a, 603.4; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "G"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "set": [
+               "Treefolk"
+              ]
+             },
+             "types": {
+              "add": [
+               "Artifact",
+               "Creature"
+              ]
+             }
+            },
+            {
+             "colors": {
+              "set": [
+               "G"
+              ]
+             },
+             "layer": 5
+            },
+            {
+             "add": [
+              {
+               "keyword": "trample",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 5,
+             "toughness": 3
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "filter": {
+        "types": [
+         "Creature"
+        ]
+       },
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "self": true
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thunder Totem",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.color.subtype.artifact.with.dur): {T}: add {W}; {1}{W}{W}: it becomes a 2/2 white Spirit artifact creature with flying and first strike until end of turn (CR 605.1a, 611.2a, 205.1b, 613.1d, 613.1e, 613.1f, 613.4b; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "W"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "set": [
+               "Spirit"
+              ]
+             },
+             "types": {
+              "add": [
+               "Artifact",
+               "Creature"
+              ]
+             }
+            },
+            {
+             "colors": {
+              "set": [
+               "W"
+              ]
+             },
+             "layer": 5
+            },
+            {
+             "add": [
+              {
+               "keyword": "flying",
+               "kind": "keyword"
+              },
+              {
+               "keyword": "first strike",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 2,
+             "toughness": 2
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Phyrexian Totem",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (tuning half), by hand (eff.stdrp.becomes.color.subtype.artifact.with.dur): {T}: add {B}; {2}{B}: it becomes a 5/5 black Phyrexian Horror artifact creature with trample until end of turn; whenever it is dealt damage, if it's a creature, sacrifice that many permanents (CR 605.1a, 611.2a, 205.1b, 613.1d, 613.1e, 613.4b, 603.4, 701.21a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "B"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "set": [
+               "Horror",
+               "Phyrexian"
+              ]
+             },
+             "types": {
+              "add": [
+               "Artifact",
+               "Creature"
+              ]
+             }
+            },
+            {
+             "colors": {
+              "set": [
+               "B"
+              ]
+             },
+             "layer": 5
+            },
+            {
+             "add": [
+              {
+               "keyword": "trample",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 5,
+             "toughness": 5
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "q": "eventAmount"
+         },
+         "filter": {},
+         "op": "sacrificeChoice",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "filter": {
+        "types": [
+         "Creature"
+        ]
+       },
+       "object": {
+        "ref": "event",
+        "role": "object"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "recipient": {
+          "object": {
+           "self": true
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dread Cacodemon",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (Commander precon lane P, tuning half), by hand (Cond reading 'you cast it from your hand', lower/anaphora.ts controller-disjoint 'other'): when it enters, if it was cast from your hand, destroy all creatures your opponents control, then tap all other creatures you control (other than ~) (CR 603.4, 601.2a, 608.3, 701.8a, 701.26a, 109.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "filter": {
+           "controller": "opponent",
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "op": "tap",
+         "what": {
+          "filter": {
+           "controller": "you",
+           "other": true,
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "wasCast",
+       "from": "hand"
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Destined White Mage",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (Commander precon lane P, tuning half), by hand (Cond reading 'you have a full party'): lifelink; {W}, {T}: another target creature you control gains lifelink until end of turn; whenever you gain life, a +1/+1 counter on target creature you control, three instead with a full party (party size 4) (CR 702.15a, 611.2a, 700.8, 614.1a, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "lifelink",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "lifelink",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "of": {
+            "ref": "you"
+           },
+           "q": "partySize"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         "else": [
+          {
+           "count": 1,
+           "kind": "+1/+1",
+           "on": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "op": "putCounters"
+          }
+         ],
+         "op": "if",
+         "then": [
+          {
+           "count": 3,
+           "kind": "+1/+1",
+           "on": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "op": "putCounters"
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "change": "gain",
+         "ev": "life",
+         "player": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sygg, River Cutthroat",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (Commander precon lane P, tuning half), by hand (Cond reading 'an opponent lost N or more life this turn', countPlayers lostLifeIs): at the beginning of each end step, if an opponent lost 3 or more life this turn, you may draw a card (CR 513.1, 603.4, 119.3, 120.3a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "count": 1,
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "lostLifeIs": {
+         "n": 3,
+         "op": ">="
+        },
+        "of": {
+         "ref": "each",
+         "who": "opponent"
+        },
+        "q": "countPlayers"
+       },
+       "op": ">=",
+       "right": 1
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Prowess of the Fair",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (Commander precon lane P, tuning half), by hand (render/evt.ts 'put into your graveyard'): whenever another nontoken Elf you own is put into a graveyard (your graveyard) from the battlefield, you may create a 1/1 green Elf Warrior creature token (CR 400.3, 700.4, 603.10a, 111.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "count": 1,
+           "op": "createToken",
+           "token": {
+            "colors": [
+             "G"
+            ],
+            "power": 1,
+            "subtypes": [
+             "Elf",
+             "Warrior"
+            ],
+            "toughness": 1,
+            "types": [
+             "Creature"
+            ]
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "other": true,
+          "owner": "you",
+          "subtypes": [
+           "Elf"
+          ],
+          "token": false
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thalia's Geistcaller",
+  "expect": "full",
+  "verified": "Standard round P (std-rp) review (Commander precon lane P, tuning half), by hand (event reading 'cast a spell from your graveyard', the spell's owner): lifelink; whenever you cast a spell you own from a graveyard, create a 1/1 white Spirit creature token with flying; sacrifice a Spirit: it gains indestructible until end of turn (CR 702.15a, 601.2a, 400.3, 111.1, 701.21a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "lifelink",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "keywords": [
+           "flying"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Spirit"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "from": "graveyard",
+         "player": "you",
+         "spell": {
+          "owner": "you"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "other": [
+        {
+         "count": 1,
+         "filter": {
+          "subtypes": [
+           "Spirit"
+          ]
+         },
+         "kind": "sacrifice"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "indestructible",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ }
+]

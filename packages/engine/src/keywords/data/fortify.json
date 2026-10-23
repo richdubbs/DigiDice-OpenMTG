@@ -1,0 +1,16 @@
+{
+  "name": "fortify",
+  "rule": "702.67",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}: Attach to target land you control. Fortify only as a sorcery.",
+  "multiple": "independent",
+  "status": "planned"
+}

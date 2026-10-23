@@ -1,0 +1,153 @@
+[
+  {
+    "id": "eff.p2cf3.return.filterCard.randomFromGraveyard.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} card at random from your graveyard to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, return a Spirit creature card at random from your graveyard to the battlefield."
+      },
+      {
+        "text": "{3}, {T}: Return an enchantment card at random from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, return a Spirit creature card from your graveyard to the battlefield.",
+      "When ~ enters, return a Spirit creature card at random from your graveyard to your hand.",
+      "When ~ enters, return a Spirit creature card at random from target player's graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.p2cf3.forEach.qty.token.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 508.4",
+      "CR 608.2c"
+    ],
+    "pattern": "for each {n:Qty} , create ( a | an ) {t:TokenDesc} that's tapped and attacking",
+    "build": [
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "token": "$t",
+        "tapped": true,
+        "attacking": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, flip two coins. For each flip you win, create a 2/2 black Zombie creature token that's tapped and attacking."
+      },
+      {
+        "text": "At the beginning of combat on your turn, flip four coins. For each flip you win, create a 1/1 red Elemental creature token that's tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, flip two coins. For each flip you win, create a 2/2 black Zombie creature token.",
+      "Whenever ~ attacks, flip two coins. For each flip you win, create a 2/2 black Zombie creature token that's tapped.",
+      "Whenever ~ attacks, flip two coins. For each coin that comes up heads, create a 2/2 black Zombie creature token that's tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.p2cf3.player.mayDiscard.random",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9b",
+      "CR 608.2d",
+      "CR 603.5"
+    ],
+    "pattern": "{p:Player} may discard {n:Qty} card[s] at random",
+    "build": [
+      {
+        "op": "may",
+        "who": "$p",
+        "do": [
+          {
+            "op": "discard",
+            "who": "$p",
+            "count": "$n",
+            "mode": "random"
+          }
+        ]
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "may",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, that player may discard a card at random. If the player does, you draw a card."
+      },
+      {
+        "text": "Target opponent may discard two cards at random. If that player doesn't, you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's upkeep, that player may discard a card. If the player does, you draw a card.",
+      "At the beginning of each opponent's upkeep, that player discards a card at random. You draw a card.",
+      "At the beginning of each opponent's upkeep, that player may exile a card at random from their hand. If the player does, you draw a card."
+    ]
+  }
+]

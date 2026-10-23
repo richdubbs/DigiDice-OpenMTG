@@ -1,0 +1,6 @@
+# std-ru (card wave 2, slice s5; test/cloud/std-ru, golden cloud-std-ru-review.json): a dig that reveals one card and puts it onto the battlefield if C;
+# "~ is attached to a creature" (Cond); "~ can't be attacked and has ..."; quoted triggers keep their condition; an exiling replacement as the linked
+# producer of "exiled with ~"; "pay life equal to its mana value rather than pay its mana cost" on linked permissions
+Whiskervale Forerunner
+The Aetherspark
+Valgavoth, Terror Eater

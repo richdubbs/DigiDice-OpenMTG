@@ -1,0 +1,2951 @@
+[
+ {
+  "card": "Greed's Gambit",
+  "expect": "full",
+  "verified": "r4-fxz review, by hand against the Oracle text and the rules cited (eff.fxz.you.discard.loselife.and): the enters trigger draws three, gains 6 life and makes three 2/1 flying Bats; the end step trigger and the leaves trigger make YOU discard, lose life and sacrifice creatures (CR 701.9a, 119.3, 701.21a, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, you draw three cards, gain 6 life, and create three 2/1 black Bat creature tokens with flying.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 3
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 6
+        },
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 3,
+         "token": {
+          "colors": [
+           "B"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Bat"
+          ],
+          "power": 2,
+          "toughness": 1,
+          "keywords": [
+           "flying"
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "At the beginning of your end step, you discard a card, lose 2 life, and sacrifice a creature.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 2
+        },
+        {
+         "op": "sacrificeChoice",
+         "who": {
+          "ref": "you"
+         },
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ leaves the battlefield, you discard three cards, lose 6 life, and sacrifice three creatures.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": 3
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 6
+        },
+        {
+         "op": "sacrificeChoice",
+         "who": {
+          "ref": "you"
+         },
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "count": 3
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gate Colossus",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.put.self.gy.libraryTop): affinity for Gates (CR 702.41a); can't be blocked by power 2 or less (CR 509.1b); the Gate trigger functions only in the graveyard and puts the card on top of its owner's library (CR 113.6m, 400.7, 401.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "affinity",
+      "filter": {
+       "subtypes": [
+        "Gate"
+       ]
+      },
+      "text": "Affinity for Gates"
+     },
+     {
+      "kind": "static",
+      "text": "~ can't be blocked by creatures with power 2 or less.",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+         "types": [
+          "Creature"
+         ],
+         "power": {
+          "op": "<=",
+          "value": 2
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever a Gate you control enters, you may put ~ from your graveyard on top of your library.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "subtypes": [
+           "Gate"
+          ],
+          "controller": "you"
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "self"
+           },
+           "to": {
+            "zone": "library",
+            "position": "top"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tragedy Feaster",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.unless.cond): trample; ward--discard a card (CR 702.21a); at your end step sacrifice a permanent unless you gained life this turn, the condition checked as it resolves (CR 608.2c, 701.21a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "trample",
+      "text": "Trample"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "ward",
+      "cost": {
+       "other": [
+        {
+         "kind": "discard",
+         "count": 1
+        }
+       ]
+      },
+      "text": "Ward--Discard a card."
+     },
+     {
+      "kind": "triggered",
+      "text": "At the beginning of your end step, sacrifice a permanent unless you gained life this turn.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "if",
+         "cond": {
+          "cond": "not",
+          "of": {
+           "cond": "happened",
+           "event": {
+            "ev": "life",
+            "change": "gain",
+            "player": "you"
+           },
+           "scope": "turn"
+          }
+         },
+         "then": [
+          {
+           "op": "sacrificeChoice",
+           "who": {
+            "ref": "you"
+           },
+           "filter": {},
+           "count": 1
+          }
+         ]
+        }
+       ]
+      },
+      "label": "Infusion"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Spot's Portal",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.unless.cond): put target creature on the bottom of its owner's library; you lose 2 life unless you control a Villain (CR 608.2c, 119.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Put target creature on the bottom of its owner's library. You lose 2 life unless you control a Villain.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "library",
+          "position": "bottom"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "not",
+          "of": {
+           "cond": "exists",
+           "of": {
+            "ref": "each",
+            "filter": {
+             "subtypes": [
+              "Villain"
+             ],
+             "controller": "you"
+            }
+           }
+          }
+         },
+         "then": [
+          {
+           "op": "loseLife",
+           "who": {
+            "ref": "you"
+           },
+           "amount": 2
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Perforating Artist",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.each.opponent.loselife.unless.sacrificeOrDiscard): raid end step trigger, intervening if you attacked (CR 603.4); each opponent in turn may sacrifice a nonland permanent or discard a card, else loses 3 life (CR 118.12a, 701.21a, 701.9a, 101.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "deathtouch",
+      "text": "Deathtouch"
+     },
+     {
+      "kind": "triggered",
+      "text": "At the beginning of your end step, if you attacked this turn, each opponent loses 3 life unless that player sacrifices a nonland permanent of their choice or discards a card.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "attacks",
+        "attacker": {
+         "controller": "you"
+        }
+       },
+       "scope": "turn"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "each",
+          "who": "opponent"
+         },
+         "as": "each",
+         "do": [
+          {
+           "op": "pay",
+           "who": {
+            "ref": "bound",
+            "name": "each"
+           },
+           "cost": {
+            "other": [
+             {
+              "kind": "sacrifice",
+              "filter": {
+               "notTypes": [
+                "Land"
+               ]
+              },
+              "count": 1
+             }
+            ]
+           },
+           "else": [
+            {
+             "op": "pay",
+             "who": {
+              "ref": "bound",
+              "name": "each"
+             },
+             "cost": {
+              "other": [
+               {
+                "kind": "discard",
+                "count": 1
+               }
+              ]
+             },
+             "else": [
+              {
+               "op": "loseLife",
+               "who": {
+                "ref": "bound",
+                "name": "each"
+               },
+               "amount": 3
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "label": "Raid"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Slick Sequence",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.if.castAnother.thisTurn): 2 damage to any target; draw a card if you cast a spell this turn other than this one (the spell on the stack is the object it was cast as; CR 601.2i, 109.2, 400.7)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "~ deals 2 damage to any target. If you've cast another spell this turn, draw a card.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "anyTarget",
+         "min": 1,
+         "max": 1,
+         "text": "any target"
+        }
+       ],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": 2
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "happened",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "other": true
+           }
+          },
+          "scope": "turn",
+          "times": {
+           "op": ">=",
+           "value": 1
+          }
+         },
+         "then": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Urban Retreat",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.put.self.hand.battlefield): enters tapped (CR 614.1c); three-color mana ability; from the hand, {2} and returning a tapped creature you control: put this card onto the battlefield, sorcery speed (CR 113.6m, 602.2, 602.5d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ enters tapped.",
+      "zone": [
+       "stack",
+       "battlefield"
+      ],
+      "effects": [
+       {
+        "s": "replace",
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "body": {
+         "b": "enters",
+         "tapped": true
+        }
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{T}: Add {G}, {W}, or {U}.",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "units": [
+          [
+           "G",
+           "W",
+           "U"
+          ]
+         ]
+        }
+       ]
+      },
+      "isMana": true
+     },
+     {
+      "kind": "activated",
+      "text": "{2}, Return a tapped creature you control to its owner's hand: Put ~ from your hand onto the battlefield. Activate only as a sorcery.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "other": [
+        {
+         "kind": "returnToHand",
+         "filter": {
+          "tapped": true,
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "count": 1
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      },
+      "sorcerySpeed": true,
+      "zone": [
+       "hand"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Unstoppable Slasher",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.return.bf.owner.tapped.counters): deathtouch; combat damage to a player: that player loses half their life rounded up (CR 107.1a); dies with no counters: returns tapped under its owner's control with two stun counters (CR 603.4, 400.7, 122.1d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "deathtouch",
+      "text": "Deathtouch"
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ deals combat damage to a player, they lose half their life, rounded up.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "source": {
+          "self": true
+         },
+         "combat": true,
+         "recipient": {
+          "player": "any"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "event",
+          "role": "recipient"
+         },
+         "amount": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+           {
+            "q": "life",
+            "of": {
+             "ref": "event",
+             "role": "recipient"
+            }
+           },
+           2
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ dies, if it had no counters on it, return it to the battlefield tapped under its owner's control with two stun counters on it.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       },
+       "filter": {
+        "counters": {
+         "kind": "any",
+         "cmp": {
+          "op": "==",
+          "value": 0
+         }
+        }
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": "owner",
+          "tapped": true,
+          "counters": [
+           {
+            "kind": "stun",
+            "count": 2
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Retched Wretch",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxb.loseAll.permanent, which r4-fxz's own copy of the template was folded into in wave 7): dies with a -1/-1 counter on it (last known information, CR 603.10a, 603.4): returns under its owner's control, and the new object loses all abilities with no end (CR 611.2a, 613.1f, 400.7)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ dies, if it had a -1/-1 counter on it, return it to the battlefield under its owner's control and it loses all abilities.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       },
+       "filter": {
+        "counters": {
+         "kind": "-1/-1"
+        }
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+         },
+         "as": "moved"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "bound",
+            "name": "moved"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "removeAll": true
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Otterball Antics",
+  "expect": "full",
+  "verified": "r4-fxz review (the condition \"was cast from anywhere other than your hand\", parser/holes/cond.ts): a 1/1 Otter with prowess; the +1/+1 counter on that token only when the spell was cast from another zone (flashback) (CR 601.2a, 702.34a, 111.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Create a 1/1 blue and red Otter creature token with prowess. If ~ was cast from anywhere other than your hand, put a +1/+1 counter on that creature.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "colors": [
+           "U",
+           "R"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Otter"
+          ],
+          "power": 1,
+          "toughness": 1,
+          "keywords": [
+           "prowess"
+          ]
+         },
+         "as": "token"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "any",
+          "of": [
+           {
+            "cond": "wasCast",
+            "from": "graveyard"
+           },
+           {
+            "cond": "wasCast",
+            "from": "exile"
+           },
+           {
+            "cond": "wasCast",
+            "from": "library"
+           },
+           {
+            "cond": "wasCast",
+            "from": "command"
+           }
+          ]
+         },
+         "then": [
+          {
+           "op": "putCounters",
+           "on": {
+            "ref": "bound",
+            "name": "token"
+           },
+           "kind": "+1/+1",
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flashback",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        }
+       ]
+      },
+      "text": "Flashback {3}{U}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Misty Knight, Hero for Hire",
+  "expect": "full",
+  "verified": "r4-fxz review (the count of cards you discarded this turn, parser/holes/qty.ts): the discard of the cost counts (CR 701.9a, 602.2b, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "text": "{2}, {T}, Discard a card: Draw a card for each card you've discarded this turn.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "tap": true,
+       "other": [
+        {
+         "kind": "discard",
+         "count": 1
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "happenedCount",
+          "event": {
+           "ev": "action",
+           "verb": "discard",
+           "actor": "you"
+          },
+          "scope": "turn"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lunar Insight",
+  "expect": "full",
+  "verified": "r4-fxz review (distinct mana values, parser/holes/qty.ts): one card for each different mana value among nonland permanents you control, a token's 0 included (CR 202.3, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Draw a card for each different mana value among nonland permanents you control.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "distinct",
+          "what": "manaValues",
+          "among": {
+           "ref": "each",
+           "filter": {
+            "notTypes": [
+             "Land"
+            ],
+            "controller": "you"
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Shantotto, Tactician Magician",
+  "expect": "full",
+  "verified": "r4-fxz review (render fold whereXThenIfX): +X/+0 until end of turn, X the mana spent on the noncreature spell; if that X is 4 or more, draw a card (CR 107.3, 601.2h, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever you cast a noncreature spell, ~ gets +X/+0 until end of turn, where X is the amount of mana spent to cast that spell. If X is 4 or more, draw a card.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "notTypes": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": {
+              "q": "spellManaSpent",
+              "of": {
+               "ref": "event",
+               "role": "spell"
+              }
+             },
+             "toughness": 0
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "q": "spellManaSpent",
+           "of": {
+            "ref": "event",
+            "role": "spell"
+           }
+          },
+          "op": ">=",
+          "right": 4
+         },
+         "then": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Scampering Surveyor",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.search.library.oneOfTwo): enters: search for a basic land card or a Cave card, onto the battlefield tapped, shuffle (CR 701.23a, 305.6)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, search your library for a basic land card or Cave card, put it onto the battlefield tapped, then shuffle.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library",
+         "filter": {
+          "anyOf": [
+           {
+            "supertypes": [
+             "Basic"
+            ],
+            "types": [
+             "Land"
+            ]
+           },
+           {
+            "subtypes": [
+             "Cave"
+            ]
+           }
+          ]
+         },
+         "max": 1,
+         "as": "search"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          },
+          "tapped": true
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Undying Malice",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.return.bf.owner.tapped.counters inside the granted trigger): until end of turn the creature has the dies trigger; it returns tapped with a +1/+1 counter (CR 603.6c, 400.7, 122.6)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Until end of turn, target creature gains \"When ~ dies, return it to the battlefield tapped under its owner's control with a +1/+1 counter on it.\"",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "triggered",
+               "text": "When this creature dies, return it to the battlefield tapped under its owner's control with a +1/+1 counter on it.",
+               "trigger": {
+                "on": [
+                 {
+                  "ev": "zoneChange",
+                  "subject": {
+                   "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                 }
+                ]
+               },
+               "effect": {
+                "targets": [],
+                "steps": [
+                 {
+                  "op": "move",
+                  "what": {
+                   "ref": "event",
+                   "role": "subject"
+                  },
+                  "to": {
+                   "zone": "battlefield",
+                   "controller": "owner",
+                   "tapped": true,
+                   "counters": [
+                    {
+                     "kind": "+1/+1",
+                     "count": 1
+                    }
+                   ]
+                  }
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Uncover the Moon-Letters",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.draw.whereX): whenever you cast a noncreature spell you may draw X, X the mana spent on that spell; if you do, discard two (CR 107.3, 601.2h, 608.2c, 701.9a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever you cast a noncreature spell, you may draw X cards, where X is the amount of mana spent to cast that spell. If you do, discard two cards.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "notTypes": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": {
+            "q": "spellManaSpent",
+            "of": {
+             "ref": "event",
+             "role": "spell"
+            }
+           }
+          }
+         ],
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "discard",
+           "who": {
+            "ref": "you"
+           },
+           "count": 2
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kain, Traitorous Dragoon",
+  "expect": "full",
+  "verified": "r4-fxz review (the control change named for \"If they do\", eff.fxz.you.then.loselife): during your turn flying; combat damage to a player: that player gains control of Kain; if they did, you draw, make tapped Treasures and lose life, each the damage dealt (CR 613.1b, 608.2c, 603.2, 119.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "During your turn, ~ has flying.",
+      "condition": {
+       "cond": "turnOf",
+       "whose": "you"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "flying",
+            "text": "flying"
+           }
+          ]
+         }
+        ]
+       }
+      ],
+      "label": "Jump"
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ deals combat damage to a player, that player gains control of ~. If they do, you draw that many cards, create that many tapped Treasure tokens, then lose that much life.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "source": {
+          "self": true
+         },
+         "combat": true,
+         "recipient": {
+          "player": "any"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 2,
+             "controller": {
+              "ref": "event",
+              "role": "recipient"
+             }
+            }
+           ]
+          }
+         ],
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": {
+            "q": "eventAmount"
+           }
+          },
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": {
+            "q": "eventAmount"
+           },
+           "token": {
+            "predefined": "Treasure"
+           },
+           "tapped": true
+          },
+          {
+           "op": "loseLife",
+           "who": {
+            "ref": "you"
+           },
+           "amount": {
+            "q": "eventAmount"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Stiltzkin, Moogle Merchant",
+  "expect": "full",
+  "verified": "r4-fxz review (the control change named for \"If they do\"): lifelink; {2},{T}: target opponent gains control of another target permanent you control; if they did, you draw a card (CR 613.1b, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "lifelink",
+      "text": "Lifelink"
+     },
+     {
+      "kind": "activated",
+      "text": "{2}, {T}: Target opponent gains control of another target permanent you control. If they do, you draw a card.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target opponent",
+         "players": {
+          "who": "opponent"
+         }
+        },
+        {
+         "id": "t1",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "another target permanent you control",
+         "filter": {
+          "controller": "you"
+         },
+         "distinctFrom": [
+          "t0"
+         ]
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t1"
+           },
+           "mods": [
+            {
+             "layer": 2,
+             "controller": {
+              "ref": "target",
+              "id": "t0"
+             }
+            }
+           ]
+          }
+         ],
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bonny Pall, Clearcutter",
+  "expect": "full",
+  "verified": "r4-fxz review (the Filter reading \"from your hand or graveyard\"): reach; the Beau token with its counted P/T; whenever you attack, draw, then you may put a land card from your hand or graveyard onto the battlefield (CR 404.1, 402.1, 305.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "reach",
+      "text": "Reach"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, create Beau, a legendary blue Ox creature token with \"Beau's power and toughness are each equal to the number of lands you control.\"",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "name": "Beau",
+          "colors": [
+           "U"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Ox"
+          ],
+          "abilities": [
+           {
+            "kind": "static",
+            "text": "Beau's power and toughness are each equal to the number of lands you control.",
+            "effects": [
+             {
+              "s": "continuous",
+              "cda": true,
+              "affects": {
+               "ref": "self"
+              },
+              "mods": [
+               {
+                "layer": "7a",
+                "power": {
+                 "q": "count",
+                 "of": {
+                  "ref": "each",
+                  "filter": {
+                   "types": [
+                    "Land"
+                   ],
+                   "controller": "you"
+                  }
+                 }
+                },
+                "toughness": {
+                 "q": "count",
+                 "of": {
+                  "ref": "each",
+                  "filter": {
+                   "types": [
+                    "Land"
+                   ],
+                   "controller": "you"
+                  }
+                 }
+                }
+               }
+              ]
+             }
+            ]
+           }
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you attack, draw a card, then you may put a land card from your hand or graveyard onto the battlefield.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ],
+       "batch": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Land"
+           ],
+           "zone": [
+            "hand",
+            "graveyard"
+           ],
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "put"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "put"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Michelangelo, Improviser",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.put.eitherOr.fromHand.battlefield): sneak (CR 702.190a); combat damage to a player: you may put a creature card and/or a land card from your hand onto the battlefield, never two of one kind (CR 608.2c, 608.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "sneak",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "G"
+        },
+        {
+         "kind": "colored",
+         "color": "G"
+        }
+       ]
+      },
+      "text": "Sneak {2}{G}{G}"
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ deals combat damage to a player, you may put a creature card and/or a land card from your hand onto the battlefield.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "source": {
+          "self": true
+         },
+         "combat": true,
+         "recipient": {
+          "player": "any"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "zone": "hand",
+           "owner": "you"
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "chosen"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Land"
+             ]
+            }
+           ],
+           "zone": "hand",
+           "owner": "you",
+           "not": {
+            "is": {
+             "ref": "bound",
+             "name": "chosen"
+            }
+           }
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "chosenOther"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "union",
+          "of": [
+           {
+            "ref": "bound",
+            "name": "chosen"
+           },
+           {
+            "ref": "bound",
+            "name": "chosenOther"
+           }
+          ]
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Worldsoul's Rage",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.put.upTo.battlefield.tapped): X damage to any target; up to X land cards from your hand and/or graveyard onto the battlefield tapped (CR 107.3, 404.1, 608.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "~ deals X damage to any target. Put up to X land cards from your hand and/or graveyard onto the battlefield tapped.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "anyTarget",
+         "min": 1,
+         "max": 1,
+         "text": "any target"
+        }
+       ],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": {
+          "q": "X"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Land"
+           ],
+           "zone": [
+            "hand",
+            "graveyard"
+           ],
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": 0,
+         "max": {
+          "q": "X"
+         },
+         "as": "put"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "put"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          },
+          "tapped": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Pitiless Carnage",
+  "expect": "full",
+  "verified": "r4-fxz review (the sacrifice count, parser/lower/quantities.ts): sacrifice any number of permanents you control, then draw as many as were sacrificed; plot (CR 701.21a, 608.2c, 702.170a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Sacrifice any number of permanents you control, then draw that many cards.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "controller": "you",
+           "anyOf": [
+            {
+             "controller": "you"
+            }
+           ]
+          }
+         },
+         "min": 0,
+         "max": "any",
+         "as": "toSacrifice"
+        },
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+         },
+         "as": "sacrifice"
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "sacrifice"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "plot",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ]
+      },
+      "text": "Plot {1}{B}{B}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lich-Knights' Conquest",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.sacrifice.anyNumber.list.tokens, eff.fxz.return.n.battlefield): sacrifice any number of artifacts, enchantments and/or tokens; return that many creature cards from your graveyard to the battlefield (CR 701.21a, 608.2c, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Sacrifice any number of artifacts, enchantments, and/or tokens. Return that many creature cards from your graveyard to the battlefield.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "controller": "you",
+           "anyOf": [
+            {
+             "types": [
+              "Artifact"
+             ]
+            },
+            {
+             "types": [
+              "Enchantment"
+             ]
+            },
+            {
+             "token": true
+            }
+           ]
+          }
+         },
+         "min": 0,
+         "max": "any",
+         "as": "toSacrifice"
+        },
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+         },
+         "as": "sacrifice"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "zone": "graveyard",
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": {
+          "q": "resultCount",
+          "step": "sacrifice"
+         },
+         "max": {
+          "q": "resultCount",
+          "step": "sacrifice"
+         },
+         "as": "returned"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "returned"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rise of the Dark Realms",
+  "expect": "full",
+  "verified": "r4-fxz review (\"from all graveyards\"): every creature card in every graveyard onto the battlefield under your control (CR 404.1, 110.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Put all creature cards from all graveyards onto the battlefield under your control.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "zone": "graveyard",
+           "isCard": true
+          }
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Marina Vendrell",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.dig.putAll.hand.rest.bottomRandom): enters: reveal the top seven; all enchantment cards among them to your hand, the rest to the bottom in a random order (CR 701.20a, 401.4); the Room door ability",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, reveal the top seven cards of your library. Put all enchantment cards from among them into your hand and the rest on the bottom of your library in a random order.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "reveal",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 7
+         },
+         "as": "them"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Enchantment"
+             ]
+            }
+           ],
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "library"
+          }
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "library"
+          }
+         },
+         "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "{T}: Lock or unlock a door of target Room you control. Activate only as a sorcery.",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target Room you control",
+         "filter": {
+          "subtypes": [
+           "Room"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "designateObject",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "designation": "lockOrUnlockDoor"
+        }
+       ]
+      },
+      "sorcerySpeed": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Marchesa, Dealer of Death",
+  "expect": "full",
+  "verified": "r4-fxz review (the follower sentence goes into the payment's branch, parser/lower/conditions.ts#absorbFollowers): whenever you commit a crime you may pay {1}; if you do, look at the top two, one to your hand and the other to your graveyard (CR 118.12, 701.20e, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever you commit a crime, you may pay {1}. If you do, look at the top two cards of your library. Put one of them into your hand and the other into your graveyard.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "action",
+         "verb": "commitCrime",
+         "actor": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "you"
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           }
+          ]
+         },
+         "then": [
+          {
+           "op": "look",
+           "who": {
+            "ref": "you"
+           },
+           "at": {
+            "ref": "topCards",
+            "player": {
+             "ref": "you"
+            },
+            "count": 2
+           },
+           "as": "looked"
+          },
+          {
+           "op": "chooseObjects",
+           "who": {
+            "ref": "you"
+           },
+           "from": {
+            "ref": "each",
+            "filter": {
+             "is": {
+              "ref": "bound",
+              "name": "looked"
+             },
+             "zone": "library"
+            }
+           },
+           "min": 1,
+           "max": 1,
+           "as": "chosen"
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "chosen"
+           },
+           "to": {
+            "zone": "hand"
+           }
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "each",
+            "filter": {
+             "is": {
+              "ref": "bound",
+              "name": "looked"
+             },
+             "not": {
+              "is": {
+               "ref": "bound",
+               "name": "chosen"
+              }
+             },
+             "zone": "library"
+            }
+           },
+           "to": {
+            "zone": "graveyard"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ajani, Outland Chaperone",
+  "expect": "full",
+  "verified": "r4-fxz review (eff.fxz.dig.anyNumber.nonlandPermanent.mvAtMost.bf): +1 Kithkin token; -2 4 damage to target tapped creature; -8 look at the top X (your life total), you may put any number of nonland permanent cards with mana value 3 or less among them onto the battlefield, then shuffle (CR 606.3, 701.20e, 110.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "text": "+1: Create a 1/1 green and white Kithkin creature token.",
+      "cost": {
+       "loyalty": 1
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "colors": [
+           "G",
+           "W"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Kithkin"
+          ],
+          "power": 1,
+          "toughness": 1
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "-2: ~ deals 4 damage to target tapped creature.",
+      "cost": {
+       "loyalty": -2
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target tapped creature",
+         "filter": {
+          "tapped": true,
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": 4
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "-8: Look at the top X cards of your library, where X is your life total. You may put any number of nonland permanent cards with mana value 3 or less from among them onto the battlefield. Then shuffle.",
+      "cost": {
+       "loyalty": -8
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "look",
+         "who": {
+          "ref": "you"
+         },
+         "at": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": {
+           "q": "life",
+           "of": {
+            "ref": "you"
+           }
+          }
+         },
+         "as": "them"
+        },
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "chooseObjects",
+           "who": {
+            "ref": "you"
+           },
+           "from": {
+            "ref": "each",
+            "filter": {
+             "notTypes": [
+              "Land"
+             ],
+             "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+             ],
+             "manaValue": {
+              "op": "<=",
+              "value": 3
+             },
+             "is": {
+              "ref": "bound",
+              "name": "them"
+             },
+             "zone": "library"
+            }
+           },
+           "min": 0,
+           "max": "any",
+           "as": "chosen"
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "chosen"
+           },
+           "to": {
+            "zone": "battlefield",
+            "controller": {
+             "ref": "you"
+            }
+           }
+          }
+         ]
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kav Landseeker",
+  "expect": "full",
+  "verified": "r4-fxz review (dl.fxz.endStep.onYourNextTurn.lead, delay turn 'later'): menace; enters: a Lander token, sacrificed at the end step of your next turn, never this turn's (CR 603.7a, 513.1, 111.10)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "menace",
+      "text": "Menace"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, create a Lander token. At the beginning of the end step on your next turn, sacrifice that token.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "predefined": "Lander"
+         },
+         "as": "token"
+        },
+        {
+         "op": "delay",
+         "when": {
+          "at": "step",
+          "step": "end",
+          "whose": "you",
+          "turn": "later"
+         },
+         "do": [
+          {
+           "op": "sacrifice",
+           "what": {
+            "ref": "bound",
+            "name": "token"
+           }
+          }
+         ],
+         "capture": [
+          "token"
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Selfcraft Mechan",
+  "expect": "full",
+  "verified": "r4-fxz review (\"When you do, A and B\" is one reflexive trigger, parser/chart.ts): you may sacrifice an artifact; when you do, a +1/+1 counter on target creature and you draw a card (CR 603.12, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, you may sacrifice an artifact. When you do, put a +1/+1 counter on target creature and draw a card.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "sacrificeChoice",
+           "who": {
+            "ref": "you"
+           },
+           "filter": {
+            "types": [
+             "Artifact"
+            ]
+           },
+           "count": 1
+          }
+         ],
+         "as": "did"
+        },
+        {
+         "op": "reflexive",
+         "when": {
+          "did": "did"
+         },
+         "targets": [
+          {
+           "id": "t0",
+           "kind": "object",
+           "min": 1,
+           "max": 1,
+           "text": "target creature",
+           "filter": {
+            "types": [
+             "Creature"
+            ]
+           }
+          }
+         ],
+         "do": [
+          {
+           "op": "putCounters",
+           "on": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "kind": "+1/+1",
+           "count": 1
+          },
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Avenger of the Fallen",
+  "expect": "full",
+  "verified": "r4-fxz review (kw.fxz.mobilize.whereX): deathtouch; mobilize X, X the creature cards in your graveyard as the trigger resolves (CR 702.181a, 107.3, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "deathtouch",
+      "text": "Deathtouch"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "mobilize",
+      "amount": {
+       "q": "count",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "types": [
+          "Creature"
+         ],
+         "zone": "graveyard",
+         "owner": "you",
+         "isCard": true
+        }
+       }
+      },
+      "text": "Mobilize X, where X is the number of creature cards in your graveyard."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Geometer's Arthropod",
+  "expect": "full",
+  "verified": "r4-fxz review (the X of the spell a cast trigger names, triggers/stack.ts): whenever you cast a spell with {X} in its mana cost, look at the top X cards (that spell's X), one to your hand, the rest on the bottom in a random order (CR 107.3, 603.2, 701.20e)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever you cast a spell with {X} in its mana cost, look at the top X cards of your library. Put one of them into your hand and the rest on the bottom of your library in a random order.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "manaCostHasX": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "look",
+         "who": {
+          "ref": "you"
+         },
+         "at": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": {
+           "q": "X"
+          }
+         },
+         "as": "them"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "library"
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "chosen"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "bound",
+             "name": "chosen"
+            }
+           },
+           "zone": "library"
+          }
+         },
+         "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Shang-Chi, Master of Kung Fu",
+  "expect": "full",
+  "verified": "r4-fxz review (sta.fxz.activate.asThoughHaste): creatures you control may activate abilities as though they had haste, attacking unaffected (CR 302.6, 602.5a, 609.4); the mana ability with its spending restriction (CR 106.6)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "You may activate abilities of creatures you control as though those creatures had haste.",
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "activate",
+        "of": {
+         "types": [
+          "Creature"
+         ],
+         "controller": "you"
+        },
+        "asThough": "those creatures had haste"
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{T}: Add two mana of any one color. Spend this mana only to activate abilities of creature sources.",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "dynamic": {
+          "kind": "anyOneColor",
+          "count": 2
+         },
+         "restriction": {
+          "abilities": {
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        }
+       ]
+      },
+      "isMana": true
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,289 @@
+[
+  {
+    "id": "sta.p2gy1.castWith.graveyard.blitz",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.152a",
+      "CR 601.3",
+      "CR 113.6f",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast ~ from your graveyard using its blitz ability",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "castWith",
+          "method": "blitz",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard using its blitz ability.\nBlitz {1}{B}"
+      },
+      {
+        "text": "Menace\nYou may cast ~ from your graveyard using its blitz ability.\nBlitz {3}{R}"
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand using its blitz ability.\nBlitz {1}{B}",
+      "You may cast ~ from your graveyard using its flashback ability.\nFlashback {1}{B}",
+      "You may cast ~ from exile using its blitz ability.\nBlitz {1}{B}"
+    ]
+  },
+  {
+    "id": "sta.p2gy1.castWith.graveyard.bestow",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.103a",
+      "CR 601.3",
+      "CR 113.6f",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast ~ from your graveyard using its bestow ability",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "castWith",
+          "method": "bestow",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard using its bestow ability.\nBestow {2}{W}"
+      },
+      {
+        "text": "Lifelink\nYou may cast ~ from your graveyard using its bestow ability.\nBestow {3}{B}"
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand using its bestow ability.\nBestow {2}{W}",
+      "You may cast ~ from your graveyard using its flashback ability.\nFlashback {1}{B}",
+      "You may cast ~ from exile using its bestow ability.\nBestow {2}{W}"
+    ]
+  },
+  {
+    "id": "eff.p2gy1.return.toBattlefield.lead.group",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 110.2",
+      "CR 403.1"
+    ],
+    "pattern": "return to the battlefield all {f:Filter}",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "consumes": [
+      "all"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return to the battlefield all creature cards in your graveyard that were put there from the battlefield this turn."
+      },
+      {
+        "text": "Return to the battlefield all artifact cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Return to your hand all creature cards in your graveyard that were put there from the battlefield this turn.",
+      "Return to the battlefield tapped all creature cards in your graveyard that were put there from the battlefield this turn.",
+      "Return to the battlefield target creature card in your graveyard that was put there from the battlefield this turn."
+    ]
+  },
+  {
+    "id": "eff.p2gy1.return.toHand.lead.group",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 400.3",
+      "CR 402.1"
+    ],
+    "pattern": "return to your hand all {f:Filter}",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "consumes": [
+      "all"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return to your hand all creature cards in your graveyard that were put there from the battlefield this turn."
+      },
+      {
+        "text": "Return to your hand all enchantment cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Return to the battlefield all creature cards in your graveyard that were put there from the battlefield this turn.",
+      "Return to your library all creature cards in your graveyard that were put there from the battlefield this turn.",
+      "Return to your hand target creature card in your graveyard that was put there from the battlefield this turn."
+    ]
+  },
+  {
+    "id": "eff.p2gy1.put.fromAGraveyard.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 404.1",
+      "CR 110.2a",
+      "CR 110.5",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card from a graveyard onto the battlefield tapped under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "tapped": true,
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, put a land card from a graveyard onto the battlefield tapped under your control."
+      },
+      {
+        "text": "Whenever ~ attacks, you may put an artifact card from a graveyard onto the battlefield tapped under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put a land card from a graveyard onto the battlefield under your control.",
+      "When ~ enters, put a land card from your graveyard onto the battlefield tapped.",
+      "When ~ enters, put two land cards from a graveyard onto the battlefield tapped under your control."
+    ]
+  },
+  {
+    "id": "sta.p2gy1.aslong.pump.color.grant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 105.3",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} gets {pt:PT} , is {col:Color} , and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$col"
+                ]
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as there are five or more cards in your graveyard, ~ gets +2/+2, is green, and has trample."
+      },
+      {
+        "text": "As long as you control a Swamp, ~ gets +1/+0, is black, and has \"{1}{B}, {T}: Target player loses 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "As long as there are five or more cards in your graveyard, ~ gets +2/+2, is a Zombie, and has trample.",
+      "As long as there are five or more cards in your graveyard, ~ gets +2/+2, loses green, and has trample.",
+      "As long as there are five or more cards in your graveyard, ~ gets +2/+2 and has trample."
+    ]
+  }
+]

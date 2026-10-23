@@ -1,0 +1,19 @@
+{
+  "name": "more than meets the eye",
+  "rule": "702.162",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may cast this card converted for {cost}.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "actions/cast-opt/back-face.ts#provider"
+  ]
+}

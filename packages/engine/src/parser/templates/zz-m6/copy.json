@@ -1,0 +1,190 @@
+[
+  {
+    "id": "eff.m6.copy.token.notLegendary",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj}, except it isn't legendary",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it isn't legendary."
+      },
+      {
+        "text": "Create a token that's a copy of target creature, except it isn't legendary."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it is legendary.",
+      "Create a token that's a copy of target creature, except it isn't legendary and it has haste."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.copy.token.artifact",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj}, except it's an artifact in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Artifact"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's an artifact in addition to its other types."
+      },
+      {
+        "text": "Create a token that's a copy of target nonland permanent, except it's an artifact in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it's an artifact.",
+      "Create a token that's a copy of target creature, except it's an enchantment in addition to its other types."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.copy.token.haste",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 702.10",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj}, except it has haste",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "text": "Haste",
+              "keyword": "haste"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it has haste."
+      },
+      {
+        "text": "Create a token that's a copy of target creature, except it has haste."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it has flying.",
+      "Create a token that's a copy of target creature, except it has haste and \"At the beginning of the end step, sacrifice this token.\""
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.copy.token.oneOne",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 613.4b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj}, except it's 1/1",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": "7b",
+          "power": 1,
+          "toughness": 1
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature, except it's 1/1."
+      },
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's 1/1."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it's 2/2.",
+      "Create a token that's a copy of target creature, except it's 1/1 and it has flying."
+    ],
+    "status": "stable",
+    "since": 6
+  }
+]

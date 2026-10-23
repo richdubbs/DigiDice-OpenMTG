@@ -1,0 +1,4 @@
+# std-craft-1 (lane std-craft; test/cloud/std-craft-1, golden std-craft-1-review.json and fast5x-e13-review.json)
+# craft with a list of materials, "an exiled creature card used to craft ~", "the exiled cards used to craft it" (total power, colors among, mana of each color)
+# (Saheeli's Lattice and Sunbird Standard, golden in fast5x-e13-review.json, are already listed in fast5x-e13-cards.txt)
+Throne of the Grim Captain // The Grim Captain

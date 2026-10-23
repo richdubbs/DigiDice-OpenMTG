@@ -1,0 +1,691 @@
+[
+  {
+    "id": "eff.t65.counters.put.nAndKeyword",
+    "kind": "effect",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counters and ( a | an ) {j:CounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": "$n"
+      },
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$j",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{W}: Put two +1/+1 counters and a flying counter on target creature."
+      },
+      {
+        "text": "{1}{B}: Put three +1/+1 counters and a deathtouch counter on target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{2}{W}: Put two +1/+1 counters and a flying counter on each creature you control.",
+      "{2}{W}: Put two +1/+1 counters or a flying counter on target creature.",
+      "{2}{W}: Put a +1/+1 counter and a flying counter on target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.t65.enters.counters.keyword.ifControl",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 122.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "if {c:Cond} , ~ enters with {n:Qty} {k:CounterKind} counters and ( a | an ) {j:CounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              },
+              {
+                "kind": "$j",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "If you control four or more untapped lands, ~ enters with three +1/+1 counters and a flying counter on it."
+      },
+      {
+        "text": "If you control two or more other creatures, ~ enters with two +1/+1 counters and a lifelink counter on it."
+      }
+    ],
+    "counterExamples": [
+      "If you control four or more untapped lands, ~ enters with three +1/+1 counters or a flying counter on it.",
+      "~ enters with three +1/+1 counters and a flying counter on it.",
+      "If you control four or more untapped lands, ~ enters with three +1/+1 counters and a flying counter on target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t65.counters.put.self.cantBeBlocked",
+    "kind": "effect",
+    "cr": [
+      "CR 122.1",
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on ~ and it can't be blocked this turn",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "self"
+        },
+        "kind": "$k",
+        "count": 1
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "effects": [
+          {
+            "s": "restrict",
+            "subject": {
+              "ref": "self"
+            },
+            "mode": "cant",
+            "action": "beBlocked"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, put a +1/+1 counter on ~ and it can't be blocked this turn."
+      },
+      {
+        "text": "Whenever you attack, put a charge counter on ~ and it can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, put a +1/+1 counter on ~ and it can't block this turn.",
+      "Whenever you cast a spell, put a +1/+1 counter on ~ and it can't be blocked.",
+      "Whenever you cast a spell, put a +1/+1 counter on ~ and it can't be blocked until your next turn."
+    ],
+    "status": "stable",
+    "priority": 1,
+    "since": 8
+  },
+  {
+    "id": "eff.t65.counters.distribute.thenDouble",
+    "kind": "effect",
+    "cr": [
+      "CR 601.2d",
+      "CR 122.1",
+      "CR 701.10e",
+      "CR 608.2h"
+    ],
+    "pattern": "distribute {n:Qty} {k:CounterKind} counters among {o:Objs} , then double the number of {j:CounterKind} counters on each of those creatures",
+    "build": [
+      {
+        "lower": "divide",
+        "step": {
+          "op": "putCounters",
+          "on": "$o",
+          "kind": "$k",
+          "count": "$n"
+        }
+      },
+      {
+        "op": "action",
+        "action": "doubleCounters",
+        "subject": "$o",
+        "who": {
+          "ref": "you"
+        },
+        "arg": "$j"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "distribute",
+      "double",
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Distribute four +1/+1 counters among one, two, or three target creatures, then double the number of +1/+1 counters on each of those creatures."
+      },
+      {
+        "text": "Distribute two +1/+1 counters among one or two target creatures you control, then double the number of +1/+1 counters on each of those creatures."
+      }
+    ],
+    "counterExamples": [
+      "Distribute three +1/+1 counters among one, two, or three target creatures, then double the number of +1/+1 counters on one of those creatures.",
+      "Distribute three +1/+1 counters among one, two, or three target creatures, then double the number of +1/+1 counters on each of those creatures unless it is blue.",
+      "Distribute three +1/+1 counters among one, two, or three target creatures."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.t65.each.enters.additionalCounter.forEach",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 603.6a",
+      "CR 608.2h"
+    ],
+    "pattern": "each {f:Filter} enters with an additional {k:CounterKind} counter on it {n:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Each Elf you control enters with an additional +1/+1 counter on it for each land that entered the battlefield under your control this turn."
+      },
+      {
+        "text": "Each artifact you control enters with an additional charge counter on it for each creature that entered the battlefield under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control enters with an additional +1/+1 counter on it for each land that entered the battlefield this turn.",
+      "Each creature you control enters with an additional +1/+1 counter on it unless it is blue.",
+      "Each creature you control enters with a +1/+1 counter on it for each land that entered the battlefield under your control this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t65.draw.loseLife.putCounter",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "you draw {n:Qty} card[s] , lose {m:Qty} life , and put ( a | an ) {k:CounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": "$m"
+      },
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever a creature enters, you draw a card, lose 2 life, and put a charge counter on ~."
+      },
+      {
+        "text": "Whenever you gain life, you draw two cards, lose 1 life, and put a study counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature enters, you draw a card, lose 2 life, and put two charge counters on ~.",
+      "Whenever a creature enters, you draw a card, gain 2 life, and put a charge counter on ~.",
+      "Whenever a creature enters, you draw a card, lose 2 life, and put a charge counter on each creature you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t65.counters.put.thenTokensAttacking.whereX",
+    "kind": "effect",
+    "cr": [
+      "CR 122.1",
+      "CR 111.2",
+      "CR 508.4",
+      "CR 608.2h",
+      "CR 107.3"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {o:Obj} , then create x {t:TokenDesc} that are tapped and attacking , where x is {q:Qty}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": 1
+      },
+      {
+        "lower": "whereX",
+        "value": "$q",
+        "steps": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "X"
+            },
+            "token": "$t",
+            "tapped": true,
+            "attacking": true
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack, put a +1/+1 counter on ~, then create X 1/1 white Soldier creature tokens that are tapped and attacking, where X is the number of +1/+1 counters on ~."
+      },
+      {
+        "text": "Whenever ~ attacks, put a charge counter on ~, then create X 2/2 red Warrior creature tokens that are tapped and attacking, where X is the number of charge counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, put a +1/+1 counter on ~, then create X 1/1 white Soldier creature tokens, where X is the number of +1/+1 counters on ~.",
+      "Whenever you attack, put a +1/+1 counter on ~, then create X 1/1 white Soldier creature tokens that are tapped and attacking.",
+      "Whenever you attack, put a +1/+1 counter on ~, then create X 1/1 white Soldier creature tokens that are tapped and attacking, where X is the number of creatures you control unless it is blue."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t65.draw.forEachColorAmong",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 105.1",
+      "CR 608.2h"
+    ],
+    "pattern": "draw ( a | an ) card for each color among {f:Filter}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "distinct",
+        "what": "colors",
+        "among": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, draw a card for each color among artifacts you control."
+      },
+      {
+        "text": "Draw a card for each color among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card for each color among creatures you control unless it is blue.",
+      "Draw a card for each creature type among creatures you control.",
+      "Draw two cards for each color among creatures you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t65.explores.xTimes",
+    "kind": "effect",
+    "cr": [
+      "CR 701.44a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} explores x times",
+    "build": {
+      "op": "action",
+      "action": "explore",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "subject": "$o",
+      "n": {
+        "q": "X"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "times"
+    ],
+    "needs": [
+      "action:explore"
+    ],
+    "examples": [
+      {
+        "text": "{X}{G}: Target creature you control explores X times."
+      },
+      {
+        "text": "{X}, {T}: ~ explores X times."
+      }
+    ],
+    "counterExamples": [
+      "{X}{G}: Target creature you control explores twice.",
+      "{X}{G}: Target creature you control explores X times unless you pay {1}.",
+      "{X}{G}: Target creature you control explores."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t65.sacrifice.anyNumber.thenDraw",
+    "kind": "effect",
+    "cr": [
+      "CR 701.21a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "sacrifice any number of {a:Filter} , {b:Filter} , and/or tokens , then draw that many cards",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "anyOf": [
+              "$a",
+              "$b",
+              {
+                "token": true
+              }
+            ]
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "toSacrifice"
+      },
+      {
+        "op": "sacrifice",
+        "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+        },
+        "as": "sacrificed"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "sacrificed"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "and/or",
+      "that many",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, sacrifice any number of lands, creatures, and/or tokens, then draw that many cards."
+      },
+      {
+        "text": "Sacrifice any number of lands, artifacts, and/or tokens, then draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, sacrifice any number of lands, creatures, and/or tokens, then draw two cards.",
+      "When ~ enters, sacrifice any number of lands, creatures, or tokens, then draw that many cards.",
+      "When ~ enters, sacrifice any number of lands, creatures, and/or tokens, then discard that many cards."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t65.draw.twoToTheX",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} draw[s] 2 ˣ cards",
+    "build": [
+      {
+        "op": "let",
+        "name": "power",
+        "value": 1
+      },
+      {
+        "op": "repeat",
+        "times": {
+          "q": "X"
+        },
+        "do": [
+          {
+            "op": "let",
+            "name": "power",
+            "value": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                {
+                  "q": "var",
+                  "name": "power"
+                },
+                2
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "var",
+          "name": "power"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{X}{U}: Target player draws 2ˣ cards."
+      },
+      {
+        "text": "{X}{X}, {T}: You draw 2ˣ cards."
+      }
+    ],
+    "counterExamples": [
+      "{X}{U}: Target player draws 3ˣ cards.",
+      "{X}{U}: Target player draws 2ˣ cards unless they pay {1}.",
+      "{X}{U}: Target player draws 2 cards."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t65.eachMay.shuffleHandGraveyard.thenDraw",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a",
+      "CR 121.1",
+      "CR 608.2d",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each player may shuffle their hand and graveyard into their library , then each player who does draw[s] {n:Qty} cards",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": "hand",
+              "owner": {
+                "ref": "iterating"
+              }
+            }
+          },
+          "to": {
+            "zone": "library",
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": "graveyard",
+              "owner": {
+                "ref": "iterating"
+              }
+            }
+          },
+          "to": {
+            "zone": "library",
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "iterating"
+          }
+        },
+        {
+          "op": "draw",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player may shuffle their hand and graveyard into their library, then each player who does draws five cards."
+      },
+      {
+        "text": "Return all creatures to their owners' hands. Each player may shuffle their hand and graveyard into their library, then each player who does draws three cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player shuffles their hand and graveyard into their library, then draws five cards.",
+      "Each player may shuffle their hand into their library, then each player who does draws five cards.",
+      "Each opponent may shuffle their hand and graveyard into their library, then each player who does draws five cards."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

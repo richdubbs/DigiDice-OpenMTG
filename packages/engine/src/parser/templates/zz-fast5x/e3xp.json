@@ -1,0 +1,153 @@
+[
+  {
+    "id": "eff.e3xp.chooseNewTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.7",
+      "CR 115.7d",
+      "CR 115.7e"
+    ],
+    "pattern": "you may choose new targets for {o:Obj}",
+    "build": {
+      "op": "chooseNewTargets",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o"
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may choose new targets for target instant spell."
+      },
+      {
+        "text": "You may choose new targets for target activated or triggered ability."
+      }
+    ],
+    "counterExamples": [
+      "Choose new targets for target spell.",
+      "You may choose new targets for target creature.",
+      "Copy target instant spell. You may choose new targets for the copy."
+    ]
+  },
+  {
+    "id": "sta.e3xp.permit.free.fromHand.mvAtMost",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "priority": 2,
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2a",
+      "CR 604.1",
+      "CR 202.3"
+    ],
+    "pattern": "you may cast spells with mana value less than or equal to {n:Qty} from your hand without paying their mana costs",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              {
+                "manaValue": {
+                  "op": "<=",
+                  "value": "$n"
+                },
+                "stackKind": "spell",
+                "zone": "stack"
+              }
+            ],
+            "castFrom": "hand"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast spells with mana value less than or equal to the number of artifacts you control from your hand without paying their mana costs."
+      },
+      {
+        "text": "You may cast spells with mana value less than or equal to the number of lands you control from your hand without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast spells with mana value greater than or equal to the number of artifacts you control from your hand without paying their mana costs.",
+      "You may cast spells with mana value less than or equal to the number of artifacts you control from your graveyard without paying their mana costs.",
+      "You may cast spells with mana value less than or equal to the number of artifacts you control from your hand as though they had flash."
+    ]
+  },
+  {
+    "id": "rep.e3xp.tokens.any.plusOne",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1",
+      "CR 111.10b"
+    ],
+    "pattern": "if you would create one or more tokens , instead create those tokens plus an additional {t:TokenDesc}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "body": {
+        "b": "modify",
+        "then": {
+          "as": "created",
+          "do": [
+            {
+              "op": "createToken",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1,
+              "token": "$t"
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If you would create one or more tokens, instead create those tokens plus an additional Clue token."
+      },
+      {
+        "text": "{2}: Draw a card.\nIf you would create one or more tokens, instead create those tokens plus an additional Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "If you would create one or more tokens, instead create those tokens plus two additional Food tokens.",
+      "If an opponent would create one or more tokens, instead create those tokens plus an additional Food token.",
+      "If you would create one or more tokens, you may instead create those tokens plus an additional Food token."
+    ]
+  }
+]

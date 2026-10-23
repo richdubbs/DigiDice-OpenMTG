@@ -1,0 +1,637 @@
+[
+  {
+    "id": "eff.r3mech.flipCoin",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 705.1",
+      "CR 705.2"
+    ],
+    "pattern": "flip a coin",
+    "build": {
+      "op": "flipCoin",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Flip a coin. If you win the flip, draw two cards."
+      },
+      {
+        "text": "Flip a coin. If you lose the flip, you lose 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Flip two coins.",
+      "Flip a coin until you lose a flip."
+    ]
+  },
+  {
+    "id": "eff.r3mech.ifFlip.win",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "if you win the flip , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "flip",
+        "won": true
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin. If you win the flip, draw two cards."
+      },
+      {
+        "text": "Flip a coin. If you win the flip, create a Treasure token. If you lose the flip, you lose 2 life."
+      }
+    ],
+    "counterExamples": [
+      "If you win the flip, draw two cards.",
+      "Draw a card. If you win the flip, draw two cards."
+    ]
+  },
+  {
+    "id": "eff.r3mech.ifFlip.lose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "if you lose the flip , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "flip",
+        "won": false
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin. If you lose the flip, sacrifice ~."
+      },
+      {
+        "text": "Flip a coin. If you win the flip, draw a card. If you lose the flip, discard a card."
+      }
+    ],
+    "counterExamples": [
+      "If you lose the flip, sacrifice ~.",
+      "Draw a card. If you lose the flip, discard a card."
+    ]
+  },
+  {
+    "id": "rep.r3mech.enters.choose.siege",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2d"
+    ],
+    "pattern": "as ~ enters , choose {a:SiegeWord} or {b:SiegeWord}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "option",
+                "link": "siege",
+                "options": [
+                  "$a",
+                  "$b"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose Dragons or Khans.\n• Khans — Whenever a creature you control dies, draw a card.\n• Dragons — At the beginning of your upkeep, you gain 3 life."
+      },
+      {
+        "text": "As ~ enters, choose Temur or Jeskai.\n• Temur — Creatures you control get +1/+0.\n• Jeskai — Whenever you cast a noncreature spell, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose Khans or Elves.",
+      "As ~ enters, choose Khans, Dragons, or Temur.",
+      "As ~ enters, choose a color or Khans."
+    ]
+  },
+  {
+    "id": "eff.r3mech.wish.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.11b",
+      "CR 701.20a",
+      "CR 712.8a"
+    ],
+    "pattern": "you may reveal ( a | an ) {f:Filter} card you own from outside the game and put it into your hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "fromOutside",
+          "who": {
+            "ref": "you"
+          },
+          "reveal": true,
+          "filter": "$f"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal an artifact card you own from outside the game and put it into your hand."
+      },
+      {
+        "text": "You may reveal a land or instant card you own from outside the game and put it into your hand. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal an artifact card you own from your graveyard and put it into your hand.",
+      "Reveal an artifact card you own from outside the game and put it into your hand.",
+      "You may reveal an artifact card you own from outside the game and put it onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.r3mech.wish.reveal.any",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 400.11b",
+      "CR 701.20a"
+    ],
+    "pattern": "you may reveal a card you own from outside the game and put it into your hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "fromOutside",
+          "who": {
+            "ref": "you"
+          },
+          "reveal": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal a card you own from outside the game and put it into your hand."
+      },
+      {
+        "text": "Draw a card. You may reveal a card you own from outside the game and put it into your hand."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal a card you own from your graveyard and put it into your hand.",
+      "You may reveal a card you own from outside the game and put it into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.r3mech.wish.put",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.11b"
+    ],
+    "pattern": "you may put a card you own from outside the game into your hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "fromOutside",
+          "who": {
+            "ref": "you"
+          },
+          "reveal": false
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may put a card you own from outside the game into your hand."
+      },
+      {
+        "text": "Draw a card. You may put a card you own from outside the game into your hand."
+      }
+    ],
+    "counterExamples": [
+      "You may put a card you own from outside the game onto the battlefield.",
+      "Put a card you own from outside the game into your hand.",
+      "You may put a card you own from your graveyard into your hand."
+    ]
+  },
+  {
+    "id": "sta.r3mech.rule.stationToughness.each",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.184a",
+      "CR 604.1",
+      "CR 613.11"
+    ],
+    "pattern": "each {f:Filter} you control with toughness greater than its power stations permanents using its toughness rather than its power",
+    "build": {
+      "s": "rule",
+      "rule": "stationUsesToughness",
+      "of": {
+        "anyOf": [
+          "$f"
+        ],
+        "controller": "you"
+      },
+      "onlyIf": "toughnessGreaterThanPower"
+    },
+    "consumes": [
+      "each",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Each Wall you control with toughness greater than its power stations permanents using its toughness rather than its power."
+      },
+      {
+        "text": "Each artifact creature you control with toughness greater than its power stations permanents using its toughness rather than its power."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control stations permanents using its toughness rather than its power.",
+      "Each creature you control with power greater than its toughness stations permanents using its toughness rather than its power.",
+      "Each creature your opponents control with toughness greater than its power stations permanents using its toughness rather than its power.",
+      "Each creature you control with toughness greater than its power stations permanents using its power rather than its toughness."
+    ]
+  },
+  {
+    "id": "eff.r3mech.then.sacrifice.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.21a"
+    ],
+    "pattern": "then sacrifice {o:Obj} if {c:Cond}",
+    "build": {
+      "op": "sacrifice",
+      "what": "$o",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life. Then sacrifice ~ if you have 30 or more life."
+      },
+      {
+        "text": "Draw a card. Then sacrifice ~ if you have no cards in hand."
+      }
+    ],
+    "counterExamples": [
+      "You gain 2 life. Then sacrifice ~ unless you have 30 or more life.",
+      "You gain 2 life. Sacrifice ~ if you have 30 or more life, then draw a card.",
+      "You gain 2 life. Then destroy ~ if you have 30 or more life."
+    ]
+  },
+  {
+    "id": "eff.r3mech.harness.self",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.64"
+    ],
+    "pattern": "harness ~",
+    "build": {
+      "op": "designateObject",
+      "what": {
+        "ref": "self"
+      },
+      "designation": "harnessed"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{4}, {T}: Harness ~.\n∞ — Creatures you control get +1/+1."
+      },
+      {
+        "text": "{2}{U}, {T}: Harness ~.\n∞ — At the beginning of your upkeep, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Harness target artifact.",
+      "{4}, {T}: Harness ~ until end of turn."
+    ]
+  },
+  {
+    "id": "eff.r3mech.return.bf.oneFewerCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 400.7",
+      "CR 608.2h",
+      "CR 614.1c"
+    ],
+    "pattern": "return {o:Objs} to the battlefield with one fewer {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": {
+              "q": "math",
+              "op": "max",
+              "args": [
+                0,
+                {
+                  "q": "math",
+                  "op": "-",
+                  "args": [
+                    {
+                      "q": "counters",
+                      "on": "$o",
+                      "kind": "$k"
+                    },
+                    1
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, return it to the battlefield with one fewer +1/+1 counter on it."
+      },
+      {
+        "text": "When ~ dies, if it had a charge counter on it, return it to the battlefield with one fewer charge counter on it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return it to the battlefield with one more +1/+1 counter on it.",
+      "When ~ dies, return it to the battlefield with one fewer +1/+1 counter on target creature.",
+      "When ~ dies, return it to your hand with one fewer +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.r3mech.wish.reveal.named",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.11b",
+      "CR 701.20a",
+      "CR 201.2"
+    ],
+    "pattern": "you may reveal a card you own named {n:Name} from outside the game and put it into your hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "fromOutside",
+          "who": {
+            "ref": "you"
+          },
+          "reveal": true,
+          "filter": {
+            "name": "$n"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may reveal a card you own named Test Hollow Herald from outside the game and put it into your hand."
+      },
+      {
+        "text": "You may reveal a card you own named Example Volley from outside the game and put it into your hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may reveal a card you own named Test Hollow Herald from your graveyard and put it into your hand.",
+      "When ~ enters, reveal a card you own named Test Hollow Herald from outside the game and put it into your hand.",
+      "When ~ enters, you may reveal a card you own named Test Hollow Herald from outside the game and put it onto the battlefield."
+    ]
+  },
+  {
+    "id": "sta.r3mech.each.has.mayhem.manaCost",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.187b",
+      "CR 118.9",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} has mayhem . the mayhem cost is equal to ( its | that card 's ) mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "mayhem",
+                  "text": "mayhem",
+                  "costIsManaCost": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Each instant card in your graveyard has mayhem. The mayhem cost is equal to its mana cost."
+      },
+      {
+        "text": "Each creature card in your graveyard has mayhem. The mayhem cost is equal to that card's mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Each instant card in your graveyard has mayhem. The mayhem cost is equal to its power.",
+      "Each instant card in your graveyard has mayhem {2}. The mayhem cost is equal to its mana cost.",
+      "Each instant card in your graveyard has flashback. The mayhem cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "eff.r3mech.connive.n",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.50a",
+      "CR 701.50d",
+      "CR 701.50e"
+    ],
+    "pattern": "{o:Obj} connive[s] {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "connive",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "subject": "$o",
+      "n": "$n"
+    },
+    "subject": "object",
+    "needs": [
+      "action:connive"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control connives 2."
+      },
+      {
+        "text": "You gain 2 life, then target Rogue you control connives 3."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control connives twice.",
+      "Each creature you control connives 2.",
+      "Target creature you control connives 2 times."
+    ]
+  },
+  {
+    "id": "eff.r3mech.connive.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.50a",
+      "CR 701.50d",
+      "CR 701.50e",
+      "CR 107.3a",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} connive[s] x , where x is {q:Qty}",
+    "build": {
+      "op": "action",
+      "action": "connive",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "subject": "$o",
+      "n": "$q"
+    },
+    "subject": "object",
+    "needs": [
+      "action:connive"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control connives X, where X is the number of artifacts you control."
+      },
+      {
+        "text": "Target Rogue you control connives X, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control connives X.",
+      "Each creature you control connives X, where X is the number of artifacts you control.",
+      "Target creature you control connives X, where Y is the number of artifacts you control."
+    ]
+  }
+]

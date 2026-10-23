@@ -1,0 +1,52 @@
+[
+  {
+    "id": "eff.stdrt.untilEndOfYourNextTurn.whenever",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "until the end of your next turn , whenever {e:Event} , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": "$e.0"
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfNextTurn",
+        "whose": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "whenever",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Until the end of your next turn, whenever you cast a spell, ~ deals 3 damage to up to one target creature."
+      },
+      {
+        "text": "Until the end of your next turn, whenever a creature you control dies, you gain 2 life."
+      },
+      {
+        "text": "{1}{W}: Until the end of your next turn, whenever a creature an opponent controls attacks, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Until the end of your next turn, when a creature you control dies, you gain 2 life.",
+      "Until the end of your next turn, whenever a creature you control dies, you gain 2 life unless you pay {1}.",
+      "Until your next turn, whenever a creature you control dies, you gain 2 life.",
+      "Until the end of target opponent's next turn, whenever a creature you control dies, you gain 2 life."
+    ]
+  }
+]

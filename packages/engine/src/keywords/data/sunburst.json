@@ -1,0 +1,68 @@
+{
+  "name": "sunburst",
+  "rule": "702.44",
+  "params": [],
+  "mechanisms": [
+    "replacement"
+  ],
+  "reminder": "This permanent enters with a +1/+1 counter on it (a charge counter if it isn't a creature) for each color of mana spent to cast it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "If ~ is entering the battlefield as a creature, it enters with a +1/+1 counter on it for each color of mana spent to cast it; otherwise, it enters with that many charge counters on it.",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "countersIf": [
+              {
+                "if": {
+                  "types": [
+                    "Creature"
+                  ]
+                },
+                "counters": [
+                  {
+                    "kind": "+1/+1",
+                    "count": {
+                      "q": "colorsSpent"
+                    }
+                  }
+                ]
+              },
+              {
+                "if": {
+                  "notTypes": [
+                    "Creature"
+                  ]
+                },
+                "counters": [
+                  {
+                    "kind": "charge",
+                    "count": {
+                      "q": "colorsSpent"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

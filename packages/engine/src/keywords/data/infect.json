@@ -1,0 +1,14 @@
+{
+  "name": "infect",
+  "rule": "702.90",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "This creature deals damage to creatures in the form of -1/-1 counters and to players in the form of poison counters.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "rules/damage.ts#dealDamage"
+  ]
+}

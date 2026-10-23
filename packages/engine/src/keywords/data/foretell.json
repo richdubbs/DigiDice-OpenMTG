@@ -1,0 +1,21 @@
+{
+  "name": "foretell",
+  "rule": "702.143",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "structural"
+  ],
+  "reminder": "During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "core/special/foretell.ts#FORETELL_HANDLERS",
+    "actions/cast-opt/foretell.ts#FORETELL_CAST_OPTIONS"
+  ]
+}

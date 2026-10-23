@@ -1,0 +1,447 @@
+[
+  {
+    "id": "eff.t45.next.cast.copy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , copy ( that spell | it )",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast a creature spell this turn, copy that spell."
+      },
+      {
+        "text": "When you next cast an artifact or enchantment spell this turn, copy it."
+      },
+      {
+        "text": "When you next cast an instant or sorcery spell with mana value 2 or less this turn, copy that spell."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast a creature spell, copy that spell.",
+      "Whenever you next cast a creature spell this turn, copy that spell.",
+      "When you next cast a creature spell this turn, copy another spell."
+    ]
+  },
+  {
+    "id": "eff.t45.next.cast.copy.twice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , copy ( that spell | it ) twice",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          },
+          "count": 2
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "twice"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast a creature spell this turn, copy that spell twice."
+      },
+      {
+        "text": "When you next cast an artifact or enchantment spell this turn, copy it twice."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast a creature spell this turn, copy that spell three times.",
+      "When you next cast a creature spell, copy that spell twice."
+    ]
+  },
+  {
+    "id": "eff.t45.next.cast.copy.newTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10",
+      "CR 707.10c"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , copy ( that spell | it ) and you may choose new targets for the copy",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          },
+          "newTargets": "may"
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast a creature spell this turn, copy it and you may choose new targets for the copy."
+      },
+      {
+        "text": "When you next cast a sorcery spell this turn, copy that spell and you may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast a creature spell this turn, copy it and you may choose new targets for the copies.",
+      "When you next cast a creature spell this turn, copy it and choose new targets for the copy."
+    ]
+  },
+  {
+    "id": "rid.t45.copy.newTargets.plural",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.7"
+    ],
+    "pattern": "you may choose new targets for the copies",
+    "build": {
+      "$patchPrevious": {
+        "newTargets": {
+          "@new": "may"
+        },
+        "count": "@previous.count",
+        "@into": true
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast a creature spell this turn, copy that spell twice. You may choose new targets for the copies."
+      },
+      {
+        "text": "When you next cast a land spell this turn, copy it twice. You may choose new targets for the copies."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell. You may choose new targets for the copies.",
+      "Draw a card. You may choose new targets for the copies."
+    ]
+  },
+  {
+    "id": "eff.t45.next.spell.copy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10"
+    ],
+    "pattern": "copy the next spell you cast this turn when you cast it",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Copy the next spell you cast this turn when you cast it."
+      },
+      {
+        "text": "Draw a card. Copy the next spell you cast this turn when you cast it. You may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Copy the next spell you cast when you cast it.",
+      "Copy the next creature spell you cast this turn when you cast it."
+    ]
+  },
+  {
+    "id": "eff.t45.copy.xTimes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 107.3"
+    ],
+    "pattern": "copy {o:Obj} x times",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "X"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{X}, {T}: Copy target activated ability you control x times."
+      },
+      {
+        "text": "{X}{X}: Copy target triggered ability you control x times. You may choose new targets for the copies."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: Copy target activated ability you control twice.",
+      "{X}, {T}: Copy target activated ability you control y times."
+    ]
+  },
+  {
+    "id": "eff.t45.copy.andNewTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.7"
+    ],
+    "pattern": "copy {o:Obj} and you may choose new targets for the copy",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "newTargets": "may"
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell, you may pay {2}. If you do, copy that spell and you may choose new targets for the copy."
+      },
+      {
+        "text": "Copy target instant spell and you may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell and you may choose new targets for the copies.",
+      "Copy target instant spell and choose new targets for the copy."
+    ]
+  },
+  {
+    "id": "trg.t45.cast.whileSelfAttacking",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 508.1"
+    ],
+    "pattern": "whenever you cast a spell while ~ is attacking",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you"
+        }
+      ],
+      "while": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "attacking": true
+        }
+      }
+    },
+    "consumes": [
+      "whenever",
+      "while"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell while ~ is attacking, draw a card."
+      },
+      {
+        "text": "Whenever you cast a spell while ~ is attacking, copy that spell."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell while ~ is blocking, draw a card.",
+      "Whenever you cast a creature spell while ~ is attacking, draw a card."
+    ]
+  },
+  {
+    "id": "eff.t45.copy.forEachOtherCastBefore",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 702.40a",
+      "CR 603.4"
+    ],
+    "pattern": "copy ( it | that spell ) for each other {f:CastSpell} you've cast before it this turn",
+    "build": {
+      "op": "copy",
+      "what": {
+        "ref": "event",
+        "role": "spell"
+      },
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        },
+        "scope": "turn",
+        "beforeEvent": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell, copy it for each other creature spell you've cast before it this turn."
+      },
+      {
+        "text": "Whenever you cast an artifact spell, copy that spell for each other artifact spell you've cast before it this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell, copy it for each creature spell you've cast before it this turn.",
+      "Whenever you cast a creature spell, copy it for each other creature spell you've cast this turn."
+    ]
+  }
+]

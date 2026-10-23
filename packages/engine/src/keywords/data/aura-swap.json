@@ -1,0 +1,16 @@
+{
+  "name": "aura swap",
+  "rule": "702.65",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}: Exchange this Aura with an Aura card in your hand.",
+  "multiple": "independent",
+  "status": "planned"
+}

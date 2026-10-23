@@ -1,0 +1,39 @@
+# std-ry3 (wave 2, Commander lane ry3; test/cloud/std-ry3, golden cloud-std-ry3-review.json): Powerstone token mana as data; keywords awaken and
+# provoke; skip shields of the triggering event's player; '<player> skips their next combat phase'; maximum hand size increased/reduced by N;
+# "can't be blocked except by <A> and/or <B>"
+Amrou Seekers
+Arbalest Engineers
+Ashnod, Flesh Mechanist
+Blinding Angel
+Boiling Earth
+Coastal Discovery
+Earthen Arms
+Elven Riders
+Excavation Explosion
+Fallaji Excavation
+Geology Enthusiast
+Hall of Tagsin
+Horned Stoneseeker
+Junkyard Genius
+Koilos Roc
+Krosan Vorine
+Lowland Tracker
+Minamo Scrollkeeper
+Ondu Rising
+Powerstone Engineer
+Rising Miasma
+Roil Spout
+Ruinous Path
+Sarinth Greatwurm
+Sheer Drop
+Shisato, Whispering Hunter
+Skirk Shaman
+Splitting the Powerstone
+Static Net
+Stone Retrieval Unit
+Swooping Talon
+Terisiare's Devastation
+Thought Devourer
+Thought Eater
+Trusted Advisor
+Urza's Command

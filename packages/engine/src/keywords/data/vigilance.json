@@ -1,0 +1,18 @@
+{
+  "name": "vigilance",
+  "rule": "702.20",
+  "params": [],
+  "mechanisms": [
+    "flag",
+    "hook"
+  ],
+  "reminder": "Attacking doesn't cause this creature to tap.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "hooks": [
+    "attackTaps"
+  ],
+  "readers": [
+    "core/combat.ts#declareAttackers"
+  ]
+}

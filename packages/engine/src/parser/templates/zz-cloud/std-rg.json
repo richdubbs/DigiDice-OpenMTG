@@ -1,0 +1,65 @@
+[
+  {
+    "id": "sta.stdrg.attached.pump.grant.addtype.legendary",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 205.1b",
+      "CR 205.4a",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , has {a:Abilities} , and is (a | an) legendary {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "add": [
+              "Legendary"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+2, has vigilance and reach, and is a legendary Monk in addition to its other types."
+      },
+      {
+        "text": "Enchanted creature gets +2/+2, has flying, and is an legendary Angel in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+2, has vigilance and reach, and is a legendary Monk.",
+      "Equipped creature gets +1/+2, loses vigilance, and is a legendary Monk in addition to its other types.",
+      "Equipped creature gets +1/+2, has vigilance and reach, and is a nonlegendary Monk in addition to its other types."
+    ]
+  }
+]

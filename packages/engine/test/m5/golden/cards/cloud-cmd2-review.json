@@ -1,0 +1,245 @@
+[
+ {
+  "card": "Echo Storm",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review for the promotion of eff.cmd2.copy.forEachCommanderCast (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.cmd2.copy.forEachCommanderCast): when you cast it, copy it once for each time you cast your commander from the command zone this game, new targets for the copies may be chosen; it creates a token copy of target artifact (CR 707.2, 111.10; CR 903.8, 707.10, 707.10c, 603.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "q": "commanderCasts"
+         },
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "copy",
+         "result": "token",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Artifact"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hatut Zeraze Strike Force",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review for the promotion of eff.cmd2.copy.forEachCommanderCast (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.cmd2.copy.forEachCommanderCast): when you cast it, it is copied once per cast of your commander from the command zone; each copy of the creature spell becomes a token as it resolves (CR 707.10f); when it enters destroy up to one target artifact or enchantment (CR 903.8, 707.10, 707.10c, 603.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "q": "commanderCasts"
+         },
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Artifact",
+           "Enchantment"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Empyrial Storm",
+  "expect": "full",
+  "verified": "Precon round O (std-ro) review for the promotion of eff.cmd2.copy.forEachCommanderCast (not Standard, tuning half), by hand against the Oracle text and the rules cited (eff.cmd2.copy.forEachCommanderCast): when you cast it, it is copied once per cast of your commander from the command zone; it creates a 4/4 white Angel with flying (CR 903.8, 707.10, 707.10c, 603.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "q": "commanderCasts"
+         },
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "keywords": [
+           "flying"
+          ],
+          "power": 4,
+          "subtypes": [
+           "Angel"
+          ],
+          "toughness": 4,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ }
+]

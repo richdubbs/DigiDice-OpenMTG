@@ -1,0 +1,1131 @@
+[
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.look.top.whereX",
+    "cr": [
+      "CR 701.20e",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "look at the top x cards of your library , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "look",
+          "who": {
+            "ref": "you"
+          },
+          "at": {
+            "ref": "topCards",
+            "player": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "X"
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Look at the top X cards of your library, where X is the number of lands you control."
+      },
+      {
+        "text": "Look at the top X cards of your library, where X is the number of Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top X cards of your library.",
+      "Look at the top X cards of your library, where Y is the number of lands you control.",
+      "Look at the bottom X cards of your library, where X is the number of lands you control."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.putHand.rest.graveyard",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 404.1"
+    ],
+    "pattern": "put {n:Qty} of {g:Seen} into your hand and {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. Put two of them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top seven cards of your library. Put one of them into your hand and the other into your graveyard."
+      },
+      {
+        "text": "Look at the top eight cards of your library. Put one of those cards into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put two of them into your hand and the rest on top of your library.",
+      "Look at the top six cards of your library. Put two of them into your graveyard and the rest into your hand.",
+      "Look at the top six cards of your library. Put two of them into your hand and the rest into target opponent's graveyard."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.putHand.rest.bottomRandom",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4",
+      "CR 701.24c"
+    ],
+    "pattern": "put {n:Qty} of {g:Seen} into your hand and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. Put one of them into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top eight cards of your library. Put two of those cards into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order.",
+      "Look at the top six cards of your library. Put one of them into your hand and the rest on top of your library in a random order.",
+      "Look at the top six cards of your library. Put one of them into your hand and the rest on the bottom of target player's library in a random order."
+    ],
+    "consumes": [
+      "random"
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.putHand.rest.bottomAny",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "put {n:Qty} of {g:Seen} into your hand and {r:Rest} on the bottom of your library in any order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top eight cards of your library. Put two of them into your hand and the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "Look at the top seven cards of your library. Put one of those cards into your hand and the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put two of them into your hand and the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. Put two of them into your hand and the rest on top of your library in any order.",
+      "Look at the top six cards of your library. Put two of them into your hand and the rest on the bottom of target player's library in any order."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.putHand.rest.bottom",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "put {n:Qty} of {g:Seen} into your hand and {r:Rest} on the bottom of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top three cards of your library. Put one of them into your hand and the other on the bottom of your library."
+      },
+      {
+        "text": "Look at the top three cards of your library. Put one of those cards into your hand and the other on the bottom of your library."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of your library. Put one of them into your hand and the other on top of your library.",
+      "Look at the top three cards of your library. Put one of them into your graveyard and the other on the bottom of your library.",
+      "Look at the top three cards of your library. Put one of them into your hand and the other on the bottom of your graveyard."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.rest.graveyard",
+    "cr": [
+      "CR 608.2c",
+      "CR 404.1"
+    ],
+    "pattern": "put {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top seven cards of your library. You may put one of those cards back on top of your library. Put the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest into target player's graveyard.",
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest into your hand.",
+      "Put the rest into your graveyard."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.rest.bottomRandom",
+    "cr": [
+      "CR 608.2c",
+      "CR 401.4",
+      "CR 701.24c"
+    ],
+    "pattern": "put {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top eight cards of your library. You may put a land card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on top of your library in a random order.",
+      "Put the rest on the bottom of your library in a random order."
+    ],
+    "consumes": [
+      "random"
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.rest.bottomAny",
+    "cr": [
+      "CR 608.2c",
+      "CR 401.4"
+    ],
+    "pattern": "put {r:Rest} on the bottom of your library in any order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top seven cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on top of your library in any order.",
+      "Put the rest on the bottom of your library in any order."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.rest.bottomRandomShort",
+    "cr": [
+      "CR 608.2c",
+      "CR 401.4",
+      "CR 701.24c"
+    ],
+    "pattern": "put {r:Rest} on the bottom in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top eight cards of your library. You may put a land card from among them onto the battlefield tapped. Put the rest on the bottom in a random order."
+      },
+      {
+        "text": "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom in any order.",
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on top in a random order.",
+      "Put the rest on the bottom in a random order."
+    ],
+    "consumes": [
+      "random"
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.reveal.hand",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may reveal ( a | an ) {f:Filter} card from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may reveal an artifact or land card from among them and put it into your hand. Put the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "Look at the top six cards of your library. You may reveal an Elf, Swamp, or Forest card from among them and put that card into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a creature card from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You must reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal two creature cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.put.hand",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from among {g:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may put an artifact card from among them into your hand. Put the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may put a creature card from among them into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may put an artifact card from among them onto the battlefield. Put the rest into your graveyard.",
+      "Look at the top six cards of your library. You may put an artifact card from among them into your graveyard. Put the rest into your graveyard.",
+      "Look at the top six cards of your library. You may put an artifact card from among them into target opponent's hand. Put the rest into your graveyard."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.put.battlefield",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top eight cards of your library. You may put a creature card from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may put a land card from among them onto the battlefield. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top eight cards of your library. You may put a creature card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "Look at the top eight cards of your library. You may put a creature card from among them into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top eight cards of your library. You may put a creature card from among them onto the battlefield under target opponent's control. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.put.battlefieldTapped",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from among {g:Seen} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top eight cards of your library. You may put a land card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may put an artifact card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top eight cards of your library. You may put a land card from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top eight cards of your library. You may put a land card from among them onto the battlefield tapped and attacking. Put the rest on the bottom of your library in a random order.",
+      "Look at the top eight cards of your library. You may put a land card from among them into your hand tapped. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.putBack.top",
+    "cr": [
+      "CR 701.20e",
+      "CR 401.4",
+      "CR 608.2d"
+    ],
+    "pattern": "you may put {n:Qty} of {g:Seen} back on top of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top seven cards of your library. You may put one of those cards back on top of your library. Put the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may put one of them back on top of your library. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top seven cards of your library. You may put one of those cards back on the bottom of your library. Put the rest into your graveyard.",
+      "Look at the top seven cards of your library. You may put one of those cards back on top of target player's library. Put the rest into your graveyard.",
+      "Look at the top seven cards of your library. You may put one of those cards onto the battlefield. Put the rest into your graveyard."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.exile",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may exile ( a | an ) {f:Filter} card from among {g:Seen}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top eight cards of your library. You may exile a creature card from among them. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may exile an artifact card from among them. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top eight cards of your library. You may exile a creature card from among them face down. Put the rest on the bottom of your library in a random order.",
+      "Look at the top eight cards of your library. You must exile a creature card from among them. Put the rest on the bottom of your library in a random order.",
+      "Look at the top eight cards of your library. You may exile a creature card from among them until end of turn. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.exile.nonland",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may exile a nonland card from among {g:Seen}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top eight cards of your library. You may exile a nonland card from among them. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may exile a nonland card from among them. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top eight cards of your library. You may exile a land card from among them. Put the rest into your graveyard.",
+      "Look at the top eight cards of your library. You may exile a nonland card from among them face down. Put the rest into your graveyard.",
+      "Look at the top eight cards of your library. You may exile a nonland card from your graveyard. Put the rest into your graveyard."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.reveal.hand.powerOrLess",
+    "cr": [
+      "CR 208.1",
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may reveal ( a | an ) {f:Filter} card with power {n:Qty} or less from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "power": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal a creature card with power 3 or less from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top eight cards of your library. You may reveal an artifact card with power 2 or less from among them and put that card into your hand. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a creature card with power 3 or greater from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a creature card with toughness 3 or less from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a creature card with power 3 or less from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.t43.dig.reveal.hand.permanent",
+    "priority": 1,
+    "cr": [
+      "CR 110.4",
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may reveal a permanent card from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": [
+                  "Artifact",
+                  "Battle",
+                  "Creature",
+                  "Enchantment",
+                  "Land",
+                  "Planeswalker"
+                ]
+              }
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top seven cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "Look at the top six cards of your library. You may reveal a permanent card from among them and put that card into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top seven cards of your library. You may reveal a nonland card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+      "Look at the top seven cards of your library. You may reveal a permanent card from among them and put it onto the battlefield. Put the rest on the bottom of your library in any order.",
+      "Look at the top seven cards of your library. You may reveal a permanent from among them and put it into your hand. Put the rest on the bottom of your library in any order."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "subject": "none",
+    "id": "eff.t43.dig.put.hand.permanent",
+    "priority": 1,
+    "cr": [
+      "CR 110.4",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may put a permanent card from among {g:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": [
+                  "Artifact",
+                  "Battle",
+                  "Creature",
+                  "Enchantment",
+                  "Land",
+                  "Planeswalker"
+                ]
+              }
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may put a permanent card from among them into your hand. Put the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top seven cards of your library. You may put a permanent card from among them into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may put a nonland card from among them into your hand. Put the rest into your graveyard.",
+      "Look at the top six cards of your library. You may put a permanent card from among them onto the battlefield. Put the rest into your graveyard.",
+      "Look at the top six cards of your library. You may put a permanent from among them into your hand. Put the rest into your graveyard."
+    ]
+  }
+]

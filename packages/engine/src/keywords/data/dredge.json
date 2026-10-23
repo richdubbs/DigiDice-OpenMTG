@@ -1,0 +1,68 @@
+{
+  "name": "dredge",
+  "rule": "702.52",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "replacement"
+  ],
+  "reminder": "If you would draw a card, you may mill {n} cards instead. If you do, return this card from your graveyard to your hand.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Dredge {n}",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": "you"
+          },
+          "optional": true,
+          "condition": {
+            "cond": "compare",
+            "left": {
+              "q": "zoneSize",
+              "zone": "library",
+              "of": {
+                "ref": "you"
+              }
+            },
+            "op": ">=",
+            "right": "$amount"
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "mill",
+                "who": {
+                  "ref": "you"
+                },
+                "count": "$amount"
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "self"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

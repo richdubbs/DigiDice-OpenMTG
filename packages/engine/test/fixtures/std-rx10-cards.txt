@@ -1,0 +1,6 @@
+# ---- Standard round rx10 (std-rx10, wave 2 slice s17): two targets announced together and "those creatures fight each other"; "<object> entered this turn"; flash for an additional cost (behold); "with total power and toughness N or less"
+Malamet Battle Glyph
+Longstalk Brawl
+Blizzard Brawl
+Molten Exhale
+Meek Attack

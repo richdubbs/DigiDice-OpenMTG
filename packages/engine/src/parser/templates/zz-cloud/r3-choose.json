@@ -1,0 +1,879 @@
+[
+  {
+    "id": "eff.r3choose.you.earthbend",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.66a",
+      "CR 115.1",
+      "CR 603.7c"
+    ],
+    "pattern": "you earthbend {n:Qty}",
+    "build": {
+      "lower": "earthbend",
+      "n": "$n"
+    },
+    "needs": [
+      "action:earthbend"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature. When that creature dies this turn, you earthbend 2."
+      },
+      {
+        "text": "Destroy target creature. When that creature dies this turn, you earthbend 3."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature. When that creature dies this turn, you earthbend.",
+      "Choose target creature. When that creature dies this turn, target player earthbends 2.",
+      "Choose target creature. When that creature dies this turn, you waterbend 2."
+    ]
+  },
+  {
+    "id": "eff.r3choose.dur.double.pt.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 701.10c",
+      "CR 608.2h",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , double {o:Obj} 's power and toughness and it gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": "$o"
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "toughness",
+                "of": "$o"
+              }
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, double target creature's power and toughness and it gains flying."
+      },
+      {
+        "text": "{R}: Until end of turn, double ~'s power and toughness and it gains first strike."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, double target creature's power and it gains first strike and vigilance.",
+      "Double target creature's power and toughness and it gains first strike.",
+      "Until end of turn, double target creature's power and toughness and it loses first strike."
+    ]
+  },
+  {
+    "id": "eff.r3choose.dur.double.its.pt.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 701.10c",
+      "CR 608.2h",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , double its power and toughness and it gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "it"
+            }
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "object",
+                    "number": "singular",
+                    "text": "it"
+                  }
+                }
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "toughness",
+                "of": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "object",
+                    "number": "singular",
+                    "text": "it"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "it"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature you control. Until end of turn, double its power and toughness and it gains flying."
+      },
+      {
+        "text": "Choose target creature. Until end of turn, double its power and toughness and it gains first strike and trample."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature. Until end of turn, double its power and it gains first strike.",
+      "Choose target creature. Double its power and toughness and it gains first strike.",
+      "Choose target creature. Until end of turn, double its power and toughness and it loses first strike."
+    ]
+  },
+  {
+    "id": "eff.r3choose.exile.thenReturn.yours.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 400.7",
+      "CR 110.2",
+      "CR 508.4",
+      "CR 608.2c"
+    ],
+    "pattern": "exile {o:Obj} , then return it to the battlefield under your control tapped and attacking",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "exile"
+        },
+        "as": "moved"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "moved"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": true
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile up to one other target creature you control, then return it to the battlefield under your control tapped and attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, exile target creature you own, then return it to the battlefield under your control tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile target creature you own, then return it to the battlefield under your control tapped.",
+      "Whenever ~ attacks, exile target creature you own, then return it to the battlefield under its owner's control tapped and attacking.",
+      "Whenever ~ attacks, exile two target creatures you own, then return it to the battlefield under your control tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.r3choose.triple.pt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.11a",
+      "CR 701.11b",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "triple {o:Obj} 's power and toughness {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  2,
+                  {
+                    "q": "stat",
+                    "stat": "power",
+                    "of": "$o"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  2,
+                  {
+                    "q": "stat",
+                    "stat": "toughness",
+                    "of": "$o"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "triple"
+    ],
+    "examples": [
+      {
+        "text": "Triple target creature's power and toughness until end of turn."
+      },
+      {
+        "text": "{3}{G}, {T}: Triple target creature you control's power and toughness until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Triple target creature's power and toughness.",
+      "Double target creature's power and toughness until end of turn.",
+      "Triple target creature's power until end of turn."
+    ]
+  },
+  {
+    "id": "eff.r3choose.player.maySacrifice.theirChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 118.3"
+    ],
+    "pattern": "{p:Player} may sacrifice {n:Qty} {f:Filter} of their choice",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "sacrificeChoice",
+          "who": "$p",
+          "filter": "$f",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target opponent may sacrifice two creatures of their choice. If they don't, you draw a card."
+      },
+      {
+        "text": "When ~ enters, target opponent may sacrifice a nonland permanent of their choice. If they don't, ~ deals 3 damage to them."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target opponent sacrifices two creatures of their choice. If they don't, you draw a card.",
+      "At the beginning of your upkeep, target opponent may sacrifice two creatures of your choice. If they don't, you draw a card.",
+      "At the beginning of your upkeep, target opponent may discard two cards. If they don't, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.r3choose.player.mayHave.youCreate",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 111.1",
+      "CR 701.7a"
+    ],
+    "pattern": "{p:Player} may have you create {n:Qty} {t:TokenDesc}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent may have you create three Treasure tokens. If they don't, you draw a card."
+      },
+      {
+        "text": "When ~ enters, target opponent may have you create two 1/1 white Soldier creature tokens. If they don't, you gain 4 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent may create three Treasure tokens. If they don't, you draw a card.",
+      "When ~ enters, you may have target opponent create three Treasure tokens. If they don't, you draw a card.",
+      "When ~ enters, target opponent may have you draw three cards. If they don't, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.r3choose.choose.targetOpponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c",
+      "CR 102.3"
+    ],
+    "pattern": "choose target opponent",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "player",
+          "players": {
+            "who": "opponent"
+          },
+          "min": 1,
+          "max": 1,
+          "text": "target opponent"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose target opponent. Draw a card. Then the chosen player loses 2 life."
+      },
+      {
+        "text": "Choose target opponent. That player mills three cards."
+      }
+    ],
+    "counterExamples": [
+      "Choose target opponent.",
+      "Choose an opponent. That player mills three cards.",
+      "Choose target opponent. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.r3choose.choose.targetPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose target player",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "player",
+          "players": {
+            "who": "any"
+          },
+          "min": 1,
+          "max": 1,
+          "text": "target player"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose target player. That player mills three cards."
+      },
+      {
+        "text": "{2}, {T}: Choose target player. You draw a card, then the chosen player draws a card."
+      }
+    ],
+    "counterExamples": [
+      "Choose target player.",
+      "Choose a player. That player mills three cards.",
+      "Choose target player. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.r3choose.choose.anyNumberTargetPlayers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose any number of target players",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "player",
+          "players": {
+            "who": "any"
+          },
+          "min": 0,
+          "max": "any",
+          "text": "any number of target players"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose any number of target players. Those players each draw a card."
+      },
+      {
+        "text": "Choose any number of target players. Create a Clue token for each creature those players control."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of target players.",
+      "Choose two target players. Those players each draw a card.",
+      "Choose any number of target players. Draw a card."
+    ],
+    "consumes": [
+      "any number"
+    ]
+  },
+  {
+    "id": "eff.r3choose.youMayHave.playerDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 121.1",
+      "CR 115.1"
+    ],
+    "pattern": "you may have {p:Player} draw {n:Qty} card[s]",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "draw",
+          "who": "$p",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may have target opponent draw two cards. If you do, draw two cards."
+      },
+      {
+        "text": "{2}, {T}: You may have target player draw a card. If you do, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent may draw two cards. If they do, draw two cards.",
+      "When ~ enters, you may have target opponent discard two cards. If you do, draw two cards.",
+      "When ~ enters, you may draw two cards. If you do, target opponent draws two cards."
+    ]
+  },
+  {
+    "id": "eff.r3choose.exile.self.thenReturn.opponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 400.7",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "exile ~ , then return ( it | ~ ) to the battlefield under an opponent 's control",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "moved"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "moved"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "anOpponent"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{3}: Exile ~, then return it to the battlefield under an opponent's control."
+      },
+      {
+        "text": "At the beginning of your end step, exile ~, then return it to the battlefield under an opponent's control."
+      }
+    ],
+    "counterExamples": [
+      "{3}: Exile ~, then return it to the battlefield under your control.",
+      "{3}: Exile ~, then return it to the battlefield under its owner's control tapped.",
+      "{3}: Exile ~, then return it to your hand."
+    ]
+  },
+  {
+    "id": "rep.r3choose.enters.choose.oddEven",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a",
+      "CR 202.3"
+    ],
+    "pattern": "as ~ enters , choose odd or even",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "oddEven",
+                "link": "oddEven"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose odd or even.\nCreatures you control with mana value of the chosen quality get +1/+1."
+      },
+      {
+        "text": "As this artifact enters, choose odd or even.\nWhenever you cast a spell with mana value of the chosen quality, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type or a color.\nCreatures you control with mana value of the chosen quality get +1/+1.",
+      "As ~ enters, target opponent chooses odd or even.\nCreatures you control with mana value of the chosen quality get +1/+1."
+    ]
+  },
+  {
+    "id": "eff.r3choose.player.discardAnyNumber.drawThatMany",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} discard[s] any number of cards , then draw[s] that many cards",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "toDiscard"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "as": "discarded"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "resultCount",
+          "step": "discarded"
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "any number",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Target player discards any number of cards, then draws that many cards. You gain 1 life."
+      },
+      {
+        "text": "When ~ enters, target opponent discards any number of cards, then draws that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Target player discards two cards, then draws that many cards. You gain 1 life.",
+      "Target player discards any number of cards, then draws two cards. You gain 1 life.",
+      "Target player discards any number of cards, then mills that many cards. You gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.r3choose.player.scries",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.22a",
+      "CR 115.1"
+    ],
+    "pattern": "{p:Player} scries {n:Qty}",
+    "build": {
+      "op": "scry",
+      "who": "$p",
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ enters, target player scries 2."
+      },
+      {
+        "text": "{1}, {T}: Target opponent scries 1, then you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target player surveils 2.",
+      "When ~ enters, target player scries.",
+      "When ~ enters, target player scries 2 cards."
+    ]
+  },
+  {
+    "id": "eff.r3choose.investigate.xTimes.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.16a",
+      "CR 107.3a",
+      "CR 608.2h"
+    ],
+    "pattern": "investigate x times , where x is {q:Qty}",
+    "build": {
+      "op": "action",
+      "action": "investigate",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$q"
+    },
+    "subject": "none",
+    "needs": [
+      "action:investigate"
+    ],
+    "examples": [
+      {
+        "text": "Investigate X times, where X is the number of creatures you control."
+      },
+      {
+        "text": "When ~ enters, investigate X times, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Investigate X times.",
+      "Investigate X times, where X is the number of creatures you control and Y is two.",
+      "Investigate two times, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.r3choose.chooseN.ofThem",
+    "kind": "effect",
+    "pattern": "choose {n:Qty} of them",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "plural",
+              "text": "them"
+            }
+          },
+          "zone": "any"
+        }
+      },
+      "min": "$n",
+      "max": "$n",
+      "as": "chosen"
+    },
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "status": "stable",
+    "since": 8,
+    "examples": [
+      {
+        "text": "Exile the top four cards of your library. Choose one of them. You may play that card this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top two cards of your library. Choose one of them. You may play that card this turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top four cards of your library. Choose one of them.",
+      "Exile the top four cards of your library. Choose two of them. You may play that card this turn.",
+      "Exile the top four cards of your library. Choose one of those creatures. You may play that card this turn."
+    ]
+  }
+]

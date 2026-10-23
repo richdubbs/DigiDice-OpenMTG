@@ -1,0 +1,16 @@
+{
+  "name": "tribute",
+  "rule": "702.104",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "replacement"
+  ],
+  "reminder": "As this creature enters, an opponent of your choice may put {n} +1/+1 counters on it.",
+  "multiple": "independent",
+  "status": "planned"
+}

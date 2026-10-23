@@ -1,0 +1,69 @@
+{
+  "name": "ascend",
+  "rule": "702.131",
+  "params": [],
+  "mechanisms": [
+    "structural",
+    "expands"
+  ],
+  "reminder": "If you control ten or more permanents, you get the city's blessing for the rest of the game.",
+  "multiple": "independent",
+  "status": "implemented",
+  "readers": [
+    "core/citys-blessing.ts#ascendCheck"
+  ],
+  "expand": [
+    {
+      "$ifTypes": [
+        "Instant",
+        "Sorcery"
+      ],
+      "then": {
+        "kind": "spell",
+        "text": "If you control ten or more permanents and you don't have the city's blessing, you get the city's blessing for the rest of the game.",
+        "effect": {
+          "targets": [],
+          "steps": [
+            {
+              "op": "if",
+              "cond": {
+                "cond": "all",
+                "of": [
+                  {
+                    "cond": "exists",
+                    "of": {
+                      "ref": "each",
+                      "filter": {
+                        "controller": "you"
+                      }
+                    },
+                    "atLeast": 10
+                  },
+                  {
+                    "cond": "not",
+                    "of": {
+                      "cond": "designation",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "what": "citysBlessing"
+                    }
+                  }
+                ]
+              },
+              "then": [
+                {
+                  "op": "designate",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": "citysBlessing"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

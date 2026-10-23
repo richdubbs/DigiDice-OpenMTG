@@ -1,0 +1,1500 @@
+[
+ {
+  "card": "Spinneret and Spiderling",
+  "expect": "full",
+  "verified": "r3-trig review, by hand against the Oracle text and the rules cited: the attack trigger is unchanged; \"deals 4 or more damage\" is all the damage ~ dealt at once, whatever it was dealt to (Event hole, CR 120.2, 510.2, 603.2c; triggers/occurrences.ts groups a one-sided damage pattern by its source); the top card is exiled and may be played until the end of your next turn (CR 406.1, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever you attack with two or more Spiders, put a +1/+1 counter on ~.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "subtypes": [
+           "Spider"
+          ],
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 2
+         }
+        }
+       ],
+       "batch": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ deals 4 or more damage, exile the top card of your library. Until the end of your next turn, you may play that card.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "source": {
+          "self": true
+         },
+         "amount": {
+          "op": ">=",
+          "value": 4
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 1
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "impulse"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "play",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "impulse"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Titanbones, Towering Heart",
+  "expect": "full",
+  "verified": "r3-trig review, by hand: reach; whenever you gain life, two +1/+1 counters on ~ (CR 122.1); \"When you discard this card\" functions in the graveyard and exile it went to (CR 701.9a, 113.6k, 702.35a: a madness card is still discarded) and gains 3 life (CR 119.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "reach",
+      "text": "Reach",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "reach"
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you gain life, put two +1/+1 counters on ~.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "life",
+         "change": "gain",
+         "player": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 2
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "When you discard ~, you gain 3 life.",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "action",
+         "verb": "discard",
+         "actor": "you",
+         "object": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 3
+        }
+       ]
+      },
+      "zone": [
+       "graveyard",
+       "exile"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Valkyrie's Call",
+  "expect": "full",
+  "verified": "r3-trig review, by hand (eff.r3trig.has.isSubtype.inAddition): a nontoken, non-Angel creature you control dies (CR 700.4); that card returns under its owner's control with a +1/+1 counter (CR 122.6, 614.1c, 400.7); the returned permanent has flying and is an Angel in addition to its other types for good (CR 611.2a, 613.1d, 613.1f, 205.1b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever a nontoken, non-Angel creature you control dies, return that card to the battlefield under its owner's control with a +1/+1 counter on it. It has flying and is an Angel in addition to its other types.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "token": false,
+          "notSubtypes": [
+           "Angel"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": "owner",
+          "counters": [
+           {
+            "kind": "+1/+1",
+            "count": 1
+           }
+          ]
+         },
+         "as": "moved"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "bound",
+            "name": "moved"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Angel"
+              ]
+             }
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "flying",
+               "text": "flying"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sage of the Skies",
+  "expect": "full",
+  "verified": "r3-trig review, by hand: the cast trigger functions on the stack (CR 113.6k); its intervening \"if\" (CR 603.4) is a spell you cast this turn other than this one (rules/history.ts compares the source); the copy of a creature spell becomes a token as it resolves (CR 707.10, 111.12)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When you cast ~, if you've cast another spell this turn, copy ~.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "cast",
+        "player": "you",
+        "spell": {
+         "other": true,
+         "zone": "stack"
+        }
+       },
+       "scope": "turn",
+       "times": {
+        "op": ">=",
+        "value": 1
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "copy",
+         "what": {
+          "ref": "self"
+         },
+         "result": "spell",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      },
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "lifelink",
+      "text": "lifelink",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "lifelink"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lumaret's Favor",
+  "expect": "full",
+  "verified": "r3-trig review, by hand (eff.r3trig.copy.ifCond): the cast trigger copies the spell only if you gained life this turn, checked as it resolves (CR 608.2c; not an intervening if, CR 603.4), and the copy may get new targets (CR 707.10c); the spell gives target creature +2/+4 until end of turn (CR 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When you cast ~, copy it if you gained life this turn. You may choose new targets for the copy.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "copy",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "result": "spell",
+         "who": {
+          "ref": "you"
+         },
+         "guard": {
+          "cond": "happened",
+          "event": {
+           "ev": "life",
+           "change": "gain",
+           "player": "you"
+          },
+          "scope": "turn"
+         },
+         "newTargets": "may"
+        }
+       ]
+      },
+      "zone": [
+       "stack"
+      ],
+      "label": "Infusion"
+     },
+     {
+      "kind": "spell",
+      "text": "Target creature gets +2/+4 until end of turn.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 4
+            }
+           ]
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kiora of Salt and Sand",
+  "expect": "full",
+  "verified": "r3-trig review, by hand: one declaration of attackers by you (CR 508.1, 603.2c) with the intervening \"if\" you activated a loyalty ability this turn (CR 603.4, 606.3; the history records the kind, triggers/history.ts); untap target attacking creature, which can't be blocked this turn (CR 509.1b); planeswalkers you control have the [-8] ability (CR 606, 613.1f)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever you attack, if you've activated a loyalty ability this turn, untap target attacking creature. It can't be blocked this turn.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ],
+       "batch": true
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "activate",
+        "player": "you",
+        "ability": "loyalty"
+       },
+       "scope": "turn"
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target attacking creature",
+         "filter": {
+          "attacking": true,
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "beBlocked"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "Planeswalkers you control have \"[-8]: Create an 8/8 blue Leviathan creature token with hexproof.\"",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Planeswalker"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "activated",
+            "text": "[-8]: Create an 8/8 blue Leviathan creature token with hexproof.",
+            "cost": {
+             "loyalty": -8
+            },
+            "effect": {
+             "targets": [],
+             "steps": [
+              {
+               "op": "createToken",
+               "who": {
+                "ref": "you"
+               },
+               "count": 1,
+               "token": {
+                "colors": [
+                 "U"
+                ],
+                "types": [
+                 "Creature"
+                ],
+                "subtypes": [
+                 "Leviathan"
+                ],
+                "power": 8,
+                "toughness": 8,
+                "keywords": [
+                 "hexproof"
+                ]
+               }
+              }
+             ]
+            },
+            "isLoyalty": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Zidane, Tantalus Thief",
+  "expect": "full",
+  "verified": "r3-trig review, by hand (trg.r3trig.opponent.gainsControl.fromYou): the enters trigger is unchanged; whenever control of a permanent passes from you to an opponent (CR 108.4, 613.1b; the engine's controlChanged event) you create a Treasure token (CR 111.10a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, gain control of target creature an opponent controls until end of turn. Untap it. It gains lifelink and haste until end of turn.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature an opponent controls",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": 2,
+             "controller": {
+              "ref": "you"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "untap",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "lifelink",
+               "text": "lifelink"
+              },
+              {
+               "kind": "keyword",
+               "keyword": "haste",
+               "text": "haste"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever an opponent gains control of a permanent from you, you create a Treasure token.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "controlChange",
+         "object": {},
+         "from": "you",
+         "to": "opponent"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "predefined": "Treasure"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Desert Were-Worm",
+  "expect": "full",
+  "verified": "r3-trig review, by hand (trg.r3trig.youAttack.totalPower.firstEachTurn): +2/+0 for each Mountain you control (CR 613.4c); the first declaration of attackers each turn whose total power is 12 or greater (CR 508.1, 603.2) untaps all attacking creatures and adds a combat phase after this one (CR 500.8, 505.1a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ gets +2/+0 for each Mountain you control.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "q": "math",
+           "op": "*",
+           "args": [
+            2,
+            {
+             "q": "count",
+             "of": {
+              "ref": "each",
+              "filter": {
+               "subtypes": [
+                "Mountain"
+               ],
+               "controller": "you"
+              }
+             }
+            }
+           ]
+          },
+          "toughness": {
+           "q": "math",
+           "op": "*",
+           "args": [
+            0,
+            {
+             "q": "count",
+             "of": {
+              "ref": "each",
+              "filter": {
+               "subtypes": [
+                "Mountain"
+               ],
+               "controller": "you"
+              }
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you attack with creatures with total power 12 or greater for the first time each turn, untap all attacking creatures. After this phase, there is an additional combat phase.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         },
+         "power": {
+          "op": ">=",
+          "value": 12
+         }
+        }
+       ],
+       "batch": true,
+       "first": "turn"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "attacking": true,
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        },
+        {
+         "op": "extraPhase",
+         "phase": "combat"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Riku of Many Paths",
+  "expect": "full",
+  "verified": "r3-trig review, by hand (trg.r3trig.you.cast.modal): whenever you cast a modal spell (CR 700.2), choose up to X modes where X is the number of times you chose a mode for that spell, read as the trigger is put on the stack (CR 603.3c, 700.2d); impulse until the end of your next turn (CR 406.1, 611.2a); a +1/+1 counter and trample until end of turn on ~ (it gains <keyword>, the shared shape); a 1/1 blue Bird with flying (CR 111.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever you cast a modal spell, choose up to X, where X is the number of times you chose a mode for that spell --\n• Exile the top card of your library. Until the end of your next turn, you may play it.\n• Put a +1/+1 counter on ~. It gains trample until end of turn.\n• Create a 1/1 blue Bird creature token with flying.",
+      "src": [
+       0,
+       1,
+       2,
+       3
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "modal": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [],
+       "modes": {
+        "min": 0,
+        "max": {
+         "q": "modesChosen"
+        },
+        "options": [
+         {
+          "text": "Exile the top card of your library. Until the end of your next turn, you may play it.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "move",
+             "what": {
+              "ref": "topCards",
+              "player": {
+               "ref": "you"
+              },
+              "count": 1
+             },
+             "to": {
+              "zone": "exile"
+             },
+             "as": "impulse"
+            },
+            {
+             "op": "effect",
+             "duration": {
+              "d": "endOfNextTurn",
+              "whose": {
+               "ref": "you"
+              }
+             },
+             "effects": [
+              {
+               "s": "permit",
+               "who": {
+                "ref": "you"
+               },
+               "action": "play",
+               "of": {
+                "is": {
+                 "ref": "bound",
+                 "name": "impulse"
+                }
+               }
+              }
+             ]
+            }
+           ]
+          }
+         },
+         {
+          "text": "Put a +1/+1 counter on ~. It gains trample until end of turn.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "putCounters",
+             "on": {
+              "ref": "self"
+             },
+             "kind": "+1/+1",
+             "count": 1
+            },
+            {
+             "op": "effect",
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "s": "continuous",
+               "affects": {
+                "ref": "self"
+               },
+               "mods": [
+                {
+                 "layer": 6,
+                 "add": [
+                  {
+                   "kind": "keyword",
+                   "keyword": "trample",
+                   "text": "trample"
+                  }
+                 ]
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         },
+         {
+          "text": "Create a 1/1 blue Bird creature token with flying.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "createToken",
+             "who": {
+              "ref": "you"
+             },
+             "count": 1,
+             "token": {
+              "colors": [
+               "U"
+              ],
+              "types": [
+               "Creature"
+              ],
+              "subtypes": [
+               "Bird"
+              ],
+              "power": 1,
+              "toughness": 1,
+              "keywords": [
+               "flying"
+              ]
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Way of the Mind Sculptor",
+  "expect": "full",
+  "verified": "r3-trig review, by hand: the enters trigger empowers Jace 5 (as before); whenever you activate a loyalty ability (CR 606.3), the intervening \"if\" (CR 603.4) reads the loyalty counters the cost of that activation removed (CR 606.4: a -2 cost removes two; the activation records it, actions/activate.ts) and you draw a card (CR 121.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, empower Jace 5.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "action",
+         "action": "empower",
+         "who": {
+          "ref": "you"
+         },
+         "n": 5,
+         "arg": "Jace"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you activate a loyalty ability, if you removed two or more loyalty counters to activate it, draw a card.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "activate",
+         "player": "you",
+         "ability": "loyalty"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "q": "loyaltyRemoved"
+       },
+       "op": ">=",
+       "right": 2
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Market Gnome",
+  "expect": "full",
+  "verified": "r3-trig review, by hand (trg.r3trig.self.exiled.craftMaterial): when ~ dies you gain 1 life and draw a card (as before); when ~ is exiled from the battlefield as the material of a craft ability you are activating (CR 702.167a, 118.3; a leaves-the-battlefield trigger, CR 603.6c, 603.10a) you gain 1 life and draw a card",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ dies, you gain 1 life and draw a card.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 1
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ is exiled from the battlefield while you're activating a craft ability, you gain 1 life and draw a card.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield",
+         "to": "exile",
+         "cause": "craft"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 1
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mentor's Guidance",
+  "expect": "full",
+  "verified": "r3-trig review, by hand (eff.r3trig.copy.ifCond): the cast trigger functions on the stack (CR 113.6k) and copies the spell only if you control a planeswalker, Cleric, Druid, Shaman, Warlock or Wizard as it resolves (CR 608.2c, 707.10); scry 1, then draw a card (CR 701.22a, 121.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When you cast ~, copy it if you control a planeswalker, Cleric, Druid, Shaman, Warlock, or Wizard.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "copy",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "result": "spell",
+         "who": {
+          "ref": "you"
+         },
+         "guard": {
+          "cond": "exists",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "anyOf": [
+             {
+              "types": [
+               "Planeswalker"
+              ]
+             },
+             {
+              "subtypes": [
+               "Cleric",
+               "Druid",
+               "Shaman",
+               "Warlock",
+               "Wizard"
+              ]
+             }
+            ],
+            "controller": "you"
+           }
+          }
+         }
+        }
+       ]
+      },
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "kind": "spell",
+      "text": "Scry 1, then draw a card.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "scry",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Aether Vial",
+  "expect": "full",
+  "verified": "r3-trig review, by hand: you may put a charge counter on ~ at the beginning of your upkeep (CR 122.1, 603.5); {T}: you may put a creature card from your hand with mana value equal to the number of charge counters on ~ onto the battlefield (CR 110.2, 202.3; the ability functions on the battlefield: \"from your hand\" describes the creature card, not ~, so lower/trigger-zone.ts no longer reads it as ~ in the hand, CR 113.6m)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "At the beginning of your upkeep, you may put a charge counter on ~.",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "putCounters",
+           "on": {
+            "ref": "self"
+           },
+           "kind": "charge",
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "{T}: You may put a creature card with mana value equal to the number of charge counters on ~ from your hand onto the battlefield.",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "manaValue": {
+            "op": "==",
+            "value": {
+             "q": "counters",
+             "on": {
+              "ref": "self"
+             },
+             "kind": "charge"
+            }
+           },
+           "zone": "hand",
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "put"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "put"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

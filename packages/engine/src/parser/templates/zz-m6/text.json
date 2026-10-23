@@ -1,0 +1,295 @@
+[
+  {
+    "id": "eff.m6.text.color",
+    "kind": "effect",
+    "cr": [
+      "CR 612.1",
+      "CR 612.2",
+      "CR 608.2d",
+      "CR 613.1c"
+    ],
+    "pattern": "change the text of {o:Obj} by replacing all instances of one color word with another",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "textWordFrom",
+        "link": "textWordFrom"
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "textWordTo",
+        "link": "textWordTo",
+        "exclude": [
+          {
+            "chosen": "textWordFrom"
+          }
+        ]
+      },
+      {
+        "op": "effect",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 3,
+                "changeWord": {
+                  "kind": "color",
+                  "from": {
+                    "chosen": "textWordFrom"
+                  },
+                  "to": {
+                    "chosen": "textWordTo"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Change the text of target spell or permanent by replacing all instances of one color word with another."
+      },
+      {
+        "text": "Change the text of target permanent by replacing all instances of one color word with another."
+      }
+    ],
+    "counterExamples": [
+      "Change the text of target spell or permanent by replacing all instances of one color word with red.",
+      "Change the text of target spell or permanent by replacing one color word with another.",
+      "Change the text of target spell or permanent by replacing all instances of one color word with another until end of turn."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.text.landType",
+    "kind": "effect",
+    "cr": [
+      "CR 612.1",
+      "CR 612.2",
+      "CR 608.2d",
+      "CR 613.1c",
+      "CR 305.6"
+    ],
+    "pattern": "change the text of {o:Obj} by replacing all instances of one basic land type with another",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "landType",
+        "as": "textWordFrom",
+        "link": "textWordFrom",
+        "options": [
+          "Plains",
+          "Island",
+          "Swamp",
+          "Mountain",
+          "Forest"
+        ]
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "landType",
+        "as": "textWordTo",
+        "link": "textWordTo",
+        "options": [
+          "Plains",
+          "Island",
+          "Swamp",
+          "Mountain",
+          "Forest"
+        ],
+        "exclude": [
+          {
+            "chosen": "textWordFrom"
+          }
+        ]
+      },
+      {
+        "op": "effect",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 3,
+                "changeWord": {
+                  "kind": "landType",
+                  "from": {
+                    "chosen": "textWordFrom"
+                  },
+                  "to": {
+                    "chosen": "textWordTo"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Change the text of target spell or permanent by replacing all instances of one basic land type with another."
+      },
+      {
+        "text": "Change the text of target permanent by replacing all instances of one basic land type with another."
+      }
+    ],
+    "counterExamples": [
+      "Change the text of target spell or permanent by replacing all instances of one land type with another.",
+      "Change the text of target spell or permanent by replacing all instances of one basic land type with Island.",
+      "Change the text of target spell or permanent by replacing all instances of one basic land type with another until end of turn."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.text.creatureType",
+    "kind": "effect",
+    "cr": [
+      "CR 612.1",
+      "CR 612.2",
+      "CR 612.2a",
+      "CR 608.2d",
+      "CR 613.1c"
+    ],
+    "pattern": "change the text of {o:Obj} by replacing all instances of one creature type with another",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "creatureType",
+        "as": "textWordFrom",
+        "link": "textWordFrom"
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "creatureType",
+        "as": "textWordTo",
+        "link": "textWordTo",
+        "exclude": [
+          {
+            "chosen": "textWordFrom"
+          }
+        ]
+      },
+      {
+        "op": "effect",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 3,
+                "changeWord": {
+                  "kind": "creatureType",
+                  "from": {
+                    "chosen": "textWordFrom"
+                  },
+                  "to": {
+                    "chosen": "textWordTo"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Change the text of target spell or permanent by replacing all instances of one creature type with another."
+      },
+      {
+        "text": "Change the text of target permanent by replacing all instances of one creature type with another."
+      }
+    ],
+    "counterExamples": [
+      "Change the text of target spell or permanent by replacing all instances of one creature type with Wall.",
+      "Change the text of target spell or permanent by replacing all instances of one card type with another.",
+      "Change the text of target spell or permanent by replacing all instances of one creature type with another until end of turn."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "rid.m6.text.newCreatureType.not",
+    "kind": "rider",
+    "cr": [
+      "CR 612.2",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "the new creature type can't be wall",
+    "build": {
+      "$patchPrevious": {
+        "@step": -2,
+        "exclude": [
+          {
+            "chosen": "@previous.exclude.0.chosen"
+          },
+          "Wall"
+        ]
+      }
+    },
+    "attachTo": "chooseValue",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Change the text of target spell or permanent by replacing all instances of one creature type with another. The new creature type can't be Wall."
+      },
+      {
+        "text": "Change the text of target permanent by replacing all instances of one creature type with another. The new creature type can't be Wall."
+      }
+    ],
+    "counterExamples": [
+      "The new creature type can't be Wall.",
+      "Change the text of target permanent by replacing all instances of one color word with another. The new creature type can't be Wall.",
+      "Change the text of target permanent by replacing all instances of one creature type with another. The new creature type can be Wall."
+    ],
+    "status": "stable",
+    "since": 6
+  }
+]

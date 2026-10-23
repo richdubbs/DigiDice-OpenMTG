@@ -1,0 +1,291 @@
+{
+  "_comment": "Predefined tokens (CR 111.10a-111.10x), owner WP14. Characteristics and rules text come from the Comprehensive Rules (edition below), never from Oracle text; `abilities` is that text in the ability model (types/ability.ts), validated and rendered by test/m5/tokens/predefined.test.ts. A token is created from the entry named by TokenDef.predefined (effects/handlers/token-defs.ts). An ability the model cannot express exactly is a manual ability, never an approximation.",
+  "crEdition": "2026-09-25",
+  "tokens": [
+    {
+      "name": "Treasure", "rule": "111.10a", "layout": "token",
+      "faces": [{
+        "name": "Treasure Token", "types": ["Artifact"], "subtypes": ["Treasure"], "colors": [],
+        "text": "{T}, Sacrifice this token: Add one mana of any color.",
+        "abilities": [
+          {"kind": "activated", "text": "{T}, Sacrifice this token: Add one mana of any color.", "isMana": true,
+           "cost": {"tap": true, "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [], "steps": [{"op": "addMana", "who": {"ref": "you"}, "units": [["W", "U", "B", "R", "G"]]}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Food", "rule": "111.10b", "layout": "token",
+      "faces": [{
+        "name": "Food Token", "types": ["Artifact"], "subtypes": ["Food"], "colors": [],
+        "text": "{2}, {T}, Sacrifice this token: You gain 3 life.",
+        "abilities": [
+          {"kind": "activated", "text": "{2}, {T}, Sacrifice this token: You gain 3 life.",
+           "cost": {"mana": [{"kind": "generic", "amount": 2}], "tap": true, "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [], "steps": [{"op": "gainLife", "who": {"ref": "you"}, "amount": 3}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Gold", "rule": "111.10c", "layout": "token",
+      "faces": [{
+        "name": "Gold Token", "types": ["Artifact"], "subtypes": ["Gold"], "colors": [],
+        "text": "Sacrifice this token: Add one mana of any color.",
+        "abilities": [
+          {"kind": "activated", "text": "Sacrifice this token: Add one mana of any color.", "isMana": true,
+           "cost": {"other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [], "steps": [{"op": "addMana", "who": {"ref": "you"}, "units": [["W", "U", "B", "R", "G"]]}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Walker", "rule": "111.10d", "layout": "token",
+      "faces": [{"name": "Walker", "types": ["Creature"], "subtypes": ["Zombie"], "colors": ["B"], "power": "2", "toughness": "2", "text": "", "abilities": []}]
+    },
+    {
+      "name": "Shard", "rule": "111.10e", "layout": "token",
+      "faces": [{
+        "name": "Shard Token", "types": ["Enchantment"], "subtypes": ["Shard"], "colors": [],
+        "text": "{2}, Sacrifice this token: Scry 1, then draw a card.",
+        "abilities": [
+          {"kind": "activated", "text": "{2}, Sacrifice this token: Scry 1, then draw a card.",
+           "cost": {"mana": [{"kind": "generic", "amount": 2}], "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [], "steps": [{"op": "scry", "who": {"ref": "you"}, "count": 1}, {"op": "draw", "who": {"ref": "you"}, "count": 1}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Clue", "rule": "111.10f", "layout": "token",
+      "faces": [{
+        "name": "Clue Token", "types": ["Artifact"], "subtypes": ["Clue"], "colors": [],
+        "text": "{2}, Sacrifice this token: Draw a card.",
+        "abilities": [
+          {"kind": "activated", "text": "{2}, Sacrifice this token: Draw a card.",
+           "cost": {"mana": [{"kind": "generic", "amount": 2}], "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [], "steps": [{"op": "draw", "who": {"ref": "you"}, "count": 1}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Blood", "rule": "111.10g", "layout": "token",
+      "faces": [{
+        "name": "Blood Token", "types": ["Artifact"], "subtypes": ["Blood"], "colors": [],
+        "text": "{1}, {T}, Discard a card, Sacrifice this token: Draw a card.",
+        "abilities": [
+          {"kind": "activated", "text": "{1}, {T}, Discard a card, Sacrifice this token: Draw a card.",
+           "cost": {"mana": [{"kind": "generic", "amount": 1}], "tap": true, "other": [{"kind": "discard", "count": 1}, {"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [], "steps": [{"op": "draw", "who": {"ref": "you"}, "count": 1}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Powerstone", "rule": "111.10h", "layout": "token",
+      "faces": [{
+        "name": "Powerstone Token", "types": ["Artifact"], "subtypes": ["Powerstone"], "colors": [],
+        "text": "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.",
+        "abilities": [
+          {"kind": "activated", "text": "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.", "isMana": true, "cost": {"tap": true},
+           "effect": {"targets": [], "steps": [{"op": "addMana", "who": {"ref": "you"}, "units": [["C"]], "restriction": {"notSpells": {"notTypes": ["Artifact"]}}}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Incubator", "rule": "111.10i", "layout": "double_faced_token",
+      "faces": [
+        {
+          "name": "Incubator Token", "types": ["Artifact"], "subtypes": ["Incubator"], "colors": [],
+          "text": "{2}: Transform this token.",
+          "abilities": [
+            {"kind": "activated", "text": "{2}: Transform this token.",
+             "cost": {"mana": [{"kind": "generic", "amount": 2}]},
+             "effect": {"targets": [], "steps": [{"op": "changeFace", "what": {"ref": "self"}, "to": "transform"}]}}
+          ]
+        },
+        {"name": "Phyrexian Token", "types": ["Artifact", "Creature"], "subtypes": ["Phyrexian"], "colors": [], "power": "0", "toughness": "0", "text": "", "abilities": []}
+      ]
+    },
+    {
+      "name": "Cursed Role", "rule": "111.10j", "layout": "token",
+      "faces": [{
+        "name": "Cursed", "types": ["Enchantment"], "subtypes": ["Aura", "Role"], "colors": [],
+        "text": "Enchant creature\nEnchanted creature has base power and toughness 1/1.",
+        "abilities": [
+          {"kind": "keyword", "text": "Enchant creature", "keyword": "enchant", "quality": "creature", "filter": {"types": ["Creature"]}},
+          {"kind": "static", "text": "Enchanted creature has base power and toughness 1/1.",
+           "effects": [{"s": "continuous", "affects": {"ref": "attachedTo"}, "mods": [{"layer": "7b", "power": 1, "toughness": 1}]}]}
+        ]
+      }]
+    },
+    {
+      "name": "Monster Role", "rule": "111.10k", "layout": "token",
+      "faces": [{
+        "name": "Monster", "types": ["Enchantment"], "subtypes": ["Aura", "Role"], "colors": [],
+        "text": "Enchant creature\nEnchanted creature gets +1/+1 and has trample.",
+        "abilities": [
+          {"kind": "keyword", "text": "Enchant creature", "keyword": "enchant", "quality": "creature", "filter": {"types": ["Creature"]}},
+          {"kind": "static", "text": "Enchanted creature gets +1/+1 and has trample.",
+           "effects": [{"s": "continuous", "affects": {"ref": "attachedTo"}, "mods": [
+             {"layer": "7c", "power": 1, "toughness": 1},
+             {"layer": 6, "add": [{"kind": "keyword", "text": "Trample", "keyword": "trample"}]}
+           ]}]}
+        ]
+      }]
+    },
+    {
+      "name": "Royal Role", "rule": "111.10m", "layout": "token",
+      "faces": [{
+        "name": "Royal", "types": ["Enchantment"], "subtypes": ["Aura", "Role"], "colors": [],
+        "text": "Enchant creature\nEnchanted creature gets +1/+1 and has ward {1}.",
+        "abilities": [
+          {"kind": "keyword", "text": "Enchant creature", "keyword": "enchant", "quality": "creature", "filter": {"types": ["Creature"]}},
+          {"kind": "static", "text": "Enchanted creature gets +1/+1 and has ward {1}.",
+           "effects": [{"s": "continuous", "affects": {"ref": "attachedTo"}, "mods": [
+             {"layer": "7c", "power": 1, "toughness": 1},
+             {"layer": 6, "add": [{"kind": "keyword", "text": "Ward {1}", "keyword": "ward", "cost": {"mana": [{"kind": "generic", "amount": 1}]}}]}
+           ]}]}
+        ]
+      }]
+    },
+    {
+      "name": "Sorcerer Role", "rule": "111.10n", "layout": "token",
+      "faces": [{
+        "name": "Sorcerer", "types": ["Enchantment"], "subtypes": ["Aura", "Role"], "colors": [],
+        "text": "Enchant creature\nEnchanted creature gets +1/+1 and has \"Whenever this creature attacks, scry 1.\"",
+        "abilities": [
+          {"kind": "keyword", "text": "Enchant creature", "keyword": "enchant", "quality": "creature", "filter": {"types": ["Creature"]}},
+          {"kind": "static", "text": "Enchanted creature gets +1/+1 and has \"Whenever this creature attacks, scry 1.\"",
+           "effects": [{"s": "continuous", "affects": {"ref": "attachedTo"}, "mods": [
+             {"layer": "7c", "power": 1, "toughness": 1},
+             {"layer": 6, "add": [{"kind": "triggered", "text": "Whenever this creature attacks, scry 1.",
+               "trigger": {"on": [{"ev": "attacks", "attacker": {"self": true}}]},
+               "effect": {"targets": [], "steps": [{"op": "scry", "who": {"ref": "you"}, "count": 1}]}}]}
+           ]}]}
+        ]
+      }]
+    },
+    {
+      "name": "Virtuous Role", "rule": "111.10p", "layout": "token",
+      "faces": [{
+        "name": "Virtuous", "types": ["Enchantment"], "subtypes": ["Aura", "Role"], "colors": [],
+        "text": "Enchant creature\nEnchanted creature gets +1/+1 for each enchantment you control.",
+        "abilities": [
+          {"kind": "keyword", "text": "Enchant creature", "keyword": "enchant", "quality": "creature", "filter": {"types": ["Creature"]}},
+          {"kind": "static", "text": "Enchanted creature gets +1/+1 for each enchantment you control.",
+           "effects": [{"s": "continuous", "affects": {"ref": "attachedTo"}, "mods": [
+             {"layer": "7c", "power": {"q": "count", "of": {"ref": "each", "filter": {"types": ["Enchantment"], "controller": "you"}}},
+              "toughness": {"q": "count", "of": {"ref": "each", "filter": {"types": ["Enchantment"], "controller": "you"}}}}
+           ]}]}
+        ]
+      }]
+    },
+    {
+      "name": "Wicked Role", "rule": "111.10q", "layout": "token",
+      "faces": [{
+        "name": "Wicked", "types": ["Enchantment"], "subtypes": ["Aura", "Role"], "colors": [],
+        "text": "Enchant creature\nEnchanted creature gets +1/+1.\nWhen this token is put into a graveyard from the battlefield, each opponent loses 1 life.",
+        "abilities": [
+          {"kind": "keyword", "text": "Enchant creature", "keyword": "enchant", "quality": "creature", "filter": {"types": ["Creature"]}},
+          {"kind": "static", "text": "Enchanted creature gets +1/+1.",
+           "effects": [{"s": "continuous", "affects": {"ref": "attachedTo"}, "mods": [{"layer": "7c", "power": 1, "toughness": 1}]}]},
+          {"kind": "triggered", "text": "When this token is put into a graveyard from the battlefield, each opponent loses 1 life.",
+           "trigger": {"on": [{"ev": "zoneChange", "subject": {"self": true}, "from": "battlefield", "to": "graveyard"}]},
+           "effect": {"targets": [], "steps": [{"op": "loseLife", "who": {"ref": "each", "who": "opponent"}, "amount": 1}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Young Hero Role", "rule": "111.10r", "layout": "token",
+      "faces": [{
+        "name": "Young Hero", "types": ["Enchantment"], "subtypes": ["Aura", "Role"], "colors": [],
+        "text": "Enchant creature\nEnchanted creature has \"Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.\"",
+        "abilities": [
+          {"kind": "keyword", "text": "Enchant creature", "keyword": "enchant", "quality": "creature", "filter": {"types": ["Creature"]}},
+          {"kind": "static", "text": "Enchanted creature has \"Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.\"",
+           "effects": [{"s": "continuous", "affects": {"ref": "attachedTo"}, "mods": [
+             {"layer": 6, "add": [{"kind": "triggered", "text": "Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.",
+               "trigger": {"on": [{"ev": "attacks", "attacker": {"self": true}}]},
+               "interveningIf": {"cond": "compare", "left": {"q": "stat", "stat": "toughness", "of": {"ref": "self"}}, "op": "<=", "right": 3},
+               "effect": {"targets": [], "steps": [{"op": "putCounters", "on": {"ref": "self"}, "kind": "+1/+1", "count": 1}]}}]}
+           ]}]}
+        ]
+      }]
+    },
+    {
+      "name": "Map", "rule": "111.10s", "layout": "token",
+      "faces": [{
+        "name": "Map Token", "types": ["Artifact"], "subtypes": ["Map"], "colors": [],
+        "text": "{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.",
+        "abilities": [
+          {"kind": "activated", "text": "{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.", "sorcerySpeed": true,
+           "cost": {"mana": [{"kind": "generic", "amount": 1}], "tap": true, "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [{"id": "t0", "kind": "object", "filter": {"types": ["Creature"], "controller": "you"}, "min": 1, "max": 1, "text": "target creature you control"}],
+                      "steps": [{"op": "action", "action": "explore", "subject": {"ref": "target", "id": "t0"}, "who": {"ref": "controllerOf", "object": {"ref": "target", "id": "t0"}}}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Junk", "rule": "111.10t", "layout": "token",
+      "faces": [{
+        "name": "Junk Token", "types": ["Artifact"], "subtypes": ["Junk"], "colors": [],
+        "text": "{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.",
+        "abilities": [
+          {"kind": "manual", "shape": "activated", "text": "{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.",
+           "reason": "\"You may play that card this turn\" (a permission tied to the exiled card) and the sorcery timing of a manual ability are not automated yet",
+           "cost": {"tap": true, "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Lander", "rule": "111.10u", "layout": "token",
+      "faces": [{
+        "name": "Lander Token", "types": ["Artifact"], "subtypes": ["Lander"], "colors": [],
+        "text": "{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+        "abilities": [
+          {"kind": "activated", "text": "{2}, {T}, Sacrifice this token: Search your library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+           "cost": {"mana": [{"kind": "generic", "amount": 2}], "tap": true, "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [], "steps": [
+             {"op": "search", "who": {"ref": "you"}, "zone": "library", "filter": {"zone": "library", "types": ["Land"], "supertypes": ["Basic"]}, "max": 1, "as": "land"},
+             {"op": "move", "what": {"ref": "bound", "name": "land"}, "to": {"zone": "battlefield", "controller": {"ref": "you"}, "tapped": true}},
+             {"op": "shuffle", "who": {"ref": "you"}}
+           ]}}
+        ]
+      }]
+    },
+    {
+      "name": "Mutagen", "rule": "111.10v", "layout": "token",
+      "faces": [{
+        "name": "Mutagen Token", "types": ["Artifact"], "subtypes": ["Mutagen"], "colors": [],
+        "text": "{1}, {T}, Sacrifice this token: Put a +1/+1 counter on target creature. Activate only as a sorcery.",
+        "abilities": [
+          {"kind": "activated", "text": "{1}, {T}, Sacrifice this token: Put a +1/+1 counter on target creature. Activate only as a sorcery.", "sorcerySpeed": true,
+           "cost": {"mana": [{"kind": "generic", "amount": 1}], "tap": true, "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [{"id": "t0", "kind": "object", "filter": {"types": ["Creature"]}, "min": 1, "max": 1, "text": "target creature"}],
+                      "steps": [{"op": "putCounters", "on": {"ref": "target", "id": "t0"}, "kind": "+1/+1", "count": 1}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Vibranium", "rule": "111.10w", "layout": "token",
+      "faces": [{
+        "name": "Vibranium Token", "types": ["Artifact"], "subtypes": ["Vibranium"], "colors": [],
+        "text": "Indestructible\n{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.",
+        "abilities": [
+          {"kind": "keyword", "text": "Indestructible", "keyword": "indestructible"},
+          {"kind": "activated", "text": "{T}: Add {C}. This mana can't be spent to cast a nonartifact spell.", "isMana": true, "cost": {"tap": true},
+           "effect": {"targets": [], "steps": [{"op": "addMana", "who": {"ref": "you"}, "units": [["C"]], "restriction": {"notSpells": {"notTypes": ["Artifact"]}}}]}}
+        ]
+      }]
+    },
+    {
+      "name": "Heartwood", "rule": "111.10x", "layout": "token",
+      "faces": [{
+        "name": "Heartwood Token", "types": ["Artifact"], "subtypes": ["Heartwood"], "colors": ["R", "G"],
+        "text": "{T}: Add {R} or {G}.",
+        "abilities": [
+          {"kind": "activated", "text": "{T}: Add {R} or {G}.", "isMana": true, "cost": {"tap": true},
+           "effect": {"targets": [], "steps": [{"op": "addMana", "who": {"ref": "you"}, "units": [["R", "G"]]}]}}
+        ]
+      }]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "spree",
+  "rule": "702.172",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "Choose one or more additional costs.",
+  "multiple": "independent",
+  "status": "implemented"
+}

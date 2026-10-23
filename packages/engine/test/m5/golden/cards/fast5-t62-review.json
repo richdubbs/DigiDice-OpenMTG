@@ -1,0 +1,1836 @@
+[
+ {
+  "card": "Sunstar Expansionist",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (the grammar of parser/holes/cond.ts, no template): an enters trigger of the object itself with the intervening \"if\" (CR 603.4: true as it enters and again as it resolves) that an opponent controls more lands than you (the lands an opponent controls outnumber the lands you control, CR 305.1, 109.5); the Lander token is a predefined token (CR 111.10); landfall is a land entering under your control",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Lander"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "controlsVs": {
+         "filter": {
+          "types": [
+           "Land"
+          ]
+         },
+         "op": ">",
+         "than": {
+          "ref": "you"
+         }
+        },
+        "of": {
+         "ref": "each",
+         "who": "opponent"
+        },
+        "q": "countPlayers"
+       },
+       "op": ">=",
+       "right": 1
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 0
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "types": [
+           "Land"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mine Raider",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (the grammar of parser/holes/filter.ts, no template): \"another outlaw\" is another object with one of the Assassin, Mercenary, Pirate, Rogue and Warlock creature types (CR 700.12), judged as it enters and again as the ability resolves (CR 603.4); the Treasure is a predefined token (CR 111.10)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Treasure"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "exists",
+       "of": {
+        "filter": {
+         "controller": "you",
+         "other": true,
+         "subtypes": [
+          "Assassin",
+          "Mercenary",
+          "Pirate",
+          "Rogue",
+          "Warlock"
+         ]
+        },
+        "ref": "each"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Vial Smasher, Gleeful Grenadier",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (the grammar of parser/holes/filter.ts, no template): another outlaw (CR 700.12) entering under your control triggers it (CR 603.6a); it deals 1 damage to a target opponent (CR 120.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": 1,
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "subtypes": [
+           "Assassin",
+           "Mercenary",
+           "Pirate",
+           "Rogue",
+           "Warlock"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Krang, Master Mind",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (parser/lower/quantities.ts, no template): the intervening \"if\" compares the cards in your hand with four (CR 402.1, 603.4); \"the difference\" is four minus the cards in hand, read as the ability resolves (CR 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "filter": {
+       "types": [
+        "Artifact"
+       ]
+      },
+      "keyword": "affinity",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "args": [
+           4,
+           {
+            "of": {
+             "ref": "you"
+            },
+            "q": "zoneSize",
+            "zone": "hand"
+           }
+          ],
+          "op": "-",
+          "q": "math"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "of": {
+         "ref": "you"
+        },
+        "q": "zoneSize",
+        "zone": "hand"
+       },
+       "op": "<",
+       "right": 4
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "of": {
+            "filter": {
+             "controller": "you",
+             "other": true,
+             "types": [
+              "Artifact"
+             ]
+            },
+            "ref": "each"
+           },
+           "q": "count"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Roiling Canopy",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (parser/lower/ability.ts#otherThanEventSubject, no template): the Forest that entered is the object the trigger is about, so \"at least five other Forests\" are the Forests you control apart from that one (CR 603.4); the Canopy itself is not a Forest, so \"other than the source\" would count one Forest too many",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "tapped": true
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 3,
+             "toughness": 3
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "interveningIf": {
+       "atLeast": 5,
+       "cond": "exists",
+       "of": {
+        "filter": {
+         "controller": "you",
+         "not": {
+          "is": {
+           "ref": "event",
+           "role": "subject"
+          }
+         },
+         "subtypes": [
+          "Forest"
+         ]
+        },
+        "ref": "each"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "subtypes": [
+           "Forest"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "G"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lord Skitter's Blessing",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (parser/holes/cond.ts, no template): \"an enchanted creature\" is a creature an Aura is attached to (CR 303.4b; the Wicked Role is an Aura); the draw step trigger checks it when the step begins and as it resolves (CR 603.4); the additional card is a second draw (CR 121.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "attachTo": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Wicked Role"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": 1,
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "exists",
+       "of": {
+        "filter": {
+         "controller": "you",
+         "enchanted": true,
+         "types": [
+          "Creature"
+         ]
+        },
+        "ref": "each"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "draw",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Eshki Dragonclaw",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (parser/holes/cond.ts, no template): the intervening \"if\" holds when a creature spell and a noncreature spell have each been cast by you this turn (CR 601.2i, 603.4); the keyword lines are the keyword abilities",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        }
+       ]
+      },
+      "keyword": "ward",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 2,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "all",
+       "of": [
+        {
+         "cond": "happened",
+         "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+           "notTypes": [
+            "Creature"
+           ]
+          }
+         },
+         "scope": "turn",
+         "times": {
+          "op": ">=",
+          "value": 1
+         }
+        },
+        {
+         "cond": "happened",
+         "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+           "types": [
+            "Creature"
+           ]
+          }
+         },
+         "scope": "turn",
+         "times": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Carrot Cake",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (trg.t62.entersAndSacrificed): its own enters (CR 603.6a) and its own sacrifice by you (CR 701.21a, 603.10a: the sacrificed permanent is looked at as it was); the Rabbit token and then scry 1 (CR 111.4, 701.22)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Rabbit"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "op": "scry",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "actor": "you",
+         "ev": "action",
+         "object": {
+          "self": true
+         },
+         "verb": "sacrifice"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "filter": {
+          "self": true
+         },
+         "kind": "sacrifice",
+         "self": true
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "amount": 3,
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Heaped Harvest",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (trg.t62.entersAndSacrificed): its own enters (CR 603.6a) and its own sacrifice by you (CR 701.21a, 603.10a); you may search for a basic land card and put it onto the battlefield tapped, then shuffle (CR 701.23, 701.24)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "as": "search",
+           "filter": {
+            "supertypes": [
+             "Basic"
+            ],
+            "types": [
+             "Land"
+            ]
+           },
+           "max": 1,
+           "op": "search",
+           "who": {
+            "ref": "you"
+           },
+           "zone": "library"
+          },
+          {
+           "op": "move",
+           "to": {
+            "controller": {
+             "ref": "you"
+            },
+            "tapped": true,
+            "zone": "battlefield"
+           },
+           "what": {
+            "name": "search",
+            "ref": "bound"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "actor": "you",
+         "ev": "action",
+         "object": {
+          "self": true
+         },
+         "verb": "sacrifice"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "filter": {
+          "self": true
+         },
+         "kind": "sacrifice",
+         "self": true
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "amount": 3,
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bristlebane Battler",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (trg.t62.while.hasCounter): another creature you control entering triggers it only while this creature has a -1/-1 counter on it, judged as the creature enters and never again (CR 603.2); it removes one -1/-1 counter (CR 122.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ]
+      },
+      "keyword": "ward",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 5,
+           "kind": "-1/-1"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "from": {
+          "ref": "self"
+         },
+         "kind": "-1/-1",
+         "op": "removeCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ],
+       "while": {
+        "cond": "matches",
+        "filter": {
+         "counters": {
+          "kind": "-1/-1"
+         }
+        },
+        "object": {
+         "ref": "self"
+        }
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Perimeter Enforcer",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (trg.t62.andTurnedFaceUp): either event triggers the ability (CR 603.2): another Detective you control enters, or a Detective you control is turned face up (CR 701.40a, 708.2); +1/+1 until end of turn (CR 613.4c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "lifelink",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 1
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "subtypes": [
+           "Detective"
+          ]
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "becomes",
+         "object": {
+          "controller": "you",
+          "subtypes": [
+           "Detective"
+          ]
+         },
+         "what": "turnedFaceUp"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Cryptid Inspector",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (trg.t62.andSelfOrAnotherTurnedFaceUp): a face-down permanent you control enters (CR 708.4), or it or another permanent you control is turned face up (CR 701.40a, 708.2); one +1/+1 counter on it (CR 122.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "faceDown": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "turnedFaceUp"
+        },
+        {
+         "ev": "becomes",
+         "object": {
+          "controller": "you",
+          "other": true
+         },
+         "what": "turnedFaceUp"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rangers' Aetherhive",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (the grammar of parser/holes/event.ts, no template): activating an exhaust ability (CR 702.177a; actions/activate.ts emits the event from the keyword of the activated ability); a 1/1 colorless Thopter artifact creature token with flying (CR 111.4). FAST5 batch 7 merge: \"whenever you activate an exhaust ability\" is the event of FAST5X E20 (activate, ability exhaust, CR 702.177a; it also sees exhaust mana abilities, CR 605.1a), T62's own exhaust action removed as a duplicate",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [],
+          "keywords": [
+           "flying"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Thopter"
+          ],
+          "toughness": 1,
+          "types": [
+           "Artifact",
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "activate",
+         "player": "you",
+         "ability": "exhaust"
+        }
+       ]
+      }
+     },
+     {
+      "amount": 1,
+      "keyword": "crew",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Master of Barbs",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (the grammar of parser/holes/event.ts, no template): damage that is not combat damage dealt to opponents (CR 120.2b) triggers it once for the damage dealt at once (CR 603.2c, a \"one or more\" trigger); creatures you control get +1/+0 until end of turn (CR 613.4c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "menace",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            },
+            "ref": "each"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 0
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "combat": false,
+         "ev": "damage",
+         "recipient": {
+          "player": "opponent"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Reluctant Dounguard",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (trg.t62.while.hasCounter): the same trigger as Bristlebane Battler: another creature you control enters while it has a -1/-1 counter on it (CR 603.2), one -1/-1 counter removed (CR 122.1); it enters with two -1/-1 counters (CR 614.1c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 2,
+           "kind": "-1/-1"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "from": {
+          "ref": "self"
+         },
+         "kind": "-1/-1",
+         "op": "removeCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ],
+       "while": {
+        "cond": "matches",
+        "filter": {
+         "counters": {
+          "kind": "-1/-1"
+         }
+        },
+        "object": {
+         "ref": "self"
+        }
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Projektor Inspector",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (trg.t62.andTurnedFaceUp): either of three events triggers the ability (CR 603.2): it enters, another Detective you control enters, or a Detective you control is turned face up (CR 701.40a); you may draw a card and if you do, discard a card (CR 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "did",
+         "do": [
+          {
+           "count": 1,
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "op": "if",
+         "then": [
+          {
+           "count": 1,
+           "op": "discard",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "subtypes": [
+           "Detective"
+          ]
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "becomes",
+         "object": {
+          "controller": "you",
+          "subtypes": [
+           "Detective"
+          ]
+         },
+         "what": "turnedFaceUp"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Case of the Filched Falcon",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (eff.t62.becomes.creature.with.addtype): the noncreature artifact gets four +1/+1 counters and becomes a 0/0 Bird creature with flying in addition to its other types: the creature type and the Bird subtype are added (CR 205.1b, 613.1d), flying is added (CR 613.1f), base power and toughness 0/0 (CR 613.4b), with no duration so it lasts (CR 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "action": "investigate",
+         "op": "action",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "case",
+      "solve": {
+       "atLeast": 3,
+       "cond": "exists",
+       "of": {
+        "filter": {
+         "controller": "you",
+         "types": [
+          "Artifact"
+         ]
+        },
+        "ref": "each"
+       }
+      },
+      "solved": [
+       {
+        "cost": {
+         "mana": [
+          {
+           "amount": 2,
+           "kind": "generic"
+          },
+          {
+           "color": "U",
+           "kind": "colored"
+          }
+         ],
+         "other": [
+          {
+           "count": 1,
+           "filter": {
+            "self": true
+           },
+           "kind": "sacrifice",
+           "self": true
+          }
+         ]
+        },
+        "effect": {
+         "steps": [
+          {
+           "count": 4,
+           "kind": "+1/+1",
+           "on": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "op": "putCounters"
+          },
+          {
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "affects": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "mods": [
+              {
+               "layer": 4,
+               "subtypes": {
+                "add": [
+                 "Bird"
+                ]
+               },
+               "types": {
+                "add": [
+                 "Creature"
+                ]
+               }
+              },
+              {
+               "add": [
+                {
+                 "keyword": "flying",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              },
+              {
+               "layer": "7b",
+               "power": 0,
+               "toughness": 0
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ],
+         "targets": [
+          {
+           "filter": {
+            "notTypes": [
+             "Creature"
+            ],
+            "types": [
+             "Artifact"
+            ]
+           },
+           "id": "t0",
+           "kind": "object",
+           "max": 1,
+           "min": 1
+          }
+         ]
+        },
+        "kind": "activated"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rangers' Refueler",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (the grammar of parser/holes/event.ts, no template): activating an exhaust ability (CR 702.177a) draws a card; the exhaust ability becomes an artifact creature for good and gets a +1/+1 counter, once for the game (CR 702.177a, 602.5b). FAST5 batch 7 merge: \"whenever you activate an exhaust ability\" is the event of FAST5X E20 (activate, ability exhaust, CR 702.177a; it also sees exhaust mana abilities, CR 605.1a), T62's own exhaust action removed as a duplicate",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "activate",
+         "player": "you",
+         "ability": "exhaust"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 4,
+         "kind": "generic"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "types": {
+              "add": [
+               "Artifact",
+               "Creature"
+              ]
+             }
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "keyword": "exhaust",
+      "kind": "activated",
+      "limit": {
+       "max": 1,
+       "per": "game"
+      }
+     },
+     {
+      "amount": 2,
+      "keyword": "crew",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ticket Tortoise",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (the grammar of parser/holes/cond.ts, no template): the enters trigger with the intervening \"if\" that an opponent controls more lands than you (CR 603.4); a Treasure token (CR 111.10)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "defender",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Treasure"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "controlsVs": {
+         "filter": {
+          "types": [
+           "Land"
+          ]
+         },
+         "op": ">",
+         "than": {
+          "ref": "you"
+         }
+        },
+        "of": {
+         "ref": "each",
+         "who": "opponent"
+        },
+        "q": "countPlayers"
+       },
+       "op": ">=",
+       "right": 1
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Emergent Haunting",
+  "expect": "full",
+  "verified": "FAST5 T62 review, by hand against the Oracle text and the rules cited (eff.t62.becomes.creature.with.addtype): at the beginning of your end step (CR 513.1), if no spell was cast from your hand this turn (CR 601.2a) and it is not a creature (CR 603.4, checked again as the ability resolves), it becomes a 3/3 Spirit creature with flying in addition to its other types: types and subtype added (CR 205.1b, 613.1d), flying added (CR 613.1f), base power and toughness 3/3 (CR 613.4b), lasting (CR 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Spirit"
+              ]
+             },
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "add": [
+              {
+               "keyword": "flying",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 3,
+             "toughness": 3
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "all",
+       "of": [
+        {
+         "cond": "not",
+         "of": {
+          "cond": "happened",
+          "event": {
+           "ev": "cast",
+           "from": "hand",
+           "player": "you"
+          },
+          "scope": "turn"
+         }
+        },
+        {
+         "cond": "not",
+         "of": {
+          "cond": "matches",
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          },
+          "object": {
+           "ref": "self"
+          }
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "surveil",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,1890 @@
+[
+ {
+  "card": "Emberhorn Minotaur",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: it gets +1/+1 and gains menace until end of turn (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "ref": "self"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 1,
+                 "toughness": 1
+                },
+                {
+                 "add": [
+                  {
+                   "keyword": "menace",
+                   "kind": "keyword"
+                  }
+                 ],
+                 "layer": 6
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Trueheart Twins",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (sta.stdry8.exert.asAttacks; rule mayExertAsAttacks, core/attack-options.ts); \"Whenever you exert a creature\" (trg.when with the Event reading \"you exert a creature\", verb exert, actor you) triggers on an exert as it attacks, an exert cost and an exert instruction alike (all emit the exert action); creatures you control get +1/+0 until end of turn. (CR 701.43a, 508.1, 603.2, 611.2c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            },
+            "ref": "each"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 0
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "actor": "you",
+         "ev": "action",
+         "object": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "verb": "exert"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Champion of Rhonas",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: you may put a creature card from your hand onto the battlefield (a choice of up to one card, then the move under your control) (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "as": "b1",
+             "from": {
+              "filter": {
+               "isCard": true,
+               "owner": "you",
+               "types": [
+                "Creature"
+               ],
+               "zone": "hand"
+              },
+              "ref": "each"
+             },
+             "max": 1,
+             "min": 0,
+             "op": "chooseObjects",
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "op": "move",
+             "to": {
+              "controller": {
+               "ref": "you"
+              },
+              "zone": "battlefield"
+             },
+             "what": {
+              "name": "b1",
+              "ref": "bound"
+             }
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Clockwork Droid",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: it can't be blocked this turn and you scry 1 (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "action": "beBlocked",
+               "mode": "cant",
+               "s": "restrict",
+               "subject": {
+                "ref": "self"
+               }
+              }
+             ],
+             "op": "effect"
+            },
+            {
+             "count": 1,
+             "op": "scry",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Glory-Bound Initiate",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: it gets +1/+3 and gains lifelink until end of turn (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "ref": "self"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 1,
+                 "toughness": 3
+                },
+                {
+                 "add": [
+                  {
+                   "keyword": "lifelink",
+                   "kind": "keyword"
+                  }
+                 ],
+                 "layer": 6
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ahn-Crop Champion",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: untap all other creatures you control (other than this creature) (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "op": "untap",
+             "what": {
+              "filter": {
+               "controller": "you",
+               "other": true,
+               "types": [
+                "Creature"
+               ]
+              },
+              "ref": "each"
+             }
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Watchful Naga",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: you draw a card (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "count": 1,
+             "op": "draw",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tah-Crop Elite",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: Flying; as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: creatures you control get +1/+1 until end of turn (the set fixed as the effect begins, CR 611.2c) (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "filter": {
+                 "controller": "you",
+                 "types": [
+                  "Creature"
+                 ]
+                },
+                "ref": "each"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 1,
+                 "toughness": 1
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Nef-Crop Entangler",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: Trample; as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: it gets +1/+2 until end of turn (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "ref": "self"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 1,
+                 "toughness": 2
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hooded Brawler",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: it gets +2/+2 until end of turn (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "ref": "self"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 2,
+                 "toughness": 2
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rhet-Crop Spearmaster",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: as it is declared as an attacker its controller may exert it (it won't untap during their next untap step); when they do, a reflexive trigger goes on the stack with the attack triggers: it gets +1/+0 and gains first strike until end of turn (sta.stdry8.exert.asAttacks.whenYouDo; rule mayExertAsAttacks with a reflexive trigger, core/attack-options.ts). (CR 701.43a, 508.1, 603.12, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "rule": "mayExertAsAttacks",
+        "s": "rule",
+        "then": {
+         "as": "b0",
+         "do": [
+          {
+           "do": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "ref": "self"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 1,
+                 "toughness": 0
+                },
+                {
+                 "add": [
+                  {
+                   "keyword": "first strike",
+                   "kind": "keyword"
+                  }
+                 ],
+                 "layer": 6
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "op": "reflexive",
+           "targets": [],
+           "when": {
+            "did": "exerted"
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Coalition Warbrute",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: enlist (keyword enlist, keywords/data/enlist.json: rule enlist, core/attack-options.ts): as it attacks its controller may tap a nonattacking untapped creature they control without summoning sickness; when they do, it gets +X/+0 until end of turn, X the tapped creature's power; trample. (CR 702.154a, 302.6, 603.12, 608.2h; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "enlist",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Argivian Cavalier",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: enlist (keyword enlist, keywords/data/enlist.json: rule enlist, core/attack-options.ts): as it attacks its controller may tap a nonattacking untapped creature they control without summoning sickness; when they do, it gets +X/+0 until end of turn, X the tapped creature's power; when it enters, create a 1/1 white Soldier creature token. (CR 702.154a, 302.6, 603.12, 608.2h; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "enlist",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Soldier"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Linebreaker Baloth",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: enlist (keyword enlist, keywords/data/enlist.json: rule enlist, core/attack-options.ts): as it attacks its controller may tap a nonattacking untapped creature they control without summoning sickness; when they do, it gets +X/+0 until end of turn, X the tapped creature's power; it can't be blocked by creatures with power 2 or less. (CR 702.154a, 302.6, 603.12, 608.2h; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "enlist",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "action": "beBlockedBy",
+        "mode": "cant",
+        "other": {
+         "power": {
+          "op": "<=",
+          "value": 2
+         },
+         "types": [
+          "Creature"
+         ]
+        },
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hexbane Tortoise",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: ward {2}; enlist (keyword enlist, keywords/data/enlist.json: rule enlist, core/attack-options.ts): as it attacks its controller may tap a nonattacking untapped creature they control without summoning sickness; when they do, it gets +X/+0 until end of turn, X the tapped creature's power. (CR 702.154a, 302.6, 603.12, 608.2h; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ]
+      },
+      "keyword": "ward",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "enlist",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Pharika's Disciple",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: deathtouch; renown 1 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 1 +1/+1 counter on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield). (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "deathtouch",
+      "kind": "keyword"
+     },
+     {
+      "amount": 1,
+      "keyword": "renown",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Stalwart Aven",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: flying; renown 1 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 1 +1/+1 counter on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield). (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "amount": 1,
+      "keyword": "renown",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Honored Hierarch",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: renown 1 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 1 +1/+1 counter on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield); as long as it is renowned (filter renowned, a designation of the permanent) it has vigilance and \"{T}: Add one mana of any color.\" (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "amount": 1,
+      "keyword": "renown",
+      "kind": "keyword"
+     },
+     {
+      "condition": {
+       "cond": "matches",
+       "filter": {
+        "renowned": true
+       },
+       "object": {
+        "ref": "self"
+       }
+      },
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "keyword": "vigilance",
+            "kind": "keyword"
+           },
+           {
+            "cost": {
+             "tap": true
+            },
+            "effect": {
+             "steps": [
+              {
+               "op": "addMana",
+               "units": [
+                [
+                 "W",
+                 "U",
+                 "B",
+                 "R",
+                 "G"
+                ]
+               ],
+               "who": {
+                "ref": "you"
+               }
+              }
+             ],
+             "targets": []
+            },
+            "isMana": true,
+            "kind": "activated"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Consul's Lieutenant",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: first strike; renown 1 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 1 +1/+1 counter on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield); whenever it attacks, if it is renowned (intervening \"if\" on the attacker, itself), other attacking creatures you control get +1/+1 until end of turn. (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "first strike",
+      "kind": "keyword"
+     },
+     {
+      "amount": 1,
+      "keyword": "renown",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "filter": {
+             "attacking": true,
+             "controller": "you",
+             "other": true,
+             "types": [
+              "Creature"
+             ]
+            },
+            "ref": "each"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 1
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "filter": {
+        "renowned": true
+       },
+       "object": {
+        "ref": "event",
+        "role": "attacker"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Relic Seeker",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: renown 1 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 1 +1/+1 counter on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield); \"When this creature becomes renowned\" (the renown action's event, triggers/normalize.ts): you may search your library for an Equipment card, reveal it, put it into your hand, then shuffle. (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "amount": 1,
+      "keyword": "renown",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "as": "b0",
+           "filter": {
+            "subtypes": [
+             "Equipment"
+            ]
+           },
+           "max": 1,
+           "op": "search",
+           "reveal": true,
+           "who": {
+            "ref": "you"
+           },
+           "zone": "library"
+          },
+          {
+           "op": "move",
+           "to": {
+            "zone": "hand"
+           },
+           "what": {
+            "name": "b0",
+            "ref": "bound"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "renowned"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Constable of the Realm",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: renown 2 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 2 +1/+1 counters on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield); whenever one or more +1/+1 counters are put on it (renown's counters too), exile up to one other target nonland permanent until it leaves the battlefield. (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "amount": 2,
+      "keyword": "renown",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "until": {
+          "d": "until",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "self": true
+           }
+          }
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "notTypes": [
+           "Land"
+          ],
+          "other": true
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "change": "put",
+         "ev": "counters",
+         "kind": "+1/+1",
+         "on": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Citadel Castellan",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: vigilance; renown 2 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 2 +1/+1 counters on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield). (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "amount": 2,
+      "keyword": "renown",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rhox Maulers",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: trample; renown 2 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 2 +1/+1 counters on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield). (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "amount": 2,
+      "keyword": "renown",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Akroan Sergeant",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: first strike; renown 1 (keyword renown, keywords/data/renown.json): when it deals combat damage to a player, if it isn't renowned (intervening \"if\", checked again on resolution), 1 +1/+1 counter on it and it becomes renowned (GameObject.renowned, until it leaves the battlefield). (CR 702.112a-b, 603.4, 400.7; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "first strike",
+      "kind": "keyword"
+     },
+     {
+      "amount": 1,
+      "keyword": "renown",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Goblin Freerunner",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: surge {1}{R} (keyword surge, keywords/data/surge.json): an alternative cost named surge, offered only when its caster has cast another spell this turn (spellsCastThisTurn >= 1 as it is announced; there are no teammates in this engine); menace. (CR 702.117a-b, 118.9, 601.2b, 601.2i; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "surge",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "menace",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tyrant of Valakut",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: surge {3}{R}{R} (keyword surge, keywords/data/surge.json): an alternative cost named surge, offered only when its caster has cast another spell this turn (spellsCastThisTurn >= 1 as it is announced; there are no teammates in this engine); flying; when it enters, if its surge cost was paid (wasCast via surge, an intervening \"if\"), it deals 3 damage to any target. (CR 702.117a-b, 118.9, 601.2b, 601.2i; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "surge",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": 3,
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "anyTarget",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "wasCast",
+       "via": "surge"
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Jwar Isle Avenger",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: surge {2}{U} (keyword surge, keywords/data/surge.json): an alternative cost named surge, offered only when its caster has cast another spell this turn (spellsCastThisTurn >= 1 as it is announced; there are no teammates in this engine); flying. (CR 702.117a-b, 118.9, 601.2b, 601.2i; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "surge",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Grip of the Roil",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: surge {1}{U} (keyword surge, keywords/data/surge.json): an alternative cost named surge, offered only when its caster has cast another spell this turn (spellsCastThisTurn >= 1 as it is announced; there are no teammates in this engine); tap target creature, it doesn't untap during its controller's next untap step; draw a card. (CR 702.117a-b, 118.9, 601.2b, 601.2i; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "surge",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "tap",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "duration": {
+          "d": "throughNextUntap"
+         },
+         "effects": [
+          {
+           "action": "untapDuringUntapStep",
+           "mode": "cant",
+           "s": "restrict",
+           "subject": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Overwhelming Denial",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: surge {U}{U} (keyword surge, keywords/data/surge.json): an alternative cost named surge, offered only when its caster has cast another spell this turn (spellsCastThisTurn >= 1 as it is announced; there are no teammates in this engine); this spell can't be countered; counter target spell. (CR 702.117a-b, 118.9, 601.2b, 601.2i; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "U",
+         "kind": "colored"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "surge",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "action": "beCountered",
+        "mode": "cant",
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        }
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "counter",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "spell",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fall of the Titans",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: surge {X}{R} (keyword surge, keywords/data/surge.json): an alternative cost named surge, offered only when its caster has cast another spell this turn (spellsCastThisTurn >= 1 as it is announced; there are no teammates in this engine) (X announced with the surge cost, played in std-ry8-scenarios); it deals X damage to each of up to two targets. (CR 702.117a-b, 118.9, 601.2b, 601.2i; cites from memory, unverified) (CR 107.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "kind": "variable",
+         "name": "X"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "surge",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": {
+          "q": "X"
+         },
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "anyTarget",
+         "max": 2,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Corrupted Zendikon",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: enchant land; the enchanted land is a 3/3 black Ooze creature (sta.stdry8.enchantedLand.creature.stillLand; a static ability of the Aura: Creature type and the subtype ADDED in layer 4, its color set in layer 5, base power and toughness set in layer 7b), and it is still a land, keeping its land types and mana abilities; when the enchanted land dies (it is a creature then), it returns from the graveyard to its owner's hand (the trigger looks back at the Aura's attachment). (CR 303.4, 205.1b, 105.3, 613.1d, 613.1e, 613.1f, 613.4b, 700.4, 603.10a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "filter": {
+       "types": [
+        "Land"
+       ]
+      },
+      "keyword": "enchant",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "add": [
+            "Ooze"
+           ]
+          },
+          "types": {
+           "add": [
+            "Creature"
+           ]
+          }
+         },
+         {
+          "colors": {
+           "set": [
+            "B"
+           ]
+          },
+          "layer": 5
+         },
+         {
+          "layer": "7b",
+          "power": 3,
+          "toughness": 3
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "attachedToSource": true,
+          "types": [
+           "Land"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Guardian Zendikon",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: enchant land; the enchanted land is a 2/6 white Wall creature with defender (sta.stdry8.enchantedLand.creature.with.stillLand; a static ability of the Aura: Creature type and the subtype ADDED in layer 4, its color set in layer 5, base power and toughness set in layer 7b), and it is still a land, keeping its land types and mana abilities; when the enchanted land dies (it is a creature then), it returns from the graveyard to its owner's hand (the trigger looks back at the Aura's attachment). (CR 303.4, 205.1b, 105.3, 613.1d, 613.1e, 613.1f, 613.4b, 700.4, 603.10a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "filter": {
+       "types": [
+        "Land"
+       ]
+      },
+      "keyword": "enchant",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "add": [
+            "Wall"
+           ]
+          },
+          "types": {
+           "add": [
+            "Creature"
+           ]
+          }
+         },
+         {
+          "colors": {
+           "set": [
+            "W"
+           ]
+          },
+          "layer": 5
+         },
+         {
+          "add": [
+           {
+            "keyword": "defender",
+            "kind": "keyword"
+           }
+          ],
+          "layer": 6
+         },
+         {
+          "layer": "7b",
+          "power": 2,
+          "toughness": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "attachedToSource": true,
+          "types": [
+           "Land"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Vastwood Zendikon",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, Commander lane ry8; tuning half, not Standard), by hand against the Oracle text and the rules cited: enchant land; the enchanted land is a 6/4 green Elemental creature (sta.stdry8.enchantedLand.creature.stillLand; a static ability of the Aura: Creature type and the subtype ADDED in layer 4, its color set in layer 5, base power and toughness set in layer 7b), and it is still a land, keeping its land types and mana abilities; when the enchanted land dies (it is a creature then), it returns from the graveyard to its owner's hand (the trigger looks back at the Aura's attachment). (CR 303.4, 205.1b, 105.3, 613.1d, 613.1e, 613.1f, 613.4b, 700.4, 603.10a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "filter": {
+       "types": [
+        "Land"
+       ]
+      },
+      "keyword": "enchant",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "add": [
+            "Elemental"
+           ]
+          },
+          "types": {
+           "add": [
+            "Creature"
+           ]
+          }
+         },
+         {
+          "colors": {
+           "set": [
+            "G"
+           ]
+          },
+          "layer": 5
+         },
+         {
+          "layer": "7b",
+          "power": 6,
+          "toughness": 4
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "attachedToSource": true,
+          "types": [
+           "Land"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Aragorn, Hornburg Hero",
+  "expect": "full",
+  "verified": "std-ry8 review (card wave 2, made full by the renown fix; tuning half, not Standard), by hand against the Oracle text and the rules cited: attacking creatures you control have first strike and renown 1 (keyword renown granted in layer 6; its triggered ability is the granted keyword's, keywords/data/renown.json); whenever a renowned creature you control deals combat damage to a player (the source matched as the damage is dealt, so the hit that makes it renowned does not trigger this), double the number of +1/+1 counters on it (doubleCounters of that creature). (CR 702.112a-b, 613.1f, 603.2, 701.10e; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "attacking": true,
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "keyword": "first strike",
+            "kind": "keyword"
+           },
+           {
+            "amount": 1,
+            "keyword": "renown",
+            "kind": "keyword"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "action": "doubleCounters",
+         "arg": "+1/+1",
+         "op": "action",
+         "subject": {
+          "ref": "event",
+          "role": "source"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "combat": true,
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "controller": "you",
+          "renowned": true,
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

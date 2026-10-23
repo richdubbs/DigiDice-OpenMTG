@@ -1,0 +1,1604 @@
+[
+  {
+    "id": "eff.fxz.you.discard.loselife.and",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you discard {n:Qty} card[s] , lose {m:Qty} life , and {e:Effects}",
+    "build": {
+      "$concat": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$m"
+        },
+        "$e"
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you discard a card, lose 1 life, and scry 1."
+      },
+      {
+        "text": "When this creature leaves the battlefield, you discard two cards, lose 4 life, and sacrifice two creatures."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target player discards a card, loses 1 life, and scries 1.",
+      "At the beginning of your upkeep, you discard a card, lose 1 life for each card in your hand, and scry 1."
+    ]
+  },
+  {
+    "id": "eff.fxz.put.self.gy.libraryTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 401.1"
+    ],
+    "pattern": "put ~ from your graveyard on top of your library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "library",
+        "position": "top"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever a Forest you control enters, you may put this card from your graveyard on top of your library."
+      },
+      {
+        "text": "{2}{G}: Put this card from your graveyard on top of your library."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a Forest you control enters, you may put this card from your graveyard on the bottom of your library.",
+      "{2}{G}: Put this card from your graveyard into your hand."
+    ]
+  },
+  {
+    "id": "eff.fxz.unless.cond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2e"
+    ],
+    "pattern": "{e:Effects} unless {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "not",
+        "of": "$c"
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "weak": 1,
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you lose 1 life unless you control a Wizard."
+      },
+      {
+        "text": "At the beginning of your end step, sacrifice a creature unless you gained life this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you lose 1 life unless you pay {1}.",
+      "At the beginning of your upkeep, you lose 1 life if you control a Wizard."
+    ]
+  },
+  {
+    "id": "eff.fxz.each.opponent.loselife.unless.sacrificeOrDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 119.3",
+      "CR 701.21a",
+      "CR 701.9a",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent loses {n:Qty} life unless that player sacrifices ( a | an ) {f:Filter} of their choice or discards a card",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$f",
+                "count": 1
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "pay",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "cost": {
+                "other": [
+                  {
+                    "kind": "discard",
+                    "count": 1
+                  }
+                ]
+              },
+              "else": [
+                {
+                  "op": "loseLife",
+                  "who": {
+                    "ref": "bound",
+                    "name": "each"
+                  },
+                  "amount": "$n"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each opponent loses 2 life unless that player sacrifices a creature of their choice or discards a card."
+      },
+      {
+        "text": "When this creature enters, each opponent loses 4 life unless that player sacrifices a nonland permanent of their choice or discards a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, each opponent loses 2 life unless that player sacrifices a creature of their choice and discards a card.",
+      "At the beginning of your end step, each opponent loses 2 life if that player sacrifices a creature of their choice or discards a card."
+    ]
+  },
+  {
+    "id": "eff.fxz.put.self.hand.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 602.2",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "put ~ from your hand onto the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{G}{G}: Put this card from your hand onto the battlefield. Activate only as a sorcery."
+      },
+      {
+        "text": "{1}{G}: Put this card from your hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}{G}: Put this card from your graveyard onto the battlefield. Activate only as a sorcery.",
+      "{2}{G}{G}: Put this card from your hand onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.fxz.return.bf.owner.tapped.counters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 614.1c",
+      "CR 122.6",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Objs} to the battlefield tapped under its owner 's control with {c:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "tapped": true,
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$c"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature dies, return it to the battlefield tapped under its owner's control with two stun counters on it."
+      },
+      {
+        "text": "Exile target creature you control, then return that card to the battlefield tapped under its owner's control with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "When this creature dies, return it to the battlefield tapped under your control with two stun counters on it.",
+      "When this creature dies, return it to the battlefield under its owner's control with two stun counters on it."
+    ]
+  },
+  {
+    "id": "eff.fxz.search.library.oneOfTwo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card or {g:Filter} card",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {
+        "anyOf": [
+          "$f",
+          "$g"
+        ]
+      },
+      "max": 1,
+      "as": "search"
+    },
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "When this creature enters, search your library for a basic land card or Desert card, put it onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "When this creature enters, search your library for a basic land card or Gate card, put it onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, search your library for a basic land card and a Gate card, put them onto the battlefield tapped, then shuffle.",
+      "When this creature enters, search your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.fxz.if.castAnother.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 608.2c",
+      "CR 109.2",
+      "CR 400.7"
+    ],
+    "pattern": "if you've cast another spell this turn , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "happened",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "other": true
+          }
+        },
+        "scope": "turn",
+        "times": {
+          "op": ">=",
+          "value": 1
+        }
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "This spell deals 3 damage to any target. If you've cast another spell this turn, draw a card."
+      },
+      {
+        "text": "Target creature gets +2/+2 until end of turn. If you've cast another spell this turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "This spell deals 3 damage to any target. If you've cast two other spells this turn, draw a card.",
+      "This spell deals 3 damage to any target. If an opponent has cast another spell this turn, draw a card."
+    ]
+  },
+  {
+    "id": "eff.fxz.draw.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} draw[s] x cards , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "draw",
+          "who": "$p",
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "{T}: Target player draws X cards, where X is the number of artifacts you control."
+      },
+      {
+        "text": "At the beginning of your upkeep, target player draws X cards, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, draw X cards.",
+      "When this creature enters, draw X cards and lose X life, where X is the number of Elves you control."
+    ]
+  },
+  {
+    "id": "eff.fxz.draw.whereX.imp",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "draw x cards , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "When this creature enters, draw X cards, where X is the number of Elves you control."
+      },
+      {
+        "text": "{T}: Draw X cards, where X is the number of artifacts you control. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, draw X cards.",
+      "When this creature enters, draw X cards and lose X life, where X is the number of Elves you control."
+    ]
+  },
+  {
+    "id": "eff.fxz.you.then.loselife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you {e:Effects} , then lose {n:Qty} life",
+    "build": {
+      "$concat": [
+        "$e",
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature deals combat damage to a player, you draw two cards, create a Treasure token, then lose 2 life."
+      },
+      {
+        "text": "When this creature enters, you draw a card, then lose 1 life."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, target player draws a card, then loses 1 life.",
+      "When this creature enters, you draw a card, then lose 1 life for each card in your hand."
+    ]
+  },
+  {
+    "id": "eff.fxz.you.and.loselife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you {e:Effects} , and lose {n:Qty} life",
+    "build": {
+      "$concat": [
+        "$e",
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever this creature deals combat damage to a player, you draw two cards, create a Treasure token, and lose 2 life."
+      },
+      {
+        "text": "When this creature enters, you draw a card, scry 1, and lose 1 life."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, target player draws a card, and loses 1 life.",
+      "When this creature enters, you draw a card, and lose 1 life for each card in your hand."
+    ]
+  },
+  {
+    "id": "eff.fxz.put.upTo.battlefield.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "put up to {n:Qty} {f:Filter} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Put up to two land cards from your hand onto the battlefield tapped."
+      },
+      {
+        "text": "Put up to three land cards from your hand and/or graveyard onto the battlefield tapped. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Put up to two land cards from your hand onto the battlefield.",
+      "Put two land cards from your hand onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.fxz.put.eitherOr.fromHand.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card and/or ( a | an ) {g:Filter} card from your hand onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenOther"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenOther"
+            }
+          ]
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature deals combat damage to a player, you may put an artifact card and/or a land card from your hand onto the battlefield."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may put a creature card and/or an enchantment card from your hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature deals combat damage to a player, you may put an artifact card or a land card from your hand onto the battlefield.",
+      "Whenever this creature deals combat damage to a player, you may put an artifact card and/or a land card from your graveyard onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.fxz.sacrifice.anyNumber.list.tokens",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d"
+    ],
+    "pattern": "sacrifice any number of {a:Filter} , {b:Filter} , and/or tokens",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "anyOf": [
+              "$a",
+              "$b",
+              {
+                "token": true
+              }
+            ]
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "toSacrifice"
+      },
+      {
+        "op": "sacrifice",
+        "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "Sacrifice any number of creatures, artifacts, and/or tokens. Draw two cards."
+      },
+      {
+        "text": "Sacrifice any number of creatures, lands, and/or tokens. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice any number of artifacts, enchantments, or tokens. You gain 2 life.",
+      "Sacrifice two artifacts, enchantments, and/or tokens. You gain 2 life."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.fxz.return.n.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "return {n:Qty} {f:Filter} to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Mill three cards, then return a creature card from your graveyard to the battlefield."
+      },
+      {
+        "text": "Return two creature cards from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Return two creature cards from your graveyard to your hand.",
+      "Return two creature cards from your graveyard to the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.fxz.dig.putAll.hand.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 401.4",
+      "CR 608.2c"
+    ],
+    "pattern": "put all {f:Filter} cards from among {g:Seen} into your hand and the rest on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, reveal the top five cards of your library. Put all artifact cards from among them into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal the top six cards of your library. Put all land cards from among them into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top six cards of your library. Put all land cards from among them into your hand and the rest into your graveyard.",
+      "Reveal the top six cards of your library. Put a land card from among them into your hand and the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.fxz.dig.anyNumber.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 110.2"
+    ],
+    "pattern": "put any number of {f:Filter} cards from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may put any number of creature cards from among them onto the battlefield. Then shuffle."
+      },
+      {
+        "text": "When this creature enters, look at the top four cards of your library. Put any number of artifact cards from among them onto the battlefield. Then shuffle."
+      },
+      {
+        "text": "Look at the top six cards of your library. You may put an Elf card from among them onto the battlefield. If you control a Wizard, put any number of Elf cards from among them onto the battlefield instead. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may put a creature card from among them onto the battlefield. Then shuffle.",
+      "Look at the top six cards of your library. You may put any number of creature cards from among them into your hand. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.fxz.dig.anyNumber.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a"
+    ],
+    "pattern": "put any number of {f:Filter} cards from among {g:Seen} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may put any number of land cards from among them onto the battlefield tapped. Then shuffle."
+      },
+      {
+        "text": "When this creature enters, look at the top four cards of your library. Put any number of land cards from among them onto the battlefield tapped. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may put a creature card from among them onto the battlefield tapped. Then shuffle.",
+      "Look at the top six cards of your library. You may put any number of creature cards from among them into your hand. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.fxz.dig.anyNumber.nonlandPermanent.mvAtMost.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 110.4",
+      "CR 202.3"
+    ],
+    "pattern": "put any number of nonland permanent cards with mana value {n:Qty} or less from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top X cards of your library, where X is your life total. You may put any number of nonland permanent cards with mana value 3 or less from among them onto the battlefield. Then shuffle."
+      },
+      {
+        "text": "Look at the top ten cards of your library. Put any number of nonland permanent cards with mana value 2 or less from among them onto the battlefield. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top ten cards of your library. Put any number of nonland permanent cards with mana value 2 or greater from among them onto the battlefield. Then shuffle.",
+      "Look at the top ten cards of your library. Put any number of nonland cards with mana value 2 or less from among them onto the battlefield. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.fxz.dig.put.mvAtMost.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 202.3"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card with mana value {n:Qty} or less from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top four cards of your library. You may put a creature card with mana value 4 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When this creature enters, look at the top six cards of your library. You may put an artifact card with mana value 2 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top four cards of your library. You may put a creature card with mana value 4 or greater from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top four cards of your library. You may put a creature card with mana value 4 or less from among them into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "dl.fxz.endStep.onYourNextTurn.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 513.1"
+    ],
+    "pattern": "at the beginning of the end step on your next turn , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "whose": "you",
+        "turn": "later"
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, create a Clue token. At the beginning of the end step on your next turn, sacrifice that token."
+      },
+      {
+        "text": "Draw two cards. At the beginning of the end step on your next turn, discard a card."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. At the beginning of your next end step, discard a card.",
+      "Draw two cards. At the beginning of the end step on each of your turns, discard a card."
+    ]
+  },
+  {
+    "id": "eff.fxz.sacrifice.all.youControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c"
+    ],
+    "pattern": "sacrifice all {f:Filter} you control",
+    "build": {
+      "op": "sacrifice",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "III — Sacrifice all Spirits you control."
+      },
+      {
+        "text": "At the beginning of your end step, sacrifice all tokens you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, sacrifice all tokens your opponents control.",
+      "At the beginning of your end step, sacrifice a token you control."
+    ]
+  },
+  {
+    "id": "kw.fxz.mobilize.whereX",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.181a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "mobilize x , where x is {q:Qty}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "mobilize",
+      "amount": "$q"
+    },
+    "examples": [
+      {
+        "text": "Mobilize X, where X is the number of creature cards in your graveyard."
+      },
+      {
+        "text": "Mobilize X, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Mobilize X.",
+      "Mobilize X, where X is the number of creature cards in your graveyard. Activate only once each turn."
+    ]
+  },
+  {
+    "id": "sta.fxz.activate.asThoughHaste",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 302.6",
+      "CR 602.5a",
+      "CR 609.4"
+    ],
+    "pattern": "you may activate abilities of {f:Filter} as though those creatures had haste",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "activate",
+          "of": "$f",
+          "asThough": "those creatures had haste"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "You may activate abilities of Wizards you control as though those creatures had haste."
+      },
+      {
+        "text": "You may activate abilities of Elves you control as though those creatures had haste."
+      }
+    ],
+    "counterExamples": [
+      "You may cast Elf spells as though they had flash.",
+      "You may activate abilities of Elves you control as though those creatures had flying."
+    ]
+  },
+  {
+    "id": "eff.fxz.player.draws.andGains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draws {n:Qty} card[s] and gains {m:Qty} life",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "gainLife",
+        "who": "$p",
+        "amount": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "{T}: Target player draws two cards and gains 2 life."
+      },
+      {
+        "text": "When this creature enters, target player draws a card and gains 4 life."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target player draws two cards and loses 2 life.",
+      "{T}: Target player draws two cards and you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.fxz.exile.chosen.one",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "exile ( a | an ) {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "When this creature enters, you may exile a nonland card with mana value 2 or less from your hand."
+      },
+      {
+        "text": "Draw a card, then exile a creature card from a graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card, then exile two creature cards from a graveyard.",
+      "Draw a card, then exile target creature card from a graveyard."
+    ]
+  },
+  {
+    "id": "eff.fxz.exile.chosen.oneOrMore",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "exile one or more {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": "any",
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "When this creature enters, you may exile one or more land cards from your graveyard."
+      },
+      {
+        "text": "Draw a card, then exile one or more creature cards from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card, then exile two or more creature cards from your graveyard.",
+      "Draw a card, then exile any number of target creature cards from your graveyard."
+    ]
+  },
+  {
+    "id": "eff.fxz.put.upTo.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "put up to {n:Qty} {f:Filter} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, you may put up to two creature cards from your hand onto the battlefield."
+      },
+      {
+        "text": "Put up to three artifact cards from your graveyard onto the battlefield. You lose 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Put up to three artifact cards from your graveyard onto the battlefield tapped. You lose 3 life.",
+      "Put three artifact cards from your graveyard onto the battlefield. You lose 3 life."
+    ]
+  },
+  {
+    "id": "eff.fxz.shuffle.handAndGraveyardInto.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.1",
+      "CR 402.1",
+      "CR 404.1"
+    ],
+    "pattern": "shuffle your hand and graveyard into your library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "hand",
+              "graveyard"
+            ],
+            "owner": "you"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, shuffle your hand and graveyard into your library, then draw five cards."
+      },
+      {
+        "text": "Shuffle your hand and graveyard into your library. You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Shuffle your hand into your library, then draw five cards.",
+      "Shuffle your graveyard into your library, then draw five cards."
+    ]
+  },
+  {
+    "id": "eff.fxz.draw.half.roundedDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.1a",
+      "CR 121.1",
+      "CR 608.2h"
+    ],
+    "pattern": "draw half {n:Qty} cards , rounded down",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          "$n",
+          2
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "Scry X. Then draw half X cards, rounded down."
+      },
+      {
+        "text": "{X}, {T}: Draw half X cards, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "Scry X. Then draw half X cards, rounded up.",
+      "Scry X. Then draw X cards."
+    ]
+  },
+  {
+    "id": "eff.fxz.draw.half.roundedUp",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.1a",
+      "CR 121.1",
+      "CR 608.2h"
+    ],
+    "pattern": "draw half {n:Qty} cards , rounded up",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          "$n",
+          2
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "Scry X. Then draw half X cards, rounded up."
+      },
+      {
+        "text": "{X}, {T}: Draw half X cards, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Scry X. Then draw half X cards, rounded down.",
+      "Scry X. Then draw X cards."
+    ]
+  }
+]

@@ -1,0 +1,6 @@
+# std-library-1 (account B lane std-library; test/cloud/std-library-1, golden cloud-std-library-1-review.json): any number of cards with different powers from
+# among a group; a target group limit in another player's graveyard; targets of a step-timed delayed trigger
+Rip, Spawn Hunter
+Majestic Genesis
+Feral Encounter
+The Rise of Sozin // Fire Lord Sozin

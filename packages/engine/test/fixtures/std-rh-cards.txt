@@ -1,0 +1,13 @@
+# Standard round H (slot H of F-J; test/cloud/std-rh, golden cloud-std-rh-review.json)
+# "your life total is at least N greater than your starting life total"; "~ gets an additional +N/+N as long as C"; one static ability per conditional sentence
+Elenda, Saint of Dusk
+# "becomes a P/T Subtype creature with abilities that's still a land"
+Brave the Wilds
+# "put any number of permanent cards with mana value X or less from among them onto the battlefield"; "all cards revealed this way that weren't put onto the battlefield"
+Genesis Wave
+# "Until end of turn, you may cast spells from among those cards, and mana of any type can be spent to cast those spells"
+Laughing Jasper Flint
+# "the exiled card used to craft it"
+Jade Seedstones // Jadeheart Attendant
+# "Unlock costs you pay cost {1} less"
+Inquisitive Glimmer

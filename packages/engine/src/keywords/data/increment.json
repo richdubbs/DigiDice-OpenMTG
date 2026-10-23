@@ -1,0 +1,87 @@
+{
+  "name": "increment",
+  "rule": "702.191",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power or toughness, put a +1/+1 counter on this creature.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever you cast a spell, if ~ is a creature and the amount of mana spent to cast that spell is greater than ~'s power or ~'s toughness, put a +1/+1 counter on ~.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          {
+            "cond": "any",
+            "of": [
+              {
+                "cond": "compare",
+                "left": {
+                  "q": "spellManaSpent"
+                },
+                "op": ">",
+                "right": {
+                  "q": "stat",
+                  "stat": "power",
+                  "of": {
+                    "ref": "self"
+                  }
+                }
+              },
+              {
+                "cond": "compare",
+                "left": {
+                  "q": "spellManaSpent"
+                },
+                "op": ">",
+                "right": {
+                  "q": "stat",
+                  "stat": "toughness",
+                  "of": {
+                    "ref": "self"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "+1/+1",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

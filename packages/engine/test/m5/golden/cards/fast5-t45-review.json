@@ -1,0 +1,1751 @@
+[
+ {
+  "card": "Teach by Example",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy): a delayed triggered ability created as the spell or ability resolves (CR 603.7, 603.7a), waiting for the next spell of the described kind its controller casts this turn: it triggers once (CR 603.7b) and ends with the turn; the copy is a copy of the spell that was cast (CR 707.10) and its controller may choose new targets for it (CR 707.10c; rid.copy.newTargets)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Doublecast",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy): a delayed triggered ability created as the spell or ability resolves (CR 603.7, 603.7a), waiting for the next spell of the described kind its controller casts this turn: it triggers once (CR 603.7b) and ends with the turn; the copy is a copy of the spell that was cast (CR 707.10) and its controller may choose new targets for it (CR 707.10c; rid.copy.newTargets)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Galvanic Iteration",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy): a delayed triggered ability created as the spell or ability resolves (CR 603.7, 603.7a), waiting for the next spell of the described kind its controller casts this turn: it triggers once (CR 603.7b) and ends with the turn; the copy is a copy of the spell that was cast (CR 707.10) and its controller may choose new targets for it (CR 707.10c; rid.copy.newTargets); the flashback line is the keyword as before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "flashback",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dual Strike",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy): a delayed triggered ability created as the spell or ability resolves (CR 603.7, 603.7a), waiting for the next spell of the described kind its controller casts this turn: it triggers once (CR 603.7b) and ends with the turn; the copy is a copy of the spell that was cast (CR 707.10) and its controller may choose new targets for it (CR 707.10c; rid.copy.newTargets): the mana value 4 or less is a filter of the cast event (CR 202.3), judged as the spell is cast",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "manaValue": {
+             "op": "<=",
+             "value": 4
+            },
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "foretell",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Complete the Circuit",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy.twice, rid.t45.copy.newTargets.plural): the same delayed triggered ability with two copies (CR 707.10: each copy is put onto the stack, none is cast) and new targets for each copy (CR 707.10c); the flash permission line and convoke read as before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "convoke",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "action": "haveFlash",
+           "of": {
+            "types": [
+             "Sorcery"
+            ],
+            "zone": "stack"
+           },
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "do": [
+          {
+           "count": 2,
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Summon: G.F. Cerberus",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy, eff.t45.next.cast.copy.twice, rid.t45.copy.newTargets.plural): chapters II and III create the delayed triggered ability of one and of two copies (CR 714.2, 603.7b, 707.10, 707.10c); the flavor words after the chapter numerals are labels with no rules meaning (CR 207.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "surveil",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       2
+      ],
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       3
+      ],
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "count": 2,
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Jeong Jeong, the Deserter",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy.newTargets): the exhaust ability (once per game, CR 702.177a) puts a counter and creates the delayed triggered ability for the next Lesson spell (CR 603.7b), which is copied with new targets allowed (CR 707.10, 707.10c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "amount": 1,
+      "keyword": "firebending",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "subtypes": [
+             "Lesson"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "keyword": "exhaust",
+      "kind": "activated",
+      "limit": {
+       "max": 1,
+       "per": "game"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thousand-Year Storm",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.copy.forEachOtherCastBefore, rid.t45.copy.newTargets.plural): the number of copies is the number of OTHER instant and sorcery spells the controller cast before this one this turn (fixed as the spell is cast, CR 702.40a reading; `beforeEvent`); copies are not cast so they never count (CR 707.10); new targets for each copy (CR 707.10c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "beforeEvent": true,
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          },
+          "q": "happenedCount",
+          "scope": "turn"
+         },
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Flamehold Grappler",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.spell.copy): when the creature enters, a delayed triggered ability waits for the next spell of any kind its controller casts this turn (CR 603.7b), copies it (CR 707.10; a copy of a permanent spell becomes a token, 707.10f) and may choose new targets (CR 707.10c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "first strike",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you"
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fire Lord Azula",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (trg.t45.cast.whileSelfAttacking): a cast trigger whose event condition (`while`) is that the creature is attacking when the spell is cast, judged once when the event happens (CR 603.2, 508.1); the copy as before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "amount": 2,
+      "keyword": "firebending",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you"
+        }
+       ],
+       "while": {
+        "cond": "matches",
+        "filter": {
+         "attacking": true
+        },
+        "object": {
+         "ref": "self"
+        }
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mica, Reader of Ruins",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.copy.andNewTargets): you may sacrifice an artifact (CR 608.2d); if you do, the triggering spell is copied (CR 707.10) and its controller may choose new targets for the copy (CR 707.10c) in the same instruction",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "other": [
+        {
+         "amount": 3,
+         "kind": "payLife"
+        }
+       ]
+      },
+      "keyword": "ward",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "count": 1,
+           "filter": {
+            "types": [
+             "Artifact"
+            ]
+           },
+           "op": "sacrificeChoice",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "b0"
+         },
+         "op": "if",
+         "then": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Chancellor of Tales",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (rid.copy.newTargets reaches the copy inside 'you may copy it'): the optional copy of the Adventure spell just cast and, when it is made, new targets (CR 707.10, 707.10c, 608.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "subtypes": [
+           "Adventure"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Leyline of Resonance",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (filter targetsOnly): the spell has exactly one different target, a creature its caster controls (CR 115.9c); copied with new targets allowed (CR 707.10c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "action": "beginOnBattlefield",
+        "optional": true,
+        "s": "pregame"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "hand"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "targetsOnly": {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           },
+           "ref": "each"
+          },
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Reflective Golem",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (filter targetsOnly): the spell targets only this creature (CR 115.9c); you may pay {2}; if you do, copy it with new targets allowed (CR 118.12, 707.10, 707.10c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "cost": {
+          "mana": [
+           {
+            "amount": 2,
+            "kind": "generic"
+           }
+          ]
+         },
+         "op": "pay",
+         "then": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "targetsOnly": {
+           "ref": "self"
+          },
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Peter Parker's Camera",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (the activated-or-triggered ability filter): a target ability on the stack that the controller controls, of either kind (CR 113.3b-c); the copy and new targets for it (CR 707.10, 707.10c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 3,
+           "kind": "film"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "counter": "film",
+         "kind": "removeCounters",
+         "self": true
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "anyOf": [
+           {
+            "stackKind": "activatedAbility"
+           },
+           {
+            "stackKind": "triggeredAbility"
+           }
+          ],
+          "controller": "you"
+         },
+         "id": "t0",
+         "kind": "ability",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Echo, Perceptive Prodigy",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (filter abilitySource): the target ability on the stack is the controller's and comes from a creature source, as that source last existed (CR 113.7a, 608.2h); copied with new targets allowed (CR 707.10, 707.10c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "abilitySource": {
+           "types": [
+            "Creature"
+           ]
+          },
+          "anyOf": [
+           {
+            "stackKind": "activatedAbility"
+           },
+           {
+            "stackKind": "triggeredAbility"
+           }
+          ],
+          "controller": "you"
+         },
+         "id": "t0",
+         "kind": "ability",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Scientist Supreme of A.I.M.",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (filter abilitySource): as Echo with an artifact source; pay 2 life as the cost (CR 118.4), activate only during your turn and only once each turn (CR 602.5b, in either order)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "other": [
+        {
+         "amount": 2,
+         "kind": "payLife"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "abilitySource": {
+           "types": [
+            "Artifact"
+           ]
+          },
+          "anyOf": [
+           {
+            "stackKind": "activatedAbility"
+           },
+           {
+            "stackKind": "triggeredAbility"
+           }
+          ],
+          "controller": "you"
+         },
+         "id": "t0",
+         "kind": "ability",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated",
+      "limit": {
+       "max": 1,
+       "per": "turn"
+      },
+      "onlyIf": {
+       "cond": "turnOf",
+       "whose": "you"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Double Down",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (the outlaw filter of the cast event, CR 700.12): a spell that is an Assassin, Mercenary, Pirate, Rogue or Warlock; copy it (CR 707.10; a copy of a permanent spell becomes a token, 707.10f)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "subtypes": [
+           "Assassin",
+           "Mercenary",
+           "Pirate",
+           "Rogue",
+           "Warlock"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Loki Laufeyson",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy with a comparison of the spell's mana value, CR 202.3, to the creature's power as the spell is cast); power-up as before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "manaValue": {
+             "op": "<=",
+             "value": {
+              "of": {
+               "ref": "self"
+              },
+              "q": "stat",
+              "stat": "power"
+             }
+            },
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 4,
+         "kind": "generic"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "keyword": "power-up",
+      "kind": "activated",
+      "limit": {
+       "max": 1,
+       "per": "game"
+      },
+      "reducedByManaCost": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gadwick's First Duel",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy): chapter III creates the delayed triggered ability for the next instant or sorcery spell with mana value 3 or less (CR 714.2, 603.7b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "steps": [
+        {
+         "attachTo": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Cursed Role"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       2
+      ],
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "op": "scry",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       3
+      ],
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "manaValue": {
+             "op": "<=",
+             "value": 3
+            },
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sword of Wealth and Power",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy): after the Treasure, the delayed triggered ability the equipped creature's damage trigger creates (CR 603.7); protection from instants and from sorceries as before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "add": [
+           {
+            "keyword": "protection",
+            "kind": "keyword",
+            "quality": "type:Instant"
+           },
+           {
+            "keyword": "protection",
+            "kind": "keyword",
+            "quality": "type:Sorcery"
+           }
+          ],
+          "layer": 6
+         },
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 2
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Treasure"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "combat": true,
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "attachedToSource": true
+         }
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ]
+      },
+      "keyword": "equip",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Virtue of Knowledge // Vantress Visions",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (the activated-or-triggered ability filter): Vantress Visions copies a target activated or triggered ability its controller controls (CR 113.3b-c, 707.10)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "abilitiesOf": {
+         "controller": "you"
+        },
+        "additional": 1,
+        "cause": {
+         "ev": "zoneChange",
+         "subject": {},
+         "to": "battlefield"
+        },
+        "s": "triggerMod"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "anyOf": [
+           {
+            "stackKind": "activatedAbility"
+           },
+           {
+            "stackKind": "triggeredAbility"
+           }
+          ],
+          "controller": "you"
+         },
+         "id": "t0",
+         "kind": "ability",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Pigment Wrangler // Striking Palette",
+  "expect": "full",
+  "verified": "FAST5 T45 review, by hand against the Oracle text and the rules cited (eff.t45.next.cast.copy): a delayed triggered ability created as the spell or ability resolves (CR 603.7, 603.7a), waiting for the next spell of the described kind its controller casts this turn: it triggers once (CR 603.7b) and ends with the turn; the copy is a copy of the spell that was cast (CR 707.10) and its controller may choose new targets for it (CR 707.10c; rid.copy.newTargets); the prepared creature face as before",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "prepared": true
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "once": true,
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ }
+]

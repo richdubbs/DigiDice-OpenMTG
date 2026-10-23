@@ -1,0 +1,21 @@
+{
+  "name": "mutate",
+  "rule": "702.140",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "structural"
+  ],
+  "reminder": "If you cast this spell for its mutate cost, put it over or under target non-Human creature you own. They mutate into the creature on top plus all abilities from under it.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "actions/cast-opt/mutate.ts#mutateCost",
+    "core/resolve-parts/mutate.ts#resolveMutating"
+  ]
+}

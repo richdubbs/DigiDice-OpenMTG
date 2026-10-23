@@ -1,0 +1,34 @@
+# FAST5X E17: resolution history and last-known control (CR 608.2, 400.7, 608.2h, 601.2i) and survival's second main phase (CR 505.1b, 207.2c).
+# After editing: npm run cards -- fixtures
+
+# ---- "the Nth time this ability has resolved this turn" (CR 608.2, 400.7)
+Belladonna Took
+Venom Connoisseur
+Harvestrite Host
+Tannuk, Memorial Ensign
+Victor, Valgavoth's Seneschal
+Vito, Fanatic of Aclazotz
+South Pole Voyager
+Soulbright Seeker
+Sephiroth, Fabled SOLDIER // Sephiroth, One-Winged Angel
+
+# ---- last known control: "if you controlled it", "destroyed this way" (CR 608.2h)
+Hotshot Investigators
+Boomerang Basics
+Kellan, Inquisitive Prodigy // Tail the Suspect
+Break the Spell
+
+# ---- "as you cast this spell" (CR 601.2i)
+Steer Clear
+Faerie Fencing
+
+# ---- survival: "at the beginning of your second main phase" (CR 505.1b, 207.2c)
+Cautious Survivor
+Savior of the Small
+Kona, Rescue Beastie
+Defiant Survivor
+Acrobatic Cheerleader
+Shrewd Storyteller
+Glimmer Seeker
+Cynical Loner
+Scheming Silvertongue // Sign in Blood

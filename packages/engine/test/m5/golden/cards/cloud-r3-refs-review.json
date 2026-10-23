@@ -1,0 +1,2218 @@
+[
+ {
+  "card": "Bruce Banner // The Incredible Hulk",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.stdfdn.extraPhase.combat; r3-refs's copy folded into it in merge wave 6): front face {X}{X}, {T}: draw X cards, sorcery speed (CR 107.3, 602.5d); the transform ability (CR 701.27a); back face reach and trample; whenever ~ is dealt damage, a +1/+1 counter on ~, then, if ~ is attacking, untap ~ and there is an additional combat phase after this phase, both inside the condition (CR 120.3, 122.1, 500.8, 506.4)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "kind": "variable",
+         "name": "X"
+        },
+        {
+         "kind": "variable",
+         "name": "X"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "q": "X"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated",
+      "sorcerySpeed": true
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "changeFace",
+         "to": "transform",
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated",
+      "sorcerySpeed": true
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "keyword": "reach",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "attacking": true
+          },
+          "object": {
+           "ref": "self"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "op": "untap",
+           "what": {
+            "ref": "self"
+           }
+          },
+          {
+           "op": "extraPhase",
+           "phase": "combat"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "recipient": {
+          "object": {
+           "self": true
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Huntsman's Redemption",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.search.orCard.reveal): chapter I a 3/3 green Beast token (CR 111.1, 714.2); chapter II you may sacrifice a creature, and only if you did, search for a creature card or a BASIC land card (the supertype is the land's only, CR 205.4a), reveal it, put it into your hand, then shuffle (CR 701.21a, 701.23a, 608.2c); chapter III up to two target creatures each get +2/+2 and gain trample until end of turn (CR 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "G"
+          ],
+          "power": 3,
+          "subtypes": [
+           "Beast"
+          ],
+          "toughness": 3,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       2
+      ],
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "count": 1,
+           "filter": {
+            "types": [
+             "Creature"
+            ]
+           },
+           "op": "sacrificeChoice",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "b0"
+         },
+         "op": "if",
+         "then": [
+          {
+           "as": "b1",
+           "filter": {
+            "anyOf": [
+             {
+              "supertypes": [
+               "Basic"
+              ],
+              "types": [
+               "Land"
+              ]
+             },
+             {
+              "types": [
+               "Creature"
+              ]
+             }
+            ]
+           },
+           "max": 1,
+           "op": "search",
+           "reveal": true,
+           "who": {
+            "ref": "you"
+           },
+           "zone": "library"
+          },
+          {
+           "op": "move",
+           "to": {
+            "zone": "hand"
+           },
+           "what": {
+            "name": "b1",
+            "ref": "bound"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       3
+      ],
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 2
+            },
+            {
+             "add": [
+              {
+               "keyword": "trample",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 2,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "chapter"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Archdruid's Charm",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.search.andReveal, eff.r3refs.put.bf.tapped.ifCond): mode 1 searches for a creature or land card and reveals it, puts it onto the battlefield tapped if it is a land card, otherwise into your hand (the `else` of the same condition), then shuffles (CR 701.23a, 701.20a, 608.2c); mode 2 a +1/+1 counter on target creature you control, which deals damage equal to its power to target creature you don't control (CR 122.1, 120.3); mode 3 exiles target artifact or enchantment (CR 700.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "as": "b0",
+             "filter": {
+              "types": [
+               "Creature",
+               "Land"
+              ]
+             },
+             "max": 1,
+             "op": "search",
+             "reveal": true,
+             "who": {
+              "ref": "you"
+             },
+             "zone": "library"
+            },
+            {
+             "cond": {
+              "cond": "matches",
+              "filter": {
+               "isCard": true,
+               "types": [
+                "Land"
+               ]
+              },
+              "object": {
+               "name": "b0",
+               "ref": "bound"
+              }
+             },
+             "else": [
+              {
+               "op": "move",
+               "to": {
+                "zone": "hand"
+               },
+               "what": {
+                "name": "b0",
+                "ref": "bound"
+               }
+              }
+             ],
+             "op": "if",
+             "then": [
+              {
+               "op": "move",
+               "to": {
+                "controller": {
+                 "ref": "you"
+                },
+                "tapped": true,
+                "zone": "battlefield"
+               },
+               "what": {
+                "name": "b0",
+                "ref": "bound"
+               }
+              }
+             ]
+            },
+            {
+             "op": "shuffle",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "kind": "+1/+1",
+             "on": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "op": "putCounters"
+            },
+            {
+             "amount": {
+              "of": {
+               "id": "t0",
+               "ref": "target"
+              },
+              "q": "stat",
+              "stat": "power"
+             },
+             "op": "damage",
+             "source": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "to": {
+              "id": "t1",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "controller": "you",
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            },
+            {
+             "filter": {
+              "not": {
+               "controller": "you"
+              },
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "move",
+             "to": {
+              "zone": "exile"
+             },
+             "what": {
+              "id": "t2",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Artifact",
+               "Enchantment"
+              ]
+             },
+             "id": "t2",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dalkovan Encampment",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (the delayed-trigger fold, parser/lower/anaphora.ts#foldIntoDelay): enters tapped unless you control a Swamp or a Mountain (CR 614.1c); {T}: add {W}; {2}{W}, {T}: a delayed trigger until end of turn, whenever you attack, creates two tapped and attacking 1/1 red Warrior tokens and, inside the same trigger, sacrifices exactly those tokens at the beginning of the next end step (CR 603.7, 603.7c, 508.4, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "tapped": true,
+         "tappedUnless": {
+          "cond": "exists",
+          "of": {
+           "filter": {
+            "controller": "you",
+            "subtypes": [
+             "Mountain",
+             "Swamp"
+            ]
+           },
+           "ref": "each"
+          }
+         }
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "W"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "batch": true,
+         "do": [
+          {
+           "as": "b0",
+           "attacking": true,
+           "count": 2,
+           "op": "createToken",
+           "tapped": true,
+           "token": {
+            "colors": [
+             "R"
+            ],
+            "power": 1,
+            "subtypes": [
+             "Warrior"
+            ],
+            "toughness": 1,
+            "types": [
+             "Creature"
+            ]
+           },
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "capture": [
+            "b0"
+           ],
+           "do": [
+            {
+             "op": "sacrifice",
+             "what": {
+              "name": "b0",
+              "ref": "bound"
+             }
+            }
+           ],
+           "op": "delay",
+           "when": {
+            "at": "step",
+            "next": true,
+            "step": "end"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "attacker": {
+            "controller": "you"
+           },
+           "count": {
+            "op": ">=",
+            "value": 1
+           },
+           "ev": "attacks"
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Last Ronin",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (the delayed-trigger fold): chapter I destroys all creatures; chapter II mills four, and when you do, returns target creature card from your graveyard to your hand (CR 603.12); chapter III a delayed trigger until end of turn: whenever a creature you control attacks alone, three +1/+1 counters on THAT creature and it gains trample, lifelink and indestructible until end of turn, both sentences inside the trigger (CR 603.7, 506.5, 608.2c, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       2
+      ],
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "count": 4,
+         "op": "mill",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "do": [
+          {
+           "op": "move",
+           "to": {
+            "zone": "hand"
+           },
+           "what": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "reflexive",
+         "targets": [
+          {
+           "filter": {
+            "isCard": true,
+            "owner": "you",
+            "types": [
+             "Creature"
+            ],
+            "zone": "graveyard"
+           },
+           "id": "t0",
+           "kind": "object",
+           "max": 1,
+           "min": 1
+          }
+         ],
+         "when": {
+          "did": "did"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       3
+      ],
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "count": 3,
+           "kind": "+1/+1",
+           "on": {
+            "ref": "event",
+            "role": "attacker"
+           },
+           "op": "putCounters"
+          },
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "event",
+              "role": "attacker"
+             },
+             "mods": [
+              {
+               "add": [
+                {
+                 "keyword": "trample",
+                 "kind": "keyword"
+                },
+                {
+                 "keyword": "lifelink",
+                 "kind": "keyword"
+                },
+                {
+                 "keyword": "indestructible",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "alone": true,
+           "attacker": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           },
+           "ev": "attacks"
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Terminal Velocity",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (\"that permanent\" names the card put onto the battlefield, parser/lower/mentions.ts): you may put an artifact or creature card from your hand onto the battlefield; that permanent gains haste, a leaves-the-battlefield trigger that deals damage equal to its mana value (last known information) to each creature, and a sacrifice at the beginning of your end step, with no duration (CR 110.1, 400.7j, 611.2a, 603.10a, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "isCard": true,
+           "owner": "you",
+           "types": [
+            "Artifact",
+            "Creature"
+           ],
+           "zone": "hand"
+          },
+          "ref": "each"
+         },
+         "max": 1,
+         "min": 0,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "zone": "battlefield"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        },
+        {
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "affects": {
+            "name": "b0",
+            "ref": "bound"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "haste",
+               "kind": "keyword"
+              },
+              {
+               "effect": {
+                "steps": [
+                 {
+                  "amount": {
+                   "of": {
+                    "ref": "event",
+                    "role": "subject"
+                   },
+                   "q": "stat",
+                   "stat": "manaValue"
+                  },
+                  "op": "damage",
+                  "source": {
+                   "ref": "event",
+                   "role": "subject"
+                  },
+                  "to": {
+                   "filter": {
+                    "types": [
+                     "Creature"
+                    ]
+                   },
+                   "ref": "each"
+                  }
+                 }
+                ],
+                "targets": []
+               },
+               "kind": "triggered",
+               "trigger": {
+                "on": [
+                 {
+                  "ev": "zoneChange",
+                  "from": "battlefield",
+                  "subject": {
+                   "self": true
+                  }
+                 }
+                ]
+               }
+              },
+              {
+               "effect": {
+                "steps": [
+                 {
+                  "op": "sacrifice",
+                  "what": {
+                   "ref": "self"
+                  }
+                 }
+                ],
+                "targets": []
+               },
+               "kind": "triggered",
+               "trigger": {
+                "on": [
+                 {
+                  "ev": "step",
+                  "step": "end",
+                  "whose": "you"
+                 }
+                ]
+               }
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Roads Go Ever, Ever On",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.linked.putOne.ownersHand): chapter I searches for up to two basic Plains cards, exiles them under the link \"exiled\", shuffles, you gain 2 life; chapters II and III put ONE card exiled with ~ (you choose it) into its owner's hand (CR 607.2a, 608.2d, 400.3); chapter IV as on the base",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "filter": {
+          "subtypes": [
+           "Plains"
+          ],
+          "supertypes": [
+           "Basic"
+          ]
+         },
+         "max": 2,
+         "min": 0,
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library"
+        },
+        {
+         "link": "exiled",
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "amount": 2,
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       2,
+       3
+      ],
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "is": {
+            "link": "exiled",
+            "ref": "linked"
+           },
+           "isCard": true,
+           "zone": "any"
+          },
+          "ref": "each"
+         },
+         "max": 1,
+         "min": 1,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       4
+      ],
+      "effect": {
+       "steps": [
+        {
+         "batch": true,
+         "do": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "mods": [
+              {
+               "layer": "7c",
+               "power": {
+                "of": {
+                 "filter": {
+                  "controller": "you",
+                  "subtypes": [
+                   "Plains"
+                  ]
+                 },
+                 "ref": "each"
+                },
+                "q": "count"
+               },
+               "toughness": {
+                "of": {
+                 "filter": {
+                  "controller": "you",
+                  "subtypes": [
+                   "Plains"
+                  ]
+                 },
+                 "ref": "each"
+                },
+                "q": "count"
+               }
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "op": "delay",
+         "targets": [
+          {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           },
+           "id": "t0",
+           "kind": "object",
+           "max": 1,
+           "min": 1
+          }
+         ],
+         "when": {
+          "at": "event",
+          "event": {
+           "attacker": {
+            "controller": "you"
+           },
+           "count": {
+            "op": ">=",
+            "value": 1
+           },
+           "ev": "attacks"
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Cosmium Confluence",
+  "expect": "full",
+  "verified": "w8-followups (CR 205.1b): the Elemental subtype is added, not set (\"still a land\" keeps all the prior subtypes). r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.counters.put.onChosen.youControl): choose three modes, a mode more than once (CR 700.2d); mode 2 chooses a Cave you control as it resolves (no target, CR 608.2d), puts three +1/+1 counters on it, and it becomes a 0/0 Elemental creature with haste that is still a land, with no duration (CR 122.1, 205.1b, 613.4b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "allowRepeat": true,
+        "max": 3,
+        "min": 3,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "as": "b0",
+             "filter": {
+              "subtypes": [
+               "Cave"
+              ]
+             },
+             "max": 1,
+             "op": "search",
+             "who": {
+              "ref": "you"
+             },
+             "zone": "library"
+            },
+            {
+             "op": "move",
+             "to": {
+              "controller": {
+               "ref": "you"
+              },
+              "tapped": true,
+              "zone": "battlefield"
+             },
+             "what": {
+              "name": "b0",
+              "ref": "bound"
+             }
+            },
+            {
+             "op": "shuffle",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "as": "b1",
+             "from": {
+              "filter": {
+               "anyOf": [
+                {
+                 "subtypes": [
+                  "Cave"
+                 ]
+                }
+               ],
+               "controller": "you"
+              },
+              "ref": "each"
+             },
+             "max": 1,
+             "min": 1,
+             "op": "chooseObjects",
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "count": 3,
+             "kind": "+1/+1",
+             "on": {
+              "name": "b1",
+              "ref": "bound"
+             },
+             "op": "putCounters"
+            },
+            {
+             "duration": {
+              "d": "permanent"
+             },
+             "effects": [
+              {
+               "affects": {
+                "name": "b1",
+                "ref": "bound"
+               },
+               "mods": [
+                {
+                 "layer": 4,
+                 "subtypes": {
+                  "add": [
+                   "Elemental"
+                  ]
+                 },
+                 "types": {
+                  "add": [
+                   "Creature"
+                  ]
+                 }
+                },
+                {
+                 "add": [
+                  {
+                   "keyword": "haste",
+                   "kind": "keyword"
+                  }
+                 ],
+                 "layer": 6
+                },
+                {
+                 "layer": "7b",
+                 "power": 0,
+                 "toughness": 0
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "destroy",
+             "what": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Enchantment"
+              ]
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Trickster's Stratagem",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.ownerOf.secondFromTopOrBottom): the owner of target creature an opponent controls chooses second from the top or the bottom of their library and puts it there (CR 401.3, 400.3, 608.2d); then up to one target creature you control connives (CR 701.50a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "link": "libraryPlace",
+         "op": "chooseValue",
+         "options": [
+          "second from the top",
+          "bottom"
+         ],
+         "what": "option",
+         "who": {
+          "object": {
+           "id": "t0",
+           "ref": "target"
+          },
+          "ref": "ownerOf"
+         }
+        },
+        {
+         "cond": {
+          "cond": "chosen",
+          "equals": "second from the top",
+          "link": "libraryPlace"
+         },
+         "op": "if",
+         "then": [
+          {
+           "op": "move",
+           "to": {
+            "position": {
+             "nth": 2
+            },
+            "zone": "library"
+           },
+           "what": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ]
+        },
+        {
+         "cond": {
+          "cond": "chosen",
+          "equals": "bottom",
+          "link": "libraryPlace"
+         },
+         "op": "if",
+         "then": [
+          {
+           "op": "move",
+           "to": {
+            "position": "bottom",
+            "zone": "library"
+           },
+           "what": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ]
+        },
+        {
+         "action": "connive",
+         "op": "action",
+         "subject": {
+          "id": "t1",
+          "ref": "target"
+         },
+         "who": {
+          "object": {
+           "id": "t1",
+           "ref": "target"
+          },
+          "ref": "controllerOf"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "opponent",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        },
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t1",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Vision Quest",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.search.libraryAndOrGraveyard.battlefield.additionalCounters): search your library and/or graveyard for an artifact creature card with mana value X or less, put it onto the battlefield with X +1/+1 counters (CR 701.23a, 122.6, 614.1c); if X is 4 or greater, it gains haste until end of turn; shuffle only if the library was searched (CR 701.24a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "alsoZones": [
+          "graveyard"
+         ],
+         "as": "b0",
+         "filter": {
+          "allTypes": [
+           "Artifact",
+           "Creature"
+          ],
+          "manaValue": {
+           "op": "<=",
+           "value": {
+            "q": "X"
+           }
+          }
+         },
+         "max": 1,
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library"
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "counters": [
+           {
+            "count": {
+             "q": "X"
+            },
+            "kind": "+1/+1"
+           }
+          ],
+          "zone": "battlefield"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        },
+        {
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "q": "X"
+          },
+          "op": ">=",
+          "right": 4
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "name": "b0",
+              "ref": "bound"
+             },
+             "mods": [
+              {
+               "add": [
+                {
+                 "keyword": "haste",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        },
+        {
+         "ifSearched": true,
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bandit's Talent",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.each.opponent.discards.unless.they, eff.r3refs.draw.additional.forEachOpponent.handAtMost): level 1, each opponent in turn discards a nonland card or else discards two cards (CR 118.12a, 701.9a, 101.4); level 2 as on the base; level 3, at the beginning of your draw step draw a card for each opponent with one or fewer cards in hand (CR 504.1, 402.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "abilities": [
+       {
+        "effect": {
+         "steps": [
+          {
+           "as": "b0",
+           "do": [
+            {
+             "cost": {
+              "other": [
+               {
+                "count": 1,
+                "filter": {
+                 "notTypes": [
+                  "Land"
+                 ]
+                },
+                "kind": "discard"
+               }
+              ]
+             },
+             "else": [
+              {
+               "count": 2,
+               "op": "discard",
+               "who": {
+                "name": "b0",
+                "ref": "bound"
+               }
+              }
+             ],
+             "op": "pay",
+             "who": {
+              "name": "b0",
+              "ref": "bound"
+             }
+            }
+           ],
+           "op": "forEach",
+           "over": {
+            "ref": "each",
+            "who": "opponent"
+           }
+          }
+         ],
+         "targets": []
+        },
+        "kind": "triggered",
+        "trigger": {
+         "on": [
+          {
+           "ev": "zoneChange",
+           "subject": {
+            "self": true
+           },
+           "to": "battlefield"
+          }
+         ]
+        }
+       }
+      ],
+      "kind": "classLevel",
+      "level": 1
+     },
+     {
+      "abilities": [
+       {
+        "effect": {
+         "steps": [
+          {
+           "amount": 2,
+           "op": "loseLife",
+           "who": {
+            "ref": "event",
+            "role": "player"
+           }
+          }
+         ],
+         "targets": []
+        },
+        "interveningIf": {
+         "cond": "compare",
+         "left": {
+          "of": {
+           "ref": "event",
+           "role": "player"
+          },
+          "q": "zoneSize",
+          "zone": "hand"
+         },
+         "op": "<=",
+         "right": 1
+        },
+        "kind": "triggered",
+        "trigger": {
+         "on": [
+          {
+           "ev": "step",
+           "step": "upkeep",
+           "whose": "opponent"
+          }
+         ]
+        }
+       }
+      ],
+      "cost": {
+       "mana": [
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "kind": "classLevel",
+      "level": 2
+     },
+     {
+      "abilities": [
+       {
+        "effect": {
+         "steps": [
+          {
+           "count": {
+            "of": {
+             "ref": "each",
+             "who": "opponent"
+            },
+            "q": "countPlayers",
+            "sizeIs": {
+             "n": 1,
+             "op": "<=",
+             "zone": "hand"
+            }
+           },
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "targets": []
+        },
+        "kind": "triggered",
+        "trigger": {
+         "on": [
+          {
+           "ev": "step",
+           "step": "draw",
+           "whose": "you"
+          }
+         ]
+        }
+       }
+      ],
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "kind": "classLevel",
+      "level": 3
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Agency Outfitter",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.search.graveyardHandLibrary.twoNames.battlefield): flying; when ~ enters, you may search your graveyard, hand and/or library for up to two cards of the two names, never two of one name (`differentNames`, CR 201.2, 701.23a), and put them onto the battlefield; shuffle only if the library was searched (CR 701.24a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "alsoZones": [
+            "hand",
+            "library"
+           ],
+           "as": "b0",
+           "differentNames": true,
+           "filter": {
+            "anyOf": [
+             {
+              "name": "Magnifying Glass"
+             },
+             {
+              "name": "Thinking Cap"
+             }
+            ]
+           },
+           "max": 2,
+           "min": 0,
+           "op": "search",
+           "who": {
+            "ref": "you"
+           },
+           "zone": "graveyard"
+          },
+          {
+           "op": "move",
+           "to": {
+            "controller": {
+             "ref": "you"
+            },
+            "zone": "battlefield"
+           },
+           "what": {
+            "name": "b0",
+            "ref": "bound"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "ifSearched": true,
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Winnowing",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.c6.choose.perPlayer.player, r3-refs's copy folded into it in merge wave 6; eff.r3refs.each.player.sacrifice.otherCreatures.notSharingTypeWithChosen): convoke; for each player you choose a creature that player controls; then each player sacrifices every creature they control other than the chosen one that shares no creature type with the chosen creature THEY control (CR 101.4, 205.3m, 608.2c, 701.21a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "convoke",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "controller": {
+            "ref": "iterating"
+           },
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         },
+         "max": 1,
+         "min": 1,
+         "op": "chooseObjects",
+         "perPlayer": {
+          "ref": "each",
+          "who": "player"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "filter": {
+          "controller": {
+           "ref": "iterating"
+          },
+          "not": {
+           "anyOf": [
+            {
+             "is": {
+              "name": "b0",
+              "ref": "bound"
+             }
+            },
+            {
+             "sharesWith": {
+              "quality": "creatureType",
+              "with": {
+               "filter": {
+                "controller": {
+                 "ref": "iterating"
+                },
+                "is": {
+                 "name": "b0",
+                 "ref": "bound"
+                }
+               },
+               "ref": "each"
+              }
+             }
+            }
+           ]
+          },
+          "types": [
+           "Creature"
+          ]
+         },
+         "mode": "all",
+         "op": "sacrificeChoice",
+         "who": {
+          "ref": "each",
+          "who": "player"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Another Round",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.flicker.anyNumber.youControl.owner, eff.r3refs.repeatProcess.moreTimes): exile any number of creatures you control, then return those cards under their owner's control (CR 400.7, 610.3), then the same instructions X more times (merge wave 6: r4-mech's process repeat, its body a copy of the instructions before it), a new choice each time (CR 107.3, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "controller": "you"
+          },
+          "ref": "each"
+         },
+         "max": "any",
+         "min": 0,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "as": "b1",
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "controller": "owner",
+          "zone": "battlefield"
+         },
+         "what": {
+          "name": "b1",
+          "ref": "bound"
+         }
+        },
+        {
+         "do": [
+          {
+           "as": "b0",
+           "from": {
+            "filter": {
+             "anyOf": [
+              {
+               "types": [
+                "Creature"
+               ]
+              }
+             ],
+             "controller": "you"
+            },
+            "ref": "each"
+           },
+           "max": "any",
+           "min": 0,
+           "op": "chooseObjects",
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "as": "b1",
+           "op": "move",
+           "to": {
+            "zone": "exile"
+           },
+           "what": {
+            "name": "b0",
+            "ref": "bound"
+           }
+          },
+          {
+           "op": "move",
+           "to": {
+            "controller": "owner",
+            "zone": "battlefield"
+           },
+           "what": {
+            "name": "b1",
+            "ref": "bound"
+           }
+          }
+         ],
+         "op": "repeat",
+         "process": true,
+         "times": {
+          "q": "X"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Irencrag",
+  "expect": "full",
+  "verified": "r3-refs review, by hand against the Oracle text and the rules cited (eff.r3refs.mayHave.self.become.legendaryEquipment.everflame, eff.r3refs.gains.abilities.losesAllOther): {T}: add {C}; whenever a legendary creature you control enters, you may have ~ become a legendary Equipment artifact named Everflame, Heroes' Legacy; if you do, it gains equip {3} and \"Equipped creature gets +3/+3\" and loses all its other abilities, with no duration (CR 201.2, 205.1a, 613.1d, 613.1f, 702.6a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "C"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "layer": 4,
+               "named": "Everflame, Heroes' Legacy",
+               "subtypes": {
+                "set": [
+                 "Equipment"
+                ]
+               },
+               "supertypes": {
+                "add": [
+                 "Legendary"
+                ]
+               },
+               "types": {
+                "set": [
+                 "Artifact"
+                ]
+               }
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "b0"
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "add": [
+                {
+                 "cost": {
+                  "mana": [
+                   {
+                    "amount": 3,
+                    "kind": "generic"
+                   }
+                  ]
+                 },
+                 "keyword": "equip",
+                 "kind": "keyword"
+                },
+                {
+                 "effects": [
+                  {
+                   "affects": {
+                    "ref": "attachedTo"
+                   },
+                   "mods": [
+                    {
+                     "layer": "7c",
+                     "power": 3,
+                     "toughness": 3
+                    }
+                   ],
+                   "s": "continuous"
+                  }
+                 ],
+                 "kind": "static"
+                }
+               ],
+               "layer": 6,
+               "removeAll": true
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "supertypes": [
+           "Legendary"
+          ],
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

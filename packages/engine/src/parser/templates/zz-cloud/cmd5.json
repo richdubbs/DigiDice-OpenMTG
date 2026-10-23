@@ -1,0 +1,393 @@
+[
+  {
+    "id": "eff.cmd5.sacrifice.another",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 109.4"
+    ],
+    "pattern": "^ sacrifice another {f:Filter}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "you"
+      },
+      "filter": {
+        "anyOf": [
+          "$f"
+        ],
+        "other": true
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, sacrifice another creature."
+      },
+      {
+        "text": "When this creature enters, sacrifice another creature or enchantment."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, sacrifice two other creatures.",
+      "Whenever this creature attacks, you may sacrifice another creature.",
+      "Whenever this creature attacks, sacrifice another creature at random."
+    ]
+  },
+  {
+    "id": "eff.cmd5.drawAndYouLoseLife.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 107.3",
+      "CR 121.1",
+      "CR 119.3"
+    ],
+    "pattern": "^ you draw x cards and you lose x life , where x is {q:Qty}",
+    "build": [
+      {
+        "op": "let",
+        "name": "whereX",
+        "value": "$q"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "var",
+          "name": "whereX"
+        }
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": {
+          "q": "var",
+          "name": "whereX"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, you draw X cards and you lose X life, where X is the number of Elves you control."
+      },
+      {
+        "text": "You draw X cards and you lose X life, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "You draw X cards and you gain X life, where X is the number of artifacts you control.",
+      "You draw X cards and you lose two life, where X is the number of artifacts you control.",
+      "You draw X cards and you lose Y life, where X is the number of artifacts you control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.cmd5.gainLifeAndDraw.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 107.3",
+      "CR 121.1",
+      "CR 119.3"
+    ],
+    "pattern": "^ [you] gain x life and draw x cards , where x is {q:Qty}",
+    "build": [
+      {
+        "op": "let",
+        "name": "whereX",
+        "value": "$q"
+      },
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": {
+          "q": "var",
+          "name": "whereX"
+        }
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "var",
+          "name": "whereX"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "You gain X life and draw X cards, where X is the number of Elves you control."
+      },
+      {
+        "text": "At the beginning of your upkeep, you gain X life and draw X cards, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "You gain X life and draw two cards, where X is the number of Elves you control.",
+      "You lose X life and draw X cards, where X is the number of Elves you control.",
+      "Target player gains X life and draws X cards, where X is the number of Elves you control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "sta.cmd5.player.cant.cast.combat",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 604.1",
+      "CR 601.3",
+      "CR 101.2",
+      "CR 506.1"
+    ],
+    "pattern": "( {p:Player} | players ) can't cast spells during combat",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "$when": "p",
+        "then": "$p",
+        "else": {
+          "ref": "each",
+          "who": "player"
+        }
+      },
+      "mode": "cant",
+      "action": "cast",
+      "when": {
+        "cond": "turnOf",
+        "whose": "any",
+        "step": [
+          "beginCombat",
+          "declareAttackers",
+          "declareBlockers",
+          "combatDamage",
+          "endCombat"
+        ]
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent can't cast spells during combat."
+      },
+      {
+        "text": "Each player can't cast spells during combat."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent can't cast spells during your turn.",
+      "Each opponent can't cast spells during combat on your turn.",
+      "Each opponent can't activate abilities during combat."
+    ]
+  },
+  {
+    "id": "sta.cmd5.spells.less.you.targetSelf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "spells you cast that target ~ cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "targets": {
+                "ref": "self"
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:costMod.spellTargets.self"
+    ],
+    "examples": [
+      {
+        "text": "Spells you cast that target ~ cost {4} less to cast."
+      },
+      {
+        "text": "Spells you cast that target ~ cost {3} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast that target ~ cost {3} more to cast.",
+      "Spells your opponents cast that target ~ cost {3} less to cast.",
+      "Spells you cast that target a creature you control cost {3} less to cast.",
+      "Spells you cast cost {3} less to cast."
+    ]
+  },
+  {
+    "id": "sta.cmd5.spells.less.opp.targetSelf",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "spells your opponents cast that target ~ cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "targets": {
+                "ref": "self"
+              }
+            },
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:costMod.spellTargets.self"
+    ],
+    "examples": [
+      {
+        "text": "Spells your opponents cast that target ~ cost {3} less to cast."
+      },
+      {
+        "text": "Spells your opponents cast that target ~ cost {4} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells your opponents cast that target ~ cost {4} more to cast.",
+      "Spells you cast that target ~ cost {4} less to cast.",
+      "Spells your opponents cast that target a creature you control cost {4} less to cast.",
+      "Spells your opponents cast cost {4} less to cast."
+    ]
+  },
+  {
+    "id": "eff.cmd5.token.two",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 608.2c"
+    ],
+    "pattern": "create {n:Qty} {t:TokenDesc} and {m:Qty} {u:TokenDesc}",
+    "build": [
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "token": "$t"
+      },
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$m",
+        "token": "$u"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a Treasure token and a 1/1 green Squirrel creature token."
+      },
+      {
+        "text": "When ~ enters, create two Food tokens and a 2/2 white Cat creature token with lifelink."
+      }
+    ],
+    "counterExamples": [
+      "Create a Treasure token or a 1/1 green Squirrel creature token.",
+      "Create a Treasure token and put a +1/+1 counter on ~.",
+      "Target player creates a Treasure token and a 1/1 green Squirrel creature token."
+    ]
+  },
+  {
+    "id": "eff.cmd5.energy.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 107.14",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} get[s] {n:Qty} {e}",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "energy",
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to an opponent, you get that many {E}."
+      },
+      {
+        "text": "Whenever you gain life, you get that many {E}."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to an opponent, you lose that many {E}.",
+      "Whenever ~ deals combat damage to an opponent, you get that many +1/+1 counters.",
+      "Whenever ~ deals combat damage to an opponent, you get {E}."
+    ]
+  }
+]

@@ -1,0 +1,21 @@
+# MX2 (FAST4): layer-2 control on the stored controller, exchange of control, protection from the chosen color.
+# After editing: npm run cards -- fixtures
+
+# ---- Layer-2 control (CR 108.4, 613.1b, 302.6, 506.4) and exchange of control (CR 701.12a-b)
+Control Magic
+Threaten
+Switcheroo
+
+# ---- Protection from the chosen color (CR 702.16a, 607.2d)
+Ward Sliver
+Muscle Sliver
+
+# ---- Meld: "if you both own and control ~ and a creature named ..., exile them, then meld them into ..." (CR 603.4, 701.42a)
+Hanweir Battlements
+Hanweir Garrison
+Hanweir, the Writhing Township
+
+# ---- Copy effects "except it has this ability" (CR 707.9a) and "except it doesn't copy that creature's color" (CR 707.9c)
+Cryptoplasm
+Unstable Shapeshifter
+Cemetery Puca

@@ -1,0 +1,774 @@
+[
+  {
+    "id": "sta.t60.attached.pump.loses",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 301.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and loses {k:Keyword}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "remove": [
+            "$k.keyword"
+          ]
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+1 and loses reach.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "Equipped creature gets +2/+1 and loses reach.",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "attachedTo"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "remove": [
+                      "reach"
+                    ]
+                  },
+                  {
+                    "layer": "7c",
+                    "power": 2,
+                    "toughness": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Enchanted creature gets -1/-3 and loses flying."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+1 and loses reach until end of turn.",
+      "Equipped creature gets +2/+1 and loses all abilities.",
+      "Equipped creature gets +2/+1 and has reach."
+    ]
+  },
+  {
+    "id": "sta.t60.attached.pump.quoted.addtype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 205.1b",
+      "CR 113.3d",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , has {a:Abilities} and is (a | an) {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1, has \"Whenever this creature deals combat damage to a player, you gain 2 life,\" and is a Cleric in addition to its other types."
+      },
+      {
+        "text": "Equipped creature gets +2/+0, has \"Whenever you cast a noncreature spell, this creature deals 2 damage to each opponent,\" and is a Wizard in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+1, has \"Whenever this creature deals combat damage to a player, you gain 2 life,\" and is a Cleric.",
+      "Equipped creature gets +1/+1, has \"Whenever this creature deals combat damage to a player, you gain 2 life,\" and is a Cleric in addition to its other types until end of turn.",
+      "Equipped creature gets +1/+1, loses flying, and is a Cleric in addition to its other types."
+    ]
+  },
+  {
+    "id": "sta.t60.attached.quoted.addtype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b",
+      "CR 113.3d",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} and is (a | an) {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has \"Whenever this creature attacks, you gain 1 life\" and is a Knight in addition to its other types."
+      },
+      {
+        "text": "Equipped creature has \"Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn\" and is a Wizard in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has \"Whenever this creature attacks, you gain 1 life\" and is a Knight.",
+      "Equipped creature has \"Whenever this creature attacks, you gain 1 life\" and is a Knight in addition to its other types until end of turn.",
+      "Equipped creature loses flying and is a Knight in addition to its other types."
+    ]
+  },
+  {
+    "id": "sta.t60.attached.pump.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 122.1",
+      "CR 301.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets +x/+0 , where x is {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$q",
+          "toughness": 0
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Equipped creature gets +X/+0, where X is the number of lands you control."
+      },
+      {
+        "text": "Enchanted creature gets +X/+0, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+0, where X is the number of charge counters on ~.",
+      "Equipped creature gets +X/+X, where X is the number of charge counters on ~.",
+      "Equipped creature gets -X/-0, where X is the number of charge counters on ~.",
+      "Equipped creature gets +X/+0 until end of turn, where X is the number of charge counters on ~.",
+      "Equipped creature gets +X/+1, where X is the number of charge counters on ~."
+    ]
+  },
+  {
+    "id": "sta.t60.attached.basePT.life",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4b",
+      "CR 107.3",
+      "CR 119.1",
+      "CR 301.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "( enchanted | equipped ) creature has base power and toughness x/x , where x is {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7b",
+          "power": "$q",
+          "toughness": "$q"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchanted creature has base power and toughness X/X, where X is your life total."
+      },
+      {
+        "text": "Equipped creature has base power and toughness X/X, where X is the number of lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has base power and toughness 2/2, where X is your life total.",
+      "Equipped creature has base power and toughness X/X until end of turn, where X is your life total.",
+      "Equipped creature has base power and toughness X/1, where X is your life total."
+    ]
+  },
+  {
+    "id": "sta.t60.attached.chosenColor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1e",
+      "CR 105.3",
+      "CR 607.2d",
+      "CR 303.4a"
+    ],
+    "pattern": "{o:Obj} is the chosen color",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 5,
+          "colors": {
+            "chosen": "color"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Enchant artifact\nAs ~ enters, choose a color.\nEnchanted artifact is the chosen color."
+      },
+      {
+        "text": "Enchant creature\nAs ~ enters, choose a color.\nEnchanted creature is the chosen color."
+      }
+    ],
+    "counterExamples": [
+      "Enchant land\nAs ~ enters, choose a color.\nEnchanted land is the chosen colors.",
+      "Enchant land\nAs ~ enters, choose a color.\nEnchanted land is the chosen creature type.",
+      "Enchant land\nAs ~ enters, choose a color.\nEnchanted land is the chosen color until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t60.are.types.addition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.1b",
+      "CR 205.3g"
+    ],
+    "pattern": "{f:Filter} are {ty:CardTypes} in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": "$ty"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Nontoken artifacts you control are creatures in addition to their other types."
+      },
+      {
+        "text": "Enchantments you control are artifacts in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Nontoken artifacts you control are creatures.",
+      "Nontoken artifacts you control are creatures in addition to their other types until end of turn.",
+      "Nontoken artifacts you control are Zombies in addition to their other types.",
+      "Nontoken artifacts you control are Forest lands in addition to their other types."
+    ]
+  },
+  {
+    "id": "sta.t60.are.subtypes.addition.have",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b",
+      "CR 113.3d"
+    ],
+    "pattern": "{f:Filter} are {g:Filter} in addition to their other types and have {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$g.subtypes"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Artifacts you control are Treasures in addition to their other types and have \"{T}, Sacrifice this artifact: Add one mana of any color.\""
+      },
+      {
+        "text": "Artifacts you control are Foods in addition to their other types and have \"{3}, {T}, Sacrifice this artifact: You gain 4 life.\""
+      }
+    ],
+    "counterExamples": [
+      "Artifacts you control are Foods and have \"{2}, {T}, Sacrifice this artifact: You gain 3 life.\"",
+      "Artifacts you control are Foods in addition to their other types.",
+      "Artifacts you control are Foods in addition to their other types and lose all abilities."
+    ]
+  },
+  {
+    "id": "sta.t60.have.basePT.eachEqual",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4b",
+      "CR 107.3"
+    ],
+    "pattern": "{f:Filter} have base power and toughness each equal to {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7b",
+          "power": "$q",
+          "toughness": "$q"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Elves you control have base power and toughness each equal to the number of Elves you control."
+      },
+      {
+        "text": "Lands you control have base power and toughness each equal to the number of lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control have base power and toughness equal to the number of creatures you control.",
+      "Creatures you control have base power and toughness each equal to the number of creatures you control until end of turn.",
+      "Creatures you control get +1/+1 for each creature you control."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "sta.t60.spells.cast.delve",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.66a"
+    ],
+    "pattern": "{f:Filter} you cast have delve",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "delve",
+              "text": "delve"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creature spells you cast have delve."
+      },
+      {
+        "text": "Instant spells you cast have delve."
+      }
+    ],
+    "counterExamples": [
+      "Spells you control have delve.",
+      "Spells your opponents cast have delve.",
+      "Spells you cast have flash."
+    ]
+  },
+  {
+    "id": "sta.t60.spells.cast.affinity",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.41a"
+    ],
+    "pattern": "{f:Filter} you cast have affinity for {g:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "affinity",
+              "text": "affinity",
+              "filter": "$g"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Spells you cast have affinity for lands."
+      },
+      {
+        "text": "Creature spells you cast have affinity for Elves."
+      }
+    ],
+    "counterExamples": [
+      "Spells you control have affinity for artifacts.",
+      "Spells your opponents cast have affinity for artifacts.",
+      "Spells you cast have affinity."
+    ]
+  },
+  {
+    "id": "sta.t60.rule.toughnessDamage.each",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 604.1",
+      "CR 613.11"
+    ],
+    "pattern": "each {f:Filter} you control with toughness greater than its power assigns combat damage equal to its toughness rather than its power",
+    "build": {
+      "s": "rule",
+      "rule": "combatDamageUsesToughness",
+      "of": {
+        "anyOf": [
+          "$f"
+        ],
+        "controller": "you"
+      },
+      "onlyIf": "toughnessGreaterThanPower"
+    },
+    "consumes": [
+      "each",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Each Wall you control with toughness greater than its power assigns combat damage equal to its toughness rather than its power."
+      },
+      {
+        "text": "Each artifact creature you control with toughness greater than its power assigns combat damage equal to its toughness rather than its power."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control assigns combat damage equal to its toughness rather than its power.",
+      "Each creature you control with power greater than its toughness assigns combat damage equal to its toughness rather than its power.",
+      "Each creature your opponents control with toughness greater than its power assigns combat damage equal to its toughness rather than its power.",
+      "Each creature you control with toughness greater than its power assigns combat damage equal to its power rather than its toughness."
+    ]
+  },
+  {
+    "id": "sta.t60.rule.toughnessDamage.equipped",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.11",
+      "CR 301.5"
+    ],
+    "pattern": "as long as ( enchanted | equipped ) creature 's toughness is greater than its power , it assigns combat damage equal to its toughness rather than its power",
+    "build": {
+      "s": "rule",
+      "rule": "combatDamageUsesToughness",
+      "of": {
+        "attachedToSource": true
+      },
+      "onlyIf": "toughnessGreaterThanPower"
+    },
+    "consumes": [
+      "as long as",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "As long as enchanted creature's toughness is greater than its power, it assigns combat damage equal to its toughness rather than its power."
+      },
+      {
+        "text": "Enchanted creature gets +2/+0.\nAs long as enchanted creature's toughness is greater than its power, it assigns combat damage equal to its toughness rather than its power."
+      }
+    ],
+    "counterExamples": [
+      "As long as enchanted creature's power is greater than its toughness, it assigns combat damage equal to its toughness rather than its power.",
+      "As long as enchanted creature's toughness is greater than its power, it assigns combat damage equal to its power rather than its toughness.",
+      "As long as enchanted creature's toughness is greater than its power, it assigns combat damage equal to its toughness.",
+      "As long as target creature's toughness is greater than its power, it assigns combat damage equal to its toughness rather than its power."
+    ]
+  },
+  {
+    "id": "sta.t60.self.exiledWith.pump.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 607.2a",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as there are {n:Qty} or more cards exiled with ~ , it gets {pt:PT} and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "count",
+          "of": {
+            "ref": "linked",
+            "link": "exiled"
+          }
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, exile target card from a graveyard.\nAs long as there are four or more cards exiled with ~, it gets +2/+2 and has lifelink."
+      },
+      {
+        "text": "{T}: Exile target card from a graveyard.\nAs long as there are five or more cards exiled with ~, it gets +1/+1 and has flying."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, exile target card from a graveyard.\nAs long as there are three cards exiled with ~, it gets +3/+3 and has hexproof.",
+      "At the beginning of your upkeep, exile target card from a graveyard.\nAs long as there are three or more cards exiled with ~, it gets +3/+3 and loses flying.",
+      "As long as there are four or more cards exiled with ~, it gets +2/+2 and has lifelink."
+    ]
+  },
+  {
+    "id": "cm.t60.abilities.keyword.otherPermanents.less",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7a",
+      "CR 604.1",
+      "CR 702.177a"
+    ],
+    "pattern": "{k:Keyword} abilities of other permanents you control cost {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "other": true,
+                "controller": "you"
+              },
+              "kind": "activated",
+              "keyword": "$k.keyword"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Exhaust abilities of other permanents you control cost {3} less to activate."
+      },
+      {
+        "text": "Exhaust abilities of other permanents you control cost {1} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "Exhaust abilities of other permanents you control cost {2} more to activate.",
+      "Exhaust abilities of permanents you control cost {2} less to activate.",
+      "Exhaust abilities of other permanents your opponents control cost {2} less to activate.",
+      "Exhaust abilities of other permanents you control cost {2} less to cast."
+    ]
+  }
+]

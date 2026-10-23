@@ -1,0 +1,478 @@
+[
+  {
+    "id": "eff.r5moved.put.eachMilled.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 701.17c",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "put each {f:Filter} card {g:MilledThisWay} onto the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "is": "$g",
+          "zone": "any"
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. Put each artifact card milled this way onto the battlefield."
+      },
+      {
+        "text": "Mill five cards. Put each land card milled this way onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Put each artifact card milled this way onto the battlefield.",
+      "Mill three cards. Put each artifact card milled this way into your hand.",
+      "Mill three cards. Put each artifact card discarded this way onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.r5moved.they.gain.perm",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:They} gain {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Create two 2/2 black Zombie creature tokens. They gain haste."
+      },
+      {
+        "text": "Return all artifact creature cards from your graveyard to the battlefield. They gain flying and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Create two 2/2 black Zombie creature tokens. They gain haste until end of turn.",
+      "Create two 2/2 black Zombie creature tokens. They lose haste.",
+      "Create two 2/2 black Zombie creature tokens. They gain haste and get +1/+1."
+    ]
+  },
+  {
+    "id": "eff.r5moved.linked.put.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "put the exiled card into its owner 's hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to one target artifact or enchantment an opponent controls with mana value 4 or less.\nWhen ~ dies, put the exiled card into its owner's hand."
+      },
+      {
+        "text": "When ~ enters, exile target nonland permanent an opponent controls with mana value 2 or less.\nWhen ~ leaves the battlefield, you may put the exiled card into its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target nonland permanent an opponent controls with mana value 2 or less.\nWhen ~ dies, put the exiled card into your hand.",
+      "When ~ enters, exile target nonland permanent an opponent controls with mana value 2 or less.\nWhen ~ dies, put the exiled cards into their owners' hands.",
+      "When ~ dies, put the exiled card into its owner's hand."
+    ]
+  },
+  {
+    "id": "eff.r5moved.linked.return.hands",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "return the exiled cards to their owners' hands",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target nonland permanents your opponents control.\nWhen ~ dies, return the exiled cards to their owners' hands."
+      },
+      {
+        "text": "When ~ enters, exile up to one target artifact an opponent controls and up to one target creature card from an opponent's graveyard.\nWhen ~ dies, return the exiled cards to their owners' hands."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target nonland permanents your opponents control.\nWhen ~ dies, return the exiled cards to your hand.",
+      "When ~ enters, exile up to two target nonland permanents your opponents control.\nWhen ~ dies, return the exiled cards to the battlefield under their owners' control.",
+      "When ~ dies, return the exiled cards to their owners' hands."
+    ]
+  },
+  {
+    "id": "eff.r5moved.dealtThisWay.destroyIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 701.8a",
+      "CR 120.4b"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} is dealt damage this way , destroy it",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "is": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "set",
+              "number": "plural",
+              "participle": "dealt damage this way",
+              "text": "dealt damage this way"
+            }
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals 2 damage to any target. If a Vampire is dealt damage this way, destroy it."
+      },
+      {
+        "text": "~ deals 3 damage to target creature. If an artifact creature is dealt damage this way, destroy it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals 2 damage to any target. If a Vampire is dealt damage this way, exile it.",
+      "When ~ enters, it deals 2 damage to any target. If a Vampire is dealt damage this turn, destroy it.",
+      "If a Vampire is dealt damage this way, destroy it."
+    ]
+  },
+  {
+    "id": "eff.r5moved.dealtThisWay.playerDiscards",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 701.9a",
+      "CR 120.4b"
+    ],
+    "pattern": "if a player is dealt damage this way , they discard {n:Qty} card[s]",
+    "build": {
+      "op": "discard",
+      "who": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "set",
+          "number": "plural",
+          "participle": "dealt damage this way",
+          "text": "dealt damage this way"
+        }
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals 3 damage to any target. If a player is dealt damage this way, they discard a card."
+      },
+      {
+        "text": "~ deals 2 damage to any target and you gain 2 life. If a player is dealt damage this way, they discard two cards."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals 3 damage to any target. If a player is dealt damage this way, they discard a card at random.",
+      "When ~ enters, it deals 3 damage to any target. If a creature is dealt damage this way, they discard a card.",
+      "If a player is dealt damage this way, they discard a card."
+    ]
+  },
+  {
+    "id": "eff.r5moved.surveil.putThisWay.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.25a",
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "if you put {f:SurveilledCard} into your graveyard this way , put that card into your hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "is": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "head": "card",
+              "participle": "surveilled",
+              "text": "that card"
+            }
+          },
+          "zone": "graveyard",
+          "owner": "you"
+        }
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, surveil 1. If you put a land card into your graveyard this way, put that card into your hand."
+      },
+      {
+        "text": "At the beginning of your upkeep, surveil 1. If you put an instant or sorcery card into your graveyard this way, put that card into your hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, surveil 2. If you put a land card into your graveyard this way, put that card into your hand.",
+      "When ~ enters, surveil 1. If you put a land card into your graveyard this way, put that card onto the battlefield.",
+      "When ~ enters, mill a card. If you put a land card into your graveyard this way, put that card into your hand."
+    ]
+  },
+  {
+    "id": "eff.r5moved.forEach.opponent.controlledReturned",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2f",
+      "CR 608.2h",
+      "CR 400.3"
+    ],
+    "pattern": "for each opponent who controlled {c:ControlledMoved} , {e:Effects}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "if",
+          "cond": "$c",
+          "then": "$e"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Return all creatures to their owners' hands. For each opponent who controlled a creature returned this way, you create a 2/2 blue Bird creature token with flying."
+      },
+      {
+        "text": "Return all artifacts to their owners' hands. For each opponent who controlled an artifact returned this way, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Return all creatures to their owners' hands. For each opponent who controlled a creature destroyed this way, you draw a card.",
+      "Return all creatures to their owners' hands. For each player who controlled a creature returned this way, you draw a card.",
+      "Return all creatures to their owners' hands. For each opponent who controlled a creature returned this turn, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.r5moved.exile.allTheCardsFromHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 402.1",
+      "CR 608.2c"
+    ],
+    "pattern": "exile all the cards from your hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "hand",
+          "owner": "you",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Exile all the cards from your hand, then draw that many cards."
+      },
+      {
+        "text": "Exile all the cards from your hand. Until end of turn, you may play those cards."
+      }
+    ],
+    "counterExamples": [
+      "Exile all the cards from your graveyard, then draw that many cards.",
+      "Exile all the cards from target player's hand, then draw that many cards.",
+      "Exile all the creature cards from your hand, then draw that many cards."
+    ]
+  },
+  {
+    "id": "eff.r5moved.eachPlayer.returnsAll.notPutThere",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 110.2a",
+      "CR 701.21a"
+    ],
+    "pattern": "[then] each player returns all {f:Filter} cards from their graveyard that weren't put there this way to the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": "graveyard",
+          "isCard": true,
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "set",
+                "number": "plural",
+                "participle": "put into a graveyard this way",
+                "text": "put there this way"
+              }
+            }
+          }
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all",
+      "then",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player sacrifices all other creatures they control. Then each player returns all creature cards from their graveyard that weren't put there this way to the battlefield."
+      },
+      {
+        "text": "Each player sacrifices all artifacts they control. Then each player returns all artifact cards from their graveyard that weren't put there this way to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player returns all creature cards from their graveyard that weren't put there this way to the battlefield.",
+      "Each player sacrifices all artifacts they control. Then each player returns all artifact cards from their graveyard that weren't put there this way to their hand.",
+      "Each player sacrifices all artifacts they control. Then each player returns all artifact cards from their graveyard to the battlefield."
+    ]
+  }
+]

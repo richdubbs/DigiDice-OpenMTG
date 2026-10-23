@@ -1,0 +1,146 @@
+[
+  {
+    "id": "dl.nextTurnUpkeep.tail",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 503.1"
+    ],
+    "pattern": "{e:Effects} at the beginning of the next turn 's upkeep",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "upkeep",
+        "next": true,
+        "turn": "next"
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. Draw two cards at the beginning of the next turn's upkeep.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "Draw a card. Draw two cards at the beginning of the next turn's upkeep.",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                },
+                {
+                  "op": "delay",
+                  "when": {
+                    "at": "step",
+                    "step": "upkeep",
+                    "next": true,
+                    "turn": "next"
+                  },
+                  "do": [
+                    {
+                      "op": "draw",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "count": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Target player draws three cards at the beginning of the next turn's upkeep."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card at the beginning of your next upkeep.",
+      "Draw a card at the beginning of the next turn's end step.",
+      "Draw a card at the beginning of each turn's upkeep."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "rst.blockonly",
+    "kind": "static",
+    "cr": [
+      "CR 509.1b",
+      "CR 509.1c"
+    ],
+    "pattern": "{o:Obj} can block only {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "onlyIf",
+      "action": "block",
+      "other": "$f"
+    },
+    "consumes": [
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "~ can block only creatures with reach."
+      },
+      {
+        "text": "Enchanted creature can block only creatures with reach."
+      },
+      {
+        "text": "~ can block only black creatures."
+      }
+    ],
+    "counterExamples": [
+      "~ can block only creatures with flying this turn.",
+      "~ can block creatures with flying.",
+      "~ can block only creatures with flying unless you control a Forest.",
+      "Each creature can block only creatures with flying."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "rst.each.blockonly",
+    "kind": "static",
+    "cr": [
+      "CR 509.1b",
+      "CR 509.1c"
+    ],
+    "pattern": "{o:Objs} can block only {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "onlyIf",
+      "action": "block",
+      "other": "$f"
+    },
+    "consumes": [
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "Creatures with reach can block only creatures with flying."
+      },
+      {
+        "text": "Creatures you control can block only creatures with flying."
+      }
+    ],
+    "counterExamples": [
+      "Creatures with reach can block only creatures with flying this turn.",
+      "Creatures with reach can block creatures with flying.",
+      "Creatures with reach can block only creatures with flying unless you control a Forest."
+    ],
+    "status": "stable",
+    "since": 2
+  }
+]

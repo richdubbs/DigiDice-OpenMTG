@@ -1,0 +1,25 @@
+# p2-mana-1 (Phase 2 lane p2-mana): the golden cards of the round
+Bottomless Vault
+Hollow Trees
+Icatian Store
+Mercadian Bazaar
+Rushwood Grove
+Sand Silos
+Saprazzan Cove
+Subterranean Hangar
+Black Mana Battery
+Blue Mana Battery
+Green Mana Battery
+White Mana Battery
+Kyren Toy
+Haruspex
+Nikya of the Old Ways
+Vorinclex, Voice of Hunger
+Zendikar Resurgent
+Gond Gate
+Harvester Druid
+Quirion Explorer
+Sylvok Explorer
+Star Compass
+Immortus, Master of Eternity
+Ventifact Bottle

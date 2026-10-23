@@ -1,0 +1,14 @@
+{
+  "name": "reach",
+  "rule": "702.17",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "This creature can block creatures with flying.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "keywords/hooks/flying.ts#canBeBlocked"
+  ]
+}

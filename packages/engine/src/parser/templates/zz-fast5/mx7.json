@@ -1,0 +1,23 @@
+[
+  {
+    "id": "eff.mx7.learn",
+    "kind": "effect",
+    "cr": ["CR 701.48a"],
+    "pattern": "learn",
+    "build": {"op":"action","action":"learn","who":{"ref":"you"}},
+    "subject": "none",
+    "needs": ["action:learn"],
+    "examples": [
+      {"text":"Learn.","expect":[{"kind":"spell","effect":{"targets":[],"steps":[{"op":"action","action":"learn","who":{"ref":"you"}}]}}]},
+      {"text":"Draw a card. Learn."},
+      {"text":"You gain 4 life. Learn."}
+    ],
+    "counterExamples": [
+      "Learn a card.",
+      "Learns.",
+      "Learn twice."
+    ],
+    "status": "stable",
+    "since": 7
+  }
+]

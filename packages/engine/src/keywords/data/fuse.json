@@ -1,0 +1,14 @@
+{
+  "name": "fuse",
+  "rule": "702.102",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "You may cast one or both halves of this card from your hand.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "actions/cast.ts#castCheck"
+  ]
+}

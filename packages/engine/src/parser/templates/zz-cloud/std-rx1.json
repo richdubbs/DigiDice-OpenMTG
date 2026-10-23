@@ -1,0 +1,230 @@
+[
+  {
+    "id": "sta.stdrx1.combat.cantCastOrActivate.nonMana",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 601.3",
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 506.1",
+      "CR 101.2"
+    ],
+    "pattern": "during combat , ( {p:Player} | players ) can't cast spells or activate abilities that aren't mana abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "$when": "p",
+            "then": "$p",
+            "else": {
+              "ref": "each",
+              "who": "player"
+            }
+          },
+          "mode": "cant",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "step": [
+              "beginCombat",
+              "declareAttackers",
+              "declareBlockers",
+              "combatDamage",
+              "endCombat"
+            ]
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "$when": "p",
+            "then": "$p",
+            "else": {
+              "ref": "each",
+              "who": "player"
+            }
+          },
+          "mode": "cant",
+          "action": "activate",
+          "exceptMana": true,
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "step": [
+              "beginCombat",
+              "declareAttackers",
+              "declareBlockers",
+              "combatDamage",
+              "endCombat"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During combat, your opponents can't cast spells or activate abilities that aren't mana abilities."
+      },
+      {
+        "text": "When ~ enters, you gain 9 life.\nDuring combat, your opponents can't cast spells or activate abilities that aren't mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, players can't cast spells or activate abilities that aren't mana abilities.",
+      "During combat, players can't cast spells or activate abilities.",
+      "During combat, players can't cast spells or activate abilities that aren't loyalty abilities.",
+      "Players can't cast spells or activate abilities that aren't mana abilities."
+    ]
+  },
+  {
+    "id": "eff.stdrx1.dig.mayReveal.upTo.thenRestBottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "you may reveal up to {n:Qty} {f:CardsDesc} from among {g:Seen} , then put {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "up to",
+      "then",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal up to two artifact and/or enchantment cards from among them, then put the rest on the bottom of your library in a random order. Put all enchantment cards revealed this way onto the battlefield tapped and put all artifact cards revealed this way into your hand."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal up to three creature cards from among them, then put the rest on the bottom of your library in a random order. Put the revealed cards into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal up to two artifact cards from among them, then put the rest on the bottom of your library in any order. Put the revealed cards into your hand.",
+      "Look at the top six cards of your library. You may reveal up to two artifact cards from among them, then put the rest on top of your library in a random order. Put the revealed cards into your hand.",
+      "Look at the top six cards of your library. You may reveal two artifact cards from among them, then put the rest on the bottom of your library in a random order. Put the revealed cards into your hand."
+    ]
+  },
+  {
+    "id": "eff.stdrx1.putAll.revealed.battlefieldTapped.andHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 110.2a",
+      "CR 400.3"
+    ],
+    "pattern": "put all {f:Filter} cards {g:RevealedThisWay} onto the battlefield tapped and put all {h:Filter} cards {i:RevealedThisWay} into your hand",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$h"
+            ],
+            "is": "$i",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal up to two artifact and/or enchantment cards from among them, then put the rest on the bottom of your library in a random order. Put all enchantment cards revealed this way onto the battlefield tapped and put all artifact cards revealed this way into your hand."
+      },
+      {
+        "text": "Look at the top five cards of your library. You may reveal up to three land and/or instant cards from among them, then put the rest on the bottom of your library in a random order. Put all land cards revealed this way onto the battlefield tapped and put all instant cards revealed this way into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal up to two artifact and/or enchantment cards from among them, then put the rest on the bottom of your library in a random order. Put all enchantment cards revealed this way onto the battlefield and put all artifact cards revealed this way into your hand.",
+      "Look at the top six cards of your library. You may reveal up to two artifact and/or enchantment cards from among them, then put the rest on the bottom of your library in a random order. Put all enchantment cards revealed this way onto the battlefield tapped and put all artifact cards revealed this way into your graveyard.",
+      "Look at the top six cards of your library. Put all enchantment cards revealed this way onto the battlefield tapped and put all artifact cards revealed this way into your hand."
+    ]
+  }
+]

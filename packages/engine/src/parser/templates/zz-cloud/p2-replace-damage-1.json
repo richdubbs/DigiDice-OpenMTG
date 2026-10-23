@@ -1,0 +1,1506 @@
+[
+  {
+    "id": "rep.p2rd1.prevent.n.toYou",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 120.3",
+      "CR 105.2"
+    ],
+    "pattern": "if ( a source | ( a | an ) {c:Color} source ) would deal damage to you , prevent {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "$when": "c",
+          "then": {
+            "colors": [
+              "$c"
+            ]
+          }
+        },
+        "recipient": {
+          "player": "you"
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": "$n"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a blue source would deal damage to you, prevent 3 of that damage."
+      },
+      {
+        "text": "If a source would deal damage to you, prevent 4 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a blue source would deal damage to you, prevent that damage.",
+      "If a blue source would deal combat damage to you, prevent 3 of that damage.",
+      "If a blue source would deal damage to you, prevent 3 of that damage this turn."
+    ]
+  },
+  {
+    "id": "rep.p2rd1.prevent.n.toYou.opponentSource",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 120.3",
+      "CR 109.4"
+    ],
+    "pattern": "if a source an opponent controls would deal damage to you , prevent {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "opponent"
+        },
+        "recipient": {
+          "player": "you"
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": "$n"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a source an opponent controls would deal damage to you, prevent 3 of that damage."
+      },
+      {
+        "text": "If a source an opponent controls would deal damage to you, prevent 5 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal damage to you, prevent 3 of that damage.",
+      "If a source an opponent controls would deal damage to you, prevent that damage.",
+      "If a source an opponent controls would deal damage to an opponent, prevent 3 of that damage."
+    ]
+  },
+  {
+    "id": "rep.p2rd1.prevent.n.toObj",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 120.3",
+      "CR 301.5"
+    ],
+    "pattern": "if ( a source | ( a | an ) {c:Color} source ) would deal damage to {o:Obj} , prevent {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "$when": "c",
+          "then": {
+            "colors": [
+              "$c"
+            ]
+          }
+        },
+        "recipient": {
+          "object": {
+            "is": "$o"
+          }
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": "$n"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to equipped creature, prevent 3 of that damage."
+      },
+      {
+        "text": "If a source would deal damage to enchanted creature, prevent 1 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to equipped creature, prevent that damage.",
+      "If a source would deal damage by equipped creature, prevent 3 of that damage.",
+      "If a source would deal damage to equipped creature, prevent 3 of that damage this turn."
+    ]
+  },
+  {
+    "id": "rep.p2rd1.prevent.n.toFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 120.3"
+    ],
+    "pattern": "if ( a source | ( a | an ) {c:Color} source ) would deal damage to ( a | an ) {g:Filter} , prevent {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "$when": "c",
+          "then": {
+            "colors": [
+              "$c"
+            ]
+          }
+        },
+        "recipient": {
+          "object": "$g"
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": "$n"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to a Knight creature you control, prevent 2 of that damage."
+      },
+      {
+        "text": "If a source would deal damage to an artifact you control, prevent 3 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to a Knight creature you control, prevent that damage.",
+      "If a source would deal damage to each Knight creature you control, prevent 2 of that damage.",
+      "If a source would deal combat damage to a Knight creature you control, prevent 2 of that damage."
+    ]
+  },
+  {
+    "id": "rep.p2rd1.prevent.n.byFilter.toYou",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 120.3"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} would deal damage to you , prevent {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": "$f",
+        "recipient": {
+          "player": "you"
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": "$n"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If an enchantment would deal damage to you, prevent 2 of that damage."
+      },
+      {
+        "text": "If a creature with flying would deal damage to you, prevent 1 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If an enchantment would deal damage to you, prevent that damage.",
+      "If an enchantment would deal damage to an opponent, prevent 2 of that damage.",
+      "If an enchantment would be dealt damage, prevent 2 of that damage."
+    ]
+  },
+  {
+    "id": "rep.p2rd1.prevent.x.toObj.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 107.3",
+      "CR 611.3a"
+    ],
+    "pattern": "if a source would deal damage to {o:Obj} , prevent x of that damage , where x is {q:Qty}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "object": {
+            "is": "$o"
+          }
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": "$q"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to equipped creature, prevent X of that damage, where X is the number of artifacts you control."
+      },
+      {
+        "text": "If a source would deal damage to enchanted creature, prevent X of that damage, where X is the number of Auras you control."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to equipped creature, prevent X of that damage.",
+      "If a source would deal damage to equipped creature, prevent that damage, where X is the number of artifacts you control.",
+      "If a source would deal damage to equipped creature, you may prevent X of that damage, where X is the number of artifacts you control."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.all.to.obj.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all damage that would be dealt to {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to target artifact creature this turn."
+      },
+      {
+        "text": "Tap target creature. Prevent all damage that would be dealt to it this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to target artifact creature.",
+      "Prevent all damage that would be dealt by target artifact creature this turn.",
+      "Prevent all noncombat damage that would be dealt to target artifact creature this turn."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.all.objWouldDeal.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.1",
+      "CR 510.2"
+    ],
+    "pattern": "prevent all damage {o:Obj} would deal {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage target blue creature would deal this turn. Draw a card."
+      },
+      {
+        "text": "Prevent all damage target attacking or blocking creature with flying would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage target blue creature would deal. Draw a card.",
+      "Prevent all damage that would be dealt to target blue creature this turn. Draw a card.",
+      "Prevent all combat damage target blue creature would deal this turn. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.combat.objWouldDeal.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.2"
+    ],
+    "pattern": "prevent all combat damage {o:Obj} would deal {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage target attacking creature would deal this turn."
+      },
+      {
+        "text": "Prevent all combat damage target green creature would deal this turn. Scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage target attacking creature would deal.",
+      "Prevent all combat damage that would be dealt to target attacking creature this turn.",
+      "Prevent all noncombat damage target attacking creature would deal this turn."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.toSelf.byFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 120.3",
+      "CR 604.1"
+    ],
+    "pattern": "prevent all damage that would be dealt to ~ by {g:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to ~ by green creatures."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to ~ by Elves."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt by ~ to green creatures.",
+      "Prevent all combat damage that would be dealt to ~ by green creatures.",
+      "Prevent all damage that would be dealt to ~ by green creatures this turn."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.combat.toSelf.byFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 120.3",
+      "CR 510.2"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to ~ by {g:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to ~ by red creatures."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to ~ by creatures with power 4 or greater."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all noncombat damage that would be dealt to ~ by red creatures.",
+      "Prevent all damage that would be dealt to ~ by red creatures.",
+      "Prevent all combat damage that would be dealt by ~ to red creatures."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.toYou.dur.byFilter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all damage that would be dealt to you {d:Dur} by {g:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to you this turn by red creatures."
+      },
+      {
+        "text": "{3}, {T}: Prevent all damage that would be dealt to you this turn by creatures with trample."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to you by red creatures.",
+      "Prevent all damage that would be dealt by you this turn to red creatures.",
+      "Prevent all combat damage that would be dealt to you this turn by red creatures."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.all.sourceOfChoice.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 609.7a",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all damage a source of your choice would deal {d:Dur}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage a source of your choice would deal this turn. Scry 2."
+      },
+      {
+        "text": "{2}{W}: Prevent all damage a source of your choice would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage a source of your choice would deal. Scry 2.",
+      "Prevent all damage a source of an opponent's choice would deal this turn. Scry 2.",
+      "The next time a source of your choice would deal damage this turn, prevent that damage. Scry 2."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.all.sourceOfChoice.toYou.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 609.7a",
+      "CR 611.2a"
+    ],
+    "pattern": "( prevent all damage a source of your choice would deal to you {d:Dur} | prevent all damage that would be dealt to you {d:Dur} by a source of your choice )",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage a source of your choice would deal to you this turn. Draw a card."
+      },
+      {
+        "text": "{1}, {T}: Prevent all damage that would be dealt to you this turn by a source of your choice."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage a source of your choice would deal to you. Draw a card.",
+      "Prevent all damage a source of your choice would deal to target player this turn. Draw a card.",
+      "The next time a source of your choice would deal damage to you this turn, prevent that damage. Draw a card."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.toYou.bySourcesNotYours",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 120.3",
+      "CR 109.4"
+    ],
+    "pattern": "prevent all damage that would be dealt to you by ( sources | a source ) you don't control",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "not": {
+                "controller": "you"
+              }
+            },
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to you by a source you don't control."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to you by a source you don't control.\nWhen ~ enters, mill seven cards."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to you by a source you control.",
+      "Prevent all damage that would be dealt to you by a source an opponent controls this turn.",
+      "Prevent all damage that would be dealt by you to a source you don't control."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.combat.creatureOfChoice.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 510.2",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all combat damage a creature of your choice would deal {d:Dur}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "combat": true
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage a creature of your choice would deal this turn. Draw a card."
+      },
+      {
+        "text": "{W}, {T}: Prevent all combat damage a creature of your choice would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage a creature of your choice would deal. Draw a card.",
+      "Prevent all damage a creature of your choice would deal this turn. Draw a card.",
+      "Prevent all combat damage a creature of an opponent's choice would deal this turn. Draw a card."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.combat.to.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 510.2",
+      "CR 604.1"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to blocking Walls you control."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to tapped creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt by blocking Walls you control.",
+      "Prevent all noncombat damage that would be dealt to blocking Walls you control.",
+      "Prevent all combat damage that would be dealt to blocking Walls you control this turn."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.combat.to.attached",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 510.2",
+      "CR 301.5"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to ( enchanted | equipped ) ( creature | permanent )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": {
+                "attachedToSource": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to enchanted permanent."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to enchanted creature."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt by equipped creature.",
+      "Prevent all noncombat damage that would be dealt to enchanted permanent.",
+      "Prevent all combat damage that would be dealt to and dealt by equipped creature."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.noncombat.to.attached",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 120.2b",
+      "CR 301.5"
+    ],
+    "pattern": "prevent all noncombat damage that would be dealt to ( enchanted | equipped ) ( creature | permanent )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": false,
+            "recipient": {
+              "object": {
+                "attachedToSource": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all noncombat damage that would be dealt to enchanted permanent."
+      },
+      {
+        "text": "Prevent all noncombat damage that would be dealt to enchanted creature."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all noncombat damage that would be dealt by equipped creature.",
+      "Prevent all combat damage that would be dealt to equipped creature this turn.",
+      "Prevent all noncombat damage that would be dealt to each creature."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.combat.by.attached",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 510.2",
+      "CR 303.4"
+    ],
+    "pattern": "prevent all combat damage that would be dealt by ( enchanted | equipped ) ( creature | permanent )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "attachedToSource": true
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt by enchanted permanent."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt by equipped creature."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to enchanted creature.",
+      "Prevent all noncombat damage that would be dealt by enchanted creature.",
+      "Prevent all combat damage that would be dealt by enchanted creature this turn."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.combat.toYou.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 510.2",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to you {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to you this turn. Draw a card."
+      },
+      {
+        "text": "{1}{W}: Prevent all combat damage that would be dealt to you this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to you. Draw a card.",
+      "Prevent all combat damage that would be dealt by you this turn. Draw a card.",
+      "Prevent all noncombat damage that would be dealt to you this turn. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.combat.toPlayers.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 510.2",
+      "CR 611.2a",
+      "CR 102.1"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to players {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "player": "any"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to players this turn. Draw a card."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to players this turn. Scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to players. Draw a card.",
+      "Prevent all combat damage that would be dealt by players this turn. Draw a card.",
+      "Prevent all noncombat damage that would be dealt to players this turn. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.all.durFirst.to.filter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all damage that would be dealt {d:Dur} to {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt this turn to artifacts you control."
+      },
+      {
+        "text": "Prevent all damage that would be dealt this turn to Elves you control. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt this turn by artifacts you control.",
+      "Prevent all combat damage that would be dealt this turn to artifacts you control.",
+      "Prevent all damage that would be dealt to artifacts you control."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.all.toYouAnd.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all damage that would be dealt to you and {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you",
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to you and artifacts you control this turn."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to you and Knights you control this turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to you and artifacts you control.",
+      "Prevent all damage that would be dealt by you and artifacts you control this turn.",
+      "Prevent all combat damage that would be dealt to you and artifacts you control this turn."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.noncombat.toYouAnd",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 120.2b",
+      "CR 604.1"
+    ],
+    "pattern": "prevent all noncombat damage that would be dealt to you and {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": false,
+            "recipient": {
+              "player": "you",
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all noncombat damage that would be dealt to you and artifacts you control."
+      },
+      {
+        "text": "Prevent all noncombat damage that would be dealt to you and other creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to you and artifacts you control.",
+      "Prevent all noncombat damage that would be dealt to you and artifacts you control this turn.",
+      "Prevent all noncombat damage that would be dealt by you and artifacts you control."
+    ]
+  },
+  {
+    "id": "sta.p2rd1.prevent.combat.toAndBy.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 510.2",
+      "CR 604.1"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to and dealt by {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": "$f"
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to and dealt by Walls you control."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to and dealt by tapped creatures."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to Walls you control.",
+      "Prevent all noncombat damage that would be dealt to and dealt by Walls you control.",
+      "Prevent all combat damage that would be dealt to and dealt by Walls you control this turn."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.next.combat.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 510.2"
+    ],
+    "pattern": "prevent the next {n:Qty} combat damage that would be dealt to {p:Player} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "player": "$p"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "$n"
+          },
+          "shield": {
+            "uses": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "would",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Prevent the next 3 combat damage that would be dealt to you this turn."
+      },
+      {
+        "text": "{T}: Prevent the next 2 combat damage that would be dealt to you this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent the next 3 combat damage that would be dealt to you.",
+      "Prevent the next 3 noncombat damage that would be dealt to you this turn.",
+      "Prevent the next 3 combat damage that would be dealt by you this turn."
+    ]
+  },
+  {
+    "id": "eff.p2rd1.prevent.next.x.obj.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 107.3"
+    ],
+    "pattern": "prevent the next x damage that would be dealt to {o:Obj} {d:Dur} , where x is {q:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "$q"
+          },
+          "shield": {
+            "uses": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "would",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Prevent the next X damage that would be dealt to target creature this turn, where X is the number of Elves you control."
+      },
+      {
+        "text": "Prevent the next X damage that would be dealt to target artifact creature this turn, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Prevent the next X damage that would be dealt to target creature, where X is the number of Elves you control.",
+      "{T}: Prevent the next X damage that would be dealt by target creature this turn, where X is the number of Elves you control.",
+      "{T}: Prevent all damage that would be dealt to target creature this turn, where X is the number of Elves you control."
+    ]
+  }
+]

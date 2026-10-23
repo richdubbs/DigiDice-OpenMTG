@@ -1,0 +1,6 @@
+# p2-counters-state-2 (lane p2-counters-state): the round's golden cards (test/m5/golden/cards/p2-counters-state-2-review.json)
+Descent into Avernus
+Jhoira, Ageless Innovator
+Commodore Guff
+Tymaret Calls the Dead
+Entrapment Maneuver

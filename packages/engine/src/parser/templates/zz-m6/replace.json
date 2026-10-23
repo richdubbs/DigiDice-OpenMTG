@@ -1,0 +1,549 @@
+[
+  {
+    "id": "rep.m6.self.anywhere.exile",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 113.6"
+    ],
+    "pattern": "if ~ would be put into a graveyard from anywhere , exile it instead",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield",
+        "stack",
+        "hand",
+        "library",
+        "exile"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If ~ would be put into a graveyard from anywhere, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would be put into a graveyard from anywhere, shuffle it into its owner's library instead.",
+      "If ~ would die, exile it instead.",
+      "If a creature would be put into a graveyard from anywhere, exile it instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.skip.draw",
+    "kind": "static",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 504.1"
+    ],
+    "pattern": "skip your draw step",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "step",
+            "step": "draw",
+            "whose": "you"
+          },
+          "body": {
+            "b": "skip"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "skip"
+    ],
+    "examples": [
+      {
+        "text": "Skip your draw step."
+      }
+    ],
+    "counterExamples": [
+      "Skip your upkeep step.",
+      "Skip your next draw step.",
+      "Each opponent skips their draw step."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.life.double",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 119.10"
+    ],
+    "pattern": "if you would gain life , you gain twice that much life instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "life",
+        "change": "gain",
+        "player": "you"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would gain life, you gain twice that much life instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would lose life, you lose twice that much life instead.",
+      "If an opponent would gain life, that player gains twice that much life instead.",
+      "If you would gain life, you gain three times that much life instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.draw.two",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.2"
+    ],
+    "pattern": "if you would draw a card , draw two cards instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "you"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 2
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card, draw two cards instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card, draw three cards instead.",
+      "If an opponent would draw a card, draw two cards instead.",
+      "If you would draw a card, you gain 2 life instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.life.plus",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 119.10"
+    ],
+    "pattern": "if you would gain life , you gain that much life plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "life",
+        "change": "gain",
+        "player": "you"
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would gain life, you gain that much life plus 1 instead."
+      },
+      {
+        "text": "If you would gain life, you gain that much life plus 2 instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would gain life, you gain that much life minus 1 instead.",
+      "If you would lose life, you lose that much life plus 1 instead.",
+      "If an opponent would gain life, that player gains that much life plus 1 instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.tokens.double.passive",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.1",
+      "CR 616.1g"
+    ],
+    "pattern": "if one or more tokens would be created under your control , twice that many of those tokens are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more tokens would be created under your control, twice that many of those tokens are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more tokens would be created under an opponent's control, twice that many of those tokens are created instead.",
+      "If one or more tokens would be created under your control, three times that many of those tokens are created instead.",
+      "If one or more tokens would be created under your control, that many of those tokens plus one are created instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.counters.plus",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 616.1e"
+    ],
+    "pattern": "if one or more {k:CounterKind} counters would be put on {f:Filter} , that many plus {n:Qty} {k2:CounterKind} counters are put on ( it | that creature | that permanent ) instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "kind": "$k",
+        "on": "$f"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more +1/+1 counters would be put on a creature you control, that many plus one +1/+1 counters are put on it instead."
+      },
+      {
+        "text": "If one or more +1/+1 counters would be put on an artifact you control, that many plus one +1/+1 counters are put on that permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more +1/+1 counters would be put on a creature you control, that many plus one -1/-1 counters are put on it instead.",
+      "If one or more +1/+1 counters would be removed from a creature you control, that many plus one +1/+1 counters are put on it instead.",
+      "If one or more +1/+1 counters would be put on a creature you control, that many minus one +1/+1 counters are put on it instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.counters.double.passive",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 616.1e"
+    ],
+    "pattern": "if one or more {k:CounterKind} counters would be put on {f:Filter} , twice that many {k2:CounterKind} counters are put on ( it | that creature | that permanent ) instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "kind": "$k",
+        "on": "$f"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on that creature instead."
+      },
+      {
+        "text": "If one or more +1/+1 counters would be put on a creature you control, twice that many +1/+1 counters are put on it instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more +1/+1 counters would be put on a creature you control, three times that many +1/+1 counters are put on that creature instead.",
+      "If one or more +1/+1 counters would be put on a creature you control, twice that many -1/-1 counters are put on that creature instead.",
+      "If one or more +1/+1 counters would be removed from a creature you control, twice that many +1/+1 counters are put on that creature instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "prv.m6.self.all",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.6",
+      "CR 614.1a"
+    ],
+    "pattern": "prevent all damage that would be dealt to ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to ~."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt by ~.",
+      "Prevent 1 damage that would be dealt to ~.",
+      "Prevent all damage that would be dealt to ~ this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "prv.m6.self.combat",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.6",
+      "CR 614.1a"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to ~."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt by ~.",
+      "Prevent all noncombat damage that would be dealt to ~.",
+      "Prevent all combat damage that would be dealt to ~ this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "prv.m6.you.all",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.6",
+      "CR 614.1a"
+    ],
+    "pattern": "prevent all damage that would be dealt to you",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to you."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to you this turn.",
+      "Prevent all damage that would be dealt to target player.",
+      "Prevent all damage you would deal."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.enters.tapped.filter",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12"
+    ],
+    "pattern": "{f:Filter} enter tapped",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creatures your opponents control enter tapped."
+      },
+      {
+        "text": "Artifacts your opponents control enter tapped."
+      },
+      {
+        "text": "Permanents enter tapped."
+      }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control enter untapped.",
+      "Creatures your opponents control enter tapped and attacking.",
+      "Each creature your opponents control enters tapped."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

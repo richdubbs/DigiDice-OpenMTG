@@ -1,0 +1,189 @@
+[
+  {
+    "id": "trg.e20.crime.yourTurn",
+    "kind": "trigger",
+    "cr": [
+      "CR 700.13",
+      "CR 603.1",
+      "CR 603.2",
+      "CR 500.1"
+    ],
+    "pattern": "whenever you commit a crime during your turn",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "commitCrime",
+          "actor": "you"
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you commit a crime during your turn, ~ gains first strike until end of turn.",
+        "expect": {
+          "on": [
+            {
+              "ev": "action",
+              "verb": "commitCrime",
+              "actor": "you"
+            }
+          ],
+          "while": {
+            "cond": "turnOf",
+            "whose": "you"
+          }
+        }
+      },
+      {
+        "text": "Whenever you commit a crime during your turn, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you commit a crime during an opponent's turn, draw a card.",
+      "Whenever an opponent commits a crime during your turn, draw a card.",
+      "Whenever you commit a crime during your end step, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e20.self.unblockable.crime",
+    "kind": "static",
+    "cr": [
+      "CR 700.13",
+      "CR 509.1b",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ can't be blocked if you've committed a crime this turn",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "cant",
+      "action": "beBlocked",
+      "when": {
+        "cond": "happened",
+        "event": {
+          "ev": "action",
+          "verb": "commitCrime",
+          "actor": "you"
+        },
+        "scope": "turn"
+      }
+    },
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked if you've committed a crime this turn.",
+        "expect": {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "beBlocked",
+          "when": {
+            "cond": "happened",
+            "event": {
+              "ev": "action",
+              "verb": "commitCrime",
+              "actor": "you"
+            },
+            "scope": "turn"
+          }
+        }
+      },
+      {
+        "text": "This creature can't be blocked if you've committed a crime this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block if you've committed a crime this turn.",
+      "~ can't be blocked by Walls if you've committed a crime this turn.",
+      "~ can't be blocked this turn if you've committed a crime this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.e20.entersAndExpend",
+    "kind": "trigger",
+    "cr": [
+      "CR 700.14",
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.6a"
+    ],
+    "pattern": "when ~ enters and whenever you expend 4",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "to": "battlefield"
+        },
+        {
+          "ev": "action",
+          "verb": "expend",
+          "actor": "you",
+          "n": 4
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters and whenever you expend 4, put a charge counter on it.",
+        "expect": {
+          "on": [
+            {
+              "ev": "zoneChange",
+              "subject": {
+                "self": true
+              },
+              "to": "battlefield"
+            },
+            {
+              "ev": "action",
+              "verb": "expend",
+              "actor": "you",
+              "n": 4
+            }
+          ]
+        }
+      },
+      {
+        "text": "When ~ enters and whenever you expend 4, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies and whenever you expend 4, draw a card.",
+      "When ~ enters and whenever an opponent expends 4, draw a card.",
+      "When ~ enters and whenever you expend 5, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

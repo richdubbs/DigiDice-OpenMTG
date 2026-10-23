@@ -1,0 +1,19 @@
+# FAST5X E20 (MX23): commit a crime (CR 700.13), outlaws (CR 700.12), expend N (CR 700.14), activating exhaust (CR 702.177a) and loyalty (CR 606.3)
+# abilities, tapping an opponent's creature (CR 701.26a). Golden cards: test/m5/golden/cards/fast5x-e20-review.json
+Nimble Brigand
+Overzealous Muscle
+Hoarder's Overflow
+Slickshot Vault-Buster
+Hardbristle Bandit
+# Double Down: listed in t45-cards.txt (FAST5 batch 5 merge)
+Mine Raider
+Bark-Knuckle Boxer
+Sharae of Numbing Depths
+Icewrought Sentry
+Vial Smasher, Gleeful Grenadier
+Hellspur Posse Boss
+Seize the Secrets
+Take the Fall
+Rangers' Refueler
+Hellspur Brute
+Rakish Crew

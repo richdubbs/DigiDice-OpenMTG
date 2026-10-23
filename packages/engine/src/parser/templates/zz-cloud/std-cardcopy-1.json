@@ -1,0 +1,91 @@
+[
+  {
+    "id": "eff.stdcardcopy1.dur.becomeCopy.linkedCard",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 611.2b",
+      "CR 613.1a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes a copy of ( a | an ) {f:Filter} card exiled with ~",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": {
+                "ref": "linked",
+                "link": "exiled"
+              },
+              "choose": "$f"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "needs": [
+      "feature:copy.choose"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to one target creature an opponent controls until ~ leaves the battlefield.\nWhenever ~ becomes attached to a creature, for as long as ~ remains attached to it, that creature becomes a copy of an enchantment card exiled with ~."
+      },
+      {
+        "text": "When ~ enters, exile target artifact an opponent controls until ~ leaves the battlefield.\n{1}: Until end of turn, target creature you control becomes a copy of an artifact card exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to one target creature an opponent controls until ~ leaves the battlefield.\nWhenever ~ becomes attached to a creature, that creature becomes a copy of a creature card exiled with ~.",
+      "When ~ enters, exile up to one target creature an opponent controls until ~ leaves the battlefield.\nWhenever ~ becomes attached to a creature, for as long as ~ remains attached to it, that creature becomes a copy of target creature card exiled with ~.",
+      "When ~ enters, exile up to one target creature an opponent controls until ~ leaves the battlefield.\nWhenever ~ becomes attached to a creature, for as long as ~ remains attached to it, that creature becomes a copy of each creature card exiled with ~."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdcardcopy1.repeatProcess.again",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c"
+    ],
+    "pattern": "repeat this process",
+    "build": {
+      "op": "repeat",
+      "times": 1,
+      "do": [],
+      "process": true,
+      "again": true
+    },
+    "subject": "none",
+    "needs": [
+      "op:repeat.again"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. If two cards that share a card type were milled this way, draw a card and repeat this process."
+      },
+      {
+        "text": "Mill two cards. If two cards that share a card type were milled this way, you gain 2 life and repeat this process."
+      }
+    ],
+    "counterExamples": [
+      "Mill two cards. Repeat this process.",
+      "Mill two cards. If two cards that share a card type were milled this way, repeat this process and draw a card.",
+      "Mill two cards. If two cards that share a card type were milled this way, draw a card and repeat this process. Then draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

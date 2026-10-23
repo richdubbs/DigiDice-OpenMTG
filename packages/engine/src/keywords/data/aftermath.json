@@ -1,0 +1,15 @@
+{
+  "name": "aftermath",
+  "rule": "702.127",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "Cast this spell only from your graveyard. Then exile it.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "actions/cast.ts#castCheck",
+    "core/resolve.ts#leaveStack"
+  ]
+}

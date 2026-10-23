@@ -1,0 +1,16 @@
+# std-rx27 (wave 2, Standard lane rx27, cast and play permissions; test/cloud/std-rx27, golden cloud-std-rx27-review.json): static linked cast permissions
+# with riders, a one-card permission, the enters-with rider of top-card permissions, a graveyard permission per permanent type, "do this only once each turn" on
+# an optional cast
+Azula, Cunning Usurper
+Intrepid Paleontologist
+Maralen, Fae Ascendant
+Raphael, Most Attitude
+Muldrotha, the Gravetide
+Planetarium of Wan Shi Tong
+Elvish Refueler
+Kíli the Resourceful
+Kylox's Voltstrider
+Flotsam // Jetsam
+# std-rx27 batch 2: tap creatures rather than pay an activation's mana; counters on a card put into exile and a static exile permission by description
+Heirloom Epic
+Tinybones, Bauble Burglar

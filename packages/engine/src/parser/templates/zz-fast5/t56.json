@@ -1,0 +1,380 @@
+[
+  {
+    "id": "eff.t56.discard.unlessDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 118.12",
+      "CR 608.2d"
+    ],
+    "pattern": "then discard {n:Qty} cards unless you discard {f:DiscardDesc}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "discard",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards. Then discard three cards unless you discard a land card."
+      },
+      {
+        "text": "Draw four cards. Then discard two cards unless you discard an enchantment card."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. Then discard three cards unless an opponent discards a land card.",
+      "Draw two cards. Then discard three cards if you discard a land card.",
+      "Draw two cards. Then discard three cards unless you sacrifice a land."
+    ]
+  },
+  {
+    "id": "eff.t56.discard.unlessDiscard.either",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 118.12",
+      "CR 608.2d"
+    ],
+    "pattern": "then discard {n:Qty} cards unless you discard {f:DiscardDesc} or {g:DiscardDesc}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "discard",
+            "filter": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ]
+            },
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "unless",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards. Then discard three cards unless you discard a land card or a creature card with reach."
+      },
+      {
+        "text": "Draw two cards. Then discard two cards unless you discard an instant card or a creature card with flying."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. Then discard three cards unless you discard a land card and a creature card with reach.",
+      "Draw two cards. Then discard three cards unless an opponent discards a land card or a creature card with reach.",
+      "Draw two cards. Then discard three cards unless you discard a land or a creature card with reach."
+    ]
+  },
+  {
+    "id": "eff.t56.fights",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.14a",
+      "CR 701.14b",
+      "CR 608.2c"
+    ],
+    "pattern": "then {a:Obj} fight[s] {b:Obj}",
+    "build": {
+      "op": "fight",
+      "a": "$a",
+      "b": "$b"
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature you control gets +2/+2 until end of turn. Then it fights target creature an opponent controls."
+      },
+      {
+        "text": "Target creature you control gets +1/+0 until end of turn. Then it fights up to one target creature you don't control."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gets +2/+2 until end of turn. Then it fights.",
+      "Target creature you control gets +2/+2 until end of turn. Then it fights each creature an opponent controls.",
+      "Target creature you control gets +2/+2 until end of turn. Then it gets +1/+1 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t56.discard.upTo.drawThatMany",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 608.2h"
+    ],
+    "pattern": "discard up to {n:Qty} card[s] , then draw that many cards",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "toDiscard"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "as": "discarded"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "discarded"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Discard up to three cards, then draw that many cards."
+      },
+      {
+        "text": "Discard up to one card, then draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Discard three cards, then draw that many cards.",
+      "Discard up to three cards, then draw that many cards plus one.",
+      "Discard up to three cards, then draw two cards."
+    ]
+  },
+  {
+    "id": "eff.t56.ifIs.alsoGets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.4c"
+    ],
+    "pattern": "if {c:Cond} , {o:Obj} also get[s] {pt:PT} {d:Dur}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "effect",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ],
+          "duration": "$d"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Untap target creature. If that creature is a Wizard, it also gets +2/+0 until end of turn."
+      },
+      {
+        "text": "Tap target creature. If that creature is an Elf, it also gets -1/-1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Untap target creature. If that creature is a Wizard, it also gets +2/+0.",
+      "Untap target creature. If that creature is a Wizard, it also gains flying until end of turn.",
+      "Untap target creature. If that creature is a Wizard, it also gets +2/+0 until your next turn."
+    ]
+  },
+  {
+    "id": "rid.t56.flashback.costIsManaCost",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.34a",
+      "CR 118.9",
+      "CR 608.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "the flashback cost is equal to ( its | that card 's ) mana cost",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.mods.0.add.0.keyword": "flashback",
+          "effects.0.mods.0.add.0.cost": null,
+          "effects.0.mods.0.add.1": null
+        },
+        "effects": [
+          {
+            "mods": [
+              {
+                "add": [
+                  {
+                    "costIsManaCost": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Target instant card in your graveyard gains flashback until end of turn. The flashback cost is equal to its mana cost."
+      },
+      {
+        "text": "Target sorcery card in your graveyard gains flashback until end of turn. The flashback cost is equal to that card's mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Target instant card in your graveyard gains flashback until end of turn. The flashback cost is equal to its power.",
+      "Target instant card in your graveyard gains flashback until end of turn. The flashback cost is equal to your life total.",
+      "Target creature gains flying until end of turn. The flashback cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "sta.t56.cast.self.flashFor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 601.2f",
+      "CR 702.8a"
+    ],
+    "pattern": "you may cast ~ as though it had flash if you pay {m:ManaCost} more to cast it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "self": true
+          },
+          "costChange": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ as though it had flash if you pay {1} more to cast it."
+      },
+      {
+        "text": "You may cast ~ as though it had flash if you pay {3} more to cast it."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ as though it had flash.",
+      "You may cast ~ as though it had flash if you pay {2} less to cast it.",
+      "You may cast ~ as though it had haste if you pay {2} more to cast it."
+    ]
+  }
+]

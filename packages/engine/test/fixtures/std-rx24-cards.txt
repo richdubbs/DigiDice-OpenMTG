@@ -1,0 +1,33 @@
+# std-rx24 (wave 2, EDH lane rx24; test/cloud/std-rx24, golden cloud-std-rx24-review.json): poison counters of players in conditions; keywords umbra armor,
+# jump-start and champion; "~ enters with your choice of a <kind> counter or a <kind> counter on it"; "<player> skips their next untap step"
+Apostle of Invasion
+Avizoa
+Boar Umbra
+Boggart Mob
+Bonepicker Skirge
+Changeling Berserker
+Changeling Titan
+Chemister's Insight
+Dihada's Ploy
+Distorted Curiosity
+Drake Umbra
+Eel Umbra
+Eland Umbra
+Ferocious Tigorilla
+Fleshless Gladiator
+Gravitic Punch
+Hyena Umbra
+Mammoth Umbra
+Maximize Altitude
+Nova Chaser
+Quasiduplicate
+Risk Factor
+Septic Rats
+Skrelv's Hive
+Snake Umbra
+Sonic Assault
+Supreme Exemplar
+Thoughtweft Trio
+Treefolk Umbra
+Wren's Run Packmaster
+Yosei, the Morning Star

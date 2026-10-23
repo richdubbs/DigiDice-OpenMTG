@@ -1,0 +1,861 @@
+/*
+ * Decision prompts (work package C5). Colors only from the theme variables (theme.ts). On the game board (ui/arena) the bar sits in the side rail's
+ * bottom corner, like Arena's: the question on top, the choices under it, and the main action as a big glowing button at the very bottom (CSS order
+ * only: the DOM order, and so the keyboard order, is unchanged).
+ */
+.prompt-bar {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  background: transparent;
+}
+
+.prompt-live {
+  order: 0;
+}
+
+/*
+ * The row of actions with the main action closes the prompt, always whole and in sight: when the rail is short of room the list of choices above it
+ * scrolls in its own box (.prompt-chips); only when other content is too tall does the prompt itself scroll, and then this row stays pinned at the bottom
+ * edge, its backdrop (the prompt's own colour, fading in at its top) covering what scrolls under it. An error and a Cancel sit just above it.
+ */
+.prompt-actions {
+  order: 5;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 0 -12px -12px;
+  padding: 10px 12px 12px;
+  background: linear-gradient(180deg, rgba(4, 10, 24, 0), rgba(4, 10, 24, 0.97) 12px);
+}
+
+.prompt-cancel {
+  order: 4;
+}
+
+/*
+ * A row of actions drawn on the table (the board's actions slot at the bottom right, PromptActions.tsx): a glass plate of its
+ * own instead of the rail's pinned backdrop, the buttons to the right, the main action the big button at the bottom. Cancel sits bare above it.
+ */
+.prompt-on-table {
+  position: static;
+  margin: 0;
+  padding: 8px;
+  justify-content: flex-end;
+  border: 1px solid rgba(var(--neon-rgb), 0.35);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(10, 24, 52, 0.72), rgba(3, 10, 26, 0.86));
+  box-shadow: 0 0 18px rgba(var(--neon-rgb), 0.16), 0 12px 24px rgba(0, 0, 0, 0.45);
+}
+
+.prompt-on-table.prompt-cancel {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.prompt-error {
+  order: 3;
+}
+
+.prompt-text {
+  margin: 0;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+/* The prompt text takes the focus when a new prompt replaces the focused button (tabIndex -1): no ring for that programmatic focus. */
+.prompt-text:focus {
+  outline: none;
+}
+
+/* Disabled controls must look disabled (the global button style has no :disabled state). C0 may move this into theme/styles.css. */
+.prompt-bar button:disabled,
+.prompt-bar input:disabled,
+.prompt-bar select:disabled,
+.prompt-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.prompt-bar button:disabled:hover,
+.prompt-actions button:disabled:hover {
+  background: var(--surface);
+}
+
+.prompt-bar .button-primary:disabled:hover,
+.prompt-actions .button-primary:disabled:hover {
+  background: var(--accent);
+}
+
+.prompt-heading {
+  margin: 4px 0 0;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.prompt-order-pos {
+  min-width: 1.6em;
+  font-weight: 600;
+}
+
+.prompt-detail,
+.prompt-hint {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.prompt-hint {
+  font-size: 0.9em;
+}
+
+.prompt-rules {
+  margin-left: 6px;
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.prompt-actions,
+.prompt-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+/* The list of choices gives up room first, down to a row, and scrolls in its own box (the padding keeps the chips' lift and focus rings inside it). */
+.prompt-chips {
+  flex: 0 1 auto;
+  min-height: 38px;
+  overflow-y: auto;
+  padding: 3px 2px;
+  align-content: flex-start;
+  /* a visible, on-theme scrollbar: a choice cut at the bottom reads as "scroll for more" */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--neon-rgb), 0.75) rgba(var(--neon-rgb), 0.08);
+}
+
+/* The main action (Pass, OK, Attack, Pay ...): Arena's big glowing button. */
+.prompt-actions .button-primary {
+  --btn-depth: 5px;
+  flex: 1 1 100%;
+  min-height: 42px;
+  border-radius: 12px;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  order: 2;
+}
+
+/* AP1: the hold-priority toggle next to Pass: lit while on (the game stops at every priority until the end of the turn). */
+.prompt-actions .hold-toggle.is-on {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  box-shadow: 0 0 8px var(--glow-2);
+}
+
+.prompt-column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.prompt-chip {
+  --btn-depth: 2px;
+  min-width: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.prompt-chip.is-selected,
+.prompt-chip[aria-selected='true'] {
+  border-color: var(--accent-2);
+  background: var(--surface-strong);
+  box-shadow: 0 0 0 1px var(--accent-2) inset;
+}
+
+.prompt-chip-mark {
+  color: var(--text-muted);
+}
+
+/* Chips grouped by controller (Chips.tsx): one labelled row per player, the viewer's first. */
+.prompt-chip-groups {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+}
+
+.prompt-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--neon-rgb), 0.25);
+}
+
+.prompt-chip-group-title {
+  flex: 1 1 100%;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.prompt-button-small {
+  min-width: 0;
+  padding: 2px 10px;
+}
+
+.prompt-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--accent-2);
+  border-radius: 8px;
+}
+
+.prompt-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prompt-option {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.prompt-disabled-reason,
+.prompt-warning {
+  margin: 0;
+  color: var(--brand-magenta);
+}
+
+.prompt-error {
+  padding: 8px 12px;
+  border: 1px solid var(--brand-magenta);
+  border-radius: 8px;
+}
+
+/* M12-4b (CR 800.4g-h): a choice made for a player who left the game. */
+.prompt-redirected {
+  margin: 0 0 6px;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 180, 61, 0.6);
+  border-radius: 8px;
+  background: rgba(255, 180, 61, 0.1);
+  color: #ffd27d;
+}
+
+/* M12-4b (m12 design D15): an attacker whose target is not picked yet. */
+.prompt-field[data-needs-target] select {
+  border-color: var(--brand-magenta);
+}
+
+.prompt-number,
+.prompt-field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.prompt-number input[type='number'],
+.prompt-table input[type='number'] {
+  width: 5em;
+}
+
+.prompt-bar input,
+.prompt-bar select {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+/* The translucent field above would leave the opened list see-through (white): a select's popup needs a solid color (theme/styles.css). */
+.prompt-bar select {
+  background: var(--menu-bg);
+}
+
+.prompt-order,
+.prompt-list,
+.prompt-sources {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.prompt-order li,
+.prompt-list li,
+.prompt-sources li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.prompt-order-label {
+  flex: 1;
+}
+
+.prompt-table th {
+  padding-right: 12px;
+  text-align: left;
+  font-weight: 400;
+}
+
+.prompt-manual-resolve {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.prompt-manual-card {
+  flex: 1 1 260px;
+  padding: 8px 12px;
+  border: 1px dashed var(--accent-2);
+  border-radius: 8px;
+}
+
+.prompt-manual-card h3 {
+  margin: 0 0 4px;
+}
+
+.prompt-manual-text {
+  margin: 0 0 6px;
+  white-space: pre-wrap;
+}
+
+.prompt-manual-panel {
+  display: flex;
+  flex: 1 1 320px;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.prompt-manual-ops {
+  flex-basis: 100%;
+}
+
+/* M6-11: a group of choices with its own heading (replacement classes, CR 616.1a-e; the turn-face-up special action; combat requirements) */
+.prompt-group,
+.prompt-menu-special,
+.prompt-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prompt-requirements ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.prompt-requirements .is-obeyed {
+  color: var(--text);
+}
+
+/* ---- the stage: a decision drawn large over the table (stage.tsx, Arena style) ---------------------------- */
+
+/* The stage fills the board's stage layer (a size container): a dim over the table, the title at the top, the cards in the middle, the buttons below. */
+.prompt-stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  justify-items: center;
+  gap: 1.4cqh;
+  padding: 2.4cqh 24px 3cqh;
+  pointer-events: auto;
+  background: radial-gradient(ellipse 85% 75% at 50% 50%, rgba(2, 6, 18, 0.74), rgba(2, 6, 18, 0.93));
+}
+
+/* "View battlefield": the stage steps aside (the table shows through), keeping its corner and its buttons. */
+.prompt-stage.is-peeking {
+  background: none;
+  pointer-events: none;
+}
+
+.prompt-stage.is-peeking .prompt-stage-head,
+.prompt-stage.is-peeking .prompt-stage-body {
+  visibility: hidden;
+}
+
+.prompt-stage.is-peeking .prompt-stage-corner,
+.prompt-stage.is-peeking .prompt-stage-actions {
+  pointer-events: auto;
+}
+
+.prompt-stage-head {
+  max-width: min(960px, 78%);
+  text-align: center;
+}
+
+.prompt-stage-title {
+  margin: 0;
+  padding: 0 48px 0.6cqh;
+  border-bottom: 1px solid rgba(159, 230, 255, 0.55);
+  color: #eaf7ff;
+  font-size: clamp(24px, 6cqh, 54px);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.15;
+  text-shadow: 0 0 22px rgba(var(--neon-rgb), 0.6), 0 3px 0 rgba(0, 0, 0, 0.65);
+}
+
+.prompt-stage-sub {
+  margin: 0.8cqh 0 0;
+  color: #cfe6ff;
+  font-size: clamp(13px, 2.1cqh, 19px);
+  line-height: 1.35;
+}
+
+.prompt-stage-corner {
+  position: absolute;
+  top: 2.4cqh;
+  right: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.prompt-stage .prompt-stage-peek {
+  padding: 8px 22px;
+  border: 2px solid rgba(234, 247, 255, 0.85);
+  border-radius: 999px;
+  background: rgba(3, 10, 26, 0.75);
+  color: #eaf7ff;
+  font-size: clamp(13px, 2cqh, 18px);
+  font-weight: 700;
+}
+
+.prompt-stage-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #eaf7ff;
+  font-size: clamp(13px, 1.9cqh, 17px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.prompt-stage-check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+.prompt-stage-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 0;
+}
+
+.prompt-stage-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.prompt-stage-problem {
+  margin: 0;
+  color: #ffcf6b;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* M11-2: the commander of the 903.9 choice (CommanderPrompts.tsx), one card in the middle of the stage. */
+.prompt-commander-card {
+  width: clamp(140px, 22cqw, 260px);
+}
+
+/* A card on the stage: its picture, sized by its slot; amounts and labels sit under it, never on it. */
+.prompt-stage-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.prompt-stage-picture {
+  container-type: inline-size;
+  --card-w: 100cqw;
+  width: 100%;
+  aspect-ratio: 1 / 1.4;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(var(--neon-rgb), 0.4), 0 16px 34px rgba(0, 0, 0, 0.75);
+}
+
+.prompt-stage-picture > * {
+  width: 100%;
+  height: 100%;
+}
+
+/* The Scryfall picture's artist under a stage card (cards/ArtistCredit.tsx): as wide as the picture, the line wraps. */
+.prompt-stage-credit {
+  max-width: 100%;
+  margin: 0;
+}
+
+/* The stage's buttons: big pills centred under the cards, the main one glowing at the right (CSS order). */
+.prompt-on-stage {
+  position: static;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  gap: 12px 22px;
+  background: none;
+}
+
+.prompt-actions.prompt-on-stage button {
+  min-width: clamp(150px, 22cqh, 240px);
+  min-height: clamp(40px, 6cqh, 56px);
+  border-radius: 999px;
+  font-size: clamp(15px, 2.6cqh, 22px);
+  font-weight: 800;
+}
+
+.prompt-actions.prompt-on-stage .button-primary {
+  flex: 0 0 auto;
+}
+
+.prompt-actions.prompt-on-stage button:not(.button-primary) {
+  border-color: rgba(185, 160, 255, 0.9);
+  background: linear-gradient(180deg, #4a3df0, #2a1f9c);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(120, 100, 255, 0.55);
+}
+
+.prompt-mulligan-hint {
+  flex-basis: 100%;
+  order: 3;
+  margin: 0;
+  text-align: center;
+}
+
+.prompt-on-stage .prompt-mulligan-hint {
+  color: #cfe6ff;
+  font-size: clamp(13px, 2cqh, 17px);
+  font-style: italic;
+}
+
+/* The opening hand fanned out (MulliganPrompt): overlapping like Arena's while pictures may overlap, side by side otherwise. */
+.prompt-fan {
+  --fan-w: min(30cqh, 15cqw, calc(88cqw / (1 + (var(--fan-n, 1) - 1) * 0.74)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2cqh 0 4cqh;
+}
+
+.prompt-fan.is-apart {
+  --fan-w: min(30cqh, 15cqw, calc((90cqw - (var(--fan-n, 1) - 1) * 12px) / var(--fan-n, 1)));
+  gap: 12px;
+}
+
+.prompt-fan-slot {
+  position: relative;
+  flex: none;
+  width: var(--fan-w);
+  transform: translateY(calc(var(--fan-i, 0) * var(--fan-i, 0) * 0.8cqh)) rotate(calc(var(--fan-i, 0) * 3.5deg));
+  transform-origin: 50% 110%;
+  transition: transform 160ms ease;
+}
+
+.prompt-fan:not(.is-apart) .prompt-fan-slot + .prompt-fan-slot {
+  margin-left: calc(var(--fan-w) * -0.26);
+}
+
+.prompt-fan.is-apart .prompt-fan-slot {
+  transform: translateY(calc(var(--fan-i, 0) * var(--fan-i, 0) * 0.5cqh)) rotate(calc(var(--fan-i, 0) * 1.5deg));
+}
+
+.prompt-fan-slot:hover {
+  z-index: 2;
+  transform: translateY(-2cqh) scale(1.04);
+}
+
+/*
+ * Searching a library (ChoicePrompts.tsx LibrarySearchStage): every card the search can find, left to right in one row. The
+ * cards overlap just enough to fit across the stage (a small gap when they fit), later cards on top, so the rightmost is on top; the card under the
+ * pointer (or focused) comes up above all the others to be read.
+ */
+.prompt-search {
+  --search-w: min(36cqh, 16cqw);
+  --search-room: 92cqw;
+  --search-step: min(calc(var(--search-w) + 10px), calc((var(--search-room) - var(--search-w)) / max(1, var(--search-n, 1) - 1)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 5cqh 0 2cqh;
+}
+
+.prompt-search-slot {
+  position: relative;
+  flex: none;
+  width: var(--search-w);
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  transition: transform 140ms ease;
+}
+
+.prompt-search-slot + .prompt-search-slot {
+  margin-left: calc(var(--search-step) - var(--search-w));
+}
+
+.prompt-search-slot:hover,
+.prompt-search-slot:focus-visible {
+  z-index: 100;
+  transform: translateY(-3cqh) scale(1.15);
+}
+
+/* A chosen card stays lifted and on top of its neighbours (under the one being pointed at). */
+.prompt-search-slot.is-selected {
+  z-index: 50;
+  transform: translateY(-4.5cqh);
+}
+
+.prompt-search-slot.is-selected:hover,
+.prompt-search-slot.is-selected:focus-visible {
+  z-index: 100;
+  transform: translateY(-5.5cqh) scale(1.15);
+}
+
+/* Chosen and focused cards glow around the picture, never on it. */
+.prompt-search-slot.is-selected .prompt-stage-picture {
+  box-shadow: 0 0 0 3px var(--accent), 0 0 26px rgba(var(--neon-rgb), 0.85), 0 16px 34px rgba(0, 0, 0, 0.75);
+}
+
+.prompt-search-slot:focus-visible .prompt-stage-picture {
+  box-shadow: 0 0 0 3px #eaf7ff, 0 16px 34px rgba(0, 0, 0, 0.75);
+}
+
+.prompt-search-mark {
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #03101f;
+  font-size: clamp(12px, 1.8cqh, 16px);
+  font-weight: 800;
+}
+
+/* A revealed card the choice can't take (RevealedHandStage): still shown, dimmed, with a note under it. */
+.prompt-search-slot.is-unchoosable {
+  cursor: default;
+}
+
+.prompt-search-slot.is-unchoosable .prompt-stage-picture {
+  filter: saturate(0.35) brightness(0.6);
+}
+
+.prompt-search-note {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(4, 10, 26, 0.9);
+  color: var(--text-muted);
+  font-size: clamp(11px, 1.6cqh, 14px);
+  font-weight: 700;
+}
+
+.prompt-option-cost {
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* A mode under its copy of the card (ModeStage): readable text in a box the card's width. */
+.prompt-mode-text {
+  display: block;
+  max-width: var(--search-w, 22cqh);
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(var(--neon-rgb), 0.45);
+  background: rgba(4, 10, 26, 0.92);
+  color: #f2f8ff;
+  font-size: clamp(12px, 1.7cqh, 15px);
+  line-height: 1.3;
+  text-align: center;
+}
+
+.prompt-mode-slot.is-selected .prompt-mode-text {
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--glow, rgba(127, 220, 255, 0.5));
+}
+
+/* While Scryfall pictures can be on screen nothing covers a picture: the cards sit apart and shrink to fit, on more rows when there are many. */
+.prompt-search.is-apart {
+  --search-w: max(10cqh, min(36cqh, 16cqw, calc((92cqw - (var(--search-n, 1) - 1) * 10px) / var(--search-n, 1))));
+  flex-wrap: wrap;
+  gap: 10px;
+  align-content: center;
+}
+
+.prompt-search.is-apart .prompt-search-slot + .prompt-search-slot {
+  margin-left: 0;
+}
+
+/* Assigning combat damage (DamagePrompts.tsx DamageStage): the attacker at the left, the creatures First ... Last in the middle, what it attacks at the right. */
+.prompt-dmg-stage {
+  --dmg-w: min(24cqh, 14cqw);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3cqw;
+  width: 100%;
+  padding: 0 2cqw;
+}
+
+.prompt-dmg-attacker {
+  width: calc(var(--dmg-w) * 1.2);
+}
+
+.prompt-dmg-middle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.prompt-dmg-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 18px;
+  padding: 2.4cqh 18px;
+  border: 1px solid rgba(234, 247, 255, 0.4);
+  border-radius: 10px;
+  background: rgba(3, 10, 26, 0.45);
+}
+
+.prompt-dmg-slot {
+  width: var(--dmg-w);
+  cursor: grab;
+}
+
+.prompt-dmg-pick {
+  border-radius: 12px;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+}
+
+.prompt-dmg-pick:hover .prompt-stage-picture,
+.prompt-dmg-pick:focus-visible .prompt-stage-picture {
+  box-shadow: 0 0 0 3px #ffb43a, 0 0 28px rgba(255, 180, 58, 0.65), 0 16px 34px rgba(0, 0, 0, 0.75);
+}
+
+.prompt-dmg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prompt-dmg-n {
+  min-width: 1.9em;
+  padding: 2px 10px;
+  border: 2px solid #ffb43a;
+  border-radius: 8px;
+  background: #05070f;
+  color: #ffc35a;
+  font-size: clamp(18px, 3.6cqh, 30px);
+  font-weight: 800;
+  text-align: center;
+}
+
+.prompt-dmg.is-lethal .prompt-dmg-n {
+  border-color: #ff5a5a;
+  color: #ff8080;
+}
+
+.prompt-dmg-total .prompt-dmg-n {
+  border-color: var(--accent);
+  color: #eaf7ff;
+}
+
+.prompt-dmg-note {
+  color: #cfe6ff;
+  font-size: clamp(11px, 1.7cqh, 14px);
+}
+
+.prompt-dmg-ends {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  color: #eaf7ff;
+  font-size: clamp(16px, 3.6cqh, 32px);
+  font-style: italic;
+  font-weight: 800;
+}
+
+.prompt-dmg-target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: var(--dmg-w);
+}
+
+.prompt-dmg-player {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+}
+
+.prompt-dmg-player-name {
+  color: #eaf7ff;
+  font-weight: 700;
+}
+
+.prompt-dmg-life {
+  display: grid;
+  place-items: center;
+  width: clamp(64px, 14cqh, 130px);
+  aspect-ratio: 1;
+  border: 3px solid var(--accent);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, rgba(var(--neon-rgb), 0.45), rgba(3, 10, 26, 0.95) 70%);
+  box-shadow: 0 0 26px rgba(var(--neon-rgb), 0.5);
+  color: #fff;
+  font-size: clamp(24px, 6cqh, 54px);
+  font-weight: 800;
+}
+
+.prompt-dmg-player:hover .prompt-dmg-life,
+.prompt-dmg-player:focus-visible .prompt-dmg-life {
+  border-color: #ffb43a;
+  box-shadow: 0 0 30px rgba(255, 180, 58, 0.7);
+}
+
+.prompt-dmg-trample {
+  color: var(--accent-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}

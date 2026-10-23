@@ -1,0 +1,8 @@
+# ---- Standard round C (std-rc): "This ability costs {X} less to activate, where X is <Qty>" (eff.stdrc.cost.ability.less.whereX; family ability-cost-where-x;
+# CR 602.2b, 601.2f, 107.3). Golden cards: Survey Mechan (Standard), Baru, Wurmspeaker (tuning half)
+Survey Mechan
+Baru, Wurmspeaker
+# ---- Qty: "<creatures> that died / were exiled under <your | your opponents' | an opponent's> control this turn" (parser/holes/qty.ts#historyCounts, weak;
+# family exiled-under-control; CR 700.4, 406.1, 603.10a)
+Vren, the Relentless
+Liliana's Standard Bearer

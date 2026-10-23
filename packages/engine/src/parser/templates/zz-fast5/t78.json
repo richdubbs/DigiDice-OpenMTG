@@ -1,0 +1,728 @@
+[
+  {
+    "id": "eff.t78.may.tap.untapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.3",
+      "CR 701.26a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may tap {n:Qty} untapped {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "tapUntapped",
+            "filter": "$f",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may tap two untapped artifacts and/or creatures you control. If you do, draw a card."
+      },
+      {
+        "text": "You may tap three untapped Elves you control. If you do, scry 2."
+      }
+    ],
+    "counterExamples": [
+      "You may tap two artifacts and/or creatures you control.",
+      "You may tap two untapped creatures you don't control.",
+      "Tap two untapped creatures you control."
+    ]
+  },
+  {
+    "id": "eff.t78.may.tap.another",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.3",
+      "CR 701.26a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may tap another untapped {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "tapUntapped",
+            "filter": "$f",
+            "count": 1,
+            "other": true
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may tap another untapped Elf you control. If you do, draw a card."
+      },
+      {
+        "text": "When ~ enters, you may tap another untapped Elf you control. When you do, ~ deals 1 damage to target player."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may tap an untapped Elf you control.",
+      "When ~ enters, you may tap another Elf you control.",
+      "When ~ enters, you may tap another untapped Elf you don't control."
+    ]
+  },
+  {
+    "id": "eff.t78.then.may.sacrifice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 603.12"
+    ],
+    "pattern": "then you may sacrifice ( a | an ) {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "then",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Create a Treasure token. Then you may sacrifice a creature. When you do, ~ deals 2 damage to each opponent."
+      },
+      {
+        "text": "Draw a card. Then you may sacrifice an artifact. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Then you may sacrifice two creatures.",
+      "Then you may sacrifice another creature.",
+      "You may sacrifice a creature."
+    ]
+  },
+  {
+    "id": "eff.t78.then.may.sacrifice.self",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 603.12"
+    ],
+    "pattern": "then you may sacrifice ~",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": {
+              "self": true
+            },
+            "count": 1,
+            "self": true
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "then",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Then you may sacrifice ~. When you do, ~ deals 2 damage to each opponent."
+      },
+      {
+        "text": "Scry 2. Then you may sacrifice ~. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Then you may sacrifice a creature.",
+      "You may sacrifice ~.",
+      "Then sacrifice ~."
+    ]
+  },
+  {
+    "id": "eff.t78.if.drawAnd.token",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 121.1",
+      "CR 111.1",
+      "CR 701.7a"
+    ],
+    "pattern": "if {c:Cond} , draw a card and create ( a | an ) {t:TokenDesc}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1,
+          "token": "$t"
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may discard a card. If you do, draw a card and create a Treasure token."
+      },
+      {
+        "text": "You may pay {2}. If you do, draw a card and create a 2/2 colorless Robot artifact creature token."
+      }
+    ],
+    "counterExamples": [
+      "You may discard a card. If you do, draw a card and create two Treasure tokens.",
+      "You may discard a card. If you do, draw two cards and create a Treasure token.",
+      "You may discard a card. If you do, draw a card and target opponent creates a Treasure token."
+    ]
+  },
+  {
+    "id": "eff.t78.if.drawAnd.cantBeBlocked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 121.1",
+      "CR 509.1b",
+      "CR 611.2a"
+    ],
+    "pattern": "if {c:Cond} , draw a card and ~ can't be blocked this turn",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        {
+          "op": "effect",
+          "duration": {
+            "d": "endOfTurn"
+          },
+          "effects": [
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "self"
+              },
+              "mode": "cant",
+              "action": "beBlocked"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "You may discard a card. If you do, draw a card and ~ can't be blocked this turn."
+      },
+      {
+        "text": "You may pay {1}. If you do, draw a card and ~ can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "You may discard a card. If you do, draw a card and ~ can't be blocked.",
+      "You may discard a card. If you do, draw two cards and ~ can't be blocked this turn.",
+      "You may discard a card. If you do, draw a card and target creature can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "eff.t78.if.drawAnd.pump",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 121.1",
+      "CR 611.2a",
+      "CR 613.4c"
+    ],
+    "pattern": "if {c:Cond} , draw a card and ~ gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "self"
+              },
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may discard a card. If you do, draw a card and ~ gets +2/+0 until end of turn."
+      },
+      {
+        "text": "You may pay {1}. If you do, draw a card and ~ gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You may discard a card. If you do, draw a card and ~ gets +2/+0.",
+      "You may discard a card. If you do, draw two cards and ~ gets +2/+0 until end of turn.",
+      "You may discard a card. If you do, draw a card and target creature gets +2/+0 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t78.may.discardOrSacrifice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 701.9a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may discard a card or sacrifice ( a | an ) {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "discard",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "you"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$f",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may discard a card or sacrifice a creature."
+      },
+      {
+        "text": "You may discard a card or sacrifice an artifact. If you do, draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "You may discard a card and sacrifice a creature.",
+      "You may discard two cards or sacrifice a creature.",
+      "You may discard a card or sacrifice another creature."
+    ]
+  },
+  {
+    "id": "eff.t78.may.payLifeEqual.thatMany",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 119.4",
+      "CR 608.2h"
+    ],
+    "pattern": "you may pay life equal to {n:Qty}",
+    "build": [
+      {
+        "op": "let",
+        "name": "lifeToPay",
+        "value": "$n"
+      },
+      {
+        "op": "pay",
+        "who": {
+          "ref": "you"
+        },
+        "cost": {
+          "other": [
+            {
+              "kind": "payLife",
+              "amount": {
+                "q": "var",
+                "name": "lifeToPay"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may pay life equal to the number of cards in your hand. If you do, draw a card."
+      },
+      {
+        "text": "You may pay life equal to your devotion to black. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may pay 3 life.",
+      "You pay life equal to the number of cards in your hand.",
+      "You may lose life equal to the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.t78.tap.anyNumber.creatures",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "tap any number of untapped creatures you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "tapped": false
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "tapCandidates"
+      },
+      {
+        "op": "tap",
+        "what": {
+          "ref": "bound",
+          "name": "tapCandidates"
+        },
+        "as": "tappedThisWay"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, tap any number of untapped creatures you control. ~ gets +2/+0 until end of turn for each creature tapped this way."
+      },
+      {
+        "text": "Tap any number of untapped creatures you control. ~ gets +0/+3 until end of turn for each creature tapped this way."
+      }
+    ],
+    "counterExamples": [
+      "Tap any number of creatures you control.",
+      "Tap any number of untapped artifacts you control.",
+      "Tap any number of untapped creatures you control with total power 3 or greater."
+    ]
+  },
+  {
+    "id": "eff.t78.pump.perTappedThisWay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 611.2a",
+      "CR 613.4c"
+    ],
+    "pattern": "~ gets {pt:PT} {d:Dur} for each creature tapped this way",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "resultCount",
+                    "step": "tappedThisWay"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "resultCount",
+                    "step": "tappedThisWay"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, tap any number of untapped creatures you control. ~ gets +2/+2 until end of turn for each creature tapped this way."
+      },
+      {
+        "text": "Tap any number of untapped creatures you control. ~ gets +0/+2 until end of turn for each creature tapped this way."
+      }
+    ],
+    "counterExamples": [
+      "Tap any number of untapped creatures you control. ~ gets +1/+1 for each creature tapped this way.",
+      "Tap any number of untapped creatures you control. ~ gets +1/+1 until end of turn for each artifact tapped this way.",
+      "Tap any number of untapped creatures you control. Target creature gets +1/+1 until end of turn for each creature tapped this way."
+    ]
+  },
+  {
+    "id": "eff.t78.may.sacrifice.otherThan",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 608.2h"
+    ],
+    "pattern": "you may sacrifice ( a | an ) {f:Filter} other than {o:Obj} or ~",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "not": {
+                "anyOf": [
+                  {
+                    "is": "$o"
+                  },
+                  {
+                    "self": true
+                  }
+                ]
+              }
+            },
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever equipped creature attacks, you may sacrifice a permanent other than that creature or ~. If you do, draw a card."
+      },
+      {
+        "text": "Whenever equipped creature attacks, you may sacrifice an artifact other than that creature or ~. If you do, scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Whenever equipped creature attacks, you may sacrifice a permanent other than that creature.",
+      "Whenever equipped creature attacks, you may sacrifice two permanents other than that creature or ~.",
+      "Whenever equipped creature attacks, sacrifice a permanent other than that creature or ~."
+    ]
+  },
+  {
+    "id": "eff.t78.may.removeCounter.fromEachOf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 118.3",
+      "CR 118.12"
+    ],
+    "pattern": "you may remove ( a | an ) {k:CounterKind} counter from each of {n:Qty} {f:Filter}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "counters": {
+                "kind": "$k"
+              }
+            }
+          },
+          "min": "$n",
+          "max": "$n",
+          "as": "counterHolders"
+        },
+        {
+          "op": "removeCounters",
+          "from": {
+            "ref": "bound",
+            "name": "counterHolders"
+          },
+          "kind": "$k",
+          "count": 1
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You may remove a +1/+1 counter from each of two creatures you control. If you do, draw a card."
+      },
+      {
+        "text": "You may remove a charge counter from each of three artifacts you control. If you do, scry 2."
+      }
+    ],
+    "counterExamples": [
+      "You may remove a +1/+1 counter from each creature you control.",
+      "You may remove two +1/+1 counters from each of two creatures you control.",
+      "Remove a +1/+1 counter from each of two creatures you control."
+    ]
+  }
+]

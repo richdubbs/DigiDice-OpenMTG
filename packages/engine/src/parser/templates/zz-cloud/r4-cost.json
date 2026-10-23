@@ -1,0 +1,1787 @@
+[
+  {
+    "id": "eff.cost.self.less.yourTurn",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 500.1"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast during your turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ costs {2} less to cast during your turn."
+      },
+      {
+        "text": "~ costs {3} less to cast during your turn."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {1} more to cast during your turn.",
+      "~ costs {1} less to cast during each turn.",
+      "~ costs {1} less to cast during your upkeep.",
+      "~ costs {1} less to activate during your turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.self.less.asLongAs",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 611.3a"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ costs {2} less to cast as long as there are four or more card types among cards in your graveyard."
+      },
+      {
+        "text": "~ costs {1} less to cast as long as you control a Golem."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {2} more to cast as long as you control a Golem.",
+      "~ costs {2} less to cast as long as you control a Golem unless you pay {1}.",
+      "~ costs {2} less to activate as long as you control a Golem."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.self.less.forEachAndEach",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast for each {f:Filter} and each {g:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "math",
+                  "op": "+",
+                  "args": [
+                    {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": "$f"
+                      }
+                    },
+                    {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": "$g"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {1} less to cast for each Golem you control and each Golem card in your graveyard."
+      },
+      {
+        "text": "~ costs {2} less to cast for each artifact you control and each artifact card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {1} more to cast for each Golem you control and each Golem card in your graveyard.",
+      "~ costs {1} less to cast for each Golem you control or each Golem card in your graveyard.",
+      "~ costs {1} less to activate for each Golem you control and each Golem card in your graveyard."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.spells.less.forEach",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 611.3a"
+    ],
+    "pattern": "{f:Filter} you cast cost {m:ManaCost} less to cast for each {g:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$g"
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Spells you cast cost {1} less to cast for each creature you control with power 4 or greater."
+      },
+      {
+        "text": "Artifact spells you cast cost {1} less to cast for each Golem you control."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast cost {1} more to cast for each Golem you control.",
+      "Spells your opponents cast cost {1} less to cast for each Golem you control.",
+      "Spells you cast cost {1} less to cast for each Golem you control this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.spells.less.forEach.yourTurn",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 611.3a",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , {f:Filter} you cast cost {m:ManaCost} less to cast for each {g:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$g"
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, spells you cast cost {1} less to cast for each Golem you control."
+      },
+      {
+        "text": "During your turn, instant spells you cast cost {1} less to cast for each Wizard you control."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, spells you cast cost {1} more to cast for each Wizard you control.",
+      "During each turn, spells you cast cost {1} less to cast for each Wizard you control.",
+      "During your turn, spells your opponents cast cost {1} less to cast for each Wizard you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.ability.less.yourTurn",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7",
+      "CR 500.1"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate during your turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{3}, {T}: Draw a card. This ability costs {1} less to activate during your turn."
+      },
+      {
+        "text": "{4}: ~ gets +2/+2 until end of turn. This ability costs {2} less to activate during your turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Draw a card. This ability costs {1} more to activate during your turn.",
+      "{3}, {T}: Draw a card. This ability costs {1} less to activate during each turn.",
+      "{3}, {T}: Draw a card. This ability costs {1} less to cast during your turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.mana.forEachCounter",
+    "kind": "effect",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 122.1"
+    ],
+    "pattern": "add {t:ManaSym} for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, add {G} for each charge counter on ~."
+      },
+      {
+        "text": "When ~ enters, add {R} for each +1/+1 counter on target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, add {G}{G} for each charge counter on ~.",
+      "At the beginning of your end step, add {G} for each charge counter on each creature you control.",
+      "At the beginning of your end step, add {G} for each charge counter on ~ this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.mana.chooseColor.amountEqual",
+    "kind": "effect",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 605.1a"
+    ],
+    "pattern": "choose a color . add an amount of mana of that color equal to {q:Qty}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyOneColor",
+        "count": "$q"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Choose a color. Add an amount of mana of that color equal to the number of Golems you control."
+      },
+      {
+        "text": "{2}, {T}: Choose a color. Add an amount of mana of that color equal to ~'s power."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose a color. Add an amount of mana of any color equal to the number of Golems you control.",
+      "{T}: Choose two colors. Add an amount of mana of that color equal to the number of Golems you control.",
+      "{T}: Choose a color. Add an amount of mana of that color equal to the number of Golems you control this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.mana.chooseColor.forEachPower",
+    "kind": "effect",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 605.1a",
+      "CR 208.1"
+    ],
+    "pattern": "choose a color . add one mana of that color for each different power among {f:Filter}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyOneColor",
+        "count": {
+          "q": "distinct",
+          "what": "powers",
+          "among": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Choose a color. Add one mana of that color for each different power among Golems you control."
+      },
+      {
+        "text": "{2}, {T}: Choose a color. Add one mana of that color for each different power among artifact creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose a color. Add one mana of any color for each different power among creatures you control.",
+      "{T}: Choose a color. Add two mana of that color for each different power among creatures you control.",
+      "{T}: Choose a color. Add one mana of that color for each different toughness among creatures you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.permit.self.graveyard.discardN",
+    "kind": "static",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 118.8"
+    ],
+    "pattern": "you may cast ~ from your graveyard by discarding {n:Qty} card[s] in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "discard",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by discarding three cards in addition to paying its other costs."
+      },
+      {
+        "text": "You may cast ~ from your graveyard by discarding four cards in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by discarding three cards in addition to paying its other costs.",
+      "You may cast ~ from your graveyard by discarding three cards rather than paying its mana cost.",
+      "You may cast ~ from your graveyard by exiling three cards in addition to paying its other costs."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.permit.self.graveyard.lifeAndSacrifice",
+    "kind": "static",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 118.8"
+    ],
+    "pattern": "you may cast ~ from your graveyard by paying {n:Qty} life and sacrificing {g:Filter} in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              },
+              {
+                "kind": "sacrifice",
+                "filter": "$g",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by paying 3 life and sacrificing a Golem in addition to paying its other costs."
+      },
+      {
+        "text": "You may cast ~ from your graveyard by paying 4 life and sacrificing an artifact in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by paying 2 life and sacrificing a Golem in addition to paying its other costs.",
+      "You may cast ~ from your graveyard by paying 2 life and sacrificing a Golem rather than paying its mana cost.",
+      "You may cast ~ from your graveyard by paying 2 life or sacrificing a Golem in addition to paying its other costs."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.permit.free.oncePerYourTurn.fromHand",
+    "kind": "static",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.9",
+      "CR 500.1"
+    ],
+    "pattern": "once during each of your turns , you may cast ( a | an ) {f:Filter} from your hand without paying its mana cost",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "castFrom": "hand"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an artifact spell from your hand without paying its mana cost."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from your hand without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast an instant spell from your graveyard without paying its mana cost.",
+      "Once during each turn, you may cast an instant spell from your hand without paying its mana cost.",
+      "Twice during each of your turns, you may cast an instant spell from your hand without paying its mana cost."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.permit.alt.collectEvidence",
+    "kind": "static",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 701.59a"
+    ],
+    "pattern": "you may collect evidence {n:Qty} rather than pay the mana cost for {f:Filter} you cast",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "costChange": {
+            "kind": "set",
+            "cost": {
+              "other": [
+                {
+                  "kind": "action",
+                  "action": "collectEvidence",
+                  "arg": "$n"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "needs": [
+      "action:collectEvidence"
+    ],
+    "examples": [
+      {
+        "text": "You may collect evidence 10 rather than pay the mana cost for spells you cast."
+      },
+      {
+        "text": "You may collect evidence 6 rather than pay the mana cost for instant spells you cast."
+      }
+    ],
+    "counterExamples": [
+      "You may collect evidence 10 in addition to paying the mana cost for spells you cast.",
+      "You may collect evidence 10 rather than pay the mana cost for spells your opponents cast.",
+      "Each player may collect evidence 10 rather than pay the mana cost for spells they cast."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.kw.equip.lessPerTargetColor",
+    "kind": "static",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 105.2"
+    ],
+    "pattern": "equip {c:Cost} . this ability costs {m:ManaCost} less to activate for each color of the creature it targets",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": "$c",
+      "costChange": {
+        "kind": "reduce",
+        "generic": {
+          "q": "math",
+          "op": "*",
+          "args": [
+            "$m.0.amount",
+            {
+              "q": "distinct",
+              "what": "colors",
+              "among": {
+                "ref": "target",
+                "id": "t0"
+              }
+            }
+          ]
+        },
+        "floor": "zero"
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equip {5}. This ability costs {1} less to activate for each color of the creature it targets."
+      },
+      {
+        "text": "Equip {3}. This ability costs {1} less to activate for each color of the creature it targets."
+      }
+    ],
+    "counterExamples": [
+      "Equip {5}. This ability costs {1} more to activate for each color of the creature it targets.",
+      "Equip {5}. This ability costs {1} less to activate for each color of the creature equipped by it.",
+      "Equip {5}. This ability costs {1} less to activate for each color among creatures you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.kw.equip.lessPerTargetCounter",
+    "kind": "static",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 122.1"
+    ],
+    "pattern": "equip {c:Cost} . this ability costs {m:ManaCost} less to activate for each {k:CounterKind} counter on the creature it targets",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": "$c",
+      "costChange": {
+        "kind": "reduce",
+        "generic": {
+          "q": "math",
+          "op": "*",
+          "args": [
+            "$m.0.amount",
+            {
+              "q": "counters",
+              "on": {
+                "ref": "target",
+                "id": "t0"
+              },
+              "kind": "$k"
+            }
+          ]
+        },
+        "floor": "zero"
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equip {4}. This ability costs {1} less to activate for each +1/+1 counter on the creature it targets."
+      },
+      {
+        "text": "Equip {3}. This ability costs {1} less to activate for each shield counter on the creature it targets."
+      }
+    ],
+    "counterExamples": [
+      "Equip {4}. This ability costs {1} more to activate for each +1/+1 counter on the creature it targets.",
+      "Equip {4}. This ability costs {1} less to activate for each +1/+1 counter on creatures you control.",
+      "Equip {4}. This ability costs {1} less to activate for each counter on the creature it targets."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.ability.less.ifTargets",
+    "kind": "static",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 602.2b"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate if it targets ( a | an ) {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "spellTargetCount",
+                  "filter": "$f"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Tap target creature. This ability costs {2} less to activate if it targets a creature with power 2 or less."
+      },
+      {
+        "text": "{3}, {T}: Destroy target artifact. This ability costs {2} less to activate if it targets a tapped artifact."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Tap target creature. This ability costs {2} more to activate if it targets a creature with power 2 or less.",
+      "{3}, {T}: Tap target creature. This ability costs {2} less to activate unless it targets a creature with power 2 or less.",
+      "{3}, {T}: Tap target creature. This ability costs {2} less to cast if it targets a creature with power 2 or less."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.costmod.equipTargetingSelf",
+    "kind": "static",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 602.2b"
+    ],
+    "pattern": "equip abilities you activate that target ~ cost {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "keyword": "equip",
+              "kind": "activated"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "spellTargetCount",
+                  "filter": {
+                    "self": true
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "examples": [
+      {
+        "text": "Equip abilities you activate that target ~ cost {4} less to activate."
+      },
+      {
+        "text": "Equip abilities you activate that target ~ cost {1} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "Equip abilities you activate that target ~ cost {4} more to activate.",
+      "Equip abilities your opponents activate that target ~ cost {4} less to activate.",
+      "Crew abilities you activate that target ~ cost {4} less to activate."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.spells.less.forEachCounterOnSelf",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 122.1"
+    ],
+    "pattern": "{f:Filter} you cast cost {m:ManaCost} less to cast for each {k:CounterKind} counter on ~",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "counters",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "kind": "$k"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Creature spells you cast cost {1} less to cast for each +1/+1 counter on ~."
+      },
+      {
+        "text": "Artifact spells you cast cost {2} less to cast for each charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Creature spells you cast cost {1} more to cast for each +1/+1 counter on ~.",
+      "Creature spells your opponents cast cost {1} less to cast for each +1/+1 counter on ~.",
+      "Creature spells you cast cost {1} less to cast for each +1/+1 counter on target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.spells.and.less.forEachCounterOnSelf",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 122.1"
+    ],
+    "pattern": "{f:Filter} and {g:Filter} you cast cost {m:ManaCost} less to cast for each {k:CounterKind} counter on ~",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ]
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "counters",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "kind": "$k"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Elf spells and Golem spells you cast cost {1} less to cast for each +1/+1 counter on ~."
+      },
+      {
+        "text": "Artifact spells and enchantment spells you cast cost {1} less to cast for each charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Elf spells and Golem spells you cast cost {1} more to cast for each +1/+1 counter on ~.",
+      "Elf spells and Golem spells your opponents cast cost {1} less to cast for each +1/+1 counter on ~.",
+      "Elf spells or Golem spells you cast cost {1} less to cast for each +1/+1 counter on target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.ability.less.forEachOther",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7",
+      "CR 109.2"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate for each other {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "other": true,
+                      "attacking": "$f.attacking",
+                      "blocking": "$f.blocking",
+                      "tapped": "$f.tapped",
+                      "token": "$f.token",
+                      "faceDown": "$f.faceDown",
+                      "types": "$f.types",
+                      "allTypes": "$f.allTypes",
+                      "notTypes": "$f.notTypes",
+                      "subtypes": "$f.subtypes",
+                      "notSubtypes": "$f.notSubtypes",
+                      "supertypes": "$f.supertypes",
+                      "notSupertypes": "$f.notSupertypes",
+                      "colors": "$f.colors",
+                      "notColors": "$f.notColors",
+                      "colorless": "$f.colorless",
+                      "multicolored": "$f.multicolored",
+                      "keyword": "$f.keyword",
+                      "notKeyword": "$f.notKeyword",
+                      "name": "$f.name",
+                      "notName": "$f.notName",
+                      "power": "$f.power",
+                      "toughness": "$f.toughness",
+                      "manaValue": "$f.manaValue",
+                      "counters": "$f.counters",
+                      "zone": "$f.zone",
+                      "controller": "$f.controller",
+                      "owner": "$f.owner",
+                      "isCard": "$f.isCard",
+                      "chosen": "$f.chosen",
+                      "legendary": "$f.legendary",
+                      "basic": "$f.basic",
+                      "anyOf": "$f.anyOf",
+                      "not": "$f.not"
+                    }
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "{6}, {T}: Draw a card. This ability costs {1} less to activate for each other Golem you control."
+      },
+      {
+        "text": "{5}, {T}: You gain 4 life. This ability costs {1} less to activate for each other artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "{6}, {T}: Draw a card. This ability costs {1} more to activate for each other Golem you control.",
+      "{6}, {T}: Draw a card. This ability costs {1} less to activate for each Golem you control.",
+      "{6}, {T}: Draw a card. This ability costs {1} less to cast for each other Golem you control."
+    ],
+    "status": "stable",
+    "since": 8,
+    "priority": 1
+  },
+  {
+    "id": "eff.cost.replace.others.enterAdditionalCounter.perOpponentLostLife",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 119.3"
+    ],
+    "pattern": "{f:Filter} enter with an additional {k:CounterKind} counter on them for each opponent who lost life this turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "countPlayers",
+                  "of": {
+                    "ref": "each",
+                    "who": "opponent"
+                  },
+                  "lostLifeThisTurn": true
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Other Golems you control enter with an additional +1/+1 counter on them for each opponent who lost life this turn."
+      },
+      {
+        "text": "Other artifact creatures you control enter with an additional +1/+1 counter on them for each opponent who lost life this turn."
+      }
+    ],
+    "counterExamples": [
+      "Other Golems you control enter with an additional +1/+1 counter on them for each opponent who gained life this turn.",
+      "Other Golems you control enter with an additional +1/+1 counter on them for each opponent.",
+      "Other Golems you control enter with an additional +1/+1 counter on them for each player who lost life this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.draw.perOpponentLostLife",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 120.3a"
+    ],
+    "pattern": "draw a card for each opponent who lost life this turn",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "countPlayers",
+        "of": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "lostLifeThisTurn": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Surveil 3. Then draw a card for each opponent who lost life this turn."
+      },
+      {
+        "text": "Scry 1. Then draw a card for each opponent who lost life this turn."
+      }
+    ],
+    "counterExamples": [
+      "Surveil 3. Then draw a card for each opponent who gained life this turn.",
+      "Surveil 3. Then draw a card for each opponent.",
+      "Surveil 3. Then draw two cards for each opponent who lost life this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.cast.target.free",
+    "kind": "effect",
+    "cr": [
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast target sorcery card with mana value 2 or less from your graveyard without paying its mana cost."
+      },
+      {
+        "text": "When ~ dies, you may cast target instant card with mana value 3 or less from your graveyard without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast target sorcery card with mana value 2 or less from your graveyard.",
+      "When ~ enters, you may cast target sorcery card with mana value 2 or less from your graveyard without paying its mana cost twice.",
+      "When ~ enters, you may cast target sorcery card with mana value 2 or less from your graveyard by paying its mana cost."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.cast.fromHand.free.mvAtMost",
+    "kind": "effect",
+    "cr": [
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g",
+      "CR 202.3"
+    ],
+    "pattern": "you may cast ( a | an ) {f:Filter} from your hand with mana value less than or equal to {n:Qty} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue"
+              }
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true,
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast a sorcery spell from your hand with mana value less than or equal to 2 without paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, you may cast an artifact spell from your hand with mana value less than or equal to the number of Golems you control without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast a sorcery spell from your graveyard with mana value less than or equal to 2 without paying its mana cost.",
+      "When ~ enters, you may cast a sorcery spell from your hand with mana value greater than 2 without paying its mana cost.",
+      "When ~ enters, you may cast two sorcery spells from your hand with mana value less than or equal to 2 without paying its mana cost."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.cast.fromHand.free.mvAtMostThatDamage",
+    "kind": "effect",
+    "cr": [
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g",
+      "CR 202.3",
+      "CR 603.2"
+    ],
+    "pattern": "you may cast ( a | an ) {f:Filter} from your hand with mana value less than or equal to that damage without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue"
+              }
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true,
+            "manaValue": {
+              "op": "<=",
+              "value": {
+                "q": "eventAmount"
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, you may cast a spell from your hand with mana value less than or equal to that damage without paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, you may cast an instant spell from your hand with mana value less than or equal to that damage without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, you may cast a spell from your graveyard with mana value less than or equal to that damage without paying its mana cost.",
+      "Whenever ~ deals combat damage to a player, you may cast a spell from your hand with mana value greater than that damage without paying its mana cost.",
+      "Whenever ~ deals combat damage to a player, you may cast a spell from your hand with mana value less than or equal to that damage."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.kw.equip.lessPerOther",
+    "kind": "static",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 109.2"
+    ],
+    "pattern": "equip {c:Cost} . this ability costs {m:ManaCost} less to activate for each other {f:Filter}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": "$c",
+      "costChange": {
+        "kind": "reduce",
+        "generic": {
+          "q": "math",
+          "op": "*",
+          "args": [
+            "$m.0.amount",
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": {
+                  "other": true,
+                  "attacking": "$f.attacking",
+                  "blocking": "$f.blocking",
+                  "tapped": "$f.tapped",
+                  "token": "$f.token",
+                  "faceDown": "$f.faceDown",
+                  "types": "$f.types",
+                  "allTypes": "$f.allTypes",
+                  "notTypes": "$f.notTypes",
+                  "subtypes": "$f.subtypes",
+                  "notSubtypes": "$f.notSubtypes",
+                  "supertypes": "$f.supertypes",
+                  "notSupertypes": "$f.notSupertypes",
+                  "colors": "$f.colors",
+                  "notColors": "$f.notColors",
+                  "colorless": "$f.colorless",
+                  "multicolored": "$f.multicolored",
+                  "keyword": "$f.keyword",
+                  "notKeyword": "$f.notKeyword",
+                  "name": "$f.name",
+                  "notName": "$f.notName",
+                  "power": "$f.power",
+                  "toughness": "$f.toughness",
+                  "manaValue": "$f.manaValue",
+                  "counters": "$f.counters",
+                  "zone": "$f.zone",
+                  "controller": "$f.controller",
+                  "owner": "$f.owner",
+                  "isCard": "$f.isCard",
+                  "chosen": "$f.chosen",
+                  "legendary": "$f.legendary",
+                  "basic": "$f.basic",
+                  "anyOf": "$f.anyOf",
+                  "not": "$f.not"
+                }
+              }
+            }
+          ]
+        },
+        "floor": "zero"
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Equip {5}. This ability costs {1} less to activate for each other Golem you control."
+      },
+      {
+        "text": "Equip {4}. This ability costs {1} less to activate for each other artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Equip {5}. This ability costs {1} more to activate for each other Golem you control.",
+      "Equip {5}. This ability costs {1} less to activate for each Golem you control.",
+      "Equip {5}. This ability costs {1} less to cast for each other Golem you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.spells.withAdventure.less",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 715.1"
+    ],
+    "pattern": "{f:Filter} you cast that have an adventure cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "types": "$f.types",
+              "allTypes": "$f.allTypes",
+              "notTypes": "$f.notTypes",
+              "subtypes": "$f.subtypes",
+              "notSubtypes": "$f.notSubtypes",
+              "supertypes": "$f.supertypes",
+              "notSupertypes": "$f.notSupertypes",
+              "colors": "$f.colors",
+              "notColors": "$f.notColors",
+              "colorless": "$f.colorless",
+              "multicolored": "$f.multicolored",
+              "keyword": "$f.keyword",
+              "notKeyword": "$f.notKeyword",
+              "manaValue": "$f.manaValue",
+              "power": "$f.power",
+              "toughness": "$f.toughness",
+              "stackKind": "$f.stackKind",
+              "zone": "$f.zone",
+              "adventure": true
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creature spells you cast that have an Adventure cost {2} less to cast."
+      },
+      {
+        "text": "Permanent spells you cast that have an Adventure cost {3} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Creature spells you cast that have an Adventure cost {2} more to cast.",
+      "Creature spells your opponents cast that have an Adventure cost {2} less to cast.",
+      "Creature spells you cast that have flying cost {2} less to cast."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.costmod.keywordAbilities.ofOther",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 702.193a",
+      "CR 109.2"
+    ],
+    "pattern": "{k:Keyword} abilities of other {f:Filter} cost {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "other": true,
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "token": "$f.token",
+                "controller": "$f.controller"
+              },
+              "kind": "activated",
+              "keyword": "$k.keyword"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Exhaust abilities of other Golems you control cost {2} less to activate."
+      },
+      {
+        "text": "Power-up abilities of other artifact creatures you control cost {1} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "Exhaust abilities of other Golems you control cost {2} more to activate.",
+      "Exhaust abilities of Golems you control cost {2} less to activate.",
+      "Exhaust abilities of other Golems you control cost {2} less to cast."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.cost.enters.choose.lorwynTribe",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 205.3m",
+      "CR 607.2d"
+    ],
+    "pattern": "as ~ enters , choose elemental , elf , faerie , giant , goblin , kithkin , merfolk , or treefolk",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "creatureType",
+                "link": "type",
+                "options": [
+                  "Elemental",
+                  "Elf",
+                  "Faerie",
+                  "Giant",
+                  "Goblin",
+                  "Kithkin",
+                  "Merfolk",
+                  "Treefolk"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose Elemental, Elf, Faerie, Giant, Goblin, Kithkin, Merfolk, or Treefolk.\nCreatures you control of the chosen type get +3/+0."
+      },
+      {
+        "text": "As ~ enters, choose Elemental, Elf, Faerie, Giant, Goblin, Kithkin, Merfolk, or Treefolk.\nCreatures you control of the chosen type get +0/+3."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose Elemental, Elf, Faerie, Giant, Goblin, Kithkin, or Merfolk.\nCreatures you control of the chosen type get +0/+3.",
+      "As ~ attacks, choose Elemental, Elf, Faerie, Giant, Goblin, Kithkin, Merfolk, or Treefolk.\nCreatures you control of the chosen type get +0/+3.",
+      "As ~ enters, choose Elemental, Elf, Faerie, Giant, Goblin, Kithkin, Merfolk, and Treefolk.\nCreatures you control of the chosen type get +0/+3."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

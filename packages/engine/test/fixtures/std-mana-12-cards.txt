@@ -1,0 +1,3 @@
+# std-mana-12: the golden cards of the round (test/m5/golden/cards/std-mana-12-review.json)
+Foraging Wickermaw
+Avatar Aang // Aang, Master of Elements

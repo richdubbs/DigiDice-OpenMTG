@@ -1,0 +1,14 @@
+{
+  "name": "lifelink",
+  "rule": "702.15",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "Damage dealt by this creature also causes you to gain that much life.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "rules/damage.ts#dealDamage"
+  ]
+}

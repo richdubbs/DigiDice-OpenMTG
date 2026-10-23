@@ -1,0 +1,309 @@
+[
+  {
+    "id": "eff.t71.mill.then.put.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 400.7j"
+    ],
+    "pattern": "mill {n:Qty} cards , then put ( a | an ) {f:Filter} card from among them into your hand",
+    "build": [
+      {
+        "op": "mill",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "milled"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "milled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards, then put a creature card from among them into your hand."
+      },
+      {
+        "text": "Mill five cards, then put an artifact or land card from among them into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards, then put an instant or sorcery card from among them onto the battlefield.",
+      "Mill four cards, then put an instant or sorcery card from among them into your graveyard.",
+      "Mill four cards, then you may put an instant or sorcery card from among them into your hand.",
+      "Mill four cards, then put an instant or sorcery card from among them into target opponent's hand."
+    ]
+  },
+  {
+    "id": "eff.t71.mill.then.may.put.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 400.7j"
+    ],
+    "pattern": "mill {n:Qty} cards , then you may put ( a | an ) {f:Filter} card from among the milled cards on top of your library",
+    "build": [
+      {
+        "op": "mill",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "milled"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "milled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards, then you may put an artifact card from among the milled cards on top of your library."
+      },
+      {
+        "text": "Mill five cards, then you may put a land or instant card from among the milled cards on top of your library."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards, then you may put a creature or land card from among the milled cards on the bottom of your library.",
+      "Mill four cards, then you may put a creature or land card from among the milled cards into your hand.",
+      "Mill four cards, then put a creature or land card from among the milled cards on top of your library."
+    ]
+  },
+  {
+    "id": "eff.t71.mill.then.may.return.hand.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 400.7j"
+    ],
+    "pattern": "mill {n:Qty} cards , then you may return a permanent card from among them to your hand",
+    "build": [
+      {
+        "op": "mill",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "milled"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": [
+                  "Artifact",
+                  "Battle",
+                  "Creature",
+                  "Enchantment",
+                  "Land",
+                  "Planeswalker"
+                ]
+              }
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "milled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards, then you may return a permanent card from among them to your hand."
+      },
+      {
+        "text": "Mill two cards, then you may return a permanent card from among them to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards, then you may return a creature card from among them to your hand.",
+      "Mill four cards, then you may return a permanent card from among them to the battlefield.",
+      "Mill four cards, then return a permanent card from among them to your hand."
+    ]
+  },
+  {
+    "id": "eff.t71.mill.then.return.upTo.hand.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 400.7j"
+    ],
+    "pattern": "mill {n:Qty} cards , then return up to {m:Qty} permanent cards from among them to your hand",
+    "build": [
+      {
+        "op": "mill",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "milled"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": [
+                  "Artifact",
+                  "Battle",
+                  "Creature",
+                  "Enchantment",
+                  "Land",
+                  "Planeswalker"
+                ]
+              }
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "milled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "$m",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Mill six cards, then return up to three permanent cards from among them to your hand."
+      },
+      {
+        "text": "Mill five cards, then return up to two permanent cards from among them to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards, then return up to two creature cards from among them to your hand.",
+      "Mill four cards, then return two permanent cards from among them to your hand.",
+      "Mill four cards, then return up to two permanent cards from among them to the battlefield."
+    ]
+  }
+]

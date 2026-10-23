@@ -1,0 +1,306 @@
+[
+  {
+    "id": "eff.p2damage1.each.deals.toItsController",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 109.4"
+    ],
+    "pattern": "each {f:Filter} deals {n:Qty} damage to its controller",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": {
+        "ref": "controllerOf",
+        "object": {
+          "ref": "subject"
+        }
+      },
+      "amount": "$n",
+      "perSource": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact deals 2 damage to its controller."
+      },
+      {
+        "text": "When this creature enters, each creature with flying deals 1 damage to its controller."
+      }
+    ],
+    "counterExamples": [
+      "Each artifact deals 2 damage to its owner.",
+      "Each artifact deals 2 damage to you.",
+      "Target artifact deals 2 damage to its controller."
+    ]
+  },
+  {
+    "id": "eff.p2damage1.damage.eachPlayer.theyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2f",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to each player equal to the number of {f:Filter} they control",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "eachPlayer",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "eachPlayer"
+          },
+          "amount": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, it deals damage to each player equal to the number of tapped artifacts they control."
+      },
+      {
+        "text": "{3}{R}: This creature deals damage to each player equal to the number of Goblins they control."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, it deals damage to each opponent equal to the number of tapped artifacts they control.",
+      "When this creature enters, it deals damage to each player equal to the number of tapped artifacts you control.",
+      "When this creature enters, it deals 2 damage to each player equal to the number of tapped artifacts they control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.p2damage1.damage.eachPlayer.twiceCountWithFlying",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2f",
+      "CR 608.2h",
+      "CR 702.9a"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to each player equal to twice the number of {f:Filter} that player controls with flying",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "eachPlayer",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "eachPlayer"
+          },
+          "amount": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              2,
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      "$f"
+                    ],
+                    "controller": {
+                      "ref": "iterating"
+                    },
+                    "keyword": "flying"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "twice"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, it deals damage to each player equal to twice the number of artifacts that player controls with flying."
+      },
+      {
+        "text": "This spell deals damage to each player equal to twice the number of Spirits that player controls with flying."
+      }
+    ],
+    "counterExamples": [
+      "This spell deals damage to each player equal to the number of Spirits that player controls with flying.",
+      "This spell deals damage to each player equal to twice the number of Spirits that player controls with reach.",
+      "This spell deals damage to each opponent equal to twice the number of Spirits that player controls with flying."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.p2damage1.damage.eachPlayer.halfLifeRoundedDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2f",
+      "CR 107.1a",
+      "CR 119.1"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to each player equal to half that player 's life total , rounded down",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "eachPlayer",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "eachPlayer"
+          },
+          "amount": {
+            "q": "math",
+            "op": "floorDiv",
+            "args": [
+              {
+                "q": "life",
+                "of": {
+                  "ref": "iterating"
+                }
+              },
+              2
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: This creature deals damage to each player equal to half that player's life total, rounded down."
+      },
+      {
+        "text": "When this creature dies, it deals damage to each player equal to half that player's life total, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: This creature deals damage to each player equal to half that player's life total, rounded up.",
+      "{2}, {T}: This artifact deals damage to each opponent equal to half that player's life total, rounded down.",
+      "{2}, {T}: This artifact deals damage to each player equal to that player's life total."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.p2damage1.dealtThisWay.cantBeRegenerated.eot",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.19c",
+      "CR 611.2a",
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "( a creature | creatures ) dealt damage this way can't be regenerated this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "is": {
+                "ref": "bound",
+                "name": "",
+                "$anaphor": {
+                  "sort": "set",
+                  "number": "plural",
+                  "participle": "dealt damage this way",
+                  "text": "dealt damage this way"
+                }
+              }
+            }
+          },
+          "mode": "cant",
+          "action": "beRegenerated"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "This spell deals 4 damage to target creature or planeswalker. A creature dealt damage this way can't be regenerated this turn."
+      },
+      {
+        "text": "This spell deals 1 damage to each creature and each player. Creatures dealt damage this way can't be regenerated this turn."
+      }
+    ],
+    "counterExamples": [
+      "This spell deals 4 damage to target creature or planeswalker. A creature dealt damage this way can't be regenerated.",
+      "This spell deals 4 damage to target creature or planeswalker. A creature can't be regenerated this turn.",
+      "This spell deals 4 damage to target creature or planeswalker. A creature dealt damage this way can be regenerated this turn."
+    ]
+  }
+]

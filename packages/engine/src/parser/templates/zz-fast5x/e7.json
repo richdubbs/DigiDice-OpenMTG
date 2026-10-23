@@ -1,0 +1,55 @@
+[
+  {
+    "id": "rid.e7.tokens.enter.attacking",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 508.4",
+      "CR 702.190b"
+    ],
+    "pattern": "if {c:Cond} , they enter tapped and attacking",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "createToken",
+            "who": "@previous.who",
+            "token": "@previous.token",
+            "count": "@previous.count",
+            "tapped": true,
+            "attacking": true
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "createToken",
+    "consumes": [
+      "if",
+      "tapped",
+      "attacking"
+    ],
+    "examples": [
+      {
+        "text": "Create two 2/2 red Warrior creature tokens. If ~'s sneak cost was paid, they enter tapped and attacking."
+      },
+      {
+        "text": "Create four 1/1 blue Bird creature tokens with flying. If ~ was kicked, they enter tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Create two 2/2 red Warrior creature tokens. If you control a Wizard, they enter tapped and attacking.",
+      "If ~'s sneak cost was paid, they enter tapped and attacking.",
+      "Create two 2/2 red Warrior creature tokens and draw a card. If ~'s sneak cost was paid, they enter tapped and attacking.",
+      "Create two 2/2 red Warrior creature tokens. If ~'s sneak cost was paid, they enter tapped."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

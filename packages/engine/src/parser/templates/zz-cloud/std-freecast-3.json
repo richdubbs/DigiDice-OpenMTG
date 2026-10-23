@@ -1,0 +1,134 @@
+[
+  {
+    "id": "sta.stdfreecast3.spells.cast.each.webSlinging",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 601.2b",
+      "CR 707.10",
+      "CR 702.188a",
+      "CR 118.9"
+    ],
+    "pattern": "each {f:Filter} you cast has web-slinging {m:ManaCost}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "web-slinging",
+              "cost": {
+                "mana": "$m"
+              },
+              "text": "web-slinging"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each instant spell you cast has web-slinging {1}{U}."
+      },
+      {
+        "text": "Each legendary creature spell you cast has web-slinging {2}{G}."
+      }
+    ],
+    "counterExamples": [
+      "Each instant spell you control has web-slinging {1}{U}.",
+      "Each instant spell an opponent casts has web-slinging {1}{U}.",
+      "Each instant spell you cast has flashback {1}{U}."
+    ]
+  },
+  {
+    "id": "sta.stdfreecast3.spells.cast.each.colored.webSlinging",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 601.2b",
+      "CR 707.10",
+      "CR 702.188a",
+      "CR 118.9",
+      "CR 105.2"
+    ],
+    "pattern": "each {f:Filter} you cast that's one or more colors has web-slinging {m:ManaCost}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack",
+          "colorless": false
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "web-slinging",
+              "cost": {
+                "mana": "$m"
+              },
+              "text": "web-slinging"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact spell you cast that's one or more colors has web-slinging {2}{R}."
+      },
+      {
+        "text": "Each legendary creature spell you cast that's one or more colors has web-slinging {W}{U}."
+      }
+    ],
+    "counterExamples": [
+      "Each artifact spell you cast that's colorless has web-slinging {2}{R}.",
+      "Each artifact spell an opponent casts that's one or more colors has web-slinging {2}{R}.",
+      "Each artifact spell you cast that's one or more colors has flashback {2}{R}."
+    ]
+  }
+]

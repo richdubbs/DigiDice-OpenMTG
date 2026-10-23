@@ -1,0 +1,352 @@
+[
+  {
+    "id": "eff.r5mech.token.mutavault",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 111.1",
+      "CR 111.4",
+      "CR 701.7a",
+      "CR 205.1b",
+      "CR 605.1a"
+    ],
+    "pattern": "create a mutavault token",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "name": "Mutavault",
+        "types": [
+          "Land"
+        ],
+        "abilities": [
+          {
+            "kind": "activated",
+            "text": "{T}: Add {C}.",
+            "isMana": true,
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "addMana",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "units": [
+                    [
+                      "C"
+                    ]
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "kind": "activated",
+            "text": "{1}: This token becomes a 2/2 creature with all creature types until end of turn. It's still a land.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 1
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "effect",
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "s": "continuous",
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "types": {
+                            "add": [
+                              "Creature"
+                            ]
+                          },
+                          "subtypes": {
+                            "all": true
+                          }
+                        },
+                        {
+                          "layer": "7b",
+                          "power": 2,
+                          "toughness": 2
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, create a Mutavault token."
+      },
+      {
+        "text": "{3}, {T}: Create a Mutavault token. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "Create two Mutavault tokens.",
+      "Create a Mutavault token attached to target creature.",
+      "When ~ dies, create a Mutavault token for each opponent."
+    ]
+  },
+  {
+    "id": "eff.r5mech.token.mutavault.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.4",
+      "CR 701.7a",
+      "CR 110.5b",
+      "CR 205.1b",
+      "CR 605.1a"
+    ],
+    "pattern": "create a tapped mutavault token",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "tapped": true,
+      "token": {
+        "name": "Mutavault",
+        "types": [
+          "Land"
+        ],
+        "abilities": [
+          {
+            "kind": "activated",
+            "text": "{T}: Add {C}.",
+            "isMana": true,
+            "cost": {
+              "tap": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "addMana",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "units": [
+                    [
+                      "C"
+                    ]
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "kind": "activated",
+            "text": "{1}: This token becomes a 2/2 creature with all creature types until end of turn. It's still a land.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 1
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "effect",
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "s": "continuous",
+                      "affects": {
+                        "ref": "self"
+                      },
+                      "mods": [
+                        {
+                          "layer": 4,
+                          "types": {
+                            "add": [
+                              "Creature"
+                            ]
+                          },
+                          "subtypes": {
+                            "all": true
+                          }
+                        },
+                        {
+                          "layer": "7b",
+                          "power": 2,
+                          "toughness": 2
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a tapped Mutavault token."
+      },
+      {
+        "text": "At the beginning of your end step, create a tapped Mutavault token."
+      }
+    ],
+    "counterExamples": [
+      "Create two tapped Mutavault tokens.",
+      "Create a tapped Mutavault token attached to target creature.",
+      "When ~ enters, create a tapped Mutavault token for each opponent."
+    ]
+  },
+  {
+    "id": "eff.r5mech.may.exile.selfAndNamedFromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.3",
+      "CR 608.2c",
+      "CR 201.2",
+      "CR 406.2",
+      "CR 608.2m",
+      "CR 608.2n"
+    ],
+    "pattern": "you may exile ~ and {n:Qty} cards named {m:Name} from your graveyard",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "exileFrom",
+            "zone": "stack",
+            "self": true,
+            "count": 1
+          },
+          {
+            "kind": "exileFrom",
+            "zone": "graveyard",
+            "filter": {
+              "name": "$m"
+            },
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Then you may exile ~ and three cards named Test Approach from your graveyard. If you do, draw two cards."
+      },
+      {
+        "text": "~ deals 2 damage to each opponent. You may exile ~ and four cards named Test Approach from your graveyard. If you do, you gain 5 life."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Then you may exile ~ and three cards from your graveyard. If you do, draw two cards.",
+      "Draw a card. Then you may exile ~ and three cards named Test Approach from your hand. If you do, draw two cards.",
+      "Draw a card. Then exile ~ and three cards named Test Approach from your graveyard."
+    ]
+  },
+  {
+    "id": "eff.r5mech.next.activateExhaust.copy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 702.177a",
+      "CR 707.10",
+      "CR 605.1a"
+    ],
+    "pattern": "when you next activate an exhaust ability that isn't a mana ability this turn , copy it",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "activate",
+          "player": "you",
+          "ability": "exhaust",
+          "manaAbility": false
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: When you next activate an exhaust ability that isn't a mana ability this turn, copy it."
+      },
+      {
+        "text": "{1}{U}, {T}: When you next activate an exhaust ability that isn't a mana ability this turn, copy it. You may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: When you next activate an exhaust ability this turn, copy it.",
+      "{1}, {T}: Whenever you activate an exhaust ability that isn't a mana ability this turn, copy it.",
+      "{1}, {T}: When you next activate an exhaust ability that isn't a mana ability, copy it."
+    ]
+  }
+]

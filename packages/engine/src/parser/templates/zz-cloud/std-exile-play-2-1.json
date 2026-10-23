@@ -1,0 +1,114 @@
+[
+  {
+    "id": "eff.sxp21.exileUntil.total.eachPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 406.1",
+      "CR 202.3",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} exiles cards from the top of their library until they have exiled cards with total mana value {n:Qty} or greater this way",
+    "build": {
+      "op": "exileUntil",
+      "who": "$p",
+      "filter": {},
+      "total": {
+        "stat": "manaValue",
+        "atLeast": "$n"
+      }
+    },
+    "consumes": [
+      "until",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent exiles cards from the top of their library until they have exiled cards with total mana value 4 or greater this way."
+      },
+      {
+        "text": "Target player exiles cards from the top of their library until they have exiled cards with total mana value 7 or greater this way."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent exiles cards from the top of their library until they have exiled cards with total power 4 or greater this way.",
+      "Each opponent exiles cards from the top of their library until they have exiled a nonland card.",
+      "Each opponent exiles cards from the top of their library until they have exiled cards with total mana value 4 or less this way."
+    ]
+  },
+  {
+    "id": "sta.sxp21.permit.linked.cast.removeAmong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 122.1",
+      "CR 611.3a"
+    ],
+    "pattern": "during your turn , you may cast {f:Filter} from among cards you own exiled with ~ by removing {n:Qty} counters from among {g:Filter} in addition to paying their other costs",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "owner": "you",
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "addCost": {
+            "other": [
+              {
+                "kind": "removeCounters",
+                "counter": "any",
+                "count": "$n",
+                "filter": "$g",
+                "among": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "during",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Exile target card from an opponent's graveyard.\nDuring your turn, you may cast creature spells from among cards you own exiled with ~ by removing two counters from among creatures you control in addition to paying their other costs."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library.\nDuring your turn, you may cast artifact spells from among cards you own exiled with ~ by removing four counters from among permanents you control in addition to paying their other costs."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Exile target card from an opponent's graveyard.\nDuring your turn, you may cast creature spells from among cards you own exiled with ~ by removing two counters from among creatures you control rather than paying their mana costs.",
+      "{1}, {T}: Exile target card from an opponent's graveyard.\nDuring your turn, you may cast creature spells from among cards you own exiled with ~ by paying two life in addition to paying their other costs.",
+      "{1}, {T}: Exile target card from an opponent's graveyard.\nDuring your turn, you may cast creature spells from your graveyard by removing two counters from among creatures you control in addition to paying their other costs."
+    ]
+  }
+]

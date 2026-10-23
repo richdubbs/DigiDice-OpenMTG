@@ -1,0 +1,555 @@
+[
+  {
+    "id": "eff.t7.mana.units",
+    "kind": "effect",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 605.1a"
+    ],
+    "pattern": "add {u:ManaUnits}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "units": "$u"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, add {B}{B}{G}."
+      },
+      {
+        "text": "{T}: Add {W}{U}{U}."
+      },
+      {
+        "text": "When ~ dies, add {R}, {G}, or {U}."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, add {B}{B} or {G}{G}.",
+      "When ~ enters, add {2}{G}.",
+      "When ~ enters, add {B}{B}{G} for each creature you control."
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "eff.t7.mana.chosen",
+    "kind": "effect",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 607.2d"
+    ],
+    "pattern": "add {n:Qty} mana of the chosen color",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "chosen",
+        "link": "color",
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "As ~ enters, choose a color.\n{T}: Add two mana of the chosen color."
+      },
+      {
+        "text": "As ~ enters, choose a color.\nWhen ~ attacks, add three mana of the chosen color."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a color.\n{T}: Add two mana of any color.",
+      "{T}: Add two mana of the chosen color.",
+      "As ~ enters, choose a creature type.\n{T}: Add two mana of the chosen color."
+    ],
+    "status": "stable",
+    "since": 4,
+    "consumes": [
+      "chosen"
+    ]
+  },
+  {
+    "id": "eff.t7.mana.anyOneColor",
+    "kind": "effect",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4"
+    ],
+    "pattern": "add {n:Qty} mana of any one color",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyOneColor",
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Add four mana of any one color."
+      },
+      {
+        "text": "When ~ enters, add two mana of any one color."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add four mana of any color.",
+      "{T}: Add four mana in any combination of colors.",
+      "{T}: Add four mana of any one color an opponent controls."
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "eff.t7.mana.forEach",
+    "kind": "effect",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4"
+    ],
+    "pattern": "add {t:ManaSym} for each {f:Filter}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {B} for each Zombie you control."
+      },
+      {
+        "text": "{T}: Add {R} for each artifact you control."
+      },
+      {
+        "text": "When ~ enters, add {C} for each tapped land you control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {B}{B} for each Zombie you control.",
+      "{T}: Add {B} for each Zombie card in your graveyard and each opponent.",
+      "{T}: Add {B} for each player."
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "eff.t7.mana.amountEqual",
+    "kind": "effect",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 107.1"
+    ],
+    "pattern": "add an amount of {t:ManaSym} equal to {q:Qty}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": "$q"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Add an amount of {R} equal to ~'s toughness."
+      },
+      {
+        "text": "{T}: Add an amount of {U} equal to ~'s power."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add an amount of {R}{R} equal to ~'s toughness.",
+      "{T}: Add an amount of {R} equal to ~'s toughness until end of turn.",
+      "{T}: Add an amount of mana equal to ~'s power."
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "sta.t7.notCreature.aslong",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 700.5"
+    ],
+    "pattern": "as long as {c:Cond} , ~ isn't a creature",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "remove": [
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "isn't"
+    ],
+    "examples": [
+      {
+        "text": "As long as your devotion to red is less than four, ~ isn't a creature."
+      },
+      {
+        "text": "As long as your devotion to blue and green is less than seven, ~ isn't a creature."
+      }
+    ],
+    "counterExamples": [
+      "As long as your devotion to red is less than four, ~ is a creature.",
+      "As long as your devotion to red is less than four, ~ isn't a land.",
+      "Until end of turn, ~ isn't a creature."
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "sta.t7.pump.forEach.scaled",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} for each {f:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "~ gets +3/+3 for each other Ogre you control."
+      },
+      {
+        "text": "~ gets +2/+0 for each Equipment you control."
+      },
+      {
+        "text": "Enchanted creature gets +2/+2 for each other Aura you control."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +3/+3 for each other Ogre you control until end of turn.",
+      "~ gets +3/+3 for each other Ogre you control and has trample.",
+      "~ gets -3/-3 for each other Ogre you control and each opponent."
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "kw.t7.equip.subtype",
+    "kind": "ability",
+    "cr": [
+      "CR 702.6a",
+      "CR 702.6c"
+    ],
+    "pattern": "equip {s:Subtypes} {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "subtypes": "$s",
+        "controller": "you"
+      }
+    },
+    "examples": [
+      {
+        "text": "Equip Dwarf {2}"
+      },
+      {
+        "text": "Equip Rogue {1}{B}"
+      }
+    ],
+    "counterExamples": [
+      "Equip Dwarf",
+      "Equip Dwarf {2} or {3}",
+      "Equip Dwarf Rogue {2}"
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "kw.t7.enchant.creatureOrSubtype",
+    "kind": "ability",
+    "cr": [
+      "CR 702.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "enchant creature or {s:Subtypes}",
+    "priority": 1,
+    "build": {
+      "kind": "keyword",
+      "keyword": "enchant",
+      "filter": {
+        "anyOf": [
+          {
+            "types": [
+              "Creature"
+            ]
+          },
+          {
+            "subtypes": "$s"
+          }
+        ]
+      }
+    },
+    "examples": [
+      {
+        "text": "Enchant creature or Equipment"
+      },
+      {
+        "text": "Enchant creature or Treasure"
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature or Equipment you control",
+      "Enchant creature and Equipment",
+      "Enchant creature or Clue Food"
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "cm.t7.spells.pair.less.you",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7"
+    ],
+    "pattern": "{f:Filter} and {g:Filter} you cast cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ]
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Blue spells and black spells you cast cost {1} less to cast."
+      },
+      {
+        "text": "Elf spells and Druid spells you cast cost {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Blue spells and black spells you cast cost {1} more to cast.",
+      "Blue spells and black spells your opponents cast cost {1} less to cast.",
+      "Blue spells you cast cost {2} less to cast.",
+      "Instant and sorcery spells you cast cost {3} less to cast."
+    ],
+    "status": "stable",
+    "since": 4,
+    "priority": -1
+  },
+  {
+    "id": "sta.t7.cantActivate.group",
+    "kind": "static",
+    "cr": [
+      "CR 602.5",
+      "CR 605.1a"
+    ],
+    "pattern": "activated abilities of {f:Filter} can't be activated",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "activate"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Activated abilities of lands can't be activated."
+      },
+      {
+        "text": "Activated abilities of enchantments can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities of lands can't be activated this turn.",
+      "Triggered abilities of lands can't be activated.",
+      "Activated abilities of lands can be activated."
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "rid.t7.token.itHas",
+    "kind": "rider",
+    "cr": [
+      "CR 111.2",
+      "CR 111.4",
+      "CR 608.2c"
+    ],
+    "pattern": "it has {a:Abilities}",
+    "build": {
+      "$patchPrevious": {
+        "token": {
+          "abilities": {
+            "@new": "$a"
+          }
+        }
+      }
+    },
+    "attachTo": "createToken",
+    "examples": [
+      {
+        "text": "Create a 1/1 colorless Golem artifact creature token. It has \"{T}: Add {C}{C}.\""
+      },
+      {
+        "text": "When ~ dies, create a 2/2 black Zombie creature token. It has \"{1}: Regenerate ~.\""
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. It has \"{T}: Add {C}{C}.\"",
+      "Create a 1/1 colorless Golem artifact creature token. It has \"{T}: Add {C}{C}\" until end of turn.",
+      "Create a 1/1 colorless Golem artifact creature token with \"{T}: Add {C}.\" It has \"{T}: Add {C}{C}.\""
+    ],
+    "status": "stable",
+    "since": 4
+  },
+  {
+    "id": "rid.t7.token.theyHave",
+    "kind": "rider",
+    "cr": [
+      "CR 111.2",
+      "CR 111.4",
+      "CR 608.2c"
+    ],
+    "pattern": "they have {a:Abilities}",
+    "build": {
+      "$patchPrevious": {
+        "token": {
+          "abilities": {
+            "@new": "$a"
+          }
+        }
+      }
+    },
+    "attachTo": "createToken",
+    "examples": [
+      {
+        "text": "Create two 1/1 colorless Golem artifact creature tokens. They have \"{T}: Add {C}{C}.\""
+      },
+      {
+        "text": "When ~ dies, create three 0/1 green Plant creature tokens. They have \"Sacrifice ~: You gain 2 life.\""
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. They have \"{T}: Add {C}{C}.\"",
+      "Create two 1/1 colorless Golem artifact creature tokens. They have \"{T}: Add {C}{C}\" until end of turn.",
+      "Create two 1/1 colorless Golem artifact creature tokens with \"{T}: Add {C}.\" They have \"{T}: Add {C}{C}.\""
+    ],
+    "status": "stable",
+    "since": 4
+  }
+]

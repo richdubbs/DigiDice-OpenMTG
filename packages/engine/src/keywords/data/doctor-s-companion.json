@@ -1,0 +1,9 @@
+{
+  "name": "doctor's companion",
+  "rule": "702.124",
+  "params": [],
+  "mechanisms": [],
+  "reminder": "You can have two commanders if the other is the Doctor.",
+  "multiple": "redundant",
+  "status": "implemented"
+}

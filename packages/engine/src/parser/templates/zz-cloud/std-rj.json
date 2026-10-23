@@ -1,0 +1,342 @@
+[
+  {
+    "id": "eff.stdrj.putThat.battlefield.attacking.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7",
+      "CR 508.4"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield tapped and attacking and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": true
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield tapped and attacking and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ attacks, reveal cards from the top of your library until you reveal a Dragon card. Put that card onto the battlefield tapped and attacking and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield tapped and attacking and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield tapped and attacking and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield tapped and blocking and the rest on the bottom of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.stdrj.copy.token.oneOfThem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "create a token that's a copy of one of them",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "plural",
+                "text": "them"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "copy",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "result": "token",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever one or more other creatures you control enter, create a token that's a copy of one of them."
+      },
+      {
+        "text": "Whenever one or more nontoken creatures you control enter, create a token that's a copy of one of them."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more other creatures you control enter, create a token that's a copy of each of them.",
+      "Whenever one or more other creatures you control enter, create a token that's a copy of one of those creatures.",
+      "Whenever one or more other creatures you control enter, create two tokens that are copies of one of them."
+    ]
+  },
+  {
+    "id": "eff.stdrj.milled.anyNumber.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may put any number of {f:CardsDesc} from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill five cards. You may put any number of artifact and/or enchantment cards from among the milled cards into your hand."
+      },
+      {
+        "text": "Mill three cards. You may put any number of land cards from among them into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill five cards. You may put up to two artifact cards from among the milled cards into your hand.",
+      "Mill five cards. You may put any number of artifact cards from among the milled cards onto the battlefield.",
+      "Mill five cards. You put any number of artifact cards from among the milled cards into your hand."
+    ]
+  },
+  {
+    "id": "eff.stdrj.cast.upTo.free.fromAmong",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast up to {n:Qty} spells from among {g:Them} without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "up to",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top four cards of your library. You may cast up to two spells from among them without paying their mana costs."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of target opponent's library. You may cast up to three spells from among them without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top four cards of your library. You may cast up to two spells from among them.",
+      "Exile the top four cards of your library. You may cast any number of spells from among them without paying their mana costs.",
+      "Exile the top four cards of your library. You may play up to two cards from among them without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.stdrj.cast.free.ifSpellMvLess",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2",
+      "CR 202.3",
+      "CR 608.2c",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost if the spell 's mana value is less than {q:Qty}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": "$o"
+        },
+        "op": "<",
+        "right": "$q"
+      },
+      "then": [
+        {
+          "op": "cast",
+          "who": {
+            "ref": "you"
+          },
+          "what": "$o",
+          "free": true,
+          "optional": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is less than the number of Swamps you control."
+      },
+      {
+        "text": "Exile cards from the top of your library until you exile an instant card. You may cast that card without paying its mana cost if the spell's mana value is less than your life total."
+      }
+    ],
+    "counterExamples": [
+      "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is greater than the number of Swamps you control.",
+      "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost unless the spell's mana value is less than the number of Swamps you control.",
+      "Exile cards from the top of your library until you exile a nonland card. You may cast that card if the spell's mana value is less than the number of Swamps you control."
+    ]
+  },
+  {
+    "id": "eff.stdrj.loselife.equal.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] life equal to {n:Qty} if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, reveal the top card of your library and put it into your hand. You lose life equal to that card's mana value if you control a Zombie."
+      },
+      {
+        "text": "When ~ enters, each opponent loses life equal to the number of cards in your hand if you control an Elf."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, reveal the top card of your library and put it into your hand. You lose life equal to that card's mana value unless you control a Zombie.",
+      "Whenever ~ attacks, reveal the top card of your library and put it into your hand. You lose life equal to that card's mana value.",
+      "Whenever ~ attacks, reveal the top card of your library and put it into your hand. You gain life equal to that card's mana value if you control a Zombie."
+    ]
+  }
+]

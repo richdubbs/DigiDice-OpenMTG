@@ -1,0 +1,407 @@
+[
+ {
+  "card": "Survey Mechan",
+  "expect": "full",
+  "verified": "Standard round C (std-rc) review (Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdrc.cost.ability.less.whereX; family ability-cost-where-x): flying, hexproof; {10}, sacrifice it: it deals 3 damage to any target, target player draws three cards and gains 3 life; the ability's generic cost is reduced by the number of differently named lands you control, counted as the activation cost is determined, never below zero (CR 702.9a, 702.11a, 602.2b, 601.2f, 107.3, 201.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "hexproof",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 10,
+         "kind": "generic"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "filter": {
+          "self": true
+         },
+         "kind": "sacrifice",
+         "self": true
+        }
+       ]
+      },
+      "costChange": {
+       "floor": "zero",
+       "generic": {
+        "among": {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Land"
+          ]
+         },
+         "ref": "each"
+        },
+        "q": "distinct",
+        "what": "names"
+       },
+       "kind": "reduce"
+      },
+      "effect": {
+       "steps": [
+        {
+         "amount": 3,
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "count": 3,
+         "op": "draw",
+         "who": {
+          "id": "t1",
+          "ref": "target"
+         }
+        },
+        {
+         "amount": 3,
+         "op": "gainLife",
+         "who": {
+          "id": "t1",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "anyTarget",
+         "max": 1,
+         "min": 1
+        },
+        {
+         "id": "t1",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Baru, Wurmspeaker",
+  "expect": "full",
+  "verified": "Standard round C (std-rc) review (tuning half, not Standard), by hand against the Oracle text and the rules cited (sta.anthem.grant, eff.token.you, eff.stdrc.cost.ability.less.whereX): Wurms you control get +2/+2 and have trample; {7}{G}, {T}: create a 4/4 green Wurm creature token; the ability's generic cost is reduced by the greatest power among Wurms you control (CR 613.4c, 613.1f, 111.1, 602.2b, 601.2f, 107.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "subtypes": [
+           "Wurm"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 2
+         },
+         {
+          "add": [
+           {
+            "keyword": "trample",
+            "kind": "keyword"
+           }
+          ],
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 7,
+         "kind": "generic"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "costChange": {
+       "floor": "zero",
+       "generic": {
+        "agg": "max",
+        "of": {
+         "filter": {
+          "controller": "you",
+          "subtypes": [
+           "Wurm"
+          ]
+         },
+         "ref": "each"
+        },
+        "q": "stat",
+        "stat": "power"
+       },
+       "kind": "reduce"
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "G"
+          ],
+          "power": 4,
+          "subtypes": [
+           "Wurm"
+          ],
+          "toughness": 4,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Vren, the Relentless",
+  "expect": "full",
+  "verified": "Standard round C (std-rc) review (Standard, held-out half: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (Qty reading parser/holes/qty.ts#historyCounts \"that were exiled under your opponents' control this turn\"; family exiled-under-control): ward {2}; if a creature an opponent controls would die, it is exiled instead; at the beginning of each end step you create X 1/1 black Rat tokens, each with \"this token gets +1/+1 for each other Rat you control\", X the number of creatures put into exile from the battlefield this turn whose controller as they last existed there was an opponent (CR 702.21a, 614.1a, 700.4, 406.1, 603.10a, 513.1, 111.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ]
+      },
+      "keyword": "ward",
+      "kind": "keyword"
+     },
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "modify",
+         "destination": {
+          "zone": "exile"
+         }
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "opponent",
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "controller": "opponent",
+            "types": [
+             "Creature"
+            ]
+           },
+           "to": "exile"
+          },
+          "q": "happenedCount",
+          "scope": "turn"
+         },
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "effects": [
+             {
+              "affects": {
+               "ref": "self"
+              },
+              "mods": [
+               {
+                "layer": "7c",
+                "power": {
+                 "of": {
+                  "filter": {
+                   "controller": "you",
+                   "other": true,
+                   "subtypes": [
+                    "Rat"
+                   ]
+                  },
+                  "ref": "each"
+                 },
+                 "q": "count"
+                },
+                "toughness": {
+                 "of": {
+                  "filter": {
+                   "controller": "you",
+                   "other": true,
+                   "subtypes": [
+                    "Rat"
+                   ]
+                  },
+                  "ref": "each"
+                 },
+                 "q": "count"
+                }
+               }
+              ],
+              "s": "continuous"
+             }
+            ],
+            "kind": "static"
+           }
+          ],
+          "colors": [
+           "B"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Rat"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Liliana's Standard Bearer",
+  "expect": "full",
+  "verified": "Standard round C (std-rc) review (tuning half, not Standard), by hand against the Oracle text and the rules cited (Qty reading parser/holes/qty.ts#historyCounts \"that died under your control this turn\"): flash; when it enters you draw X cards, X the number of creatures that died this turn under your control as they last existed on the battlefield (CR 702.8a, 603.6a, 700.4, 603.10a, 107.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flash",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           },
+           "to": "graveyard"
+          },
+          "q": "happenedCount",
+          "scope": "turn"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

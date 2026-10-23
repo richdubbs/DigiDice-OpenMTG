@@ -1,0 +1,2 @@
+# card wave 2 round std-rw8 (slice s8): the golden cards of test/m5/golden/cards/cloud-std-rw8-review.json (Bolg of the North is already listed in fast5x-e16-cards.txt)
+Bullseye, Death Dealer

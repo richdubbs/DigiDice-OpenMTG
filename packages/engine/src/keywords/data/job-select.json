@@ -1,0 +1,62 @@
+{
+  "name": "job select",
+  "rule": "702.182",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this Equipment enters, create a 1/1 colorless Hero creature token, then attach this to it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, create a 1/1 colorless Hero creature token, then attach ~ to it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1,
+            "token": {
+              "colors": [],
+              "types": [
+                "Creature"
+              ],
+              "subtypes": [
+                "Hero"
+              ],
+              "power": 1,
+              "toughness": 1
+            },
+            "as": "token"
+          },
+          {
+            "op": "attach",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "ref": "bound",
+              "name": "token"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

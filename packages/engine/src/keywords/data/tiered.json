@@ -1,0 +1,11 @@
+{
+  "name": "tiered",
+  "rule": "702.183",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "Choose one additional cost.",
+  "multiple": "independent",
+  "status": "implemented"
+}

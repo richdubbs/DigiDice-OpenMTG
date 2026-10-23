@@ -1,0 +1,111 @@
+[
+  {
+    "id": "eff.p2copyspell3.controllerOfCopiesIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c"
+    ],
+    "pattern": "the controller of {o:Obj} copies it",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}{U}, {T}: The controller of target sorcery spell copies it."
+      },
+      {
+        "text": "{3}, {T}: The controller of target instant spell copies it."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}, {T}: The controller of target sorcery spell copies it twice.",
+      "{1}{U}, {T}: The controller of target sorcery spell may copy it.",
+      "{1}{U}, {T}: The owner of target sorcery spell copies it."
+    ]
+  },
+  {
+    "id": "eff.p2copyspell3.playerCopies.andNewTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.7"
+    ],
+    "pattern": "{p:Player} copies {o:Obj} and may choose new targets for the copy",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": "$p",
+      "newTargets": "may"
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent casts an instant spell, that player copies it and may choose new targets for the copy."
+      },
+      {
+        "text": "{1}{U}, {T}: The controller of target sorcery spell copies it and may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent casts an instant spell, that player copies it and may choose new targets for the copies.",
+      "Whenever an opponent casts an instant spell, that player copies it and chooses new targets for the copy.",
+      "Whenever an opponent casts an instant spell, that player copies it twice and may choose new targets for the copy."
+    ]
+  },
+  {
+    "id": "rid.p2copyspell3.thatPlayer.newTargets",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.7"
+    ],
+    "pattern": "that player may choose new targets for the copy",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "who.ref": "controllerOf"
+        },
+        "newTargets": {
+          "@new": "may"
+        },
+        "@into": true
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{1}{U}, {T}: The controller of target sorcery spell copies it. That player may choose new targets for the copy."
+      },
+      {
+        "text": "{3}, {T}: The controller of target instant spell copies it. That player may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}, {T}: Copy target sorcery spell. That player may choose new targets for the copy.",
+      "{1}{U}, {T}: The controller of target sorcery spell copies it. That player may choose new targets for the copies.",
+      "{1}{U}, {T}: Draw a card. That player may choose new targets for the copy."
+    ]
+  }
+]

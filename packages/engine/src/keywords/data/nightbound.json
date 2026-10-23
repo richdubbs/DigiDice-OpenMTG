@@ -1,0 +1,15 @@
+{
+  "name": "nightbound",
+  "rule": "702.145",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "If a player casts at least two spells during their own turn, it becomes day next turn.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "core/day-night.ts#immediateCheck",
+    "effects/proposal-kinds/transform.ts#TRANSFORM_KIND"
+  ]
+}

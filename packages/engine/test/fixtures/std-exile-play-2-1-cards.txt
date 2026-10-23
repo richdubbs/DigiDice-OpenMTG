@@ -1,0 +1,6 @@
+# std-exile-play-2-1 (lane std-exile-play-2; test/cloud/std-exile-play-2-1, golden std-exile-play-2-1-review.json): "pay life equal to its mana value rather
+# than pay its mana cost" after a resolved permission; "each opponent exiles ... until they have exiled cards with total mana value N or greater this way";
+# a linked creature-spell permission with an additional cost of removing counters from among creatures
+Inside Information
+Dream Harvest
+Dawnhand Dissident

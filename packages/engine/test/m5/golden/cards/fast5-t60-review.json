@@ -1,0 +1,2031 @@
+[
+{
+"card": "Starforged Sword",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.pump.loses): CR 613.1f, 613.4c, 301.5: the equipped creature gets +3/+3 (layer 7c) and loses flying (layer 6 removal); the gift and attach trigger and equip are the existing templates'",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "gift",
+"kind": "keyword",
+"quality": "a tapped Fish"
+},
+{
+"effect": {
+"steps": [
+{
+"op": "attach",
+"to": {
+"id": "t0",
+"ref": "target"
+},
+"what": {
+"ref": "self"
+}
+}
+],
+"targets": [
+{
+"filter": {
+"controller": "you",
+"types": [
+"Creature"
+]
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 1
+}
+]
+},
+"interveningIf": {
+"cond": "wasCast",
+"kicked": "gift"
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+}
+]
+}
+},
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": 6,
+"remove": [
+"flying"
+]
+},
+{
+"layer": "7c",
+"power": 3,
+"toughness": 3
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 3,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Colossus Hammer",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.pump.loses): CR 613.1f, 613.4c, 301.5: +10/+10 and loses flying",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": 6,
+"remove": [
+"flying"
+]
+},
+{
+"layer": "7c",
+"power": 10,
+"toughness": 10
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 8,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Tightening Coils",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.pump.loses): CR 613.1f, 613.4c, 303.4: -6/-0 and loses flying (a negative power change, layer 7c)",
+"faces": [
+{
+"abilities": [
+{
+"filter": {
+"types": [
+"Creature"
+]
+},
+"keyword": "enchant",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": 6,
+"remove": [
+"flying"
+]
+},
+{
+"layer": "7c",
+"power": -6,
+"toughness": 0
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Black Mage's Rod",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.pump.quoted.addtype): CR 613.1d, 613.1f, 613.4c, 205.1b, 603.2: +1/+0, the granted triggered ability (a noncreature spell cast by the controller: 1 damage from the creature to each opponent) and the Wizard subtype in addition to the other types",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "job select",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": 4,
+"subtypes": {
+"add": [
+"Wizard"
+]
+}
+},
+{
+"add": [
+{
+"effect": {
+"steps": [
+{
+"amount": 1,
+"op": "damage",
+"source": {
+"ref": "self"
+},
+"to": {
+"ref": "each",
+"who": "opponent"
+}
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "cast",
+"player": "you",
+"spell": {
+"notTypes": [
+"Creature"
+]
+}
+}
+]
+}
+}
+],
+"layer": 6
+},
+{
+"layer": "7c",
+"power": 1,
+"toughness": 0
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 3,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Thief's Knife",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.pump.quoted.addtype): CR 613.1d, 613.1f, 613.4c, 205.1b, 510.2, 603.2: +1/+1, the granted trigger on combat damage dealt to a player (draw a card) and the Rogue subtype in addition",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "job select",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": 4,
+"subtypes": {
+"add": [
+"Rogue"
+]
+}
+},
+{
+"add": [
+{
+"effect": {
+"steps": [
+{
+"count": 1,
+"op": "draw",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"combat": true,
+"ev": "damage",
+"recipient": {
+"player": "any"
+},
+"source": {
+"self": true
+}
+}
+]
+}
+}
+],
+"layer": 6
+},
+{
+"layer": "7c",
+"power": 1,
+"toughness": 1
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 4,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "White Mage's Staff",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.pump.quoted.addtype): CR 613.1d, 613.1f, 613.4c, 205.1b, 508.1m, 603.2: +1/+1, the granted attack trigger (gain 1 life) and the Cleric subtype in addition",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "job select",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": 4,
+"subtypes": {
+"add": [
+"Cleric"
+]
+}
+},
+{
+"add": [
+{
+"effect": {
+"steps": [
+{
+"amount": 1,
+"op": "gainLife",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"attacker": {
+"self": true
+},
+"ev": "attacks"
+}
+]
+}
+}
+],
+"layer": 6
+},
+{
+"layer": "7c",
+"power": 1,
+"toughness": 1
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 3,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Red Mage's Rapier",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.quoted.addtype): CR 613.1d, 613.1f, 205.1b, 603.2, 611.2a: the granted trigger (a noncreature spell cast by the controller: this creature gets +2/+0 until end of turn) and the Wizard subtype in addition; no bonus of its own",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "job select",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": 4,
+"subtypes": {
+"add": [
+"Wizard"
+]
+}
+},
+{
+"add": [
+{
+"effect": {
+"steps": [
+{
+"duration": {
+"d": "endOfTurn"
+},
+"effects": [
+{
+"affects": {
+"ref": "self"
+},
+"mods": [
+{
+"layer": "7c",
+"power": 2,
+"toughness": 0
+}
+],
+"s": "continuous"
+}
+],
+"op": "effect"
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "cast",
+"player": "you",
+"spell": {
+"notTypes": [
+"Creature"
+]
+}
+}
+]
+}
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 3,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Chainsaw",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.pump.whereX): CR 107.3, 122.1, 613.4c: the equipped creature gets +X/+0, X read continuously as the number of rev counters on the Equipment",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"amount": 3,
+"op": "damage",
+"source": {
+"ref": "self"
+},
+"to": {
+"id": "t0",
+"ref": "target"
+}
+}
+],
+"targets": [
+{
+"filter": {
+"types": [
+"Creature"
+]
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 0
+}
+]
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+}
+]
+}
+},
+{
+"effect": {
+"steps": [
+{
+"count": 1,
+"kind": "rev",
+"on": {
+"ref": "self"
+},
+"op": "putCounters"
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"batch": true,
+"on": [
+{
+"ev": "zoneChange",
+"from": "battlefield",
+"subject": {
+"types": [
+"Creature"
+]
+},
+"to": "graveyard"
+}
+]
+}
+},
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": "7c",
+"power": {
+"kind": "rev",
+"on": {
+"ref": "self"
+},
+"q": "counters"
+},
+"toughness": 0
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 3,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Aettir and Priwen",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.basePT.life): CR 613.4b, 119.1, 107.3: base power and toughness are both the Equipment controller's life total (layer 7b, read continuously)",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": "7b",
+"power": {
+"of": {
+"ref": "you"
+},
+"q": "life"
+},
+"toughness": {
+"of": {
+"ref": "you"
+},
+"q": "life"
+}
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 5,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Alloy Golem",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.attached.chosenColor): CR 105.3, 607.2d, 613.1e: ~ is the color chosen as it entered (layer 5, link color)",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"body": {
+"b": "enters",
+"choose": [
+{
+"link": "color",
+"what": "color"
+}
+]
+},
+"replaces": {
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+},
+"s": "replace"
+}
+],
+"kind": "static",
+"zone": [
+"battlefield",
+"stack"
+]
+},
+{
+"effects": [
+{
+"affects": {
+"ref": "self"
+},
+"mods": [
+{
+"colors": {
+"chosen": "color"
+},
+"layer": 5
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Toph, the First Metalbender",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.are.types.addition): CR 205.1b, 613.1d, 111.1: nontoken artifacts its controller controls are lands in addition to their other types (layer 4, types add)",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"controller": "you",
+"token": false,
+"types": [
+"Artifact"
+]
+},
+"ref": "each"
+},
+"mods": [
+{
+"layer": 4,
+"types": {
+"add": [
+"Land"
+]
+}
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"effect": {
+"steps": [
+{
+"action": "earthbend",
+"n": 2,
+"op": "action",
+"subject": {
+"id": "t0",
+"ref": "target"
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": [
+{
+"filter": {
+"controller": "you",
+"types": [
+"Land"
+]
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 1
+}
+]
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "step",
+"step": "end",
+"whose": "you"
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "The Flesh Is Weak",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.are.types.addition): CR 205.1b, 613.1d, 122.1: creatures its controller controls with a +1/+1 counter are artifacts in addition to their other types",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"count": 1,
+"kind": "+1/+1",
+"on": {
+"filter": {
+"controller": "you",
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+},
+"op": "putCounters"
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+}
+]
+}
+},
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"controller": "you",
+"counters": {
+"kind": "+1/+1"
+},
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+},
+"mods": [
+{
+"layer": 4,
+"types": {
+"add": [
+"Artifact"
+]
+}
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"notTypes": [
+"Artifact"
+],
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+},
+"mods": [
+{
+"layer": "7c",
+"power": -1,
+"toughness": -1
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Ragost, Deft Gastronaut",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.are.subtypes.addition.have): CR 205.1b, 613.1d, 613.1f, 602.1: artifacts its controller controls are Foods in addition and have the granted activated ability ({2}, {T}, sacrifice it: gain 3 life)",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"controller": "you",
+"types": [
+"Artifact"
+]
+},
+"ref": "each"
+},
+"mods": [
+{
+"layer": 4,
+"subtypes": {
+"add": [
+"Food"
+]
+}
+},
+{
+"add": [
+{
+"cost": {
+"mana": [
+{
+"amount": 2,
+"kind": "generic"
+}
+],
+"other": [
+{
+"count": 1,
+"filter": {
+"self": true
+},
+"kind": "sacrifice",
+"self": true
+}
+],
+"tap": true
+},
+"effect": {
+"steps": [
+{
+"amount": 3,
+"op": "gainLife",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "activated"
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 1,
+"kind": "generic"
+}
+],
+"other": [
+{
+"count": 1,
+"filter": {
+"subtypes": [
+"Food"
+]
+},
+"kind": "sacrifice"
+}
+],
+"tap": true
+},
+"effect": {
+"steps": [
+{
+"amount": 3,
+"op": "damage",
+"source": {
+"ref": "self"
+},
+"to": {
+"ref": "each",
+"who": "opponent"
+}
+}
+],
+"targets": []
+},
+"kind": "activated"
+},
+{
+"effect": {
+"steps": [
+{
+"op": "untap",
+"what": {
+"ref": "self"
+}
+}
+],
+"targets": []
+},
+"interveningIf": {
+"cond": "happened",
+"event": {
+"change": "gain",
+"ev": "life",
+"player": "you"
+},
+"scope": "turn"
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "step",
+"step": "end"
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Senator Peacock",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.are.subtypes.addition.have): CR 205.1b, 613.1d, 613.1f, 602.1: artifacts its controller controls are Clues in addition and have the granted activated ability ({2}, sacrifice it: draw a card)",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"controller": "you",
+"types": [
+"Artifact"
+]
+},
+"ref": "each"
+},
+"mods": [
+{
+"layer": 4,
+"subtypes": {
+"add": [
+"Clue"
+]
+}
+},
+{
+"add": [
+{
+"cost": {
+"mana": [
+{
+"amount": 2,
+"kind": "generic"
+}
+],
+"other": [
+{
+"count": 1,
+"filter": {
+"self": true
+},
+"kind": "sacrifice",
+"self": true
+}
+]
+},
+"effect": {
+"steps": [
+{
+"count": 1,
+"op": "draw",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "activated"
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"effect": {
+"steps": [
+{
+"duration": {
+"d": "endOfTurn"
+},
+"effects": [
+{
+"action": "beBlocked",
+"mode": "cant",
+"s": "restrict",
+"subject": {
+"id": "t0",
+"ref": "target"
+}
+}
+],
+"op": "effect"
+}
+],
+"targets": [
+{
+"filter": {
+"types": [
+"Creature"
+]
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 1
+}
+]
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"actor": "you",
+"ev": "action",
+"object": {
+"subtypes": [
+"Clue"
+]
+},
+"verb": "sacrifice"
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Dollmaker's Shop // Porcelain Gallery",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.have.basePT.eachEqual): CR 613.4b, 107.3: creatures its controller controls have base power and toughness each equal to the number of creatures its controller controls (layer 7b, read continuously)",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"count": 1,
+"op": "createToken",
+"token": {
+"colors": [
+"W"
+],
+"power": 1,
+"subtypes": [
+"Toy"
+],
+"toughness": 1,
+"types": [
+"Artifact",
+"Creature"
+]
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"batch": true,
+"on": [
+{
+"attacker": {
+"controller": "you",
+"notSubtypes": [
+"Toy"
+],
+"types": [
+"Creature"
+]
+},
+"defender": "any",
+"ev": "attacks"
+}
+]
+}
+}
+]
+},
+{
+"abilities": [
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"controller": "you",
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+},
+"mods": [
+{
+"layer": "7b",
+"power": {
+"of": {
+"filter": {
+"controller": "you",
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+},
+"q": "count"
+},
+"toughness": {
+"of": {
+"filter": {
+"controller": "you",
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+},
+"q": "count"
+}
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Sami, Wildcat Captain",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.spells.cast.affinity): CR 702.41a, 613.1f, 601.2a, 707.10: the spells its controller casts (not copies, which are not cast) have affinity for artifacts, counted for the caster",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "double strike",
+"kind": "keyword"
+},
+{
+"keyword": "vigilance",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"anyOf": [
+{
+"stackKind": "spell",
+"zone": "stack"
+}
+],
+"controller": "you",
+"not": {
+"stackKind": "copy",
+"zone": "stack"
+},
+"zone": "stack"
+},
+"ref": "each"
+},
+"mods": [
+{
+"add": [
+{
+"filter": {
+"types": [
+"Artifact"
+]
+},
+"keyword": "affinity",
+"kind": "keyword"
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Mycosynth Golem",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.spells.cast.affinity): CR 702.41a, 613.1f, 601.2a: artifact creature spells its controller casts have affinity for artifacts",
+"faces": [
+{
+"abilities": [
+{
+"filter": {
+"types": [
+"Artifact"
+]
+},
+"keyword": "affinity",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"anyOf": [
+{
+"allTypes": [
+"Artifact",
+"Creature"
+],
+"stackKind": "spell",
+"zone": "stack"
+}
+],
+"controller": "you",
+"not": {
+"stackKind": "copy",
+"zone": "stack"
+},
+"zone": "stack"
+},
+"ref": "each"
+},
+"mods": [
+{
+"add": [
+{
+"filter": {
+"types": [
+"Artifact"
+]
+},
+"keyword": "affinity",
+"kind": "keyword"
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Witherbloom, the Balancer",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.spells.cast.affinity): CR 702.41a, 613.1f, 601.2a: instant and sorcery spells its controller casts have affinity for creatures",
+"faces": [
+{
+"abilities": [
+{
+"filter": {
+"types": [
+"Creature"
+]
+},
+"keyword": "affinity",
+"kind": "keyword"
+},
+{
+"keyword": "flying",
+"kind": "keyword"
+},
+{
+"keyword": "deathtouch",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"affects": {
+"filter": {
+"anyOf": [
+{
+"stackKind": "spell",
+"types": [
+"Instant",
+"Sorcery"
+],
+"zone": "stack"
+}
+],
+"controller": "you",
+"not": {
+"stackKind": "copy",
+"zone": "stack"
+},
+"zone": "stack"
+},
+"ref": "each"
+},
+"mods": [
+{
+"add": [
+{
+"filter": {
+"types": [
+"Creature"
+]
+},
+"keyword": "affinity",
+"kind": "keyword"
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Ancient Lumberknot",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.rule.toughnessDamage.each): CR 510.1a, 613.11: the same rule for each creature its controller controls with toughness greater than power",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"of": {
+"anyOf": [
+{
+"types": [
+"Creature"
+]
+}
+],
+"controller": "you"
+},
+"onlyIf": "toughnessGreaterThanPower",
+"rule": "combatDamageUsesToughness",
+"s": "rule"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Bark of Doran",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.rule.toughnessDamage.equipped): CR 510.1a, 611.3a, 301.5: the equipped creature assigns combat damage equal to its toughness while its toughness is greater than its power (rule with of attachedToSource and onlyIf)",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": "7c",
+"power": 0,
+"toughness": 1
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+},
+{
+"effects": [
+{
+"of": {
+"attachedToSource": true
+},
+"onlyIf": "toughnessGreaterThanPower",
+"rule": "combatDamageUsesToughness",
+"s": "rule"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 1,
+"kind": "generic"
+}
+]
+},
+"keyword": "equip",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Veteran Survivor",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (sta.t60.self.exiledWith.pump.has): CR 607.2a, 611.3a, 613.1f, 613.4c: while the cards the first ability exiled (link exiled) number three or more, it gets +3/+3 and has hexproof",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"link": "exiled",
+"op": "move",
+"to": {
+"zone": "exile"
+},
+"what": {
+"id": "t0",
+"ref": "target"
+}
+}
+],
+"targets": [
+{
+"filter": {
+"isCard": true,
+"zone": "graveyard"
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 0
+}
+]
+},
+"interveningIf": {
+"cond": "matches",
+"filter": {
+"tapped": true
+},
+"object": {
+"ref": "self"
+}
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "step",
+"nth": 2,
+"step": "main2",
+"whose": "you"
+}
+]
+}
+},
+{
+"condition": {
+"cond": "compare",
+"left": {
+"of": {
+"link": "exiled",
+"ref": "linked"
+},
+"q": "count"
+},
+"op": ">=",
+"right": 3
+},
+"effects": [
+{
+"affects": {
+"ref": "self"
+},
+"mods": [
+{
+"layer": "7c",
+"power": 3,
+"toughness": 3
+},
+{
+"add": [
+{
+"keyword": "hexproof",
+"kind": "keyword"
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Boom Scholar",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (cm.t60.abilities.keyword.otherPermanents.less): CR 601.2f, 602.2b, 118.7a, 702.177a: activated abilities with the exhaust wrapper keyword of other permanents its controller controls cost {2} less (a generic reduction, never below {0})",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"applies": {
+"abilities": {
+"keyword": "exhaust",
+"kind": "activated",
+"source": {
+"controller": "you",
+"other": true
+}
+},
+"caster": "you"
+},
+"change": {
+"generic": 2,
+"kind": "reduce"
+},
+"s": "costMod"
+}
+],
+"kind": "static"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 4,
+"kind": "generic"
+},
+{
+"color": "R",
+"kind": "colored"
+},
+{
+"color": "G",
+"kind": "colored"
+}
+]
+},
+"effect": {
+"steps": [
+{
+"duration": {
+"d": "endOfTurn"
+},
+"effects": [
+{
+"affects": {
+"filter": {
+"anyOf": [
+{
+"subtypes": [
+"Vehicle"
+]
+},
+{
+"types": [
+"Creature"
+]
+}
+],
+"controller": "you"
+},
+"ref": "each"
+},
+"mods": [
+{
+"add": [
+{
+"keyword": "trample",
+"kind": "keyword"
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"op": "effect"
+},
+{
+"count": 2,
+"kind": "+1/+1",
+"on": {
+"ref": "self"
+},
+"op": "putCounters"
+}
+],
+"targets": []
+},
+"keyword": "exhaust",
+"kind": "activated",
+"limit": {
+"max": 1,
+"per": "game"
+}
+}
+]
+}
+]
+},
+{
+"card": "Leyline of Hope",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (qty startingLife, cond life at least starting life + 7): CR 103.4, 119.1, 611.3a, 613.4c: while its controller's life total is at least the starting life total plus 7, creatures they control get +2/+2",
+"faces": [
+{
+"abilities": [
+{
+"effects": [
+{
+"action": "beginOnBattlefield",
+"optional": true,
+"s": "pregame"
+}
+],
+"kind": "static",
+"zone": [
+"hand"
+]
+},
+{
+"effects": [
+{
+"body": {
+"amount": {
+"add": 1
+},
+"b": "modify"
+},
+"replaces": {
+"change": "gain",
+"ev": "life",
+"player": "you"
+},
+"s": "replace"
+}
+],
+"kind": "static"
+},
+{
+"condition": {
+"cond": "compare",
+"left": {
+"of": {
+"ref": "you"
+},
+"q": "life"
+},
+"op": ">=",
+"right": {
+"args": [
+7,
+{
+"q": "startingLife"
+}
+],
+"op": "+",
+"q": "math"
+}
+},
+"effects": [
+{
+"affects": {
+"filter": {
+"controller": "you",
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+},
+"mods": [
+{
+"layer": "7c",
+"power": 2,
+"toughness": 2
+}
+],
+"s": "continuous"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Hellspur Brute",
+"expect": "full",
+"verified": "FAST5 T60 review, by hand against the Oracle text and the rules cited below (filter outlaws): CR 702.41a, 700.12: affinity for the five outlaw creature types (Assassin, Mercenary, Pirate, Rogue, Warlock)",
+"faces": [
+{
+"abilities": [
+{
+"filter": {
+"subtypes": [
+"Assassin",
+"Mercenary",
+"Pirate",
+"Rogue",
+"Warlock"
+]
+},
+"keyword": "affinity",
+"kind": "keyword"
+},
+{
+"keyword": "trample",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{
+"card": "Teval, Arbiter of Virtue",
+"expect": "full",
+"verified": "cloud std-tdm review, by hand against the Oracle text and the rules cited (sta.t60.spells.cast.delve): flying and lifelink; every spell its controller casts has delve while it is on the stack (layer 6, CR 613.1f; a copy is not cast, CR 707.10), and delve is played as a payment option: each card exiled from the caster's graveyard while the spell is cast pays for {1} of the generic part of its total cost (CR 702.66a, 702.66b, 601.2g); whenever its controller casts a spell, they lose life equal to that spell's mana value (CR 202.3, 119.3)",
+"faces": [
+{
+"abilities": [
+{
+"kind": "keyword",
+"keyword": "flying"
+},
+{
+"kind": "keyword",
+"keyword": "lifelink"
+},
+{
+"kind": "static",
+"effects": [
+{
+"s": "continuous",
+"affects": {
+"ref": "each",
+"filter": {
+"anyOf": [
+{
+"stackKind": "spell",
+"zone": "stack"
+}
+],
+"controller": "you",
+"not": {
+"stackKind": "copy",
+"zone": "stack"
+},
+"zone": "stack"
+}
+},
+"mods": [
+{
+"layer": 6,
+"add": [
+{
+"kind": "keyword",
+"keyword": "delve"
+}
+]
+}
+]
+}
+]
+},
+{
+"kind": "triggered",
+"effect": {
+"steps": [
+{
+"op": "loseLife",
+"amount": {
+"q": "stat",
+"of": {
+"ref": "event",
+"role": "spell"
+},
+"stat": "manaValue"
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"trigger": {
+"on": [
+{
+"ev": "cast",
+"player": "you"
+}
+]
+}
+}
+]
+}
+]
+}
+]

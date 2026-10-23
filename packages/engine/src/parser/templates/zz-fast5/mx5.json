@@ -1,0 +1,489 @@
+[
+  {
+    "id": "eff.mx5.untap.next.its",
+    "kind": "effect",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Obj} doesn't untap during its controller 's next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Target artifact doesn't untap during its controller's next untap step.",
+        "expect": {
+          "targets": [
+            {
+              "id": "t0",
+              "kind": "object",
+              "min": 1,
+              "max": 1,
+              "filter": {
+                "types": [
+                  "Artifact"
+                ]
+              }
+            }
+          ],
+          "steps": [
+            {
+              "op": "effect",
+              "duration": {
+                "d": "throughNextUntap"
+              },
+              "effects": [
+                {
+                  "s": "restrict",
+                  "subject": {
+                    "ref": "target",
+                    "id": "t0"
+                  },
+                  "mode": "cant",
+                  "action": "untapDuringUntapStep"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "text": "Target land an opponent controls doesn't untap during its controller's next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Target artifact doesn't untap during its controller's untap step.",
+      "Target artifact untaps during its controller's next untap step.",
+      "Target artifact doesn't untap during its controller's next upkeep."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx5.untap.next.their",
+    "kind": "effect",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Objs} don't untap during their controller 's next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Up to three target artifacts don't untap during their controller's next untap step."
+      },
+      {
+        "text": "Two target lands don't untap during their controller's next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Up to three target artifacts don't untap during their controller's untap step.",
+      "Up to three target artifacts untap during their controller's next untap step.",
+      "Up to three target artifacts don't untap during their controller's next end step."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx5.untap.next.theirs",
+    "kind": "effect",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Objs} don't untap during their controllers' next untap steps",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Up to three target artifacts don't untap during their controllers' next untap steps."
+      },
+      {
+        "text": "Two target lands don't untap during their controllers' next untap steps."
+      }
+    ],
+    "counterExamples": [
+      "Up to three target artifacts don't untap during their controllers' untap steps.",
+      "Up to three target artifacts untap during their controllers' next untap steps.",
+      "Up to three target artifacts don't untap during their controllers' next end steps."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx5.untap.next.your",
+    "kind": "effect",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 109.5"
+    ],
+    "pattern": "{o:Obj} doesn't untap during your next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Target artifact you control doesn't untap during your next untap step."
+      },
+      {
+        "text": "Target land you control doesn't untap during your next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Target artifact you control doesn't untap during your untap step.",
+      "Target artifact you control untaps during your next untap step.",
+      "Target artifact you control doesn't untap during your next upkeep."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx5.untap.next.your.each",
+    "kind": "effect",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 109.5"
+    ],
+    "pattern": "{o:Objs} don't untap during your next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Artifacts you control don't untap during your next untap step."
+      },
+      {
+        "text": "Creatures you control don't untap during your next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Artifacts you control don't untap during your untap step.",
+      "Artifacts you control untap during your next untap step.",
+      "Artifacts you control don't untap during your next upkeep."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "eff.mx5.untap.next.player",
+    "kind": "effect",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Objs} don't untap during {p:Player} 's next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap",
+        "whose": "$p"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Tap all artifacts target player controls. Those artifacts don't untap during that player's next untap step."
+      },
+      {
+        "text": "Lands target opponent controls don't untap during that player's next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Lands target opponent controls don't untap during that player's untap step.",
+      "Lands target opponent controls untap during that player's next untap step.",
+      "Lands target opponent controls don't untap during that player's next upkeep."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "rst.mx5.blocked.max.one",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked by more than one creature",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beBlocked",
+      "max": 1
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked by more than one creature.",
+        "expect": {
+          "kind": "static",
+          "effects": [
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "self"
+              },
+              "mode": "cant",
+              "action": "beBlocked",
+              "max": 1
+            }
+          ]
+        }
+      },
+      {
+        "text": "Enchanted creature can't be blocked by more than one creature."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be blocked by more than one creature this turn.",
+      "~ can't be blocked by one creature.",
+      "~ can block more than one creature."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "rst.mx5.each.blocked.max.one",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Objs} can't be blocked by more than one creature",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beBlocked",
+      "max": 1
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control can't be blocked by more than one creature."
+      },
+      {
+        "text": "Each artifact creature you control can't be blocked by more than one creature."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control can't be blocked by more than one creature this turn.",
+      "Each creature you control can't be blocked by one creature.",
+      "Each creature you control can block more than one creature."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "rst.mx5.attached.has.blocked.max.one",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1b",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} and can't be blocked by more than one creature",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beBlocked",
+          "max": 1
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has reach and can't be blocked by more than one creature."
+      },
+      {
+        "text": "Enchanted creature has vigilance and can't be blocked by more than one creature."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has reach and can't be blocked by one creature.",
+      "Equipped creature has reach and can block more than one creature.",
+      "Equipped creature gains reach and can't be blocked by more than one creature this turn."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "rst.mx5.pump.blocked.max.one",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and can't be blocked by more than one creature",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beBlocked",
+        "max": 1
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+2 and can't be blocked by more than one creature."
+      },
+      {
+        "text": "Enchanted creature gets +1/+0 and can't be blocked by more than one creature."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+2 and can't be blocked by one creature.",
+      "Equipped creature gets +2/+2 and can block more than one creature.",
+      "Equipped creature gets +2/+2 until end of turn and can't be blocked by more than one creature this turn."
+    ],
+    "status": "stable",
+    "since": 7
+  }
+]

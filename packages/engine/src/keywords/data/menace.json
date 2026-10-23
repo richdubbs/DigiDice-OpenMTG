@@ -1,0 +1,19 @@
+{
+  "name": "menace",
+  "rule": "702.111",
+  "params": [],
+  "mechanisms": [
+    "flag",
+    "hook"
+  ],
+  "reminder": "This creature can't be blocked except by two or more creatures.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "hooks": [
+    "blockSetValid"
+  ],
+  "readers": [
+    "rules/combat-rules.ts#blocksDenial",
+    "rules/combat-rules.ts#blockCandidates"
+  ]
+}

@@ -1,0 +1,2153 @@
+[
+ {
+  "card": "Clash of Elements",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (cond.if, eff.damage, eff.stdeoe.choose.targets, eff.stdrx30.ownerMay.putOnTop.theirLibrary, rid.stdrx30.ifTheyDidnt.putOnTop.theyPutBottom) its owner may put the target nonland permanent on top of their library; if they do, 2 damage to them, else they put it on the bottom (CR 115.1, 608.2c, 608.2d, 401.4); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Choose target nonland permanent. Its owner may put it on top of their library. If they do, ~ deals 2 damage to them. If they didn't put the card on top of their library, they put it on the bottom.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target nonland permanent",
+         "filter": {
+          "notTypes": [
+           "Land"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "ownerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "to": {
+            "zone": "library",
+            "position": "top"
+           }
+          }
+         ],
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "damage",
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "ownerOf",
+            "object": {
+             "ref": "target",
+             "id": "t0"
+            }
+           },
+           "amount": 2
+          }
+         ],
+         "else": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "to": {
+            "zone": "library",
+            "position": "bottom"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Intrude on the Mind",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.r5dig.putThatPile.andOther, eff.stdrx30.reveal.separate.twoPiles, eff.t28.counters.put.forEach, eff.token.you, rid.r5dig.opponentChoosesPile) you reveal the top five and separate them into two piles, an opponent chooses one; that pile to your hand, the other to your graveyard; a 0/0 flying Thopter gets a +1/+1 counter per card put into your graveyard this way (CR 700.3, 701.20a, 608.2c, 122.1); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Reveal the top five cards of your library and separate them into two piles. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard. Create a 0/0 colorless Thopter artifact creature token with flying, then put a +1/+1 counter on it for each card put into your graveyard this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "reveal",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 5
+         },
+         "as": "revealed"
+        },
+        {
+         "op": "piles",
+         "cards": {
+          "ref": "bound",
+          "name": "revealed"
+         },
+         "separator": {
+          "ref": "you"
+         },
+         "chosen": "chosenPile",
+         "other": "otherPile",
+         "chooser": {
+          "ref": "anOpponent"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosenPile"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "otherPile"
+         },
+         "to": {
+          "zone": "graveyard"
+         },
+         "as": "move"
+        },
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "colors": [],
+          "types": [
+           "Artifact",
+           "Creature"
+          ],
+          "subtypes": [
+           "Thopter"
+          ],
+          "power": 0,
+          "toughness": 0,
+          "keywords": [
+           "flying"
+          ]
+         },
+         "as": "token"
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "bound",
+          "name": "token"
+         },
+         "kind": "+1/+1",
+         "count": {
+          "q": "resultCount",
+          "step": "move",
+          "which": {
+           "owner": "you",
+           "isCard": true
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Memories Returning",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.r5fxz.dig.rest.hand, eff.reveal.top, eff.stdrx30.alternatingPicks.youOpponent, kw.line) you put one of the five revealed cards into your hand, then the opponent you chose puts one on the bottom of your library, then you, then they; the last one to your hand; flashback (CR 701.20a, 608.2c, 401.4, 702.34a); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Reveal the top five cards of your library. Put one of them into your hand. Then choose an opponent. They put one on the bottom of your library. Then you put one into your hand. Then they put one on the bottom of your library. Put the other into your hand.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "reveal",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 5
+         },
+         "as": "them"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "library"
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "mrFirst"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "mrFirst"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "chooseValue",
+         "who": {
+          "ref": "you"
+         },
+         "what": "opponent",
+         "as": "mrOpponent"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "bound",
+          "name": "mrOpponent"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "union",
+             "of": [
+              {
+               "ref": "bound",
+               "name": "mrFirst"
+              }
+             ]
+            }
+           },
+           "zone": "library"
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "mrSecond"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "mrSecond"
+         },
+         "to": {
+          "zone": "library",
+          "position": "bottom"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "union",
+             "of": [
+              {
+               "ref": "bound",
+               "name": "mrFirst"
+              },
+              {
+               "ref": "bound",
+               "name": "mrSecond"
+              }
+             ]
+            }
+           },
+           "zone": "library"
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "mrThird"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "mrThird"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "bound",
+          "name": "mrOpponent"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "union",
+             "of": [
+              {
+               "ref": "bound",
+               "name": "mrFirst"
+              },
+              {
+               "ref": "bound",
+               "name": "mrSecond"
+              },
+              {
+               "ref": "bound",
+               "name": "mrThird"
+              }
+             ]
+            }
+           },
+           "zone": "library"
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "mrFourth"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "mrFourth"
+         },
+         "to": {
+          "zone": "library",
+          "position": "bottom"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "union",
+             "of": [
+              {
+               "ref": "bound",
+               "name": "mrFirst"
+              },
+              {
+               "ref": "bound",
+               "name": "mrSecond"
+              },
+              {
+               "ref": "bound",
+               "name": "mrThird"
+              },
+              {
+               "ref": "bound",
+               "name": "mrFourth"
+              }
+             ]
+            }
+           },
+           "zone": "library"
+          }
+         },
+         "to": {
+          "zone": "hand"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flashback",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 7
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        }
+       ]
+      },
+      "text": "Flashback {7}{U}{U}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Osseous Sticktwister",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.stdrx30.eachOpponentMay.sacrificeOrDiscard, kw.line, rid.stdrx30.thenDamageEqual.eachOpponentWhoDidnt.thisWay, trg.at) lifelink; delirium end-step trigger: each opponent may sacrifice a nonland permanent or discard a card, and the ones who did neither are dealt damage equal to its power (dealt within each opponent's turn of the loop, the std-rw6 precedent) (CR 702.15a, 603.4, 701.21a, 701.9a, 120.3); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "lifelink",
+      "text": "Lifelink"
+     },
+     {
+      "kind": "triggered",
+      "text": "At the beginning of your end step, if there are four or more card types among cards in your graveyard, each opponent may sacrifice a nonland permanent of their choice or discard a card. Then ~ deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "q": "distinct",
+        "what": "cardTypes",
+        "among": {
+         "ref": "each",
+         "filter": {
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       },
+       "op": ">=",
+       "right": 4
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "each",
+          "who": "opponent"
+         },
+         "as": "each",
+         "do": [
+          {
+           "op": "pay",
+           "who": {
+            "ref": "bound",
+            "name": "each"
+           },
+           "cost": {
+            "other": [
+             {
+              "kind": "sacrifice",
+              "filter": {
+               "notTypes": [
+                "Land"
+               ]
+              },
+              "count": 1
+             }
+            ]
+           },
+           "else": [
+            {
+             "op": "pay",
+             "who": {
+              "ref": "bound",
+              "name": "each"
+             },
+             "cost": {
+              "other": [
+               {
+                "kind": "discard",
+                "count": 1
+               }
+              ]
+             },
+             "else": [
+              {
+               "op": "damage",
+               "source": {
+                "ref": "self"
+               },
+               "to": {
+                "ref": "bound",
+                "name": "each"
+               },
+               "amount": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                 "ref": "self"
+                }
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "label": "Delirium"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Trial of Agony",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.damage, eff.stdeoe.choose.targets, eff.stdrx30.player.choosesOneOf, eff.stdrx30.rest.cantBlock.thisTurn) two target creatures controlled by the same opponent; that player chooses one, which is dealt 5 damage, and the other can't block this turn (CR 115.1, 601.2c, 608.2c, 509.1a); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Choose two target creatures controlled by the same opponent. That player chooses one of those creatures. ~ deals 5 damage to that creature, and the other can't block this turn.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 2,
+         "max": 2,
+         "text": "two target creatures controlled by the same opponent",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "opponent"
+         },
+         "sameController": true
+        }
+       ],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "chosen"
+        },
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "amount": 5
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "each",
+            "filter": {
+             "is": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "not": {
+              "is": {
+               "ref": "bound",
+               "name": "chosen"
+              }
+             }
+            }
+           },
+           "mode": "cant",
+           "action": "block"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kitesail Larcenist",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.mana.any, eff.stdrx30.forEachPlayer.chooseTargets, eff.stdrx30.whileSource.becomeTreasures.loseOtherAbilities, kw.line, trg.enters) flying, ward {1}; for each player up to one other target artifact or creature that player controls; while this creature is on the battlefield they are Treasure artifacts with only the mana ability (CR 115.1, 205.1a, 613.1d, 613.1f, 611.2b); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "ward",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      },
+      "text": "ward {1}"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, for each player, choose up to one other target artifact or creature that player controls. For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice ~: Add one mana of any color\" and lose all other abilities.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one other target artifact or creature that player controls",
+         "filter": {
+          "types": [
+           "Artifact",
+           "Creature"
+          ],
+          "other": true
+         },
+         "perPlayer": true
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "whileSource",
+          "as": "onBattlefield"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "types": {
+              "set": [
+               "Artifact"
+              ]
+             },
+             "subtypes": {
+              "set": [
+               "Treasure"
+              ]
+             }
+            },
+            {
+             "layer": 6,
+             "removeAll": true,
+             "add": [
+              {
+               "kind": "activated",
+               "text": "{T}, Sacrifice this artifact: Add one mana of any color",
+               "cost": {
+                "tap": true,
+                "other": [
+                 {
+                  "kind": "sacrifice",
+                  "filter": {
+                   "self": true
+                  },
+                  "count": 1,
+                  "self": true
+                 }
+                ]
+               },
+               "effect": {
+                "targets": [],
+                "steps": [
+                 {
+                  "op": "addMana",
+                  "who": {
+                   "ref": "you"
+                  },
+                  "units": [
+                   [
+                    "W",
+                    "U",
+                    "B",
+                    "R",
+                    "G"
+                   ]
+                  ]
+                 }
+                ]
+               },
+               "isMana": true
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Krenko's Buzzcrusher",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.stdrx30.forEachLandDestroyedThisWay.controllerMaySearchBasic, eff.stdrx30.forEachPlayer.destroyUpToOne.thatPlayerControls, kw.line, trg.enters) flying, trample; for each player you destroy up to one nonbasic land that player controls; each destroyed land's controller may search for a basic land card, put it onto the battlefield tapped, then shuffle (CR 701.8a, 701.23a, 608.2c); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "trample",
+      "text": "trample"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, for each player, destroy up to one nonbasic land that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "notSupertypes": [
+            "Basic"
+           ],
+           "types": [
+            "Land"
+           ],
+           "controller": {
+            "ref": "iterating"
+           }
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "perPlayer": {
+          "ref": "each",
+          "who": "player"
+         },
+         "as": "chosen"
+        },
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "as": "destroyedThisWay"
+        },
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "bound",
+          "name": "destroyedThisWay"
+         },
+         "as": "landDestroyed",
+         "do": [
+          {
+           "op": "may",
+           "who": {
+            "ref": "controllerOf",
+            "object": {
+             "ref": "bound",
+             "name": "landDestroyed"
+            }
+           },
+           "do": [
+            {
+             "op": "search",
+             "who": {
+              "ref": "controllerOf",
+              "object": {
+               "ref": "bound",
+               "name": "landDestroyed"
+              }
+             },
+             "zone": "library",
+             "filter": {
+              "supertypes": [
+               "Basic"
+              ],
+              "types": [
+               "Land"
+              ]
+             },
+             "max": 1,
+             "as": "search"
+            },
+            {
+             "op": "move",
+             "what": {
+              "ref": "bound",
+              "name": "search"
+             },
+             "to": {
+              "zone": "battlefield",
+              "controller": {
+               "ref": "controllerOf",
+               "object": {
+                "ref": "bound",
+                "name": "landDestroyed"
+               }
+              },
+              "tapped": true
+             }
+            },
+            {
+             "op": "shuffle",
+             "who": {
+              "ref": "controllerOf",
+              "object": {
+               "ref": "bound",
+               "name": "landDestroyed"
+              }
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Parker Luck",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.stdrx30.twoPlayersReveal.loseOthersManaValue.putIntoHand, trg.at) two target players each reveal their top card, each loses life equal to the mana value of the other's revealed card, then each puts their revealed card into their hand (CR 701.20a, 202.3, 119.3, 608.2c); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "At the beginning of your end step, two target players each reveal the top card of their library. They each lose life equal to the mana value of the card revealed by the other player. Then they each put the card they revealed into their hand.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 2,
+         "max": 2,
+         "text": "two target players",
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "as": "revealer",
+         "do": [
+          {
+           "op": "reveal",
+           "who": {
+            "ref": "bound",
+            "name": "revealer"
+           },
+           "what": {
+            "ref": "topCards",
+            "player": {
+             "ref": "bound",
+             "name": "revealer"
+            },
+            "count": 1
+           }
+          }
+         ]
+        },
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "as": "loser",
+         "do": [
+          {
+           "op": "loseLife",
+           "who": {
+            "ref": "bound",
+            "name": "loser"
+           },
+           "amount": {
+            "q": "stat",
+            "stat": "manaValue",
+            "of": {
+             "ref": "topCards",
+             "player": {
+              "ref": "otherOf",
+              "of": {
+               "ref": "target",
+               "id": "t0"
+              },
+              "than": {
+               "ref": "bound",
+               "name": "loser"
+              }
+             },
+             "count": 1
+            }
+           }
+          }
+         ]
+        },
+        {
+         "op": "forEach",
+         "over": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "as": "taker",
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "topCards",
+            "player": {
+             "ref": "bound",
+             "name": "taker"
+            },
+            "count": 1
+           },
+           "to": {
+            "zone": "hand"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Pox Plague",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.stdrx30.eachPlayer.halfLifeHandPermanents.roundDown) each player loses half their life, then discards half their hand, then sacrifices half the permanents they control, each rounded down (CR 107.1a, 701.9a, 701.21a, 608.2c); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Each player loses half their life, then discards half the cards in their hand, then sacrifices half the permanents they control of their choice. Round down each time.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "each",
+          "who": "player"
+         },
+         "amount": {
+          "q": "math",
+          "op": "floorDiv",
+          "args": [
+           {
+            "q": "life",
+            "of": {
+             "ref": "iterating"
+            }
+           },
+           2
+          ]
+         }
+        },
+        {
+         "op": "discard",
+         "who": {
+          "ref": "each",
+          "who": "player"
+         },
+         "count": {
+          "q": "math",
+          "op": "floorDiv",
+          "args": [
+           {
+            "q": "zoneSize",
+            "zone": "hand",
+            "of": {
+             "ref": "iterating"
+            }
+           },
+           2
+          ]
+         }
+        },
+        {
+         "op": "sacrificeChoice",
+         "who": {
+          "ref": "each",
+          "who": "player"
+         },
+         "filter": {
+          "controller": {
+           "ref": "iterating"
+          }
+         },
+         "count": {
+          "q": "math",
+          "op": "floorDiv",
+          "args": [
+           {
+            "q": "count",
+            "of": {
+             "ref": "each",
+             "filter": {
+              "controller": {
+               "ref": "iterating"
+              }
+             }
+            }
+           },
+           2
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Legend of Yangchen // Avatar Yangchen",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (cond.if, eff.draw.you, eff.e10.airbend, eff.exile, eff.m6.return.bf.transformed, eff.r3choose.youMayHave.playerDraw, eff.stdrx30.startingWithYou.eachPlayerChooses.oppPermanents, kw.line, trg.when) chapter I: starting with you each player chooses up to one permanent with mana value 3 or greater an opponent of yours controls, those are exiled; II: you may have target opponent draw three, if you do you draw three; III: exile and return transformed; Avatar: flying, airbend on the second spell each turn (CR 714.2b, 101.4, 608.2c, 712.14); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "chapter",
+      "text": "I -- Starting with you, each player chooses up to one permanent with mana value 3 or greater from among permanents your opponents control. Exile those permanents.",
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "each",
+          "who": "player"
+         },
+         "startingWith": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "manaValue": {
+              "op": ">=",
+              "value": 3
+             }
+            }
+           ],
+           "controller": "opponent"
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "chosen"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "chapter",
+      "text": "II -- You may have target opponent draw three cards. If you do, draw three cards.",
+      "chapters": [
+       2
+      ],
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target opponent",
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "count": 3
+          }
+         ],
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 3
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "chapter",
+      "text": "III -- Exile ~, then return it to the battlefield transformed under your control.",
+      "chapters": [
+       3
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "moved"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "moved"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          },
+          "transformed": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you cast your second spell each turn, airbend up to one other target nonland permanent.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "nth": 2
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one other target nonland permanent",
+         "filter": {
+          "notTypes": [
+           "Land"
+          ],
+          "other": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "action",
+         "action": "airbend",
+         "who": {
+          "ref": "you"
+         },
+         "subject": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ral Zarek, Guest Lecturer",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.discard, eff.r4mech.flipCoins.n, eff.return.bf, eff.stdrx30.player.skipsNextXTurns.whereX, eff.surveil) +1 surveil 2; -1 any number of target players each discard a card; -2 return a creature card with mana value 3 or less; -7 flip five coins, target opponent skips their next X turns, X the heads (CR 701.25a, 701.9a, 705.1, 500.11, 614.10); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "text": "+1: Surveil 2.",
+      "cost": {
+       "loyalty": 1
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "surveil",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "-1: Any number of target players each discard a card.",
+      "cost": {
+       "loyalty": -1
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 0,
+         "max": "any",
+         "text": "any number of target players",
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "discard",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "-2: Return target creature card with mana value 3 or less from your graveyard to the battlefield.",
+      "cost": {
+       "loyalty": -2
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature card with mana value 3 or less from your graveyard",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "manaValue": {
+           "op": "<=",
+           "value": 3
+          },
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "-7: Flip five coins. Target opponent skips their next X turns, where X is the number of coins that came up heads.",
+      "cost": {
+       "loyalty": -7
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target opponent",
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "flipCoin",
+         "who": {
+          "ref": "you"
+         },
+         "count": 5,
+         "as": "flipcoin"
+        },
+        {
+         "op": "repeat",
+         "times": {
+          "q": "resultCount",
+          "step": "flipcoin"
+         },
+         "do": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "s": "replace",
+             "replaces": {
+              "ev": "beginTurn",
+              "whose": {
+               "ref": "target",
+               "id": "t0"
+              }
+             },
+             "body": {
+              "b": "skip"
+             },
+             "shield": {
+              "uses": 1
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Extrapolate the Impossible",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.stdrx30.mayRevealExactlyFromOutside.opponentChooses) you may reveal exactly two cards you own with different names from outside the game; an opponent chooses one, which you put into your hand (CR 400.11b, 201.2, 608.2d); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "You may reveal exactly two cards you own with different names from outside the game. An opponent chooses one of them. You put that card into your hand.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "fromOutside",
+           "who": {
+            "ref": "you"
+           },
+           "reveal": true,
+           "exactly": 2,
+           "differentNames": true,
+           "chooser": {
+            "ref": "anOpponent"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Turtles Forever",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.stdrx30.searchLibraryAndOutside.opponentChoosesN) search your library and/or outside the game for up to four legendary creature cards you own with different names (a search may fail to find, CR 701.23b), reveal them; an opponent chooses two for your hand; the rest are shuffled into your library (CR 400.11b, 701.23a, 201.2, 701.24a); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Search your library and/or outside the game for exactly four legendary creature cards you own with different names, then reveal those cards. An opponent chooses two of them. Put the chosen cards into your hand and shuffle the rest into your library.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library",
+         "alsoOutside": true,
+         "filter": {
+          "supertypes": [
+           "Legendary"
+          ],
+          "types": [
+           "Creature"
+          ]
+         },
+         "max": 4,
+         "differentNames": true,
+         "reveal": true,
+         "as": "found"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "anOpponent"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "found"
+           },
+           "zone": "library"
+          }
+         },
+         "min": 2,
+         "max": 2,
+         "as": "chosen"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Aurelia's Vindicator",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.exile, eff.r5moved.linked.return.hands, kw.line, trg.when) flying, lifelink, ward {2}, disguise; turned face up: exile up to X other target creatures and/or creature cards from graveyards (X of the disguise cost); leaves: return the exiled cards to their owners' hands (CR 702.168e, 702.37f, 115.1, 607.2a); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "lifelink",
+      "text": "lifelink"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "ward",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "text": "ward {2}"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "disguise",
+      "cost": {
+       "mana": [
+        {
+         "kind": "variable",
+         "name": "X"
+        },
+        {
+         "kind": "generic",
+         "amount": 3
+        },
+        {
+         "kind": "colored",
+         "color": "W"
+        }
+       ]
+      },
+      "text": "Disguise {X}{3}{W}"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ is turned face up, exile up to X other target creatures from the battlefield and/or creature cards from graveyards.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "what": "turnedFaceUp",
+         "object": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": {
+          "q": "X"
+         },
+         "text": "up to X other target creatures from the battlefield and/or creature cards from graveyards",
+         "filter": {
+          "zone": [
+           "battlefield",
+           "graveyard"
+          ],
+          "anyOf": [
+           {
+            "types": [
+             "Creature"
+            ],
+            "zone": "battlefield"
+           },
+           {
+            "types": [
+             "Creature"
+            ],
+            "zone": "graveyard",
+            "isCard": true
+           }
+          ],
+          "other": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "link": "exiled"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ leaves the battlefield, return the exiled cards to their owners' hands.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "linked",
+          "link": "exiled"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Cloak and Dagger, Entwined",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (ch.may, eff.reveal.hand, eff.stdrx30.choose.targetPlayer.andTargets, eff.stdrx30.exile.handCardOrObj, kw.line, trg.enters) deathtouch, lifelink; enters: target opponent and up to one target creature they control; they reveal their hand; you may exile a nonland card from it or the chosen creature until this leaves the battlefield (CR 115.1, 701.20a, 610.3); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "deathtouch",
+      "text": "Deathtouch"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "lifelink",
+      "text": "lifelink"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enter, choose target opponent and up to one target creature they control. They reveal their hand. You may exile a nonland card from their hand or the chosen creature until ~ leave the battlefield.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target opponent",
+         "players": {
+          "who": "opponent"
+         }
+        },
+        {
+         "id": "t1",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target creature they control",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "reveal",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "what": {
+          "ref": "each",
+          "filter": {
+           "zone": "hand",
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         },
+         "as": "them"
+        },
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "chooseObjects",
+           "who": {
+            "ref": "you"
+           },
+           "from": {
+            "ref": "union",
+            "of": [
+             {
+              "ref": "each",
+              "filter": {
+               "anyOf": [
+                {
+                 "notTypes": [
+                  "Land"
+                 ],
+                 "isCard": true
+                }
+               ],
+               "is": {
+                "ref": "bound",
+                "name": "them"
+               },
+               "zone": "any"
+              }
+             },
+             {
+              "ref": "each",
+              "filter": {
+               "is": {
+                "ref": "target",
+                "id": "t1"
+               }
+              }
+             }
+            ]
+           },
+           "min": 1,
+           "max": 1,
+           "as": "chosen"
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "chosen"
+           },
+           "to": {
+            "zone": "exile"
+           },
+           "until": {
+            "d": "until",
+            "event": {
+             "ev": "zoneChange",
+             "subject": {
+              "self": true
+             },
+             "from": "battlefield"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sorceress's Schemes",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.mana.R, eff.return.hand, kw.line) return target instant or sorcery card from your graveyard or exiled card with flashback you own to your hand, add {R}; flashback (CR 115.1, 400.1, 702.34a, 106.1); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Return target instant or sorcery card from your graveyard or exiled card with flashback you own to your hand. Add {R}.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target instant or sorcery card from your graveyard or exiled card with flashback you own",
+         "filter": {
+          "zone": [
+           "graveyard",
+           "exile"
+          ],
+          "anyOf": [
+           {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+           },
+           {
+            "keyword": "flashback",
+            "owner": "you",
+            "isCard": true,
+            "zone": "exile"
+           }
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "units": [
+          [
+           "R"
+          ]
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flashback",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 4
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      },
+      "text": "Flashback {4}{R}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tishana's Tidebinder",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.counter, kw.line, rid.stdrx30.countered.abilityOf.sourceLosesAllAbilities, trg.enters) flash; enters: counter up to one target activated or triggered ability; if its source is an artifact, creature or planeswalker, that permanent loses all abilities while this creature is on the battlefield (CR 701.6a, 113.7, 613.1f, 611.2b); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flash",
+      "text": "Flash"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, counter up to one target activated or triggered ability. If an ability of an artifact, creature, or planeswalker is countered this way, that permanent loses all abilities for as long as ~ remains on the battlefield.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "ability",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target activated or triggered ability",
+         "filter": {
+          "anyOf": [
+           {
+            "stackKind": "activatedAbility"
+           },
+           {
+            "stackKind": "triggeredAbility"
+           }
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "counter",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "sourceEffect": {
+          "filter": {
+           "types": [
+            "Artifact",
+            "Creature",
+            "Planeswalker"
+           ]
+          },
+          "duration": {
+           "d": "whileSource",
+           "as": "onBattlefield"
+          },
+          "mods": [
+           {
+            "layer": 6,
+            "removeAll": true
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,736 @@
+[
+  {
+    "id": "sta.t24.spells.cast.convoke",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.51a",
+      "CR 601.2h"
+    ],
+    "pattern": "{f:Filter} you cast have convoke",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "convoke",
+              "text": "convoke"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Goblin spells you cast have convoke."
+      },
+      {
+        "text": "Instant spells you cast have convoke."
+      },
+      {
+        "text": "Red spells you cast have convoke."
+      }
+    ],
+    "counterExamples": [
+      "Goblin spells you control have convoke.",
+      "Goblin spells your opponents cast have convoke.",
+      "Goblin spells you cast have flash."
+    ]
+  },
+  {
+    "id": "sta.t24.spells.cast.cascade",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.85a",
+      "CR 601.2i"
+    ],
+    "pattern": "{f:Filter} you cast have cascade",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "cascade",
+              "text": "cascade"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Goblin spells you cast have cascade."
+      },
+      {
+        "text": "Multicolored spells you cast have cascade."
+      }
+    ],
+    "counterExamples": [
+      "Goblin spells you control have cascade.",
+      "Goblin spells your opponents cast have cascade.",
+      "Goblin spells you cast have demonstrate."
+    ]
+  },
+  {
+    "id": "sta.t24.spells.cast.storm",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.40a",
+      "CR 601.2i"
+    ],
+    "pattern": "{f:Filter} you cast have storm",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "storm",
+              "text": "storm"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Sorcery spells you cast have storm."
+      },
+      {
+        "text": "Instant spells you cast have storm."
+      }
+    ],
+    "counterExamples": [
+      "Sorcery spells you control have storm.",
+      "Sorcery spells you cast have improvise.",
+      "Sorcery spells you cast cost {1} less to cast."
+    ]
+  },
+  {
+    "id": "sta.t24.spells.cast.each.conspire",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.78a",
+      "CR 601.2b"
+    ],
+    "pattern": "each {f:Filter} you cast has conspire",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "conspire",
+              "text": "conspire"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each instant spell you cast has conspire."
+      },
+      {
+        "text": "Each artifact spell you cast has conspire."
+      }
+    ],
+    "counterExamples": [
+      "Each instant spell you control has conspire.",
+      "Each instant spell you cast has replicate.",
+      "Each instant spell an opponent casts has conspire."
+    ]
+  },
+  {
+    "id": "sta.t24.blocks.anynumber",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 509.1b",
+      "CR 604.1"
+    ],
+    "pattern": "~ can block any number of creatures",
+    "build": {
+      "s": "rule",
+      "rule": "extraBlockers",
+      "value": "none",
+      "of": {
+        "self": true
+      }
+    },
+    "examples": [
+      {
+        "text": "~ can block any number of creatures."
+      },
+      {
+        "text": "Flying\n~ can block any number of creatures."
+      }
+    ],
+    "counterExamples": [
+      "~ can block an additional creature each combat.",
+      "~ can block any number of creatures this turn.",
+      "Target creature can block any number of creatures."
+    ],
+    "consumes": [
+      "any number"
+    ]
+  },
+  {
+    "id": "sta.t24.player.cast.max1",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 601.2i",
+      "CR 604.1"
+    ],
+    "pattern": "{p:Player} can't cast more than one spell each turn",
+    "build": {
+      "s": "restrict",
+      "subject": "$p",
+      "mode": "cant",
+      "action": "cast",
+      "max": 1
+    },
+    "consumes": [
+      "each",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each other player can't cast more than one spell each turn."
+      },
+      {
+        "text": "Each player can't cast more than one spell each turn."
+      }
+    ],
+    "counterExamples": [
+      "Each player can't cast more than one creature spell each turn.",
+      "Each player can't cast more than two spells each turn.",
+      "Each player can't cast more than one spell this turn."
+    ]
+  },
+  {
+    "id": "sta.t24.aslong.attack.nodefender",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 611.3a",
+      "CR 702.3b"
+    ],
+    "pattern": "as long as {c:Cond} , ~ can attack as though it didn't have defender",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Defender\nAs long as you control a creature with power 5 or greater, ~ can attack as though it didn't have defender."
+      },
+      {
+        "text": "Defender\nAs long as there is an Arcane card in your graveyard, ~ can attack as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "Defender\nAs long as you control a creature with power 5 or greater, ~ can block as though it didn't have defender.",
+      "Defender\nAs long as you control a creature with power 5 or greater, ~ can attack as though it didn't have flying.",
+      "Defender\nIf you control a creature with power 5 or greater, ~ can attack as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "sta.t24.aslong.counter.attack.nodefender",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 611.3a",
+      "CR 702.3b",
+      "CR 122.1"
+    ],
+    "pattern": "as long as ~ has a counter on it , it can attack as though it didn't have defender",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": {
+            "ref": "self"
+          },
+          "kind": "any"
+        },
+        "op": ">=",
+        "right": 1
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Defender\nAs long as ~ has a counter on it, it can attack as though it didn't have defender."
+      },
+      {
+        "text": "Defender, flying\nAs long as ~ has a counter on it, it can attack as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "Defender\nAs long as ~ has a counter on it, it can block as though it didn't have defender.",
+      "Defender\nAs long as ~ has a counter on it, it can attack as though it didn't have flying.",
+      "Defender\nIf ~ has a counter on it, it can attack as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "sta.t24.aslong.basept",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4b"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} has base power and toughness {pt:BasePT}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as there are seven or more cards in your graveyard, ~ has base power and toughness 6/6."
+      },
+      {
+        "text": "As long as you control an artifact, ~ has base power and toughness 4/5."
+      }
+    ],
+    "counterExamples": [
+      "As long as there are seven or more cards in your graveyard, ~ gets +6/+6.",
+      "As long as there are seven or more cards in your graveyard, ~ has base power and toughness 6/6 until end of turn.",
+      "If there are seven or more cards in your graveyard, ~ has base power and toughness 6/6."
+    ]
+  },
+  {
+    "id": "sta.t24.yourturn.basept",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4b",
+      "CR 102.1"
+    ],
+    "pattern": "during your turn , {o:Obj} has base power and toughness {pt:BasePT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During your turn, ~ has base power and toughness 4/1."
+      },
+      {
+        "text": "During your turn, ~ has base power and toughness 2/6."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, ~ gets +4/+1.",
+      "During each opponent's turn, ~ has base power and toughness 4/1.",
+      "~ has base power and toughness 4/1."
+    ]
+  },
+  {
+    "id": "sta.t24.aslong.pump.unblockable",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1b"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] {pt:PT} and can't be blocked",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as there are seven or more cards in your graveyard, ~ gets +2/+0 and can't be blocked."
+      },
+      {
+        "text": "As long as you control an Island, ~ gets +1/+1 and can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "As long as there are seven or more cards in your graveyard, ~ gets +2/+0 and can't block.",
+      "As long as there are seven or more cards in your graveyard, ~ gets +2/+0 until end of turn and can't be blocked.",
+      "If there are seven or more cards in your graveyard, ~ gets +2/+0 and can't be blocked."
+    ]
+  },
+  {
+    "id": "sta.t24.spells.cantcounter",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 701.6a",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} can't be countered",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "beCountered"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Artifact and instant spells you control can't be countered."
+      },
+      {
+        "text": "Red spells you control can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "Artifact and instant spells you control can be countered.",
+      "Artifact and instant spells you control can't be countered this turn.",
+      "Artifact and instant spells you control can't be countered by blue spells."
+    ]
+  },
+  {
+    "id": "sta.t24.lords.pumpgrant.gainedlife",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 119.3"
+    ],
+    "pattern": "{f:Filter} get {pt:PT} and have {a:Abilities} as long as you gained life this turn",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "lifeGainedThisTurn"
+        },
+        "op": ">=",
+        "right": 1
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "Clerics you control get +1/+1 and have lifelink as long as you gained life this turn."
+      },
+      {
+        "text": "Creatures you control get +2/+0 and have menace as long as you gained life this turn."
+      }
+    ],
+    "counterExamples": [
+      "Clerics you control get +1/+1 and have lifelink unless you gained life this turn.",
+      "Clerics you control get +1/+1 and have lifelink as long as you lost life this turn.",
+      "Clerics you control get +1/+1 and lose lifelink as long as you gained life this turn."
+    ]
+  },
+  {
+    "id": "sta.t24.basetoughness",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4b"
+    ],
+    "pattern": "{f:Filter} have base toughness {n:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7b",
+          "toughness": "$n"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creatures your opponents control have base toughness 2."
+      },
+      {
+        "text": "Goblins your opponents control have base toughness 1."
+      }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control have base power 2.",
+      "Creatures your opponents control have base toughness 2 until end of turn.",
+      "Creatures your opponents control get -0/-2."
+    ]
+  },
+  {
+    "id": "kw.t24.morph.reveal",
+    "kind": "ability",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 702.37a",
+      "CR 702.37e",
+      "CR 118.1",
+      "CR 701.20a"
+    ],
+    "pattern": "morph -- reveal ( a | an ) {c:Color} card in your hand",
+    "build": {
+      "kind": "keyword",
+      "keyword": "morph",
+      "cost": {
+        "other": [
+          {
+            "kind": "reveal",
+            "zone": "hand",
+            "count": 1,
+            "filter": {
+              "colors": [
+                "$c"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "examples": [
+      {
+        "text": "Morph--Reveal a red card in your hand."
+      },
+      {
+        "text": "Flying\nMorph--Reveal a black card in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Morph--Reveal a red card in your graveyard.",
+      "Megamorph--Reveal a red card in your hand.",
+      "Morph--Discard a red card."
+    ]
+  }
+]

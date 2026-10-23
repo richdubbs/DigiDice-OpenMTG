@@ -1,0 +1,258 @@
+[
+  {
+    "id": "eff.r3trig.has.isSubtype.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b"
+    ],
+    "pattern": "{o:Obj} has {a:Abilities} and is ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. It has haste and is a Zombie in addition to its other types."
+      },
+      {
+        "text": "Whenever a creature you control dies, return that card to the battlefield under its owner's control. It has vigilance and is a Spirit in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to the battlefield. It has haste and is a Zombie.",
+      "Return target creature card from your graveyard to the battlefield. It has haste until end of turn and is a Zombie in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.r3trig.copy.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 608.2c",
+      "CR 603.4"
+    ],
+    "pattern": "^ copy {o:Obj} if {c:Cond}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When you cast this spell, copy it if you control three or more Elves."
+      },
+      {
+        "text": "When you cast this spell, copy it if an opponent lost life this turn. You may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "When you cast this spell, copy it unless you gained life this turn.",
+      "When you cast this spell, copy it twice if you gained life this turn."
+    ]
+  },
+  {
+    "id": "trg.r3trig.opponent.gainsControl.fromYou",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 108.4",
+      "CR 613.1b",
+      "CR 603.2"
+    ],
+    "pattern": "whenever an opponent gains control of {f:Filter} from you",
+    "build": {
+      "on": [
+        {
+          "ev": "controlChange",
+          "object": "$f",
+          "from": "you",
+          "to": "opponent"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Whenever an opponent gains control of a permanent from you, draw a card."
+      },
+      {
+        "text": "Whenever an opponent gains control of a creature from you, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent gains control of a permanent, draw a card.",
+      "Whenever you gain control of a permanent from an opponent, draw a card."
+    ],
+    "consumes": [
+      "whenever"
+    ]
+  },
+  {
+    "id": "trg.r3trig.youAttack.totalPower.firstEachTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1",
+      "CR 208.1",
+      "CR 603.2",
+      "CR 603.2c"
+    ],
+    "pattern": "whenever you attack with creatures with total power {n:Qty} or greater for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "controller": "you"
+          },
+          "count": {
+            "op": ">=",
+            "value": 1
+          },
+          "power": {
+            "op": ">=",
+            "value": "$n"
+          }
+        }
+      ],
+      "batch": true,
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack with creatures with total power 8 or greater for the first time each turn, draw a card."
+      },
+      {
+        "text": "Whenever you attack with creatures with total power 10 or greater for the first time each turn, untap all creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack with creatures with total power 8 or less for the first time each turn, draw a card.",
+      "Whenever you attack with two or more creatures for the first time each turn, draw a card."
+    ]
+  },
+  {
+    "id": "trg.r3trig.you.cast.modal",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.2",
+      "CR 601.2b",
+      "CR 601.2i",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you cast a modal spell",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "modal": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a modal spell, draw a card."
+      },
+      {
+        "text": "Whenever you cast a modal spell, choose one —\n• Each opponent mills four cards.\n• Create a 2/2 green Elk creature token."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent casts a modal spell, draw a card.",
+      "Whenever you cast a modal creature spell, draw a card."
+    ]
+  },
+  {
+    "id": "trg.r3trig.self.exiled.craftMaterial",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.167a",
+      "CR 603.6c",
+      "CR 603.10a",
+      "CR 118.3"
+    ],
+    "pattern": "when ~ is exiled from the battlefield while you're activating a craft ability",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "from": "battlefield",
+          "to": "exile",
+          "cause": "craft"
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "while"
+    ],
+    "examples": [
+      {
+        "text": "When this artifact is exiled from the battlefield while you're activating a craft ability, draw a card."
+      },
+      {
+        "text": "When this creature is exiled from the battlefield while you're activating a craft ability, create a Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "When this creature is exiled from the battlefield, draw a card.",
+      "When this creature is put into a graveyard from the battlefield while you're activating a craft ability, draw a card."
+    ]
+  }
+]

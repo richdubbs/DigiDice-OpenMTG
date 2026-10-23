@@ -1,0 +1,115 @@
+{
+  "name": "unearth",
+  "rule": "702.84",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands",
+    "replacement"
+  ],
+  "reminder": "{cost}: Return this card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step or if it would leave the battlefield. Unearth only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{printed}",
+      "zone": [
+        "graveyard"
+      ],
+      "cost": "$cost",
+      "sorcerySpeed": true,
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              }
+            },
+            "as": "unearthed"
+          },
+          {
+            "op": "effect",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "bound",
+                  "name": "unearthed"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "haste",
+                        "text": "haste"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "is": {
+                      "ref": "bound",
+                      "name": "unearthed"
+                    }
+                  },
+                  "from": "battlefield"
+                },
+                "body": {
+                  "b": "modify",
+                  "destination": {
+                    "zone": "exile"
+                  }
+                }
+              }
+            ],
+            "duration": {
+              "d": "permanent"
+            }
+          },
+          {
+            "op": "delay",
+            "when": {
+              "at": "step",
+              "step": "end",
+              "next": true
+            },
+            "capture": [
+              "unearthed"
+            ],
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "unearthed"
+                },
+                "to": {
+                  "zone": "exile"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

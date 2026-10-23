@@ -1,0 +1,80 @@
+{
+  "name": "ninjutsu",
+  "rule": "702.49",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Return an unblocked attacker you control to hand: Put this card onto the battlefield from your hand tapped and attacking.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "Ninjutsu {cost}",
+      "zone": [
+        "hand"
+      ],
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "reveal",
+              "zone": "hand",
+              "count": 1,
+              "self": true
+            },
+            {
+              "kind": "returnToHand",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you",
+                "attacking": true,
+                "blocked": false
+              },
+              "count": 1
+            }
+          ]
+        }
+      },
+      "onlyIf": {
+        "cond": "turnOf",
+        "whose": "you",
+        "step": [
+          "declareBlockers",
+          "combatDamage",
+          "endCombat"
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              },
+              "tapped": true,
+              "attacking": {
+                "asReturned": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,364 @@
+[
+  {
+    "id": "rst.cant.block",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Obj} can't block",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "block" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Equipped creature can't block." },
+      { "text": "Enchanted permanent can't block." }
+    ],
+    "counterExamples": [
+      "~ can block.",
+      "~ can't block this turn.",
+      "~ can't block creatures with flying."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.cant.attack",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 508.1c", "CR 101.2"],
+    "pattern": "{o:Obj} can't attack",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "attack" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "~ can't attack." },
+      { "text": "Equipped creature can't attack." }
+    ],
+    "counterExamples": [
+      "~ can attack.",
+      "~ can't attack this turn.",
+      "~ can't attack alone."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.cant.attackblock",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 508.1c", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Obj} can't attack or block",
+    "build": [
+      { "s": "restrict", "subject": "$o", "mode": "cant", "action": "attack" },
+      { "s": "restrict", "subject": "$o", "mode": "cant", "action": "block" }
+    ],
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Equipped creature can't attack or block." },
+      { "text": "Enchanted permanent can't attack or block." }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't attack or block this turn.",
+      "Enchanted creature can attack or block.",
+      "Enchanted creature can't attack or block alone."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.cant.beblocked",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Obj} can't be blocked",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beBlocked" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Enchanted permanent can't be blocked." },
+      { "text": "Enchanted land can't be blocked." }
+    ],
+    "counterExamples": [
+      "~ can be blocked.",
+      "~ can't be blocked this turn.",
+      "~ can't be blocked except by Walls."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.cant.beblockedby",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Objs} can't be blocked by {f:Filter}",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beBlockedBy", "other": "$f" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "~ can't be blocked by creatures with power 5 or greater." },
+      { "text": "~ can't be blocked by Golems." },
+      { "text": "Creatures you control with power 2 or less can't be blocked by creatures with power 4 or greater." },
+      { "text": "Goblins you control can't be blocked by Walls." }
+    ],
+    "counterExamples": [
+      "~ can't be blocked by creatures with power 3 or greater this turn.",
+      "~ can't block creatures with power 3 or greater.",
+      "Goblins you control can't block Walls.",
+      "Goblins you control can be blocked by Walls."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.must.attack",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 508.1d"],
+    "pattern": "{o:Obj} attacks each combat if able",
+    "build": { "s": "restrict", "subject": "$o", "mode": "mustIfAble", "action": "attack" },
+    "consumes": ["each", "if able"],
+    "examples": [
+      { "text": "Equipped creature attacks each combat if able." },
+      { "text": "Enchanted permanent attacks each combat if able." }
+    ],
+    "counterExamples": [
+      "~ attacks each combat.",
+      "~ blocks each combat if able.",
+      "~ attacks each combat if able this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.must.block",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 509.1c"],
+    "pattern": "{o:Obj} blocks each combat if able",
+    "build": { "s": "restrict", "subject": "$o", "mode": "mustIfAble", "action": "block" },
+    "consumes": ["each", "if able"],
+    "examples": [
+      { "text": "Enchanted creature blocks each combat if able." },
+      { "text": "Equipped creature blocks each combat if able." }
+    ],
+    "counterExamples": [
+      "~ blocks each combat.",
+      "~ attacks each combat if able."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.untapstep.self",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 502.3", "CR 109.5"],
+    "pattern": "~ doesn't untap during your untap step",
+    "build": { "s": "restrict", "subject": { "ref": "self" }, "mode": "cant", "action": "untapDuringUntapStep" },
+    "consumes": ["not"],
+    "examples": [
+      { "text": "~ doesn't untap during your untap step." },
+      { "text": "This artifact doesn't untap during your untap step." }
+    ],
+    "counterExamples": [
+      "~ untaps during your untap step.",
+      "~ doesn't untap during your next untap step.",
+      "~ doesn't untap during your upkeep."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.untapstep",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 502.3"],
+    "pattern": "{o:Obj} doesn't untap during its controller 's untap step",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "untapDuringUntapStep" },
+    "consumes": ["not"],
+    "examples": [
+      { "text": "Enchanted land doesn't untap during its controller's untap step." },
+      { "text": "Enchanted planeswalker doesn't untap during its controller's untap step." }
+    ],
+    "counterExamples": [
+      "Enchanted creature doesn't untap during your untap step.",
+      "Enchanted creature untaps during its controller's untap step.",
+      "Enchanted creature doesn't untap during its controller's next untap step."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.each.cant.block",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Objs} can't block",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "block" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Creatures with power 2 or less can't block." },
+      { "text": "Creatures your opponents control can't block." }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control can block.",
+      "Creatures your opponents control can't block this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.each.cant.attack",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 508.1c", "CR 101.2"],
+    "pattern": "{o:Objs} can't attack",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "attack" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Creatures with defender can't attack." },
+      { "text": "Creatures your opponents control can't attack." }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control can attack.",
+      "Creatures your opponents control can't attack this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.each.cant.beblocked",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Objs} can't be blocked",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beBlocked" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Creatures you control with power 1 or less can't be blocked." },
+      { "text": "Golems you control can't be blocked." }
+    ],
+    "counterExamples": [
+      "Creatures you control with power 1 or less can be blocked.",
+      "Creatures you control with power 1 or less can't be blocked this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.player.cant.gainlife",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 119.7", "CR 101.2"],
+    "pattern": "{p:Player} can't gain life",
+    "build": { "s": "restrict", "subject": "$p", "mode": "cant", "action": "gainLife" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Each opponent can't gain life." },
+      { "text": "Each player can't gain life." }
+    ],
+    "counterExamples": [
+      "Your opponents can gain life.",
+      "Your opponents can't gain life this turn."
+    ],
+    "status": "stable",
+    "weak": 1,
+    "since": 1
+  },
+  {
+    "id": "eff.rst.cant.block",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Obj} can't block {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "cant", "action": "block" }] },
+    "subject": "object",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Target artifact creature can't block this turn." },
+      { "text": "Target creature an opponent controls can't block this turn." }
+    ],
+    "counterExamples": [
+      "Target creature can block this turn.",
+      "Target creature can't attack this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.rst.each.cant.block",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Objs} can't block {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "cant", "action": "block" }] },
+    "subject": "object",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Creatures your opponents control can't block this turn." },
+      { "text": "Up to four target creatures can't block this turn." }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control can block this turn.",
+      "Creatures your opponents control can't attack this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.rst.cant.beblocked",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Obj} can't be blocked {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "cant", "action": "beBlocked" }] },
+    "subject": "object",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Target Golem can't be blocked this turn." },
+      { "text": "Target artifact creature can't be blocked this turn." }
+    ],
+    "counterExamples": [
+      "Target creature can be blocked this turn.",
+      "Target creature can't be blocked."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.rst.each.cant.beblocked",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Objs} can't be blocked {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "cant", "action": "beBlocked" }] },
+    "subject": "object",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Creatures you control can't be blocked this turn." },
+      { "text": "Up to four target creatures can't be blocked this turn." }
+    ],
+    "counterExamples": [
+      "Creatures you control can be blocked this turn.",
+      "Creatures you control can't be blocked."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.rst.player.cant.cast",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 601.3", "CR 101.2"],
+    "pattern": "{p:Player} can't cast spells {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$p", "mode": "cant", "action": "cast" }] },
+    "subject": "player",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Each opponent can't cast spells this turn." },
+      { "text": "Each player can't cast spells until end of turn." }
+    ],
+    "counterExamples": [
+      "Target player can cast spells this turn.",
+      "Target player can't cast spells."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rst.must.beblocked",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 509.1c"],
+    "pattern": "{o:Obj} must be blocked if able",
+    "build": { "s": "restrict", "subject": "$o", "mode": "mustIfAble", "action": "beBlocked" },
+    "consumes": ["must", "if able"],
+    "examples": [
+      { "text": "Enchanted creature must be blocked if able." },
+      { "text": "Equipped creature must be blocked if able." }
+    ],
+    "counterExamples": [
+      "~ must be blocked by two or more creatures if able.",
+      "~ can be blocked if able."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

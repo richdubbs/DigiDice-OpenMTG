@@ -1,0 +1,59 @@
+{
+  "name": "renown",
+  "rule": "702.112",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands",
+    "structural"
+  ],
+  "reminder": "When this creature deals combat damage to a player, if it isn't renowned, put {n} +1/+1 counters on it and it becomes renowned.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ deals combat damage to a player, if it isn't renowned, put {n} +1/+1 counters on it and it becomes renowned.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "damage",
+            "source": {
+              "self": true
+            },
+            "combat": true,
+            "recipient": {
+              "player": "any"
+            }
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "renowned": false
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "action",
+            "action": "renown",
+            "who": {
+              "ref": "you"
+            },
+            "n": "$amount"
+          }
+        ]
+      }
+    }
+  ]
+}

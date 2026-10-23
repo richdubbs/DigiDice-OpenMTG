@@ -1,0 +1,303 @@
+[
+  {
+    "id": "rep.stdrx6.enters.choose.cardName",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 201.3"
+    ],
+    "pattern": "as ~ enters , choose ( a | any ) card name",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "cardName",
+                "link": "cardName"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose any card name."
+      },
+      {
+        "text": "As this enchantment enters, choose any card name."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose any nonland card name.",
+      "As ~ enters, choose two card names.",
+      "As ~ attacks, choose any card name."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.stdrx6.enters.lookHand.choose.cardName",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 402.3",
+      "CR 201.3"
+    ],
+    "pattern": "as ~ enters , look at an opponent 's hand , then choose ( a | any ) card name",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "lookAtHand": "opponent",
+            "choose": [
+              {
+                "what": "cardName",
+                "link": "cardName"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, look at an opponent's hand, then choose a card name."
+      },
+      {
+        "text": "As this enchantment enters, look at an opponent's hand, then choose a card name."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, look at target opponent's hand, then choose a card name.",
+      "As ~ enters, look at an opponent's hand, then choose a nonland card name.",
+      "As ~ enters, look at your hand, then choose a card name."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdrx6.cantActivate.group.exceptMana",
+    "kind": "static",
+    "cr": [
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 605.3"
+    ],
+    "pattern": "activated abilities of {f:Filter} can't be activated unless they're mana abilities",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "activate",
+      "exceptMana": true
+    },
+    "consumes": [
+      "can't",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Activated abilities of artifacts can't be activated unless they're mana abilities."
+      },
+      {
+        "text": "Activated abilities of creatures your opponents control can't be activated unless they're mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities of artifacts can't be activated unless they're loyalty abilities.",
+      "Triggered abilities of artifacts can't be activated unless they're mana abilities.",
+      "Activated abilities of artifacts can be activated unless they're mana abilities."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdrx6.cantActivate.chosenName.exceptMana",
+    "kind": "static",
+    "cr": [
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 605.3",
+      "CR 201.3",
+      "CR 607.2d"
+    ],
+    "pattern": "activated abilities of sources with ( the chosen name | that name ) can't be activated unless they're mana abilities",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "zone": "any",
+          "chosen": {
+            "link": "cardName",
+            "quality": "cardName"
+          }
+        }
+      },
+      "mode": "cant",
+      "action": "activate",
+      "exceptMana": true
+    },
+    "consumes": [
+      "can't",
+      "unless",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose any card name.\nActivated abilities of sources with that name can't be activated unless they're mana abilities."
+      },
+      {
+        "text": "As this enchantment enters, choose any card name.\nActivated abilities of sources with that name can't be activated unless they're mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose any card name.\nActivated abilities of sources with that name can't be activated unless they're loyalty abilities.",
+      "As ~ enters, choose any color.\nActivated abilities of sources with the chosen color can't be activated unless they're mana abilities.",
+      "As ~ enters, choose any card name.\nActivated abilities of sources with that name cost {3} more to activate unless they're mana abilities."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdrx6.group.cantAttackYou",
+    "kind": "static",
+    "cr": [
+      "CR 508.1c",
+      "CR 506.2"
+    ],
+    "pattern": "{f:Filter} can't attack you",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures with power 3 or greater can't attack you."
+      },
+      {
+        "text": "Red creatures can't attack you."
+      }
+    ],
+    "counterExamples": [
+      "Creatures with power 3 or greater can't attack.",
+      "Red creatures can't block you.",
+      "Red creatures can attack you."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdrx6.group.cantAttackYou.orBlock",
+    "kind": "static",
+    "cr": [
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 506.2"
+    ],
+    "pattern": "{f:Filter} can't attack you or block {g:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "block",
+          "other": "$g"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures with menace can't attack you or block creatures you control."
+      },
+      {
+        "text": "Creatures with power 4 or greater can't attack you or block creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Creatures with menace can't attack you or block.",
+      "Creatures with menace can't attack you and can block creatures you control.",
+      "Creatures with menace can't attack or block creatures you control."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

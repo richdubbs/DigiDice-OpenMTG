@@ -1,0 +1,18 @@
+[
+  {
+    "id": "trg.stdcopy4.cast.ifFirstOfEach",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 603.2", "CR 603.4", "CR 601.2i"],
+    "pattern": "whenever you cast a spell , if it's the first {f:CastSpell} , the first {g:CastSpell} , or the first {h:CastSpell} other than ~ you've cast this turn",
+    "build": {"on": [
+      {"ev": "cast", "player": "you", "spell": "$f", "nth": 1, "nthMatching": true},
+      {"ev": "cast", "player": "you", "spell": "$g", "nth": 1, "nthMatching": true},
+      {"ev": "cast", "player": "you", "spell": {"anyOf": ["$h"], "other": true}, "nth": 1, "nthMatching": true}
+    ]},
+    "consumes": ["whenever", "if", "or", "other"],
+    "examples": [{"text": "Whenever you cast a spell, if it's the first instant spell, the first sorcery spell, or the first Fox spell other than ~ you've cast this turn, draw a card."}, {"text": "Whenever you cast a spell, if it's the first creature spell, the first artifact spell, or the first Otter spell other than ~ you've cast this turn, you gain 2 life."}],
+    "counterExamples": ["Whenever you cast a spell, if it's the second instant spell, the first sorcery spell, or the first Fox spell other than ~ you've cast this turn, draw a card.", "Whenever you cast a spell, if it's the first instant spell, the first sorcery spell, or the first Fox spell you've cast this turn, draw a card."]
+  }
+]

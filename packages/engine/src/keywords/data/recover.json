@@ -1,0 +1,16 @@
+{
+  "name": "recover",
+  "rule": "702.59",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When a creature is put into your graveyard from the battlefield, you may pay {cost}. If you do, return this card from your graveyard to your hand. Otherwise, exile this card.",
+  "multiple": "independent",
+  "status": "planned"
+}

@@ -1,0 +1,57 @@
+{
+  "name": "echo",
+  "rule": "702.30",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "At the beginning of your upkeep, if this came under your control since the beginning of your last upkeep, sacrifice it unless you pay its echo cost.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "At the beginning of your upkeep, if ~ came under your control since the beginning of your last upkeep, sacrifice it unless you pay {pay}.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "step",
+            "step": "upkeep",
+            "whose": "you"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "controlledSinceUpkeep",
+        "object": {
+          "ref": "self"
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "pay",
+            "who": {
+              "ref": "you"
+            },
+            "cost": "$cost",
+            "else": [
+              {
+                "op": "sacrifice",
+                "what": {
+                  "ref": "self"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

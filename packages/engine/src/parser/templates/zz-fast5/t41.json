@@ -1,0 +1,496 @@
+[
+  {
+    "id": "eff.t41.each.pump.grant",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 115.1"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} each get {pt:PT} and gain {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, any number of target creatures you control each get +2/+0 and gain trample."
+      },
+      {
+        "text": "Until end of turn, up to two target creatures each get +1/+1 and gain \"When this creature dies, you gain 2 life.\""
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, any number of target creatures you control each get +2/+0 or gain trample.",
+      "Until end of turn, any number of target creatures you control each get +2/+0 and lose trample.",
+      "Until your next turn, any number of target creatures you control each get +2/+0 and gain trample.",
+      "Any number of target creatures you control each get +2/+0 and gain trample."
+    ]
+  },
+  {
+    "id": "eff.t41.pump.grant.becomes.enchantmentCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets {pt:PT} , gains {a:Abilities} , and becomes ( a | an ) {st:Subtypes} enchantment creature in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Enchantment",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature gets +1/+3, gains reach, and becomes a Spirit enchantment creature in addition to its other types."
+      },
+      {
+        "text": "Until end of turn, target creature you control gets +2/+2, gains flying and vigilance, and becomes an Elemental enchantment creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature gets +1/+3, gains reach, and becomes a Spirit enchantment creature.",
+      "Until end of turn, target creature gets +1/+3, gains reach, and becomes a Spirit artifact creature in addition to its other types.",
+      "Until end of turn, target creature gets +1/+3, loses reach, and becomes a Spirit enchantment creature in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.t41.becomes.addtype.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {st:Subtypes} in addition to its other types and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control becomes a Hero in addition to its other types and gains haste."
+      },
+      {
+        "text": "Until end of turn, target creature becomes an Angel in addition to its other types and gains flying, vigilance, and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control becomes a Hero in addition to its other types and loses haste.",
+      "Until end of turn, target creature you control becomes a Hero and gains haste.",
+      "Target creature you control becomes a Hero in addition to its other types and gains haste."
+    ]
+  },
+  {
+    "id": "eff.t41.pump.becomes.addtype",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets {pt:PT} and becomes ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control gets +2/+2 and becomes a Giant in addition to its other types."
+      },
+      {
+        "text": "Until end of turn, target creature gets -1/+4 and becomes an Elf in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control gets +2/+2 and becomes a Giant.",
+      "Until end of turn, target creature you control gets +2/+2 or becomes a Giant in addition to its other types.",
+      "Target creature you control gets +2/+2 and becomes a Giant in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.t41.pump.pair.duration",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 115.1"
+    ],
+    "pattern": "{d:Dur} , {a:Obj} gets {pa:PT} and {b:Obj} gets {pb:PT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$a",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pa.p",
+              "toughness": "$pa.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$b",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pb.p",
+              "toughness": "$pb.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control gets +2/+2 and target creature an opponent controls gets -2/-0."
+      },
+      {
+        "text": "Until end of turn, target creature gets +1/+1 and target artifact creature gets -3/-3."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control gets +2/+2 or target creature an opponent controls gets -2/-0.",
+      "Target creature you control gets +2/+2 and target creature an opponent controls gets -2/-0.",
+      "Until end of turn, target creature you control gets +2/+2 and target creature an opponent controls gains flying."
+    ]
+  },
+  {
+    "id": "eff.t41.pump.loses.creatureTypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} and loses all creature types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "removeAll": "creature"
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/-2 and loses all creature types until end of turn."
+      },
+      {
+        "text": "Target creature an opponent controls gets -1/-1 and loses all creature types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/-2 and loses all creature types.",
+      "Target creature gets +2/-2 and loses all abilities until end of turn.",
+      "Target creature gets +2/-2 and loses all land types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t41.gains.choice2",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{o:Obj} gains your choice of {k1:Keyword} or {k2:Keyword} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "keywordChoice",
+        "link": "keywordChoice",
+        "options": [
+          "$k1.text",
+          "$k2.text"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k1.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k2.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature you control gains your choice of flying or vigilance until end of turn."
+      },
+      {
+        "text": "Target Elf gains your choice of first strike or reach until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gains your choice of flying or vigilance.",
+      "Target creature you control gains your choice of flying, vigilance, or reach until end of turn.",
+      "Target creature you control gains flying or vigilance until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t41.double.thePowerOf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 701.10c",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "double the power of {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": "$o"
+              },
+              "toughness": 0
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "{2}{G}: Double the power of target creature you control until end of turn."
+      },
+      {
+        "text": "Whenever a land you control enters, double the power of target creature you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Double the power of target creature you control.",
+      "Double the toughness of target creature you control until end of turn.",
+      "Double the power of target creature you control until end of turn unless it is blue."
+    ]
+  }
+]

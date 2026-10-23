@@ -1,0 +1,50 @@
+{
+  "name": "storm",
+  "rule": "702.40",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When you cast this spell, copy it for each spell cast before it this turn. You may choose new targets for the copies.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, copy it for each other spell that was cast before it this turn. If the spell has any targets, you may choose new targets for any of the copies.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "copy",
+            "what": {
+              "ref": "self"
+            },
+            "result": "spell",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "spellsBefore"
+            },
+            "newTargets": "may"
+          }
+        ]
+      }
+    }
+  ]
+}

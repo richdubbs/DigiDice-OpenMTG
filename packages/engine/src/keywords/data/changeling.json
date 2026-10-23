@@ -1,0 +1,43 @@
+{
+  "name": "changeling",
+  "rule": "702.73",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "This card is every creature type.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Changeling",
+      "zone": [
+        "battlefield",
+        "hand",
+        "library",
+        "graveyard",
+        "stack",
+        "exile",
+        "command"
+      ],
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            }
+          ],
+          "cda": true
+        }
+      ]
+    }
+  ]
+}

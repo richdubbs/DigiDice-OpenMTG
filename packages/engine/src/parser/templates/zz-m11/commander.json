@@ -1,0 +1,374 @@
+[
+  {
+    "id": "eff.m11.mana.commanderIdentity",
+    "kind": "effect",
+    "cr": [
+      "CR 903.4",
+      "CR 903.4f",
+      "CR 702.124c",
+      "CR 106.1",
+      "CR 605.1a"
+    ],
+    "pattern": "add one mana of any color in your commander 's color identity",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "commanderIdentity",
+        "count": 1
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}, {T}: Add one mana of any color in your commander's color identity.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{2}, {T}: Add one mana of any color in your commander's color identity.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 2
+                }
+              ],
+              "tap": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "addMana",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "dynamic": {
+                    "kind": "commanderIdentity",
+                    "count": 1
+                  }
+                }
+              ]
+            },
+            "isMana": true
+          }
+        ]
+      },
+      {
+        "text": "{T}, Pay 1 life: Add one mana of any color in your commander's color identity."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color.",
+      "{T}: Add one mana of any color in your opponent's color identity.",
+      "{T}: Add two mana of any color in your commander's color identity.",
+      "{T}: Add one mana of any color in your commander's color identity until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m11.anthem.commanderCasts",
+    "kind": "static",
+    "cr": [
+      "CR 903.8",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "{f:Filter} get +1/+1 for each time you've cast your commander from the command zone this game",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "commanderCasts"
+          },
+          "toughness": {
+            "q": "commanderCasts"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "Goblins you control get +1/+1 for each time you've cast your commander from the command zone this game.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "Goblins you control get +1/+1 for each time you've cast your commander from the command zone this game.",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": [
+                      "Goblin"
+                    ],
+                    "controller": "you"
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": {
+                      "q": "commanderCasts"
+                    },
+                    "toughness": {
+                      "q": "commanderCasts"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "Other creatures you control get +1/+1 for each time you've cast your commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "Goblins you control get +1/+1 for each time you've cast your commander this game.",
+      "Goblins you control get +1/+1 for each time you've cast your commander from the command zone this turn.",
+      "Goblins you control get +1/+1 for each time an opponent has cast their commander from the command zone this game.",
+      "Goblins you control get +1/+1 until end of turn for each time you've cast your commander from the command zone this game."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.m11.commander.toHand.fromCommandZone",
+    "kind": "effect",
+    "cr": [
+      "CR 903.3",
+      "CR 903.3d",
+      "CR 702.124e",
+      "CR 400.3"
+    ],
+    "pattern": "put your commander into your hand from the command zone",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "commander": true,
+            "owner": "you",
+            "zone": "command"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "commander"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "commander"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}, {T}: Put your commander into your hand from the command zone.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{3}, {T}: Put your commander into your hand from the command zone.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 3
+                }
+              ],
+              "tap": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "commander": true,
+                      "owner": "you",
+                      "zone": "command"
+                    }
+                  },
+                  "min": 1,
+                  "max": 1,
+                  "as": "commander"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "commander"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Draw a card, then put your commander into your hand from the command zone."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Put your commander onto the battlefield from the command zone.",
+      "{3}, {T}: Put your commander into your hand from your library.",
+      "{3}, {T}: Put your commander into your hand from your graveyard.",
+      "{3}, {T}: Put target commander into your hand from the command zone."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.m11.partnerWith",
+    "kind": "ability",
+    "cr": [
+      "CR 702.124a",
+      "CR 702.124j"
+    ],
+    "pattern": "partner with {n:Name}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "partner with",
+      "filter": {
+        "name": "$n"
+      }
+    },
+    "examples": [
+      {
+        "text": "Partner with Brightwood Sentry",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "partner with",
+            "filter": {
+              "name": "Brightwood Sentry"
+            },
+            "text": "Partner with Brightwood Sentry"
+          }
+        ]
+      },
+      {
+        "text": "Partner with Ashen Lantern Keeper"
+      }
+    ],
+    "counterExamples": [
+      "Partner",
+      "Partner with",
+      "Partner with target creature you control"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.m11.eminence.costLess",
+    "kind": "static",
+    "cr": [
+      "CR 113.6b",
+      "CR 601.2f",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as ~ is in the command zone or on the battlefield , {f:Filter} you cast cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield",
+        "command"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As long as ~ is in the command zone or on the battlefield, other Elf spells you cast cost {1} less to cast.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "As long as ~ is in the command zone or on the battlefield, other Elf spells you cast cost {1} less to cast.",
+            "zone": [
+              "battlefield",
+              "command"
+            ],
+            "effects": [
+              {
+                "s": "costMod",
+                "applies": {
+                  "spells": {
+                    "other": true,
+                    "subtypes": [
+                      "Elf"
+                    ],
+                    "stackKind": "spell",
+                    "zone": "stack"
+                  },
+                  "caster": "you"
+                },
+                "change": {
+                  "kind": "reduce",
+                  "generic": 1,
+                  "floor": "zero"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "As long as ~ is in the command zone or on the battlefield, artifact spells you cast cost {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is on the battlefield, other Elf spells you cast cost {1} less to cast.",
+      "As long as ~ is in the command zone, other Elf spells you cast cost {1} less to cast.",
+      "As long as ~ is in the command zone or on the battlefield, other Elf spells you cast cost {1} more to cast.",
+      "As long as ~ is in the command zone or on the battlefield, other Elf spells your opponents cast cost {1} less to cast."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

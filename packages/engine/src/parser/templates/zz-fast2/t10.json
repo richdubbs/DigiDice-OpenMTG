@@ -1,0 +1,503 @@
+[
+  {
+    "id": "eff.t10.search.may.bf.tapped",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.24a",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card , put ( it | that card ) onto the battlefield tapped , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "tapped": true
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "You may search your library for a basic Mountain card, put it onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "You may search your library for a basic land card, put that card onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "You may search your library for a basic land card, put it onto the battlefield, then shuffle.",
+      "You may search your library for a basic land card, put it into your hand tapped, then shuffle.",
+      "Target player may search their library for a basic land card, put it onto the battlefield tapped, then shuffle."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t10.search.may.reveal.hand",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card , reveal it , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "You may search your library for a basic Island card, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "You may search your library for an Elf card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "You may search your library for a basic Island card, put it into your hand, then shuffle.",
+      "You may search your library for a basic Island card, reveal it, put it onto the battlefield, then shuffle.",
+      "You may search your library for two basic Island cards, reveal them, put them into your hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t10.search.reveal.top",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card , reveal it , then shuffle and put that card on top",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for an enchantment card, reveal it, then shuffle and put that card on top."
+      },
+      {
+        "text": "Search your library for a basic Plains card, reveal it, then shuffle and put that card on top."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an enchantment card, then shuffle and put that card on top.",
+      "Search your library for an enchantment card, reveal it, then shuffle and put that card on the bottom.",
+      "Search your library for two enchantment cards, reveal them, then shuffle and put those cards on top."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t10.search.may.reveal.top",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 401.2",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card , reveal it , then shuffle and put that card on top",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "library",
+            "position": "top"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "You may search your library for a Goblin card, reveal it, then shuffle and put that card on top."
+      },
+      {
+        "text": "You may search your library for a basic Forest card, reveal it, then shuffle and put that card on top."
+      }
+    ],
+    "counterExamples": [
+      "You may search your library for a Goblin card, then shuffle and put that card on top.",
+      "You may search your library for a Goblin card, reveal it, put it into your hand, then shuffle and put that card on top.",
+      "Target player may search their library for a Goblin card, reveal it, then shuffle and put that card on top."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t10.search.subPermanent.mv.bf",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.24a",
+      "CR 110.4",
+      "CR 202.3"
+    ],
+    "pattern": "search your library for ( a | an ) {st:Subtypes} permanent card with mana value {n:Qty} or less , put it onto the battlefield , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "types": [
+            "Artifact",
+            "Battle",
+            "Creature",
+            "Enchantment",
+            "Land",
+            "Planeswalker"
+          ],
+          "subtypes": "$st",
+          "manaValue": {
+            "op": "<=",
+            "value": "$n"
+          }
+        },
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for a Soldier permanent card with mana value 4 or less, put it onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Search your library for an Elf permanent card with mana value 2 or less, put it onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a Soldier permanent card with mana value 4 or greater, put it onto the battlefield, then shuffle.",
+      "Search your library for a Soldier permanent card with mana value 4 or less, put it into your hand, then shuffle.",
+      "Search your library for a Soldier card with mana value 4 or less, put it onto the battlefield, then shuffle."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t10.put.fromHand.tapped",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 110.5b",
+      "CR 400.7"
+    ],
+    "pattern": "you may put {f:Filter} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may put a land card from your hand onto the battlefield tapped."
+      },
+      {
+        "text": "You may put an artifact card from your hand onto the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "You may put two land cards from your hand onto the battlefield tapped.",
+      "You may put a land card from your hand onto the battlefield tapped and attacking.",
+      "Put a land card from your hand onto the battlefield tapped."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t10.look.top.putBack.anyOrder",
+    "kind": "effect",
+    "cr": [
+      "CR 401.4",
+      "CR 701.17a"
+    ],
+    "pattern": "look at the top {n:Qty} cards of your library , then put them back in any order",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "looked"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "looked"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library, then put them back in any order."
+      },
+      {
+        "text": "Look at the top two cards of your library, then put them back in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library, then put them on the bottom in any order.",
+      "Look at the top five cards of your library, then put them back in a random order.",
+      "Look at the top five cards of target player's library, then put them back in any order."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t10.player.exilesFromHand",
+    "kind": "effect",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} exiles a card from their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent exiles a card from their hand."
+      },
+      {
+        "text": "Target player exiles a card from their hand. You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles two cards from their hand.",
+      "Target opponent exiles a card from their graveyard.",
+      "Target opponent exiles a card from your hand."
+    ],
+    "status": "stable",
+    "since": 3
+  }
+]

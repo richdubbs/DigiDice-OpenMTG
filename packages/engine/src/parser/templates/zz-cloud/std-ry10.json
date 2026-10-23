@@ -1,0 +1,240 @@
+[
+  {
+    "id": "eff.stdry10.prevent.combat.toAndBy.obj.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.1"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to and dealt by {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Prevent all combat damage that would be dealt to and dealt by target creature you control this turn."
+      },
+      {
+        "text": "Tap target creature. Prevent all combat damage that would be dealt to and dealt by it this turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Prevent all damage that would be dealt to and dealt by target creature you control this turn.",
+      "{1}, {T}: Prevent all combat damage that would be dealt to and dealt by each creature you control this turn.",
+      "{1}, {T}: Prevent all combat damage that would be dealt to or dealt by target creature you control this turn."
+    ]
+  },
+  {
+    "id": "rep.stdry10.self.dies.exile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 700.4",
+      "CR 614.6"
+    ],
+    "pattern": "if ~ would die , exile it instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Flying\nIf this permanent would die, exile it instead."
+      },
+      {
+        "text": "Haste\nIf this permanent would die, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "If this permanent would die, return it to its owner's hand instead.",
+      "If this permanent would die this turn, exile it instead.",
+      "If this permanent would leave the battlefield, exile it instead."
+    ]
+  },
+  {
+    "id": "eff.stdry10.hand.lookAnd.choose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.3",
+      "CR 701.20e",
+      "CR 608.2d"
+    ],
+    "pattern": "look at {p:Player} 's hand and choose ( a | an ) {c:HandCard}",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$c",
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "look",
+      "and",
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Look at target opponent's hand and choose an artifact card from it. That player discards that card."
+      },
+      {
+        "text": "When ~ enters, look at target player's hand and choose a noncreature card from it. Exile that card."
+      }
+    ],
+    "counterExamples": [
+      "Look at target opponent's hand and choose a card from your graveyard. That player discards that card.",
+      "Look at target opponent's library and choose a card from it. That player discards that card.",
+      "Look at target opponent's hand and choose two cards from it. That player discards that card."
+    ]
+  },
+  {
+    "id": "eff.stdry10.pump.dur.forEach.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} for each {n:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  "$n"
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  "$n"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Target creature you control gets +2/+0 until end of turn for each creature in your party."
+      },
+      {
+        "text": "Whenever ~ blocks, it gets +0/+2 until end of turn for each creature in your party."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gets +2/+0 for each creature in your party.",
+      "Target creature you control gets +2/+0 until end of turn for each creature in an opponent's party.",
+      "Target creature you control gets +2/+0 until end of turn for each creature in your party and each Elf you control."
+    ]
+  }
+]

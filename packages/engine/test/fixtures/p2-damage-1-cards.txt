@@ -1,0 +1,11 @@
+# p2-damage-1 (Phase 2 lane p2-damage; test/cloud/p2-damage-1, golden p2-damage-1-review.json): damage of each object to its controller, "that creature's
+# controller" after damage to a creature, damage to each player equal to that player's count, "a creature dealt damage this way can't be regenerated this turn"
+Acidic Soil
+Binding Agony
+Flamebreak
+Heartless Hidetsugu
+Incinerate
+Jaya Ballard, Task Mage
+Rakdos Charm
+Repercussion
+Wing Storm

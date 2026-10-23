@@ -1,0 +1,3 @@
+# std-library-3 (account B lane std-library; test/cloud/std-library-3, golden cloud-std-library-3-review.json): one card of each card type from among a group;
+# "if you exiled N or more cards this way"; a free cast from among the exiled cards if C; the rest of the exiled cards
+Portent of Calamity

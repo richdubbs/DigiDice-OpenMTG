@@ -1,0 +1,916 @@
+[
+  {
+    "id": "eff.t66.return.each.notSubtypes",
+    "kind": "effect",
+    "cr": [
+      "CR 400.3",
+      "CR 404.1",
+      "CR 205.3m",
+      "CR 608.2c"
+    ],
+    "pattern": "return each creature that isn't a {a:Subtypes} , {b:Subtypes} , {c:Subtypes} , {d:Subtypes} , or {e:Subtypes} to its owner 's hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "not": {
+            "subtypes": [
+              "$a.0",
+              "$b.0",
+              "$c.0",
+              "$d.0",
+              "$e.0"
+            ]
+          }
+        }
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Return each creature that isn't a Dog, Cat, Rat, Bat, or Bird to its owner's hand."
+      },
+      {
+        "text": "Return each creature that isn't a Goblin, Elf, Wizard, Zombie, or Vampire to its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Return each creature that isn't a Dog, Cat, Rat, Bat, or Bird to its owner's library.",
+      "Return each creature that isn't a Dog, Cat, Rat, or Bat to its owner's hand.",
+      "Return each creature that is a Dog, Cat, Rat, Bat, or Bird to its owner's hand."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.shuffle.enchanted.intoLibrary",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a",
+      "CR 303.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "shuffle enchanted creature into its owner 's library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "attachedTo"
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": {
+            "ref": "attachedTo"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{B}: Shuffle enchanted creature into its owner's library."
+      },
+      {
+        "text": "{U}{U}, {T}: Shuffle enchanted creature into its owner's library."
+      }
+    ],
+    "counterExamples": [
+      "{2}{B}: Shuffle target creature into its owner's library.",
+      "{2}{B}: Shuffle enchanted creature into your library.",
+      "{2}{B}: Shuffle enchanted creature into its owner's graveyard."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.player.manifestsDread",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.62b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} manifests dread",
+    "build": {
+      "op": "action",
+      "action": "manifestDread",
+      "who": "$p"
+    },
+    "subject": "player",
+    "needs": [
+      "action:manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "Exile target tapped artifact. Its controller manifests dread."
+      },
+      {
+        "text": "Tap target multicolored creature. Its controller manifests dread."
+      }
+    ],
+    "counterExamples": [
+      "Exile target tapped artifact. Its controller manifests.",
+      "Exile target tapped artifact. Its controller manifests dread twice.",
+      "Exile target tapped artifact. Its controller manifests dread unless they pay {2}."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.exiledOwner.manifestsDread",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a",
+      "CR 607.2a",
+      "CR 400.7"
+    ],
+    "pattern": "the exiled card 's owner manifests dread",
+    "priority": 1,
+    "build": {
+      "op": "action",
+      "action": "manifestDread",
+      "who": {
+        "ref": "ownerOf",
+        "object": {
+          "ref": "linked",
+          "link": "exiled"
+        }
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target tapped artifact an opponent controls.\nWhen ~ dies, the exiled card's owner manifests dread."
+      },
+      {
+        "text": "When ~ enters, exile up to one target untapped land.\nWhen ~ dies, the exiled card's owner manifests dread."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target tapped artifact an opponent controls.\nWhen ~ dies, the exiled card's controller manifests dread.",
+      "When ~ enters, exile target tapped artifact an opponent controls.\nWhen ~ dies, the exiled card's owner manifests."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.exiledOwner.token.mvX",
+    "kind": "effect",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 607.2a",
+      "CR 107.3",
+      "CR 202.3",
+      "CR 608.2h"
+    ],
+    "pattern": "the exiled card 's owner creates {n:Qty} {t:TokenDesc} , where x is the mana value of the exiled card",
+    "priority": 1,
+    "build": {
+      "lower": "whereX",
+      "value": {
+        "q": "stat",
+        "stat": "manaValue",
+        "of": {
+          "ref": "linked",
+          "link": "exiled"
+        }
+      },
+      "steps": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "count": "$n",
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, exile target tapped artifact an opponent controls.\nWhen ~ dies, the exiled card's owner creates an X/X red Imp creature token, where X is the mana value of the exiled card."
+      },
+      {
+        "text": "When ~ enters, exile up to one target untapped land.\nWhen ~ dies, the exiled card's owner creates an X/X green Elk creature token, where X is the mana value of the exiled card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target tapped artifact an opponent controls.\nWhen ~ dies, the exiled card's owner creates an X/X red Imp creature token, where X is the power of the exiled card.",
+      "When ~ enters, exile target tapped artifact an opponent controls.\nWhen ~ dies, you create an X/X red Imp creature token, where X is the mana value of the exiled card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.search.basicLandOrSubtype.bf",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 205.4a",
+      "CR 110.2"
+    ],
+    "pattern": "search your library for a basic land card or ( a | an ) {st:Subtypes} card , put it onto the battlefield , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "anyOf": [
+            {
+              "supertypes": [
+                "Basic"
+              ],
+              "types": [
+                "Land"
+              ]
+            },
+            {
+              "subtypes": "$st"
+            }
+          ]
+        },
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for a basic land card or a Gate card, put it onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Search your library for a basic land card or a Cave card, put it onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a basic land card or a Gate card, put it onto the battlefield tapped, then shuffle.",
+      "Search your library for a basic land card or a Gate card, put it into your hand, then shuffle.",
+      "Search your library for a basic land card and a Gate card, put them onto the battlefield, then shuffle."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.search.nonlandPermanent.mv.bf",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 110.4",
+      "CR 202.3",
+      "CR 110.2"
+    ],
+    "pattern": "search your library for a nonland permanent card with mana value {n:Qty} or less , put it onto the battlefield , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "types": [
+            "Artifact",
+            "Battle",
+            "Creature",
+            "Enchantment",
+            "Land",
+            "Planeswalker"
+          ],
+          "notTypes": [
+            "Land"
+          ],
+          "manaValue": {
+            "op": "<=",
+            "value": "$n"
+          }
+        },
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for a nonland permanent card with mana value 4 or less, put it onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Search your library for a nonland permanent card with mana value 2 or less, put it onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a nonland permanent card with mana value 4 or greater, put it onto the battlefield, then shuffle.",
+      "Search your library for a permanent card with mana value 4 or less, put it onto the battlefield, then shuffle.",
+      "Search your library for a nonland permanent card with mana value 4 or less, put it into your hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.search.may.reveal.hand.manaValueEither",
+    "kind": "effect",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 202.3",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card with mana value {a:Qty} or {b:Qty} , reveal it , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  "$f"
+                ],
+                "manaValue": {
+                  "op": "==",
+                  "value": "$a"
+                }
+              },
+              {
+                "anyOf": [
+                  "$f"
+                ],
+                "manaValue": {
+                  "op": "==",
+                  "value": "$b"
+                }
+              }
+            ]
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may search your library for an artifact card with mana value 2 or 3, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "You may search your library for a creature card with mana value 1 or 2, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "You may search your library for an artifact card with mana value 2 or less, reveal it, put it into your hand, then shuffle.",
+      "You may search your library for an artifact card with mana value 2 or 3, put it into your hand, then shuffle.",
+      "You may search your library for an artifact card with mana value 2 and 3, reveal it, put it into your hand, then shuffle."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.put.fromHand.tappedAttacking.whereX",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 508.4",
+      "CR 110.2a",
+      "CR 107.3",
+      "CR 400.7"
+    ],
+    "pattern": "you may put {f:Filter} onto the battlefield tapped and attacking , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "min": 0,
+          "max": 1,
+          "as": "put"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "put"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "tapped": true,
+            "attacking": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may put a creature card with mana value X or less from your hand onto the battlefield tapped and attacking, where X is the number of attacking creatures you control."
+      },
+      {
+        "text": "You may put a creature card with mana value X or less from your hand onto the battlefield tapped and attacking, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "You may put a creature card with mana value X or less from your hand onto the battlefield tapped and attacking.",
+      "You may put a creature card with mana value X or less from your hand onto the battlefield tapped, where X is the number of creatures you control.",
+      "You may put a creature card with mana value X or less from your hand onto the battlefield tapped and blocking, where X is the number of creatures you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.put.fromHandOrGraveyard.finalityCounter",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 122.1",
+      "CR 122.1h",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {st:Subtypes} creature card from your hand or graveyard onto the battlefield with a finality counter on it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "subtypes": "$st",
+            "zone": [
+              "hand",
+              "graveyard"
+            ],
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "counters": [
+            {
+              "kind": "finality",
+              "count": 1
+            }
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may put a Goblin creature card from your hand or graveyard onto the battlefield with a finality counter on it."
+      },
+      {
+        "text": "You may put an Elf creature card from your hand or graveyard onto the battlefield with a finality counter on it."
+      }
+    ],
+    "counterExamples": [
+      "You may put a Goblin creature card from your hand or graveyard onto the battlefield.",
+      "You may put a Goblin creature card from your hand onto the battlefield with a finality counter on it.",
+      "You may put a Goblin creature card from your hand or graveyard onto the battlefield with a +1/+1 counter on it."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.control.targets.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 115.1",
+      "CR 601.2c"
+    ],
+    "pattern": "gain control of {o:Targets} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Gain control of up to two target creatures with total mana value 5 or less for as long as ~ remains on the battlefield."
+      },
+      {
+        "text": "Gain control of up to three target artifacts with total mana value 4 or less for as long as ~ remains on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of up to two target creatures with total mana value 5 or less.",
+      "Gain control of up to two target creatures with total mana value 5 or less until end of turn unless its controller pays {2}.",
+      "Gain control of up to two creatures with total mana value 5 or less for as long as ~ remains on the battlefield."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.destroy.unlessControllerHasDamagePower",
+    "kind": "effect",
+    "cr": [
+      "CR 118.12a",
+      "CR 608.2d",
+      "CR 120.3",
+      "CR 701.8a"
+    ],
+    "pattern": "destroy {o:Obj} unless its controller has ~ deal damage to them equal to ~ 's power",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "do": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "amount": {
+            "q": "stat",
+            "stat": "power",
+            "of": {
+              "ref": "self"
+            }
+          }
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "destroy",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, destroy target permanent unless its controller has ~ deal damage to them equal to ~'s power."
+      },
+      {
+        "text": "When ~ enters, destroy target creature unless its controller has ~ deal damage to them equal to ~'s power."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, destroy target permanent unless its controller has ~ deal damage to you equal to ~'s power.",
+      "Whenever ~ attacks, destroy target permanent unless its controller has ~ deal damage to them equal to ~'s toughness.",
+      "Whenever ~ attacks, destroy target permanent unless its controller pays {2}."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.return.upTo.totalMv.fromGraveyard.bf",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 115.1",
+      "CR 202.3",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return up to {n:Qty} {f:Filter} cards with total mana value {m:Qty} or less from your graveyard to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "return",
+        "groupLimit": {
+          "stat": "manaValue",
+          "cmp": {
+            "op": "<=",
+            "value": "$m"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "return"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "needs": [
+      "op:chooseObjects.groupLimit"
+    ],
+    "examples": [
+      {
+        "text": "Return up to two creature cards with total mana value 5 or less from your graveyard to the battlefield."
+      },
+      {
+        "text": "Return up to three artifact cards with total mana value 4 or less from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Return up to two creature cards with total mana value 5 or less from your graveyard to your hand.",
+      "Return up to two target creature cards with total mana value 5 or less from your graveyard to the battlefield.",
+      "Return up to two creature cards with total power 5 or less from your graveyard to the battlefield."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.destroy.each.controllerDealtCombatDamage",
+    "kind": "effect",
+    "cr": [
+      "CR 701.8a",
+      "CR 510.2",
+      "CR 120.1",
+      "CR 608.2c"
+    ],
+    "pattern": "destroy each {f:Filter} whose controller was dealt combat damage by ~ this turn",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controllerDealtCombatDamageBySourceThisTurn": true
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{X}: Destroy each creature whose controller was dealt combat damage by ~ this turn."
+      },
+      {
+        "text": "{X}: Destroy each artifact with mana value X whose controller was dealt combat damage by ~ this turn."
+      }
+    ],
+    "counterExamples": [
+      "{X}: Destroy each creature whose controller was dealt damage by ~ this turn.",
+      "{X}: Destroy each creature whose controller was dealt combat damage this turn.",
+      "{X}: Destroy each creature whose controller was dealt combat damage by ~ this turn unless it is blue."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.exile.forEachOpponent.until",
+    "kind": "effect",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 610.3",
+      "CR 701.13a",
+      "CR 608.2f"
+    ],
+    "pattern": "for each opponent , exile {o:OppTarget} {d:Dur}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      },
+      "until": "$d"
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, exile up to one target artifact that player controls until ~ leaves the battlefield."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, exile up to one target tapped creature that player controls until ~ leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each opponent, exile up to one target artifact that player controls.",
+      "When ~ enters, exile up to one target artifact that player controls until ~ leaves the battlefield.",
+      "When ~ enters, for each opponent, exile up to two target artifacts that player controls until ~ leaves the battlefield."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t66.player.choosesPermanentOfEachType.sacrificesRest",
+    "kind": "effect",
+    "cr": [
+      "CR 110.4",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 701.21a"
+    ],
+    "pattern": "{p:Player} chooses a permanent they control of each permanent type and sacrifices the rest",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": {},
+      "count": 1,
+      "mode": "keepEachType"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent chooses a permanent they control of each permanent type and sacrifices the rest."
+      },
+      {
+        "text": "Each player chooses a permanent they control of each permanent type and sacrifices the rest."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent chooses a permanent they control of each permanent type and exiles the rest.",
+      "Each opponent chooses a creature they control and sacrifices the rest.",
+      "Each opponent chooses a permanent they control of each permanent type.",
+      "Target opponent chooses a permanent they control of each permanent type and sacrifices the rest."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

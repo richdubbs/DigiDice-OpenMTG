@@ -1,0 +1,16 @@
+{
+  "name": "transfigure",
+  "rule": "702.71",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Sacrifice this creature: Search your library for a creature card with the same mana value as this creature, put that card onto the battlefield, then shuffle. Transfigure only as a sorcery.",
+  "multiple": "independent",
+  "status": "planned"
+}

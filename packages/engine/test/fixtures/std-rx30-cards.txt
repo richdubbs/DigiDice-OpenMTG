@@ -1,0 +1,22 @@
+# std-rx30 (wave 2, Standard lane rx30; test/cloud/std-rx30, golden cloud-std-rx30-review.json, Dire Undercurrents in cloud-r3-choose-review.json, Ral Zarek in
+# cloud-r4-mech-review.json): other players' choices, per-player effects, skipped and extra turns, cards from outside the game, targets in two zones, counter riders
+Clash of Elements
+Intrude on the Mind
+Memories Returning
+Osseous Sticktwister
+Trial of Agony
+Kitesail Larcenist
+Krenko's Buzzcrusher
+Parker Luck
+Pox Plague
+The Legend of Yangchen // Avatar Yangchen
+Ral Zarek, Guest Lecturer
+Extrapolate the Impossible
+Turtles Forever
+Aurelia's Vindicator
+Cloak and Dagger, Entwined
+Sorceress's Schemes
+Thranduil's Decree
+Tishana's Tidebinder
+Dire Undercurrents
+Ral Zarek

@@ -1,0 +1,161 @@
+[
+  {
+    "id": "eff.t59.unless.pays.plusEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 608.2h"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {m:ManaCost} plus an additional {1} for each {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 1
+          }
+        ]
+      },
+      "times": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          "$m.0.amount",
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        ]
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless",
+      "each",
+      "plus",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell unless its controller pays {2} plus an additional {1} for each Goblin you control."
+      },
+      {
+        "text": "Counter target creature spell unless its controller pays {3} plus an additional {1} for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller pays {2} plus an additional {2} for each Goblin you control.",
+      "Counter target spell unless its controller pays {U} plus an additional {1} for each Goblin you control.",
+      "Counter target spell unless its controller pays {2} plus an additional {1}.",
+      "Counter target spell if its controller pays {2} plus an additional {1} for each Goblin you control."
+    ]
+  },
+  {
+    "id": "eff.t59.shuffle.selfAndTarget.ownersLibraries",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 115.1"
+    ],
+    "pattern": "shuffle ~ and {o:Obj} into their owners' libraries",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "self"
+            },
+            "$o"
+          ]
+        },
+        "to": {
+          "zone": "library"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": {
+            "ref": "self"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Shuffle ~ and target creature you control into their owners' libraries."
+      },
+      {
+        "text": "Shuffle ~ and target artifact into their owners' libraries."
+      }
+    ],
+    "counterExamples": [
+      "Shuffle ~ and target creature into your library.",
+      "Shuffle ~ and target creature into its owner's library.",
+      "Shuffle target creature and target artifact into their owners' libraries.",
+      "Put ~ and target creature into their owners' libraries."
+    ]
+  },
+  {
+    "id": "fl.t59.linked.putEachHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.3"
+    ],
+    "pattern": "put each card exiled with ( it | ~ ) into its owner 's hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target artifact an opponent controls.\nWhen ~ leaves the battlefield, put each card exiled with ~ into its owner's hand."
+      },
+      {
+        "text": "When ~ enters, exile target nonland permanent you don't control.\nWhen ~ dies, put each card exiled with it into its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target nonland permanent you don't control.\nWhen ~ dies, put each card exiled with it into your hand.",
+      "When ~ enters, exile target nonland permanent you don't control.\nWhen ~ dies, put each card exiled with it onto the battlefield.",
+      "When ~ dies, put each card exiled with it into its owner's hand."
+    ]
+  }
+]

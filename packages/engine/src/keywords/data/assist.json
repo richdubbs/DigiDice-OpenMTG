@@ -1,0 +1,11 @@
+{
+  "name": "assist",
+  "rule": "702.132",
+  "params": [],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "Another player can pay up to {generic} of this spell's cost.",
+  "multiple": "independent",
+  "status": "planned"
+}

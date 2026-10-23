@@ -1,0 +1,7 @@
+# p2-refs-2 (Phase 2 lane p2-refs): the round's golden cards (test/m5/golden/cards/cloud-p2-refs-2-review.json)
+Soul Rend
+Toils of Night and Day
+Dark Maze
+Aggressive Sabotage
+Skizzik
+Canopy Surge

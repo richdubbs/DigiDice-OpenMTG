@@ -1,0 +1,352 @@
+/* Milestone 9: the Host and Join screens and the online panel of the game screen. Colors come from the theme's variables (theme/styles.css). */
+
+.online-screen {
+  max-width: 980px;
+}
+
+.online-panel {
+  margin: 0 0 16px;
+  padding: 16px 20px;
+}
+
+.online-panel h2 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+}
+
+.online-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 16px;
+}
+
+.online-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.online-form input,
+.online-form select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.online-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 10px 0;
+}
+
+.online-buttons > :last-child {
+  margin-left: auto;
+}
+
+.online-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+  align-items: baseline;
+  margin: 0 0 12px;
+}
+
+.online-facts dt {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.online-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.online-code {
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+
+.online-status {
+  font-weight: 600;
+}
+
+.online-error {
+  color: var(--accent-2);
+}
+
+.online-note {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.online-notes {
+  margin: 4px 0;
+  padding-left: 20px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.online-error p {
+  margin: 0 0 6px;
+}
+
+.online-error ul {
+  margin: 0;
+}
+
+.online-help {
+  margin: 12px 0 0;
+  padding: 10px 18px;
+}
+
+.online-help summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.online-help li {
+  margin: 6px 0;
+}
+
+/* In the game screen's prompt slot. */
+.online-game {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 6px;
+}
+
+.online-proposal {
+  padding: 8px 12px;
+  border: 1px solid var(--neon, #1fb8ff);
+  border-radius: 8px;
+}
+
+.online-proposal p,
+.online-proposal ul {
+  margin: 0 0 4px;
+}
+
+.online-proposal-text {
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+.online-chat-lines {
+  max-height: 8.5em;
+  overflow-y: auto;
+  margin: 4px 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.online-chat-form {
+  display: flex;
+  gap: 6px;
+}
+
+.online-chat-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* M12-5b: a 3-4 player game: the host's codes per seat, the lobby's seats, presence with drop clocks, table news. */
+.online-codes,
+.online-seats {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.online-codes li,
+.online-seats li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+
+.online-codes li[data-taken] .online-code {
+  opacity: 0.45;
+}
+
+.online-seats li[data-open] {
+  color: var(--text-muted);
+}
+
+.online-seat-state {
+  color: var(--text-muted);
+}
+
+.online-presence-list,
+.online-news {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+}
+
+/* M12F: presence stays compact in the rail: the players on one wrapped line. */
+.online-presence-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+}
+
+.online-presence-list li[data-state='off'] {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+.online-presence-list li[data-state='left'] {
+  color: var(--text-muted);
+}
+
+.online-dot {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.8;
+}
+
+.online-presence-list li[data-state='on'] .online-dot {
+  background: var(--neon, #1fb8ff);
+}
+
+.online-news {
+  color: var(--text-muted);
+}
+
+.online-reason {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+}
+
+/*
+ * M12F (the owner's board rule: the right rail never moves or resizes): the rail keeps one compact line (the latest table news and the chat button); the
+ * chat and the table news open in a fixed-size overlay over the table's right edge, in the board's stage layer (like the log drawer), never in the rail.
+ */
+.online-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.online-news-latest {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.online-chat-toggle {
+  flex: none;
+  margin-left: auto;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+}
+
+.online-chat-toggle[data-unread] {
+  border-color: var(--neon, #1fb8ff);
+  box-shadow: 0 0 10px rgba(31, 184, 255, 0.45);
+}
+
+.online-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  width: min(360px, 46%);
+  height: min(420px, calc(100% - 170px));
+  min-height: 180px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(31, 184, 255, 0.45);
+  background: linear-gradient(180deg, rgba(8, 20, 44, 0.98), rgba(3, 8, 20, 0.98));
+  box-shadow: 0 0 26px rgba(31, 184, 255, 0.18), 0 18px 40px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.online-overlay-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.online-overlay-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.online-overlay-close {
+  padding: 0 8px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.online-overlay .online-news {
+  flex: none;
+  max-height: 6.5em;
+  overflow-y: auto;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(31, 184, 255, 0.25);
+}
+
+.online-overlay .online-chat {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.online-overlay .online-chat-lines {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+/* RPL-3: "Show my cards in replays" in the rail's prompt half: one line and a short note, never wider than the panel. */
+.online-replay {
+  min-width: 0;
+  font-size: 0.85rem;
+}
+
+.online-replay label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.online-replay .online-note {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.online-replay[data-shared] label {
+  cursor: default;
+}

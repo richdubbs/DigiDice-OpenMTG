@@ -1,0 +1,323 @@
+[
+  {
+    "id": "rep.p2copyperm1.enters.copy.except",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9a",
+      "CR 707.9b"
+    ],
+    "pattern": "you may have ~ enter as a copy of ( a | an | any ) {f:Filter} , except {x:CopyExcept}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": "$x"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it's an enchantment in addition to its other types."
+      },
+      {
+        "text": "You may have ~ enter as a copy of an artifact you control, except it isn't legendary and it has vigilance."
+      },
+      {
+        "text": "You may have ~ enter as a copy of a creature an opponent controls, except it's 2/2 and it has flying."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it's an enchantment.",
+      "You may have ~ enter as a copy of any creature on the battlefield, except it loses all other card types.",
+      "You may have ~ enter as a copy of any creature on the battlefield, except it's an enchantment in addition to its other types if it's an artifact.",
+      "You may have ~ enter as a copy of a creature an opponent controls, except it's a Vehicle artifact with crew 2 and it loses all other card types."
+    ]
+  },
+  {
+    "id": "eff.p2copyperm1.copyToken.except",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 111.10",
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 707.9b"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except {x:CopyExceptToken}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": "$x"
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except the token isn't legendary."
+      },
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's 1/1 and has deathtouch."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except the token is legendary.",
+      "Create a token that's a copy of target creature you control, except it's 1/1 and has deathtouch if it's a Rat."
+    ]
+  },
+  {
+    "id": "eff.p2copyperm1.copyTokens.except",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.10",
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 707.9b"
+    ],
+    "pattern": "create {n:Qty} tokens that are copies of {o:Obj} , except {x:CopyExceptTokens}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "except": "$x"
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create three tokens that are copies of target artifact you control, except they're 1/1 Thopter creatures in addition to their other types, and they have flying."
+      },
+      {
+        "text": "Create two tokens that are copies of target creature you control, except they have haste."
+      }
+    ],
+    "counterExamples": [
+      "Create three tokens that are copies of target artifact you control, except they're 1/1 Thopter creatures, and they have flying.",
+      "Create two tokens that are copies of target creature you control, except it has haste."
+    ]
+  },
+  {
+    "id": "eff.p2copyperm1.becomeCopy.except",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 613.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes a copy of {p:Obj} [{d:Dur}] , except {x:CopyExcept}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": "$x"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "except",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control becomes a copy of another target creature until end of turn, except it's an artifact in addition to its other types."
+      },
+      {
+        "text": "At the beginning of your upkeep, ~ becomes a copy of up to one other target creature you control, except it's a Spirit in addition to its other types and it has this ability."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control becomes a copy of another target creature until end of turn, except it's an artifact.",
+      "At the beginning of your upkeep, ~ becomes a copy of up to one other target creature you control, except it's a Spirit in addition to its other types and it has this ability if it's a Spirit."
+    ]
+  },
+  {
+    "id": "eff.p2copyperm1.may.becomeCopy.except",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 613.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "you may have {o:Obj} become a copy of {p:Obj} [{d:Dur}] , except {x:CopyExcept}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "$when": "d",
+            "then": "$d",
+            "else": {
+              "d": "permanent"
+            }
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "1a",
+                  "copyOf": "$p",
+                  "except": "$x"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "except",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a Wizard you control enters, you may have ~ become a copy of it until end of turn, except its name is ~ and it's legendary in addition to its other types."
+      },
+      {
+        "text": "Whenever ~ attacks, you may have ~ become a copy of target creature defending player controls, except its name is ~ and it has menace and this ability."
+      },
+      {
+        "text": "When ~ enters, you may have ~ become a copy of target artifact, except it's a 3/3 Golem artifact creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a Wizard you control enters, you may have ~ become a copy of it until end of turn, except its name is ~ and it's legendary.",
+      "Whenever ~ attacks, you may have ~ become a copy of target creature defending player controls, except its name is ~ and it has menace unless it's tapped.",
+      "When ~ enters, you may have ~ become a copy of target artifact, except it's a 3/3 Golem artifact creature."
+    ]
+  },
+  {
+    "id": "eff.p2copyperm1.eachOther.becomeCopy.dur.except",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 613.1a",
+      "CR 611.2c"
+    ],
+    "pattern": "each other {g:Filter} becomes a copy of {p:Obj} {d:Dur} , except {x:CopyExcept}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$g"
+              ],
+              "not": {
+                "is": "$p"
+              }
+            }
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": "$x"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "except",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Choose target artifact you control. Each other artifact becomes a copy of that artifact until end of turn, except it isn't legendary."
+      },
+      {
+        "text": "Choose target creature. Each other creature becomes a copy of that creature until end of turn, except it's 2/2 and it has defender."
+      }
+    ],
+    "counterExamples": [
+      "Choose target artifact you control. Each other artifact becomes a copy of that artifact until end of turn, except it is legendary.",
+      "Choose target creature. Each other creature becomes a copy of that creature until end of turn, except it's 2/2 and it has defender if it's a Wall."
+    ]
+  }
+]

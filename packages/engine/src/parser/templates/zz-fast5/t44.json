@@ -1,0 +1,546 @@
+[
+  {
+    "id": "eff.t44.may.sacrifice.another",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may sacrifice another {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "other": true
+            },
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "{T}: You may sacrifice another creature."
+      },
+      {
+        "text": "{T}: You may sacrifice another creature or artifact. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{T}: You may sacrifice another creature or discard a card.",
+      "{T}: You may sacrifice two other creatures.",
+      "{T}: Sacrifice another creature."
+    ]
+  },
+  {
+    "id": "eff.t44.may.sacrifice.tokenOr",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 111.1"
+    ],
+    "pattern": "you may sacrifice a token or ( a | an ) {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": {
+              "anyOf": [
+                {
+                  "token": true
+                },
+                "$f"
+              ]
+            },
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may sacrifice a token or a land."
+      },
+      {
+        "text": "You may sacrifice a token or an artifact. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may sacrifice a token or another land.",
+      "You may sacrifice a token.",
+      "You may sacrifice two tokens or a land."
+    ]
+  },
+  {
+    "id": "eff.t44.may.payLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 119.4",
+      "CR 608.2d"
+    ],
+    "pattern": "you may pay {n:Qty} life",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may pay 2 life."
+      },
+      {
+        "text": "You may pay 3 life. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may pay 2 life any number of times.",
+      "You pay 2 life.",
+      "You may pay life."
+    ]
+  },
+  {
+    "id": "eff.t44.may.payManaAndLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 119.4",
+      "CR 608.2d"
+    ],
+    "pattern": "you may pay {m:ManaCost} and {n:Qty} life",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": "$m",
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may pay {1}{B} and 2 life."
+      },
+      {
+        "text": "You may pay {2} and 3 life. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {1}{B} or 2 life.",
+      "You may pay {1}{B}, then pay 2 life.",
+      "You pay {1}{B} and 2 life."
+    ]
+  },
+  {
+    "id": "eff.t44.may.exile.cardsFromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 406.2",
+      "CR 608.2d"
+    ],
+    "pattern": "you may exile {n:Qty} card[s] from your graveyard",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "exileFrom",
+            "zone": "graveyard",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may exile three cards from your graveyard."
+      },
+      {
+        "text": "You may exile a card from your graveyard. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may exile three cards from a graveyard.",
+      "You may exile three cards from your hand.",
+      "Exile three cards from your graveyard."
+    ]
+  },
+  {
+    "id": "eff.t44.may.exile.typedCardFromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 406.2",
+      "CR 608.2d"
+    ],
+    "pattern": "you may exile ( a | an ) {f:Filter} card from your graveyard",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "exileFrom",
+            "zone": "graveyard",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may exile a creature card from your graveyard."
+      },
+      {
+        "text": "You may exile an instant or sorcery card from your graveyard. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may exile a creature card from a graveyard.",
+      "You may exile a creature card from your hand.",
+      "You may exile target creature card from your graveyard."
+    ]
+  },
+  {
+    "id": "eff.t44.may.sacrifice.orDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 701.9a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may sacrifice ( a | an ) {f:Filter} or discard a card",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "you"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "discard",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may sacrifice a creature or discard a card."
+      },
+      {
+        "text": "You may sacrifice an artifact or discard a card. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may sacrifice a creature and discard a card.",
+      "You may sacrifice a creature or discard two cards.",
+      "You may sacrifice another creature or discard a card."
+    ]
+  },
+  {
+    "id": "eff.t44.may.sacrifice.orDiscardNonland",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 701.9a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may sacrifice ( a | an ) {f:Filter} or discard a nonland card",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "you"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "discard",
+                "filter": {
+                  "notTypes": [
+                    "Land"
+                  ]
+                },
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may sacrifice an artifact or discard a nonland card."
+      },
+      {
+        "text": "You may sacrifice a creature or discard a nonland card. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may sacrifice an artifact or discard a land card.",
+      "You may sacrifice an artifact and discard a nonland card.",
+      "You may sacrifice an artifact or discard two nonland cards."
+    ]
+  },
+  {
+    "id": "eff.t44.may.discardOrPay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 701.9a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may discard a card or pay {m:ManaCost}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "oneOf",
+            "options": [
+              { "other": [{ "kind": "discard", "count": 1 }] },
+              { "mana": "$m" }
+            ]
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may discard a card or pay {2}."
+      },
+      {
+        "text": "You may discard a card or pay {1}{R}. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may discard a card and pay {2}.",
+      "You may discard two cards or pay {2}.",
+      "You may discard a card or pay 2 life."
+    ]
+  },
+  {
+    "id": "eff.t44.if.drawAndCounterOnSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 121.1",
+      "CR 122.6"
+    ],
+    "pattern": "if {c:Cond} , draw a card and put {n:Qty} {k:CounterKind} counter[s] on ~",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        {
+          "op": "putCounters",
+          "on": {
+            "ref": "self"
+          },
+          "kind": "$k",
+          "count": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may discard a card. If you do, draw a card and put a +1/+1 counter on ~."
+      },
+      {
+        "text": "You may pay {1}. If you do, draw a card and put two +1/+1 counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "You may discard a card. If you do, draw a card and put a +1/+1 counter on target creature.",
+      "You may discard a card. If you do, draw two cards and put a +1/+1 counter on ~.",
+      "You may discard a card. If you do, draw a card and put a +1/+1 counter on ~ instead."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.t44.if.scryThenDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 701.22a",
+      "CR 121.1"
+    ],
+    "pattern": "if {c:Cond} , scry {n:Qty} , then draw a card",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "scry",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "You may discard a card. If you do, scry 2, then draw a card."
+      },
+      {
+        "text": "You may pay {1}. If you do, scry 1, then draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may discard a card. If you do, scry 2, then draw two cards.",
+      "You may discard a card. If you do, scry 2, then discard a card.",
+      "You may discard a card. If you do, scry 2, then you may draw a card.",
+      "You may discard a card. If you do, scry 2. Draw a card."
+    ],
+    "priority": 1
+  }
+]

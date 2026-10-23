@@ -1,0 +1,22 @@
+# Standard round 8 (test/cloud/std-r8, golden cloud-std-r8-review.json): the render gate and antecedents
+# "This spell costs {X} less to cast, where X is the number of ..." (family cost-where-x)
+Hearth Elemental // Stoke Genius
+# "each other creature" after an exile of graveyard cards; "cards exiled this way" of a chosen group
+Specter of Mortality
+# the pronoun in the branch of "if that creature is ..."
+Turtle Van
+# the one card revealed on top of a library is the focus
+Lurking Predators
+Llanowar Empath
+Neurok Familiar
+Skirk Drill Sergeant
+# "Aura and Equipment spells you cast" (family subtype-list-spells)
+Danitha Capashen, Paragon
+Cid, Freeflier Pilot
+Golden-Tail Trainer
+# "for each creature on the battlefield" in a cost change (family on-the-battlefield)
+Vanquish the Horde
+# two or more keywords and one quoted ability as one list (family keyword-list-quoted)
+Kaldra Compleat
+Tower Above
+Legolas's Quick Reflexes

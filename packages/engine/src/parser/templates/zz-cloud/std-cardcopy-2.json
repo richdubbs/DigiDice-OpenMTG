@@ -1,0 +1,235 @@
+[
+  {
+    "id": "eff.stdcardcopy2.forEachOpponent.copy.linkedExiled.attacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 111.1",
+      "CR 508.4"
+    ],
+    "pattern": "for each opponent , create a tapped token that's a copy of the exiled card attacking that opponent",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": {
+            "defender": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to one other target artifact you control until ~ leaves the battlefield.\nWhenever ~ attacks, for each opponent, create a tapped token that's a copy of the exiled card attacking that opponent."
+      },
+      {
+        "text": "When ~ enters, exile another target nontoken creature you control until ~ leaves the battlefield.\nWhenever ~ attacks, for each opponent, create a tapped token that's a copy of the exiled card attacking that opponent. At end of combat, sacrifice those tokens."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile another target nontoken creature you control until ~ leaves the battlefield.\nWhenever ~ attacks, for each opponent, create a tapped token that's a copy of the exiled card blocking that opponent.",
+      "When ~ enters, exile another target nontoken creature you control until ~ leaves the battlefield.\nWhenever ~ attacks, for each opponent, create a token that's a copy of the exiled card attacking that opponent.",
+      "When ~ enters, exile another target nontoken creature you control until ~ leaves the battlefield.\nWhenever ~ attacks, for each player, create a tapped token that's a copy of the exiled card attacking that player.",
+      "Whenever ~ attacks, for each opponent, create a tapped token that's a copy of the exiled card attacking that opponent."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.stdcardcopy2.choose.saddledThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 702.171c"
+    ],
+    "pattern": "choose ( a | an ) {f:Filter} that saddled it this turn",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "saddledThisTurn": {
+              "ref": "self"
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks while saddled, choose a creature that saddled it this turn and create a tapped and attacking token that's a copy of it."
+      },
+      {
+        "text": "Whenever ~ attacks while saddled, choose a nontoken creature that saddled it this turn. Put a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks while saddled, choose a creature that crewed it this turn. Put a +1/+1 counter on it.",
+      "Whenever ~ attacks while saddled, choose two creatures that saddled it this turn. Put a +1/+1 counter on each of them.",
+      "Whenever ~ attacks while saddled, choose a creature that saddled it last turn. Put a +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.stdcardcopy2.linked.putOne.bf.additionalCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 122.6",
+      "CR 614.1c"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card exiled with ( it | ~ ) onto the battlefield under your control with {n:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true,
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "counters": [
+            {
+              "kind": "$k",
+              "count": "$n"
+            }
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control dies, each opponent chooses an artifact they control and exiles it.\nAt the beginning of your end step, sacrifice ~, then put an artifact card exiled with it onto the battlefield under your control with two additional +1/+1 counters on it."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifact creatures an opponent controls.\nWhen ~ leaves the battlefield, put a creature card exiled with ~ onto the battlefield under your control with an additional -1/-1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target artifact creatures an opponent controls.\nWhen ~ leaves the battlefield, put a creature card exiled with ~ onto the battlefield under its owner's control with an additional -1/-1 counter on it.",
+      "When ~ enters, exile up to two target artifact creatures an opponent controls.\nWhen ~ leaves the battlefield, put a creature card from exile onto the battlefield under your control with an additional -1/-1 counter on it.",
+      "When ~ enters, exile up to two target artifact creatures an opponent controls.\nWhen ~ leaves the battlefield, put each creature card exiled with ~ onto the battlefield under your control with an additional -1/-1 counter on it.",
+      "When ~ leaves the battlefield, put a creature card exiled with ~ onto the battlefield under your control with an additional -1/-1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.stdcardcopy2.gains.otherAbilitiesOfCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 113.6"
+    ],
+    "pattern": "{o:Obj} gains ~ 's other abilities",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": [],
+              "otherAbilitiesOfCard": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, scry 2.\n{3}, Exile ~ from your graveyard: Put a +1/+1 counter on target creature you control. It gains this card's other abilities."
+      },
+      {
+        "text": "Whenever ~ blocks, scry 1 and you gain 1 life.\n{1}{U}, Exile ~ from your graveyard: Target creature you control gains this card's other abilities. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, scry 2.\n{3}, Exile ~ from your graveyard: Put a +1/+1 counter on target creature you control. It gains this card's other abilities until end of turn.",
+      "Whenever ~ attacks, scry 2.\n{3}, Exile ~ from your graveyard: Put a +1/+1 counter on target creature you control. It gains this card's activated abilities.",
+      "Whenever ~ attacks, scry 2.\n{3}, Exile ~ from your graveyard: Put a +1/+1 counter on target creature you control. It loses this card's other abilities."
+    ]
+  }
+]

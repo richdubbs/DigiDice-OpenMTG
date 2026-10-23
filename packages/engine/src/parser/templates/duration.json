@@ -1,0 +1,52 @@
+[
+  {
+    "id": "dur.lead.grant",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.1f", "CR 514.2"],
+    "pattern": "{d:Dur} , {o:Objs} gain[s] {a:Abilities}",
+    "build": { "op": "effect", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "add": "$a" }] }], "duration": "$d" },
+    "subject": "object",
+    "examples": [
+      { "text": "Until end of turn, target creature gains reach.", "expect": { "targets": [{ "id": "t0", "kind": "object", "min": 1, "max": 1, "filter": { "types": ["Creature"] } }], "steps": [{ "op": "effect", "effects": [{ "s": "continuous", "affects": { "ref": "target", "id": "t0" }, "mods": [{ "layer": 6, "add": [{ "kind": "keyword", "keyword": "reach" }] }] }], "duration": { "d": "endOfTurn" } }] } },
+      { "text": "Until end of turn, creatures you control gain vigilance and lifelink." }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature gains reach unless it is green.",
+      "Until end of turn, target creature loses reach.",
+      "Until end of turn, target creature gains all creature types."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "dur.lead.pumpGrant",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.1f", "CR 613.4c"],
+    "pattern": "{d:Dur} , {o:Objs} get[s] {pt:PT} and gain[s] {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }, { "layer": 6, "add": "$a" }] }],
+      "duration": "$d"
+    },
+    "subject": "object",
+    "examples": [
+      { "text": "Until end of turn, creatures you control get +2/+0 and gain menace.", "expect": { "targets": [], "steps": [{ "op": "effect", "effects": [{ "s": "continuous", "affects": { "ref": "each", "filter": { "types": ["Creature"], "controller": "you" } }, "mods": [{ "layer": "7c", "power": 2, "toughness": 0 }, { "layer": 6, "add": [{ "kind": "keyword", "keyword": "menace" }] }] }], "duration": { "d": "endOfTurn" } }] } },
+      { "text": "Until end of turn, target creature gets +1/+4 and gains reach." }
+    ],
+    "counterExamples": ["Until end of turn, creatures you control get +2/+0 or gain menace.", "Until end of turn, creatures you control get +2/+0 and lose menace."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "dur.lead.have",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.1f"],
+    "pattern": "{d:Dur} , {o:Objs} ( has | have ) {a:Abilities}",
+    "build": { "op": "effect", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "add": "$a" }] }], "duration": "$d" },
+    "subject": "object",
+    "examples": [{ "text": "Until end of turn, creatures you control have trample.", "expect": { "targets": [], "steps": [{ "op": "effect", "effects": [{ "s": "continuous", "affects": { "ref": "each", "filter": { "types": ["Creature"], "controller": "you" } }, "mods": [{ "layer": 6, "add": [{ "kind": "keyword", "keyword": "trample" }] }] }], "duration": { "d": "endOfTurn" } }] } }, { "text": "Until your next turn, target creature has hexproof." }],
+    "counterExamples": ["Until end of turn, creatures you control have base power 3.", "Until end of turn, creatures you control don't have trample."],
+    "status": "experimental",
+    "since": 1
+  }
+]

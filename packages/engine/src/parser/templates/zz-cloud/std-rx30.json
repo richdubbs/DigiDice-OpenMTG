@@ -1,0 +1,1523 @@
+[
+  {
+    "id": "eff.stdrx30.reveal.separate.twoPiles",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 701.20a",
+      "CR 401.1"
+    ],
+    "pattern": "reveal the top {n:Qty} cards of your library and separate them into two piles",
+    "build": [
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "revealed"
+      },
+      {
+        "op": "piles",
+        "cards": {
+          "ref": "bound",
+          "name": "revealed"
+        },
+        "separator": {
+          "ref": "you"
+        },
+        "chosen": "chosenPile",
+        "other": "otherPile"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Reveal the top four cards of your library and separate them into two piles. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "When ~ enters, reveal the top six cards of your library and separate them into two piles. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top four cards of your library and separate them into two piles. Put that pile into your hand and the other into your graveyard.",
+      "Reveal the top four cards of your library and separate them into three piles. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard.",
+      "Reveal the top four cards of your library. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.eachOpponentMay.sacrificeOrDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 118.12",
+      "CR 608.2d",
+      "CR 701.9a",
+      "CR 701.21a"
+    ],
+    "pattern": "each opponent may sacrifice ( a | an ) {f:Filter} of their choice or discard a card",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$f",
+                "count": 1
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "pay",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "cost": {
+                "other": [
+                  {
+                    "kind": "discard",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each opponent may sacrifice a creature of their choice or discard a card. Then ~ deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way."
+      },
+      {
+        "text": "When ~ enters, each opponent may sacrifice an artifact of their choice or discard a card. Then ~ deals damage equal to its toughness to each opponent who didn't sacrifice a permanent or discard a card this way."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent may sacrifice a creature of their choice and discard a card. Then ~ deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way.",
+      "When ~ enters, target opponent may sacrifice a creature of their choice or discard a card. Then ~ deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way.",
+      "When ~ enters, each opponent may sacrifice a creature of their choice or discard two cards. Then ~ deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way."
+    ]
+  },
+  {
+    "id": "rid.stdrx30.thenDamageEqual.eachOpponentWhoDidnt.thisWay",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 118.12",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "then {src:Obj} deal[s] damage equal to {n:Qty} to each opponent who didn't sacrifice a permanent or discard a card this way",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "over.ref": "each",
+          "over.who": "opponent",
+          "do.0.op": "pay",
+          "do.0.else.0.op": "pay",
+          "do.0.then": null,
+          "do.0.else.0.then": null,
+          "do.0.else.0.else": null
+        },
+        "do": [
+          {
+            "else": [
+              {
+                "else": {
+                  "@new": [
+                    {
+                      "op": "damage",
+                      "source": "$src",
+                      "to": {
+                        "ref": "bound",
+                        "name": "@previous.as"
+                      },
+                      "amount": "$n"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "forEach",
+    "consumes": [
+      "then",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each opponent may sacrifice a creature of their choice or discard a card. Then ~ deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way."
+      },
+      {
+        "text": "When ~ enters, each opponent may sacrifice an artifact of their choice or discard a card. Then ~ deals damage equal to its toughness to each opponent who didn't sacrifice a permanent or discard a card this way."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, each opponent may sacrifice a creature of their choice or discard a card. Then ~ deals damage equal to its power to each opponent who sacrificed a permanent or discarded a card this way.",
+      "At the beginning of your upkeep, each opponent may sacrifice a creature of their choice or discard a card. Then ~ deals damage equal to its power to each opponent.",
+      "At the beginning of your upkeep, target opponent may sacrifice a creature of their choice or discard a card. Then ~ deals damage equal to its power to each opponent who didn't sacrifice a permanent or discard a card this way."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.ownerMay.putOnTop.theirLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.3",
+      "CR 400.3",
+      "CR 608.2d"
+    ],
+    "pattern": "its owner may put {o:Obj} on top of their library",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "ownerOf",
+        "object": "$o"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "library",
+            "position": "top"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature. Its owner may put it on top of their library. If they do, ~ deals 3 damage to them. If they didn't put the card on top of their library, they put it on the bottom."
+      },
+      {
+        "text": "Choose target artifact. Its owner may put it on top of their library. If they do, ~ deals 1 damage to them. If they didn't put the card on top of their library, they put it on the bottom."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature. Its controller may put it on top of their library. If they do, ~ deals 3 damage to them. If they didn't put the card on top of their library, they put it on the bottom.",
+      "Choose target creature. Its owner may put it on the bottom of their library. If they do, ~ deals 3 damage to them. If they didn't put the card on top of their library, they put it on the bottom.",
+      "Choose target creature. Its owner puts it on top of their library. If they do, ~ deals 3 damage to them. If they didn't put the card on top of their library, they put it on the bottom."
+    ]
+  },
+  {
+    "id": "rid.stdrx30.ifTheyDidnt.putOnTop.theyPutBottom",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.3",
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "if they didn't put the card on top of their library , they put it on the bottom",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "cond.cond": "did",
+          "else": null,
+          "then.0.to.ref": "ownerOf"
+        },
+        "else": {
+          "@new": [
+            {
+              "op": "move",
+              "what": "@previous.then.0.to.object",
+              "to": {
+                "zone": "library",
+                "position": "bottom"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "attachTo": "if",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature. Its owner may put it on top of their library. If they do, ~ deals 3 damage to them. If they didn't put the card on top of their library, they put it on the bottom."
+      },
+      {
+        "text": "Choose target artifact. Its owner may put it on top of their library. If they do, ~ deals 1 damage to them. If they didn't put the card on top of their library, they put it on the bottom."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature. Its owner may put it on top of their library. If they do, ~ deals 3 damage to them. If they didn't put the card on top of their library, they put it into their graveyard.",
+      "Choose target creature. Its owner may put it on top of their library. If they do, ~ deals 3 damage to them. If they put the card on top of their library, they put it on the bottom.",
+      "Choose target creature. Its owner may put it on top of their library. If they didn't put the card on top of their library, they put it on the bottom."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.player.choosesOneOf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2c",
+      "CR 115.1"
+    ],
+    "pattern": "{p:Player} chooses one of {o:Objs}",
+    "build": {
+      "op": "chooseObjects",
+      "who": "$p",
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": "$o"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose two target creatures controlled by the same opponent. That player chooses one of those creatures. ~ deals 4 damage to that creature, and the other can't block this turn."
+      },
+      {
+        "text": "Choose two target artifact creatures controlled by the same opponent. That player chooses one of those creatures. ~ deals 2 damage to that creature, and the other can't block this turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose two target creatures controlled by the same opponent. That player chooses two of those creatures. ~ deals 4 damage to that creature, and the other can't block this turn.",
+      "Choose two target creatures controlled by the same opponent. That player chooses one of those creatures. ~ deals 4 damage to that creature.",
+      "Choose two target creatures controlled by different players. That player chooses one of those creatures. ~ deals 4 damage to that creature, and the other can't block this turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.stdrx30.rest.cantBlock.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "{r:Rest} can't block this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$r",
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Choose two target creatures controlled by the same opponent. That player chooses one of those creatures. ~ deals 4 damage to that creature, and the other can't block this turn."
+      },
+      {
+        "text": "Choose two target artifact creatures controlled by the same opponent. That player chooses one of those creatures. ~ deals 2 damage to that creature, and the other can't block this turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose two target creatures controlled by the same opponent. That player chooses one of those creatures. ~ deals 4 damage to that creature, and the other can't attack this turn.",
+      "Choose two target creatures controlled by the same opponent. That player chooses one of those creatures. ~ deals 4 damage to that creature, and the other can't block.",
+      "Target creature can't block this turn. The other can't block this turn."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.alternatingPicks.youOpponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.20a",
+      "CR 401.4"
+    ],
+    "pattern": "put one of {g:Seen} into your hand . then choose an opponent . they put one on the bottom of your library . then you put one into your hand . then they put one on the bottom of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "mrFirst"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "mrFirst"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "opponent",
+        "as": "mrOpponent"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "bound",
+          "name": "mrOpponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "not": {
+              "is": {
+                "ref": "union",
+                "of": [
+                  {
+                    "ref": "bound",
+                    "name": "mrFirst"
+                  }
+                ]
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "mrSecond"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "mrSecond"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "not": {
+              "is": {
+                "ref": "union",
+                "of": [
+                  {
+                    "ref": "bound",
+                    "name": "mrFirst"
+                  },
+                  {
+                    "ref": "bound",
+                    "name": "mrSecond"
+                  }
+                ]
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "mrThird"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "mrThird"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "bound",
+          "name": "mrOpponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "not": {
+              "is": {
+                "ref": "union",
+                "of": [
+                  {
+                    "ref": "bound",
+                    "name": "mrFirst"
+                  },
+                  {
+                    "ref": "bound",
+                    "name": "mrSecond"
+                  },
+                  {
+                    "ref": "bound",
+                    "name": "mrThird"
+                  }
+                ]
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "mrFourth"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "mrFourth"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life. Reveal the top five cards of your library. Put one of them into your hand. Then choose an opponent. They put one on the bottom of your library. Then you put one into your hand. Then they put one on the bottom of your library. Put the other into your hand."
+      },
+      {
+        "text": "When ~ enters, reveal the top five cards of your library. Put one of them into your hand. Then choose an opponent. They put one on the bottom of your library. Then you put one into your hand. Then they put one on the bottom of your library. Put the other into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top five cards of your library. Put one of them into your hand. Then choose an opponent. They put one into their graveyard. Then you put one into your hand. Then they put one on the bottom of your library. Put the other into your hand.",
+      "Reveal the top five cards of your library. Put one of them into your hand. Then choose an opponent. They put one on the bottom of your library. Then you put one into your graveyard. Then they put one on the bottom of your library. Put the other into your hand.",
+      "Reveal the top five cards of your library. Put one of them into your hand. Then choose an opponent. They put one on the bottom of your library. Then you put one into your hand. Put the other into your hand."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.eachPlayer.halfLifeHandPermanents.roundDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.1a",
+      "CR 608.2e",
+      "CR 101.4",
+      "CR 119.3",
+      "CR 701.9a",
+      "CR 701.21a"
+    ],
+    "pattern": "each player loses half their life , then discards half the cards in their hand , then sacrifices half the permanents they control of their choice . round down each time",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "amount": {
+          "q": "math",
+          "op": "floorDiv",
+          "args": [
+            {
+              "q": "life",
+              "of": {
+                "ref": "iterating"
+              }
+            },
+            2
+          ]
+        }
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "count": {
+          "q": "math",
+          "op": "floorDiv",
+          "args": [
+            {
+              "q": "zoneSize",
+              "zone": "hand",
+              "of": {
+                "ref": "iterating"
+              }
+            },
+            2
+          ]
+        }
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": {
+          "controller": {
+            "ref": "iterating"
+          }
+        },
+        "count": {
+          "q": "math",
+          "op": "floorDiv",
+          "args": [
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": {
+                  "controller": {
+                    "ref": "iterating"
+                  }
+                }
+              }
+            },
+            2
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "half",
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life. Each player loses half their life, then discards half the cards in their hand, then sacrifices half the permanents they control of their choice. Round down each time."
+      },
+      {
+        "text": "When ~ enters, each player loses half their life, then discards half the cards in their hand, then sacrifices half the permanents they control of their choice. Round down each time."
+      }
+    ],
+    "counterExamples": [
+      "Each player loses half their life, then discards half the cards in their hand, then sacrifices half the permanents they control of their choice. Round up each time.",
+      "Each opponent loses half their life, then discards half the cards in their hand, then sacrifices half the permanents they control of their choice. Round down each time.",
+      "Each player loses half their life, then discards half the cards in their hand, then sacrifices half the permanents they control of their choice."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.startingWithYou.eachPlayerChooses.oppPermanents",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d"
+    ],
+    "pattern": "starting with you , each player chooses up to one {f:Filter} from among permanents your opponents control",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "startingWith": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "opponent"
+        }
+      },
+      "min": 0,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player chooses up to one creature with power 4 or greater from among permanents your opponents control. Exile those permanents."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player chooses up to one artifact from among permanents your opponents control. Destroy those permanents."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each player chooses up to one creature with power 4 or greater from among permanents you control. Exile those permanents.",
+      "Each player chooses up to one creature with power 4 or greater from among permanents your opponents control. Exile those permanents.",
+      "Starting with you, each player chooses up to two creatures with power 4 or greater from among permanents your opponents control. Exile those permanents."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.forEachPlayer.destroyUpToOne.thatPlayerControls",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 101.4",
+      "CR 701.8a"
+    ],
+    "pattern": "for each player , destroy up to one {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "chosen"
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "as": "destroyedThisWay"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, for each player, destroy up to one nonbasic land that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "For each player, destroy up to one nonbasic land that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each opponent, destroy up to one nonbasic land that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+      "When ~ enters, for each player, destroy up to two nonbasic lands that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+      "When ~ enters, for each player, destroy up to one target nonbasic land that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.forEachLandDestroyedThisWay.controllerMaySearchBasic",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.23a",
+      "CR 110.2"
+    ],
+    "pattern": "for each land destroyed this way , its controller may search their library for a basic land card , put it onto the battlefield tapped , then shuffle",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "bound",
+        "name": "destroyedThisWay"
+      },
+      "as": "landDestroyed",
+      "do": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "landDestroyed"
+            }
+          },
+          "do": [
+            {
+              "op": "search",
+              "who": {
+                "ref": "controllerOf",
+                "object": {
+                  "ref": "bound",
+                  "name": "landDestroyed"
+                }
+              },
+              "zone": "library",
+              "filter": {
+                "supertypes": [
+                  "Basic"
+                ],
+                "types": [
+                  "Land"
+                ]
+              },
+              "max": 1,
+              "as": "search"
+            },
+            {
+              "op": "move",
+              "what": {
+                "ref": "bound",
+                "name": "search"
+              },
+              "to": {
+                "zone": "battlefield",
+                "controller": {
+                  "ref": "controllerOf",
+                  "object": {
+                    "ref": "bound",
+                    "name": "landDestroyed"
+                  }
+                },
+                "tapped": true
+              }
+            },
+            {
+              "op": "shuffle",
+              "who": {
+                "ref": "controllerOf",
+                "object": {
+                  "ref": "bound",
+                  "name": "landDestroyed"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "then",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, for each player, destroy up to one nonbasic land that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "For each player, destroy up to one nonbasic land that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each player, destroy up to one nonbasic land that player controls. For each land destroyed this way, its owner may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+      "When ~ enters, for each player, destroy up to one nonbasic land that player controls. For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield, then shuffle.",
+      "For each land destroyed this way, its controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.forEachPlayer.chooseTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "for each player , choose {o:PlayerTarget}",
+    "build": {
+      "lower": "chooseTargets",
+      "what": "$o"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each player, choose up to one other target artifact or creature that player controls. For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities."
+      },
+      {
+        "text": "When ~ enters, for each player, choose up to one target creature that player controls. For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each player, choose up to one other target artifact or creature you control. For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities.",
+      "When ~ enters, for each opponent, choose up to one target creature that player controls. Destroy the chosen permanents.",
+      "When ~ enters, choose up to one target creature that player controls. For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.stdrx30.whileSource.becomeTreasures.loseOtherAbilities",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2b",
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 111.10a"
+    ],
+    "pattern": "for as long as ~ remains on the battlefield , {o:Objs} become treasure artifacts with {a:Abilities} and lose all other abilities",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileSource",
+        "as": "onBattlefield"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact"
+                ]
+              },
+              "subtypes": {
+                "set": [
+                  "Treasure"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each player, choose up to one other target artifact or creature that player controls. For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities."
+      },
+      {
+        "text": "When ~ enters, for each player, choose up to one target creature that player controls. For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each player, choose up to one target creature that player controls. Until end of turn, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities.",
+      "When ~ enters, for each player, choose up to one target creature that player controls. For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\".",
+      "When ~ enters, for each player, choose up to one target creature that player controls. For as long as ~ remains on the battlefield, the chosen permanents become Food artifacts with \"{2}, {T}, Sacrifice this artifact: You gain 3 life\" and lose all other abilities."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.twoPlayersReveal.loseOthersManaValue.putIntoHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 202.3",
+      "CR 119.3"
+    ],
+    "pattern": "{t:Player} each reveal the top card of their library . they each lose life equal to the mana value of the card revealed by the other player . then they each put the card they revealed into their hand",
+    "build": [
+      {
+        "op": "forEach",
+        "over": "$t",
+        "as": "revealer",
+        "do": [
+          {
+            "op": "reveal",
+            "who": {
+              "ref": "bound",
+              "name": "revealer"
+            },
+            "what": {
+              "ref": "topCards",
+              "player": {
+                "ref": "bound",
+                "name": "revealer"
+              },
+              "count": 1
+            }
+          }
+        ]
+      },
+      {
+        "op": "forEach",
+        "over": "$t",
+        "as": "loser",
+        "do": [
+          {
+            "op": "loseLife",
+            "who": {
+              "ref": "bound",
+              "name": "loser"
+            },
+            "amount": {
+              "q": "stat",
+              "stat": "manaValue",
+              "of": {
+                "ref": "topCards",
+                "player": {
+                  "ref": "otherOf",
+                  "of": "$t",
+                  "than": {
+                    "ref": "bound",
+                    "name": "loser"
+                  }
+                },
+                "count": 1
+              }
+            }
+          }
+        ]
+      },
+      {
+        "op": "forEach",
+        "over": "$t",
+        "as": "taker",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "topCards",
+              "player": {
+                "ref": "bound",
+                "name": "taker"
+              },
+              "count": 1
+            },
+            "to": {
+              "zone": "hand"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, two target players each reveal the top card of their library. They each lose life equal to the mana value of the card revealed by the other player. Then they each put the card they revealed into their hand."
+      },
+      {
+        "text": "When ~ enters, two target players each reveal the top card of their library. They each lose life equal to the mana value of the card revealed by the other player. Then they each put the card they revealed into their hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, two target players each reveal the top card of their library. They each gain life equal to the mana value of the card revealed by the other player. Then they each put the card they revealed into their hand.",
+      "When ~ enters, two target players each reveal the top card of their library. They each lose life equal to the mana value of the card they revealed. Then they each put the card they revealed into their hand.",
+      "When ~ enters, two target players each reveal the top card of their library. They each lose life equal to the mana value of the card revealed by the other player. Then they each put the card they revealed into their graveyard."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.player.skipsNextXTurns.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 500.7"
+    ],
+    "pattern": "{p:Player} skip[s] ( their | your ) next x turns , where x is {q:Qty}",
+    "build": {
+      "op": "repeat",
+      "times": "$q",
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "replace",
+              "replaces": {
+                "ev": "beginTurn",
+                "whose": "$p"
+              },
+              "body": {
+                "b": "skip"
+              },
+              "shield": {
+                "uses": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "skip",
+      "next"
+    ],
+    "needs": [
+      "feature:shield.skip",
+      "feature:replace.on.turn"
+    ],
+    "examples": [
+      {
+        "text": "Flip three coins. Target opponent skips their next X turns, where X is the number of coins that came up heads."
+      },
+      {
+        "text": "-6: Flip four coins. Target opponent skips their next X turns, where X is the number of coins that came up heads."
+      }
+    ],
+    "counterExamples": [
+      "Flip three coins. Target opponent takes X extra turns, where X is the number of coins that came up heads.",
+      "Flip three coins. Target opponent skips their next X draw steps, where X is the number of coins that came up heads.",
+      "Flip three coins. Target opponent skips their next turn, where X is the number of coins that came up heads."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.extraTurn.forEachCoinHeads",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.7",
+      "CR 705.1",
+      "CR 608.2c"
+    ],
+    "pattern": "take an extra turn after this one for each {n:Qty}",
+    "build": {
+      "op": "extraTurn",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "extra"
+    ],
+    "examples": [
+      {
+        "text": "Flip three coins. Take an extra turn after this one for each coin that comes up heads."
+      },
+      {
+        "text": "-8: Flip four coins. Take an extra turn after this one for each coin that comes up heads."
+      }
+    ],
+    "counterExamples": [
+      "Flip three coins. Take an extra turn after this one for each coin that comes up tails.",
+      "Flip three coins. Take an extra turn after this one for each creature you control.",
+      "Take an extra turn after this one for each coin that comes up heads."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.mayRevealExactlyFromOutside.opponentChooses",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.11b",
+      "CR 201.2",
+      "CR 701.20a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal exactly {n:Qty} cards you own with different names from outside the game . an opponent chooses one of them . you put that card into your hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "fromOutside",
+          "who": {
+            "ref": "you"
+          },
+          "reveal": true,
+          "exactly": "$n",
+          "differentNames": true,
+          "chooser": {
+            "ref": "anOpponent"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "exactly",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal exactly three cards you own with different names from outside the game. An opponent chooses one of them. You put that card into your hand."
+      },
+      {
+        "text": "When ~ enters, you may reveal exactly two cards you own with different names from outside the game. An opponent chooses one of them. You put that card into your hand."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal exactly three cards you own from outside the game. An opponent chooses one of them. You put that card into your hand.",
+      "You may reveal exactly three cards you own with different names from outside the game. You choose one of them. You put that card into your hand.",
+      "You may reveal exactly three cards you own with different names from outside the game. An opponent chooses one of them. You put that card into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.searchLibraryAndOutside.opponentChoosesN",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.11b",
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 201.2",
+      "CR 701.20a",
+      "CR 608.2d",
+      "CR 701.24a"
+    ],
+    "pattern": "search your library and/or outside the game for exactly {n:Qty} {f:Filter} cards you own with different names , then reveal those cards . an opponent chooses {m:Qty} of them . put the chosen cards into your hand and shuffle the rest into your library",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "alsoOutside": true,
+        "filter": "$f",
+        "max": "$n",
+        "differentNames": true,
+        "reveal": true,
+        "as": "found"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "anOpponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "found"
+            },
+            "zone": "library"
+          }
+        },
+        "min": "$m",
+        "max": "$m",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "exactly",
+      "different",
+      "and/or",
+      "chosen",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Search your library and/or outside the game for exactly three artifact cards you own with different names, then reveal those cards. An opponent chooses one of them. Put the chosen cards into your hand and shuffle the rest into your library."
+      },
+      {
+        "text": "Search your library and/or outside the game for exactly four creature cards you own with different names, then reveal those cards. An opponent chooses two of them. Put the chosen cards into your hand and shuffle the rest into your library."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for exactly four creature cards you own with different names, then reveal those cards. An opponent chooses two of them. Put the chosen cards into your hand and shuffle the rest into your library.",
+      "Search your library and/or outside the game for exactly four creature cards you own with different names, then reveal those cards. You choose two of them. Put the chosen cards into your hand and shuffle the rest into your library.",
+      "Search your library and/or outside the game for exactly four creature cards you own with different names, then reveal those cards. An opponent chooses two of them. Put the chosen cards into your graveyard and shuffle the rest into your library."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.choose.targetPlayer.andTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose {p:Player} and {o:Targets}",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "union",
+        "of": [
+          "$p",
+          "$o"
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, choose target opponent and up to one target creature they control. They reveal their hand. You may exile a nonland card from their hand or the chosen creature until ~ leaves the battlefield."
+      },
+      {
+        "text": "When ~ enters, choose target opponent and up to one target artifact they control. They reveal their hand. You may exile a nonland card from their hand or the chosen artifact until ~ leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target opponent and up to one target creature you control. They reveal their hand. You may exile a nonland card from their hand or the chosen creature until ~ leaves the battlefield.",
+      "When ~ enters, choose an opponent and up to one target creature they control. They reveal their hand. You may exile a nonland card from their hand or the chosen creature until ~ leaves the battlefield.",
+      "When ~ enters, choose target opponent and up to one target creature they control. They reveal their hand. You may exile a nonland card from their hand or the chosen creature."
+    ]
+  },
+  {
+    "id": "eff.stdrx30.exile.handCardOrObj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 610.3",
+      "CR 608.2c",
+      "CR 115.1"
+    ],
+    "pattern": "exile ( a | an ) {c:HandCard} or {o:Obj} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "union",
+          "of": [
+            "$c",
+            {
+              "ref": "each",
+              "filter": {
+                "is": "$o"
+              }
+            }
+          ]
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "until": "$d"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, choose target opponent and up to one target creature they control. They reveal their hand. You may exile a nonland card from their hand or the chosen creature until ~ leaves the battlefield."
+      },
+      {
+        "text": "When ~ enters, choose target opponent and up to one target artifact they control. They reveal their hand. You may exile a creature card from their hand or the chosen artifact until ~ leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target opponent and up to one target creature they control. They reveal their hand. You may exile a nonland card from your graveyard or the chosen creature until ~ leaves the battlefield.",
+      "When ~ enters, choose target opponent and up to one target creature they control. They reveal their hand. You may exile two nonland cards from their hand or the chosen creature until ~ leaves the battlefield."
+    ]
+  },
+  {
+    "id": "rid.stdrx30.countered.ifSpellOfKind.exileInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 608.2c",
+      "CR 614.15"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} is countered this way , exile it instead of putting it into its owner 's graveyard",
+    "build": {
+      "$patchPrevious": {
+        "to": {
+          "@new": {
+            "zone": "exile"
+          }
+        },
+        "toIf": {
+          "@new": "$f"
+        }
+      }
+    },
+    "attachTo": "counter",
+    "consumes": [
+      "if",
+      "this way",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Counter target noncreature spell. If a permanent spell is countered this way, exile it instead of putting it into its owner's graveyard. You may cast that card without paying its mana cost for as long as it remains exiled."
+      },
+      {
+        "text": "Counter target spell. If a creature spell is countered this way, exile it instead of putting it into its owner's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell. If a permanent spell is countered this way, exile it.",
+      "Draw a card. If a permanent spell is countered this way, exile it instead of putting it into its owner's graveyard."
+    ]
+  },
+  {
+    "id": "rid.stdrx30.countered.abilityOf.sourceLosesAllAbilities",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 113.7",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "if an ability of ( a | an ) {f:Filter} is countered this way , that permanent loses all abilities {d:Dur}",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to": null
+        },
+        "sourceEffect": {
+          "@new": {
+            "filter": "$f",
+            "duration": "$d",
+            "mods": [
+              {
+                "layer": 6,
+                "removeAll": true
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "counter",
+    "consumes": [
+      "if",
+      "this way",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, counter up to one target activated or triggered ability. If an ability of an artifact, creature, or planeswalker is countered this way, that permanent loses all abilities for as long as this creature remains on the battlefield."
+      },
+      {
+        "text": "Counter target activated ability. If an ability of a creature is countered this way, that permanent loses all abilities until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Counter target activated ability. If an ability of a creature is countered this way, that permanent loses flying until end of turn.",
+      "Draw a card. If an ability of a creature is countered this way, that permanent loses all abilities until end of turn."
+    ]
+  }
+]

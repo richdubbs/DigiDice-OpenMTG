@@ -1,0 +1,7 @@
+# std-control-1 (lane std-control; test/cloud/std-control-1, golden std-control-1-review.json): speed reduced with a floor, "during that turn" of an extra
+# turn, "until this card is cast from exile", for each color and five Dragons, the chosen creature and the chosen player of another ability
+Call the Spirit Dragons
+Emrakul, the Exigent Doom
+Kang the Conqueror
+Spikeshell Harrier
+Zenos yae Galvus // Shinryu, Transcendent Rival

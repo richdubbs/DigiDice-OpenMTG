@@ -1,0 +1,534 @@
+/* Milestone 13: Play on the DigiDice server: the entry screen and the waiting room, and what the game screen adds (clocks, rope, notices, chat, result). Colors come from the theme's variables (theme/styles.css). */
+
+.hosted-screen {
+  max-width: 980px;
+}
+
+.hosted-panel {
+  margin: 0 0 16px;
+  padding: 16px 20px;
+}
+
+.hosted-panel h2 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+}
+
+.hosted-panel h3 {
+  margin: 12px 0 4px;
+  font-size: 1rem;
+}
+
+.hosted-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 16px;
+}
+
+.hosted-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hosted-form input,
+.hosted-form select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.hosted-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px 24px;
+  margin: 12px 0 0;
+}
+
+.hosted-choice {
+  padding: 4px 0;
+}
+
+.hosted-choice h2 {
+  margin: 0 0 6px;
+}
+
+.hosted-code-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.hosted-code-field input {
+  max-width: 100%;
+  box-sizing: border-box;
+  letter-spacing: 0.06em;
+}
+
+.hosted-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 10px 0;
+}
+
+.hosted-status {
+  font-weight: 600;
+}
+
+.hosted-error {
+  color: var(--accent-2);
+}
+
+.hosted-error p {
+  margin: 0 0 6px;
+}
+
+.hosted-error ul {
+  margin: 0;
+}
+
+.hosted-note {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.hosted-notes {
+  margin: 4px 0;
+  padding-left: 20px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* M13-12: who can join a new table, the lobby browser, quick match and the wait for room. */
+.hosted-visibility {
+  margin: 6px 0;
+  padding: 0;
+  border: 0;
+}
+
+.hosted-visibility legend {
+  padding: 0;
+  margin: 0 0 4px;
+}
+
+.hosted-visibility label,
+.hosted-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0;
+}
+
+.hosted-form .hosted-check {
+  flex-direction: row;
+  align-self: end;
+}
+
+.hosted-check input,
+.hosted-form .hosted-check input {
+  width: auto;
+}
+
+.hosted-link-button {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+}
+
+.hosted-tables {
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hosted-tables > li {
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--border, rgba(127, 127, 127, 0.3));
+  overflow-wrap: anywhere;
+}
+
+.hosted-tables > li .hosted-buttons {
+  margin: 6px 0 0;
+}
+
+.hosted-table-lock,
+.hosted-table-meta {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.hosted-inline-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 6px 0 0;
+  max-width: 420px;
+}
+
+.hosted-inline-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hosted-inline-form textarea,
+.hosted-inline-form input {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.hosted-pager {
+  justify-content: center;
+}
+
+.hosted-capacity {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border: 1px dashed var(--text-muted);
+  border-radius: 8px;
+}
+
+/* The waiting room. */
+.hosted-seats,
+.hosted-codes ul {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.hosted-seats li,
+.hosted-codes li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+
+.hosted-seats li[data-open] {
+  color: var(--text-muted);
+}
+
+.hosted-seats li[data-ready] {
+  color: var(--neon, #1fb8ff);
+}
+
+.hosted-seat-state {
+  color: var(--text-muted);
+}
+
+.hosted-code {
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+
+.hosted-ready {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border: 1px solid var(--neon, #1fb8ff);
+  border-radius: 8px;
+}
+
+.hosted-chat-box {
+  margin: 8px 0;
+}
+
+.hosted-chat-box summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* The chat, in the room and in the game's overlay. */
+.hosted-chat-lines {
+  max-height: 8.5em;
+  overflow-y: auto;
+  margin: 4px 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+
+.hosted-chat-form {
+  display: flex;
+  gap: 6px;
+}
+
+.hosted-chat-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* In the game screen's prompt slot (the rail). */
+.hosted-game {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 6px;
+}
+
+.hosted-clock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.hosted-clock-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
+  min-width: 0;
+}
+
+.hosted-clock-list li[data-running] .hosted-clock-bank {
+  color: var(--neon, #1fb8ff);
+  font-weight: 700;
+}
+
+.hosted-clock-list li[data-running]::before {
+  content: '▶';
+  font-size: 0.7em;
+  color: var(--neon, #1fb8ff);
+}
+
+.hosted-clock-list li[data-urgent] .hosted-clock-bank {
+  color: var(--accent-2);
+}
+
+.hosted-clock-list li[data-state='away'] .hosted-clock-name,
+.hosted-clock-list li[data-state='away'] .hosted-clock-away {
+  color: var(--accent-2);
+}
+
+.hosted-clock-list li[data-state='left'] {
+  color: var(--text-muted);
+}
+
+.hosted-clock-name {
+  font-weight: 600;
+}
+
+.hosted-clock-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.hosted-clock-abandon {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--accent-2);
+}
+
+/* The rope: the countdown beside the prompt's buttons on the table, once the free delay of the decision is spent. */
+.hosted-rope {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid rgba(var(--neon-rgb), 0.35);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(10, 24, 52, 0.72), rgba(3, 10, 26, 0.86));
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+}
+
+.hosted-rope[data-urgent] {
+  border-color: var(--accent-2);
+  animation: hosted-rope-urgent 1s ease-in-out infinite;
+}
+
+.hosted-rope-bar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.hosted-rope-bar > span {
+  display: block;
+  height: 100%;
+  margin-left: auto;
+  border-radius: 3px;
+  background: var(--neon, #1fb8ff);
+  transition: width 0.25s linear;
+}
+
+.hosted-rope[data-urgent] .hosted-rope-bar > span {
+  background: var(--accent-2);
+}
+
+@keyframes hosted-rope-urgent {
+  50% {
+    box-shadow: 0 0 14px var(--accent-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hosted-rope[data-urgent] {
+    animation: none;
+  }
+
+  .hosted-rope-bar > span {
+    transition: none;
+  }
+}
+
+.hosted-proposal {
+  padding: 8px 12px;
+  border: 1px solid var(--neon, #1fb8ff);
+  border-radius: 8px;
+}
+
+.hosted-proposal p,
+.hosted-proposal ul {
+  margin: 0 0 4px;
+}
+
+.hosted-proposal-text {
+  font-style: italic;
+  white-space: pre-wrap;
+}
+
+.hosted-reason {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+}
+
+/* One compact line in the rail: the latest news and the chat button; the chat itself opens over the table's right edge (the rail never moves). */
+.hosted-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.hosted-news-latest {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hosted-chat-toggle {
+  flex: none;
+  margin-left: auto;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+}
+
+.hosted-chat-toggle[data-unread] {
+  border-color: var(--neon, #1fb8ff);
+  box-shadow: 0 0 10px rgba(31, 184, 255, 0.45);
+}
+
+.hosted-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  width: min(360px, 46%);
+  height: min(420px, calc(100% - 170px));
+  min-height: 180px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(31, 184, 255, 0.45);
+  background: linear-gradient(180deg, rgba(8, 20, 44, 0.98), rgba(3, 8, 20, 0.98));
+  box-shadow: 0 0 26px rgba(31, 184, 255, 0.18), 0 18px 40px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+}
+
+.hosted-overlay-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hosted-overlay-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.hosted-overlay-close {
+  padding: 0 8px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.hosted-news {
+  flex: none;
+  max-height: 6.5em;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0 0 4px;
+  border-bottom: 1px solid rgba(31, 184, 255, 0.25);
+  list-style: none;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.hosted-overlay .hosted-chat {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.hosted-overlay .hosted-chat-lines {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+/* The result with the public placements. */
+.hosted-result {
+  padding: 8px 12px;
+  border: 1px solid rgba(var(--neon-rgb), 0.35);
+  border-radius: 8px;
+}
+
+.hosted-result h2 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.hosted-placements {
+  margin: 4px 0 0;
+  padding-left: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
+.hosted-placements li[data-you] {
+  font-weight: 700;
+}

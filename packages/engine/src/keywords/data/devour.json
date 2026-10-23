@@ -1,0 +1,59 @@
+{
+  "name": "devour",
+  "rule": "702.82",
+  "params": [
+    {
+      "name": "filter",
+      "type": "filter",
+      "optional": true
+    },
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "replacement",
+    "expands"
+  ],
+  "reminder": "As this creature enters, you may sacrifice any number of creatures. It enters with {n} times that many +1/+1 counters on it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "{printed}",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "devour": {
+              "filter": {
+                "$ifParam": "filter",
+                "then": "$filter",
+                "else": {
+                  "types": [
+                    "Creature"
+                  ]
+                }
+              },
+              "times": "$amount"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

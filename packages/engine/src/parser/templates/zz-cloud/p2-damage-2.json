@@ -1,0 +1,120 @@
+[
+  {
+    "id": "eff.p2damage2.damage.toItsController.unlessSacrificesIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 120.3",
+      "CR 701.21a"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to its controller unless that player sacrifices it",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$src"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": {
+              "is": "$src"
+            },
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "controllerOf",
+            "object": "$src"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When this enchantment enters, target artifact deals damage equal to its mana value to its controller unless that player sacrifices it."
+      },
+      {
+        "text": "At the beginning of your upkeep, target enchantment deals damage equal to its mana value to its controller unless that player sacrifices it."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target enchantment deals damage equal to its mana value to its owner unless that player sacrifices it.",
+      "At the beginning of your upkeep, target enchantment deals damage equal to its mana value to its controller unless you sacrifice it.",
+      "At the beginning of your upkeep, target enchantment deals damage equal to its mana value to its controller if that player sacrifices it."
+    ]
+  },
+  {
+    "id": "eff.p2damage2.forEach.token.fightsDifferent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 701.7a",
+      "CR 701.14a",
+      "CR 608.2d"
+    ],
+    "pattern": "for each {f:Filter} , create ( a | an ) {t:TokenDesc} . each of those tokens fights a different one of those creatures",
+    "build": [
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        },
+        "token": "$t",
+        "as": "fighters"
+      },
+      {
+        "op": "fight",
+        "a": {
+          "ref": "bound",
+          "name": "fighters"
+        },
+        "b": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "pairs": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "For each creature your opponents control, create a 3/3 green Beast creature token. Each of those tokens fights a different one of those creatures."
+      },
+      {
+        "text": "For each creature your opponents control, create a 2/2 black Zombie creature token. Each of those tokens fights a different one of those creatures."
+      }
+    ],
+    "counterExamples": [
+      "For each creature your opponents control, create a 2/2 black Zombie creature token. Each of those tokens fights one of those creatures.",
+      "For each creature your opponents control, create a 2/2 black Zombie creature token. Each of those tokens fights a different one of those artifacts.",
+      "For each creature your opponents control, create two 2/2 black Zombie creature tokens. Each of those tokens fights a different one of those creatures."
+    ]
+  }
+]

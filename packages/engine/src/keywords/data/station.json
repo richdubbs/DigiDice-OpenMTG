@@ -1,0 +1,54 @@
+{
+  "name": "station",
+  "rule": "702.184",
+  "params": [],
+  "mechanisms": [
+    "expands",
+    "structural"
+  ],
+  "reminder": "Tap another creature you control: Put charge counters equal to its power on this Spacecraft. Station only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "Station",
+      "cost": {
+        "other": [
+          {
+            "kind": "tapUntapped",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            },
+            "count": 1,
+            "other": true
+          }
+        ]
+      },
+      "sorcerySpeed": true,
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "charge",
+            "count": {
+              "q": "stat",
+              "stat": "power",
+              "of": {
+                "ref": "costTapped"
+              },
+              "station": true
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

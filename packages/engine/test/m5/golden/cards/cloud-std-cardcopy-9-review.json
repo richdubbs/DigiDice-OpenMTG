@@ -1,0 +1,159 @@
+[
+ {
+  "card": "Koh, the Face Stealer",
+  "expect": "full",
+  "verified": "std-cardcopy-9 review (lane std-cardcopy; Standard), by hand against the Oracle text and the rules cited: when it enters, exile up to one other target creature; whenever another nontoken creature dies, its controller may exile it; both exiles are 'exiled with Koh' (linked, link exiled: several exiling abilities, parser/parse.ts#readsOnlyExiledWith); Pay 1 life: choose a creature card exiled with it, kept by Koh as the last chosen card (chooseObjects link lastChosen, the existing std-control-1 link, which a new resolution replaces) (eff.stdcardcopy9.choose.creatureCardExiledWith.last); it has all activated and triggered abilities of that card (sta.stdcardcopy9.self.hasAllActivatedAndTriggered.lastChosen; layer 6 addActivatedOf with alsoTriggered). (CR 607.2a, 607.2d, 608.2d, 613.1f, 604.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "link": "exiled",
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "link": "exiled",
+           "op": "move",
+           "to": {
+            "zone": "exile"
+           },
+           "what": {
+            "ref": "event",
+            "role": "subject"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "other": true,
+          "token": false,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "other": [
+        {
+         "amount": 1,
+         "kind": "payLife"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "is": {
+            "link": "exiled",
+            "ref": "linked"
+           },
+           "types": [
+            "Creature"
+           ],
+           "zone": "exile"
+          },
+          "ref": "each"
+         },
+         "link": "lastChosen",
+         "max": 1,
+         "min": 1,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     },
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "addActivatedOf": {
+           "link": "lastChosen",
+           "ref": "linked"
+          },
+          "alsoTriggered": true,
+          "layer": 6
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ }
+]

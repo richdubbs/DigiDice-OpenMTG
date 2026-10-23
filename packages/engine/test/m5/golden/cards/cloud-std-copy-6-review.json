@@ -1,0 +1,229 @@
+[
+ {
+  "card": "Taigam, Master Opportunist",
+  "expect": "full",
+  "verified": "std-copy-6 review (lane std-copy; Standard), by hand against the Oracle text and the rules cited: flurry is an ability word; whenever its controller casts their second spell each turn, they copy that spell, then exile the spell itself from the stack with four time counters on it (a card in exile now, CR 400.7); if that card doesn't have suspend, it gains suspend for as long as it stays in exile, so it is suspended and its two suspend abilities work there: a time counter removed at its owner's upkeep, and when the last is removed it may be cast without paying its mana cost, with haste if it is a creature (eff.stdcopy6.copy.thenExileSpellCast.timeCounters.gainsSuspend; granted suspend collected in exile by triggers/collect.ts#grantedAway). (CR 601.2i, 707.10, 400.7, 122.1, 702.62a, 702.62b, 113.6, 611.2c, 613.1f; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "as": "b0",
+         "op": "move",
+         "to": {
+          "counters": [
+           {
+            "count": 4,
+            "kind": "time"
+           }
+          ],
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "event",
+          "role": "spell"
+         }
+        },
+        {
+         "cond": {
+          "cond": "not",
+          "of": {
+           "cond": "matches",
+           "filter": {
+            "keyword": "suspend"
+           },
+           "object": {
+            "name": "b0",
+            "ref": "bound"
+           }
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "affects": {
+              "name": "b0",
+              "ref": "bound"
+             },
+             "mods": [
+              {
+               "add": [
+                {
+                 "keyword": "suspend",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "nth": 2,
+         "player": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Firebender Ascension",
+  "expect": "full",
+  "verified": "std-copy-6 review (lane std-copy; Standard), by hand against the Oracle text and the rules cited: when it enters, create a 2/2 red Soldier creature token with firebending 1 (eff.token.you, unchanged); whenever a creature its controller controls attacking causes a triggered ability of that creature to trigger, it triggers too and both are put on the stack at once: put a quest counter on it, then if it has four or more quest counters, they may copy that triggered ability while it is still on the stack, choosing new targets for the copy (trg.stdcopy6.attackingCausesTrigger; event abilityTriggered with causedBy attacking, triggers/collect.ts#metaEvents; eff.counters.put, eff.t34.thenIf, ch.may, eff.copy.spell, rid.copy.newTargets). (CR 603.2, 603.3b, 508.1m, 122.1, 608.2c, 608.2d, 707.10, 707.10c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "amount": 1,
+            "keyword": "firebending",
+            "kind": "keyword"
+           }
+          ],
+          "colors": [
+           "R"
+          ],
+          "power": 2,
+          "subtypes": [
+           "Soldier"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "quest",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "counters": {
+            "cmp": {
+             "op": ">=",
+             "value": 4
+            },
+            "kind": "quest"
+           }
+          },
+          "object": {
+           "ref": "self"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "do": [
+            {
+             "newTargets": "may",
+             "op": "copy",
+             "result": "spell",
+             "what": {
+              "ref": "event",
+              "role": "spell"
+             },
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "op": "may",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "causedBy": "attacking",
+         "ev": "abilityTriggered",
+         "of": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

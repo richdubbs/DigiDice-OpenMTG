@@ -1,0 +1,126 @@
+{
+  "name": "rampage",
+  "rule": "702.23",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature becomes blocked, it gets +{n}/+{n} until end of turn for each creature blocking it beyond the first.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ becomes blocked, it gets +{n}/+{n} until end of turn for each creature blocking it beyond the first.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "becomesBlocked",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": {
+                      "q": "math",
+                      "op": "*",
+                      "args": [
+                        "$amount",
+                        {
+                          "q": "math",
+                          "op": "max",
+                          "args": [
+                            0,
+                            {
+                              "q": "math",
+                              "op": "-",
+                              "args": [
+                                {
+                                  "q": "count",
+                                  "of": {
+                                    "ref": "each",
+                                    "filter": {
+                                      "types": [
+                                        "Creature"
+                                      ],
+                                      "blockingObject": {
+                                        "ref": "self"
+                                      }
+                                    }
+                                  }
+                                },
+                                1
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "toughness": {
+                      "q": "math",
+                      "op": "*",
+                      "args": [
+                        "$amount",
+                        {
+                          "q": "math",
+                          "op": "max",
+                          "args": [
+                            0,
+                            {
+                              "q": "math",
+                              "op": "-",
+                              "args": [
+                                {
+                                  "q": "count",
+                                  "of": {
+                                    "ref": "each",
+                                    "filter": {
+                                      "types": [
+                                        "Creature"
+                                      ],
+                                      "blockingObject": {
+                                        "ref": "self"
+                                      }
+                                    }
+                                  }
+                                },
+                                1
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

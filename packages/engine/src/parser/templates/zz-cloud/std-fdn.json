@@ -1,0 +1,251 @@
+[
+  {
+    "id": "trg.stdfdn.attacks.firstEachTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c"
+    ],
+    "pattern": "whenever ~ attacks for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "self": true
+          }
+        }
+      ],
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks for the first time each turn, draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks for the first time each turn, untap all lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks for the first time each combat, draw a card.",
+      "Whenever ~ attacks for the second time each turn, draw a card.",
+      "Whenever ~ blocks for the first time each turn, draw a card."
+    ]
+  },
+  {
+    "id": "eff.stdfdn.extraPhase.combat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1a"
+    ],
+    "pattern": "( after this phase , there is an additional combat phase | there is an additional combat phase after this phase )",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat"
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks for the first time each turn, untap all lands you control. After this phase, there is an additional combat phase."
+      },
+      {
+        "text": "Untap all creatures you control. After this phase, there is an additional combat phase."
+      },
+      {
+        "text": "Untap all creatures you control and there is an additional combat phase after this phase."
+      }
+    ],
+    "counterExamples": [
+      "Untap all creatures you control. After this phase, there is an additional main phase.",
+      "Untap all creatures you control. After this turn, there is an additional combat phase.",
+      "Untap all creatures you control. After this phase, there are two additional combat phases."
+    ]
+  },
+  {
+    "id": "eff.stdfdn.prevent.combat.to.obj.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 510.2",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Untap target creature. Prevent all combat damage that would be dealt to it this turn."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to target creature you control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt by target creature you control this turn.",
+      "Prevent all noncombat damage that would be dealt to target creature you control this turn.",
+      "Prevent all combat damage that would be dealt to target creature you control."
+    ],
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ]
+  },
+  {
+    "id": "rep.stdfdn.filter.anywhere.exile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 400.7"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} would be put into a graveyard from anywhere , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": "$f",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If an artifact or enchantment card would be put into a graveyard from anywhere, exile it instead."
+      },
+      {
+        "text": "If a creature card would be put into a graveyard from anywhere, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "If an artifact or enchantment card would be put into your graveyard from anywhere, exile it instead.",
+      "If an artifact or enchantment card would be put into a graveyard from the battlefield, exile it instead.",
+      "If an artifact or enchantment card would be put into a graveyard from anywhere, shuffle it into its owner's library instead."
+    ]
+  },
+  {
+    "id": "trg.stdfdn.sourceYouControl.noncombatDamage.opponent",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 120.1",
+      "CR 120.2",
+      "CR 609.7"
+    ],
+    "pattern": "whenever a source you control deals noncombat damage to an opponent",
+    "build": {
+      "on": [
+        {
+          "ev": "damage",
+          "source": {
+            "controller": "you"
+          },
+          "combat": false,
+          "recipient": {
+            "player": "opponent"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a source you control deals noncombat damage to an opponent, you gain that much life."
+      },
+      {
+        "text": "Whenever a source you control deals noncombat damage to an opponent, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a source you control deals combat damage to an opponent, scry 1.",
+      "Whenever a source an opponent controls deals noncombat damage to you, scry 1.",
+      "Whenever a source you control deals noncombat damage to a creature, scry 1."
+    ]
+  },
+  {
+    "id": "sta.stdfdn.spendAnyType.toCast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 601.2h",
+      "CR 601.3e",
+      "CR 106.1"
+    ],
+    "pattern": "you can spend mana of any type to cast {f:Filter}",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "spendMana",
+      "asThough": "any type",
+      "of": "$f"
+    },
+    "examples": [
+      {
+        "text": "You can spend mana of any type to cast artifact spells."
+      },
+      {
+        "text": "You can spend mana of any type to cast Dragon spells."
+      }
+    ],
+    "counterExamples": [
+      "You can spend mana of any color to cast artifact spells.",
+      "You can spend mana of any type to activate abilities of artifacts you control.",
+      "Your opponents can spend mana of any type to cast artifact spells."
+    ]
+  }
+]

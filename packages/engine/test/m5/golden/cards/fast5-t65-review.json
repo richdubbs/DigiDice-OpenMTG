@@ -1,0 +1,2384 @@
+[
+ {
+  "card": "Kheru Goldkeeper",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.put.nAndKeyword): CR 122.1b, 122.1, 602.5d, 602.2: the Renew ability (activate only as a sorcery, from the graveyard) exiles the card as a cost and targets one creature; resolving it puts two +1/+1 counters and a flying counter on that creature: two putCounters steps of one resolution, the second kind a keyword counter that gives its keyword (CR 122.1b). The other lines are flying and the Treasure trigger of CR 603.2c.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Treasure"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "graveyard",
+         "subject": {
+          "isCard": true,
+          "owner": "you"
+         }
+        }
+       ],
+       "while": {
+        "cond": "turnOf",
+        "whose": "you"
+       }
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "kind": "exileFrom",
+         "self": true,
+         "zone": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "kind": "+1/+1",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        },
+        {
+         "count": 1,
+         "kind": "flying",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated",
+      "sorcerySpeed": true,
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sagu Pummeler",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.put.nAndKeyword): CR 122.1b, 122.1, 602.5d: Renew {4}{G} exiles the card from the graveyard (cost), targets a creature, puts two +1/+1 counters and a reach counter on it (a reach counter gives reach, CR 122.1b); activate only as a sorcery. The first line is reach.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "reach",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 4,
+         "kind": "generic"
+        },
+        {
+         "color": "G",
+         "kind": "colored"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "kind": "exileFrom",
+         "self": true,
+         "zone": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "kind": "+1/+1",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        },
+        {
+         "count": 1,
+         "kind": "reach",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated",
+      "sorcerySpeed": true,
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dust Animus",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (rep.t65.enters.counters.keyword.ifControl): CR 614.1c, 614.12, 122.6, 122.1b, 608.2c: a replacement effect of the object itself as it enters (zones stack and battlefield): when you control five or more untapped lands as it would enter, it enters with two +1/+1 counters and a lifelink counter. The condition is judged as the event happens (the static `condition`), the two counters are part of the one entering. The other lines are flying and plot {1}{W}.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "condition": {
+       "atLeast": 5,
+       "cond": "exists",
+       "of": {
+        "filter": {
+         "controller": "you",
+         "tapped": false,
+         "types": [
+          "Land"
+         ]
+        },
+        "ref": "each"
+       }
+      },
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": 2,
+           "kind": "+1/+1"
+          },
+          {
+           "count": 1,
+           "kind": "lifelink"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "plot",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sahagin",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.put.self.cantBeBlocked): CR 122.1, 509.1b, 611.2a, 603.4, 601.2h: a cast trigger of a noncreature spell with the intervening \"if at least four mana was spent to cast it\" (the spell itself, `spellManaSpent`); it puts one +1/+1 counter on ~ and a continuous effect until end of turn that makes ~ unable to be blocked (the restriction `beBlocked`). \"it\" is the creature with the counter, not the spell.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "action": "beBlocked",
+           "mode": "cant",
+           "s": "restrict",
+           "subject": {
+            "ref": "self"
+           }
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "of": {
+         "ref": "event",
+         "role": "spell"
+        },
+        "q": "spellManaSpent"
+       },
+       "op": ">=",
+       "right": 4
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "notTypes": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Biogenic Upgrade",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.distribute.thenDouble): CR 601.2d, 122.1, 701.10e, 608.2b: one target spec of one to three creatures with `divide` counters, total three (each target gets at least one, announced on casting); the putCounters step puts the announced shares; doubling the +1/+1 counters on each of those creatures is the doubleCounters action on the same targets, one object at a time (CR 701.10e): each target gets as many as it has then, the shares included.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 3,
+         "kind": "+1/+1",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        },
+        {
+         "action": "doubleCounters",
+         "arg": "+1/+1",
+         "op": "action",
+         "subject": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "divide": {
+          "total": 3,
+          "what": "counters"
+         },
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 3,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bioengineered Future",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (rep.t65.each.enters.additionalCounter.forEach): CR 614.1c, 614.12, 122.6, 603.6a, 608.2h: the Lander trigger (existing); a static replacement of every creature you control entering: it enters with an additional +1/+1 counter for each land that entered the battlefield under your control this turn, counted from the turn's history (`happenedCount` of the zone changes of lands you control to the battlefield, scope turn) when the creature enters.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Lander"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "count": {
+            "event": {
+             "ev": "zoneChange",
+             "subject": {
+              "controller": "you",
+              "types": [
+               "Land"
+              ]
+             },
+             "to": "battlefield"
+            },
+            "q": "happenedCount",
+            "scope": "turn"
+           },
+           "kind": "+1/+1"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Robot Domination",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.draw.loseLife.putCounter): CR 121.1, 119.3, 122.1, 603.2c, 608.2c: the batch trigger for one or more creature cards put into your graveyard from anywhere draws a card, loses 1 life and puts a plan counter on ~ (three steps, in order, all by you). The second trigger fires when the third plan counter is put on ~ (counters event, atLeast 3): sacrifice it (the permanent whose counter it was) and create three 2/2 colorless Robot Villain artifact creature tokens.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "amount": 1,
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "kind": "plan",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "isCard": true,
+          "owner": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        },
+        {
+         "count": 3,
+         "op": "createToken",
+         "token": {
+          "colors": [],
+          "power": 2,
+          "subtypes": [
+           "Robot",
+           "Villain"
+          ],
+          "toughness": 2,
+          "types": [
+           "Artifact",
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "atLeast": 3,
+         "change": "put",
+         "ev": "counters",
+         "kind": "plan",
+         "on": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Anim Pakal, Thousandth Moon",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.put.thenTokensAttacking.whereX): CR 508.4, 111.2, 122.1, 608.2h, 107.3, 603.2c: whenever you attack with one or more non-Gnome creatures (batch attack trigger, count 1 or more) put a +1/+1 counter on ~ FIRST, then create X 1/1 colorless Gnome artifact creature tokens tapped and attacking, X being the number of +1/+1 counters on ~ when that step runs (the substitution happens in the createToken count, not before the counter). Tokens put onto the battlefield attacking were never declared as attackers (CR 508.4), so the attack trigger does not fire for them.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "attacking": true,
+         "count": {
+          "kind": "+1/+1",
+          "on": {
+           "ref": "self"
+          },
+          "q": "counters"
+         },
+         "op": "createToken",
+         "tapped": true,
+         "token": {
+          "colors": [],
+          "power": 1,
+          "subtypes": [
+           "Gnome"
+          ],
+          "toughness": 1,
+          "types": [
+           "Artifact",
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "attacker": {
+          "controller": "you",
+          "notSubtypes": [
+           "Gnome"
+          ],
+          "types": [
+           "Creature"
+          ]
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Karn, Gilded Guardian",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.draw.forEachColorAmong): CR 105.1, 121.1, 608.2h, 109.2: the enters trigger draws one card for each color among the other artifacts you control (the distinct colors of the set, colorless is no color, `other` excludes ~ itself); vigilance and trample are the keyword lines.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "among": {
+           "filter": {
+            "controller": "you",
+            "other": true,
+            "types": [
+             "Artifact"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "distinct",
+          "what": "colors"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Soul of Ravnica",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.draw.forEachColorAmong): CR 105.1, 121.1, 602.2, 602.5a: two activated abilities (one from the battlefield, one from the graveyard with \"Exile this card\" in its cost) that draw one card for each color among permanents you control (every permanent you control, ~ included while it is on the battlefield); flying is the first line.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 5,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "among": {
+           "filter": {
+            "controller": "you"
+           },
+           "ref": "each"
+          },
+          "q": "distinct",
+          "what": "colors"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 5,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "kind": "exileFrom",
+         "self": true,
+         "zone": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "among": {
+           "filter": {
+            "controller": "you"
+           },
+           "ref": "each"
+          },
+          "q": "distinct",
+          "what": "colors"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated",
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mondo Gecko",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.draw.forEachColorAmong): CR 105.1, 121.1, 510.2, 603.2: the combat damage trigger (~ deals combat damage to a player) draws one card for each color among permanents you control. The first ability ({1}, discard a card: becomes the color of your choice) stays manual, only its cost is automated. r5-fxb: the first ability is automated now: until end of turn it becomes the color you choose and gains hexproof from that color (eff.r5fxb.durFirst.becomesChosenColor.hexproofFromIt; CR 105.3, 702.11d, 613.1e-f); the card is full.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        }
+       ],
+       "other": [
+        {
+         "count": 1,
+         "kind": "discard"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "link": "hexproofColor",
+         "op": "chooseValue",
+         "what": "color",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "chosen",
+          "equals": "W",
+          "link": "hexproofColor"
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "colors": {
+                "set": [
+                 "W"
+                ]
+               },
+               "layer": 5
+              },
+              {
+               "add": [
+                {
+                 "keyword": "hexproof",
+                 "kind": "keyword",
+                 "quality": "color:W"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        },
+        {
+         "cond": {
+          "cond": "chosen",
+          "equals": "U",
+          "link": "hexproofColor"
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "colors": {
+                "set": [
+                 "U"
+                ]
+               },
+               "layer": 5
+              },
+              {
+               "add": [
+                {
+                 "keyword": "hexproof",
+                 "kind": "keyword",
+                 "quality": "color:U"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        },
+        {
+         "cond": {
+          "cond": "chosen",
+          "equals": "B",
+          "link": "hexproofColor"
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "colors": {
+                "set": [
+                 "B"
+                ]
+               },
+               "layer": 5
+              },
+              {
+               "add": [
+                {
+                 "keyword": "hexproof",
+                 "kind": "keyword",
+                 "quality": "color:B"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        },
+        {
+         "cond": {
+          "cond": "chosen",
+          "equals": "R",
+          "link": "hexproofColor"
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "colors": {
+                "set": [
+                 "R"
+                ]
+               },
+               "layer": 5
+              },
+              {
+               "add": [
+                {
+                 "keyword": "hexproof",
+                 "kind": "keyword",
+                 "quality": "color:R"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        },
+        {
+         "cond": {
+          "cond": "chosen",
+          "equals": "G",
+          "link": "hexproofColor"
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "colors": {
+                "set": [
+                 "G"
+                ]
+               },
+               "layer": 5
+              },
+              {
+               "add": [
+                {
+                 "keyword": "hexproof",
+                 "kind": "keyword",
+                 "quality": "color:G"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "among": {
+           "filter": {
+            "controller": "you"
+           },
+           "ref": "each"
+          },
+          "q": "distinct",
+          "what": "colors"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "combat": true,
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ],
+  "expect": "full"
+ },
+ {
+  "card": "Jadelight Spelunker",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.explores.xTimes): CR 701.44a, 107.3, 107.3m, 603.6a: the enters trigger of ~ makes the permanent itself explore X times, X being the X it was cast with (CR 107.3m: an ability of a permanent reads the X its spell had); `explore` with n = X repeats the whole process (reveal the top card, a land goes to the hand, otherwise a +1/+1 counter and the card may go to the graveyard). The controller of the creature explores.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "action": "explore",
+         "n": {
+          "q": "X"
+         },
+         "op": "action",
+         "subject": {
+          "ref": "self"
+         },
+         "who": {
+          "object": {
+           "ref": "self"
+          },
+          "ref": "controllerOf"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Malevolent Witchkite",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.sacrifice.anyNumber.thenDraw): CR 701.21a, 121.1, 608.2c, 608.2h: when it enters, you choose any number (none included) of the artifacts, enchantments and tokens YOU control (the filter lists the three kinds, the controller is you: \"sacrifice\" means your own permanents, CR 701.21a), sacrifice exactly those, then draw as many cards as were sacrificed (`resultCount` of the sacrifice step, the permanents actually sacrificed). Flying is the first line.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "anyOf": [
+            {
+             "token": true
+            },
+            {
+             "types": [
+              "Artifact"
+             ]
+            },
+            {
+             "types": [
+              "Enchantment"
+             ]
+            }
+           ],
+           "controller": "you"
+          },
+          "ref": "each"
+         },
+         "max": "any",
+         "min": 0,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "as": "b1",
+         "op": "sacrifice",
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        },
+        {
+         "count": {
+          "q": "resultCount",
+          "step": "b1"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mathemagics",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.draw.twoToTheX): CR 107.3, 107.1, 121.1, 608.2h: target player draws 2 to the power X cards, X chosen as the spell is cast ({X}{X}{U}{U}); the model has no power quantity, so the value is built by doubling 1 once for each X (let, then X times let n = n * 2) and the player draws that many. X = 0 draws one card (2 to the 0 is 1).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "name": "b0",
+         "op": "let",
+         "value": 1
+        },
+        {
+         "do": [
+          {
+           "name": "b0",
+           "op": "let",
+           "value": {
+            "args": [
+             2,
+             {
+              "name": "b0",
+              "q": "var"
+             }
+            ],
+            "op": "*",
+            "q": "math"
+           }
+          }
+         ],
+         "op": "repeat",
+         "times": {
+          "q": "X"
+         }
+        },
+        {
+         "count": {
+          "name": "b0",
+          "q": "var"
+         },
+         "op": "draw",
+         "who": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Turtles in Time",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.eachMay.shuffleHandGraveyard.thenDraw): CR 608.2d, 608.2e, 608.2f, 701.24a, 121.1, 101.4: return all creatures to their owners' hands (existing), then each player decides in APNAP order whether to shuffle their hand and graveyard into their library; each who did does it (move both zones into their own library, shuffle) and draws seven cards, one player at a time; the last sentence exiles the spell itself. The group `may` with the iterating player is the form of the earlier \"each player may discard their hand and draw seven cards\" (T20).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         }
+        },
+        {
+         "do": [
+          {
+           "op": "move",
+           "to": {
+            "owner": {
+             "ref": "iterating"
+            },
+            "zone": "library"
+           },
+           "what": {
+            "filter": {
+             "owner": {
+              "ref": "iterating"
+             },
+             "zone": "hand"
+            },
+            "ref": "each"
+           }
+          },
+          {
+           "op": "move",
+           "to": {
+            "owner": {
+             "ref": "iterating"
+            },
+            "zone": "library"
+           },
+           "what": {
+            "filter": {
+             "owner": {
+              "ref": "iterating"
+             },
+             "zone": "graveyard"
+            },
+            "ref": "each"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "ref": "iterating"
+           }
+          },
+          {
+           "count": 7,
+           "op": "draw",
+           "who": {
+            "ref": "iterating"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "each",
+          "who": "player"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Three Tree Scribe",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (trg.when; leaves the battlefield without dying): CR 700.4, 603.6c, 603.10a, 603.2: a leaves-the-battlefield trigger for ~ or another creature you control that went to any zone but a graveyard (hand, library, exile, command zone: the creature did not die, CR 700.4), looking back in time at the creature that left; it puts a +1/+1 counter on a target creature you control.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "self": true
+         },
+         "to": [
+          "command",
+          "exile",
+          "hand",
+          "library"
+         ]
+        },
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": [
+          "command",
+          "exile",
+          "hand",
+          "library"
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dour Port-Mage",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (trg.when; leaves the battlefield without dying): CR 700.4, 603.2c, 603.10a: \"one or more other creatures you control leave the battlefield without dying\" is the batch form of the same event: one trigger for creatures that leave together, you draw a card. The second ability returns another target creature you control to its owner's hand ({1}{U}, {T}), and the creature returned left the battlefield without dying, so the first ability can trigger from it.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": [
+          "command",
+          "exile",
+          "hand",
+          "library"
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Imperial Cosmographer",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (trg.when; leaves the battlefield without dying): CR 700.4, 603.6c, 603.10a: whenever another creature you control leaves the battlefield without dying, two +1/+1 counters are put on ~ (the creature that left is another creature, `other`, that went to hand, library, exile or the command zone); vigilance is the first line.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": [
+          "command",
+          "exile",
+          "hand",
+          "library"
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Long Feng, Grand Secretariat",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (trg.when; dies and is put into a graveyard share one wording): CR 700.4, 603.2, 603.6c: two events, another creature you control put into a graveyard from the battlefield (it dies) and a land you control put into a graveyard from the battlefield; either one triggers the ability once per object, and it puts a +1/+1 counter on a target creature you control. Both are zone changes from the battlefield to a graveyard, which Oracle writes with the one predicate for both subjects.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        },
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "controller": "you",
+          "types": [
+           "Land"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sharp-Eyed Rookie",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (trg.when; its power is greater than ~'s power or its toughness is greater than ~'s toughness): CR 603.4, 208.1, 122.1, 701.16a: whenever a creature you control enters, if its power is greater than ~'s power or its toughness is greater than ~'s toughness (two comparisons of the entering creature with ~, `any`), put a +1/+1 counter on ~ and investigate. The entering creature is the event subject (it may be ~ itself only by being equal in neither stat, so ~ entering never triggers it).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "action": "investigate",
+         "op": "action",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "any",
+       "of": [
+        {
+         "cond": "compare",
+         "left": {
+          "of": {
+           "ref": "event",
+           "role": "subject"
+          },
+          "q": "stat",
+          "stat": "power"
+         },
+         "op": ">",
+         "right": {
+          "of": {
+           "ref": "self"
+          },
+          "q": "stat",
+          "stat": "power"
+         }
+        },
+        {
+         "cond": "compare",
+         "left": {
+          "of": {
+           "ref": "event",
+           "role": "subject"
+          },
+          "q": "stat",
+          "stat": "toughness"
+         },
+         "op": ">",
+         "right": {
+          "of": {
+           "ref": "self"
+          },
+          "q": "stat",
+          "stat": "toughness"
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Political Triumph",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.sacrifice; serial comma joiner): CR 603.2, 122.1, 121.1, 608.2c, 701.21a: the first ability scries 1 and puts a plan counter on ~ when a creature you control enters; the second fires when the fourth plan counter is put on ~: sacrifice it (the enchantment), draw a card, and put a +1/+1 counter on each creature you control, in that order (a three-step sequence written with the serial comma).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "scry",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "kind": "plan",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        },
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "filter": {
+           "controller": "you",
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "atLeast": 4,
+         "change": "put",
+         "ev": "counters",
+         "kind": "plan",
+         "on": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Intimidation Campaign",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.loselife; serial comma joiner): CR 119.3, 119.4, 121.1, 603.6a, 700.13: when it enters, each opponent loses 1 life, you gain 1 life, and you draw a card (three steps in order, written with the serial comma); the second ability, whenever you commit a crime, lets you return the enchantment to its owner's hand.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": 1,
+         "op": "loseLife",
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        },
+        {
+         "amount": 1,
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "op": "move",
+           "to": {
+            "zone": "hand"
+           },
+           "what": {
+            "ref": "self"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "actor": "you",
+         "ev": "action",
+         "verb": "commitCrime"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Chromatic Orrery",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.draw.forEachColorAmong): CR 105.1, 121.1, 602.2: {5}, {T}: draw a card for each color among permanents you control (the distinct colors of every permanent you control); the first line (spend mana as though it were mana of any color) stays manual, the {T} line adds five colorless mana.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "manual",
+      "reason": "no template matches the sentence",
+      "shape": "static"
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "C"
+          ],
+          [
+           "C"
+          ],
+          [
+           "C"
+          ],
+          [
+           "C"
+          ],
+          [
+           "C"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 5,
+         "kind": "generic"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": {
+          "among": {
+           "filter": {
+            "controller": "you"
+           },
+           "ref": "each"
+          },
+          "q": "distinct",
+          "what": "colors"
+         },
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Guide of Souls",
+  "expect": "full",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.put.nAndKeyword): CR 603.12, 122.1b, 122.1: the reflexive trigger after paying {E}{E}{E} puts two +1/+1 counters and a flying counter on the target attacking creature (two putCounters steps of one resolution); the sentence \"It becomes an Angel in addition to its other types\" stays manual, so only the automated nodes are checked. Updated by EDH lane std-rx33, by hand against the Oracle text: \"you may pay {E}{E}{E}\" is now read (std-rx33 Cost reading, parser/holes/cost.ts#symbols; CR 107.14, 118.3, 603.12) and \"It becomes an Angel in addition to its other types\" lasts for good (CR 205.1b, 611.2a); the card is full. CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 1
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "you"
+         },
+         "kind": "energy",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ],
+       "batch": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "you"
+         },
+         "cost": {
+          "other": [
+           {
+            "kind": "payEnergy",
+            "amount": 3
+           }
+          ]
+         },
+         "as": "paid"
+        },
+        {
+         "op": "reflexive",
+         "when": {
+          "did": "paid"
+         },
+         "targets": [
+          {
+           "id": "t0",
+           "kind": "object",
+           "min": 1,
+           "max": 1,
+           "filter": {
+            "attacking": true,
+            "types": [
+             "Creature"
+            ]
+           }
+          }
+         ],
+         "do": [
+          {
+           "op": "putCounters",
+           "on": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "kind": "+1/+1",
+           "count": 2
+          },
+          {
+           "op": "putCounters",
+           "on": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "kind": "flying",
+           "count": 1
+          },
+          {
+           "op": "effect",
+           "duration": {
+            "d": "permanent"
+           },
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "mods": [
+              {
+               "layer": 4,
+               "subtypes": {
+                "add": [
+                 "Angel"
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Donald Blake, Guise of Thor",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.put.nAndKeyword): CR 122.1b, 122.1, 602.2: the power-up ability puts two +1/+1 counters and a flying counter on ~ (the cost reduction and the once-only limit stay with the keyword line); the sentence \"He becomes a God Warrior Hero\" stays manual, so only the automated nodes are checked.; r5-refs: \"He becomes a God Warrior Hero.\" is automated now (eff.r5refs.self.becomes.subtype.permanent): his creature types become God Warrior Hero for good, as the reminder text says (CR 205.1a, 611.2a); checked by hand",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "lifelink",
+      "kind": "keyword",
+      "prov": {
+       "by": "keyword",
+       "id": "lifelink"
+      },
+      "src": [
+       0
+      ]
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 4,
+         "kind": "generic"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "kind": "+1/+1",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "count": 1,
+         "kind": "flying",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "set": [
+               "God",
+               "Warrior",
+               "Hero"
+              ]
+             }
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "keyword": "power-up",
+      "kind": "activated",
+      "limit": {
+       "max": 1,
+       "per": "game"
+      },
+      "prov": {
+       "by": "template"
+      },
+      "reducedByManaCost": true,
+      "src": [
+       1
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Experimental Lab // Staff Room",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.put.nAndKeyword): CR 709.5, 701.62, 122.1b, 122.1: when you unlock this door, manifest dread, then put two +1/+1 counters and a trample counter on that creature (the creature the manifest dread put onto the battlefield); the other door stays manual, so only the automated nodes are checked.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "manual",
+         "reason": "contagion: a reference with no unique antecedent in a sentence that is not understood (design 6.7 T2)"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "door": "this",
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "unlocked"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "manual",
+         "reason": "no template matches the sentence"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "combat": true,
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

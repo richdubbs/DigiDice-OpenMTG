@@ -1,0 +1,398 @@
+[
+  {
+    "id": "eff.stdrx26.nextSpell.has.affinity",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 601.2f",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.41a"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn has affinity for {g:Filter}",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "keyword",
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "affinity",
+        "text": "affinity",
+        "filter": "$g"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{T}: The next spell you cast this turn has affinity for artifacts."
+      },
+      {
+        "text": "Draw a card. The next instant spell you cast this turn has affinity for creatures."
+      }
+    ],
+    "counterExamples": [
+      "{T}: The next spell you cast has affinity for artifacts.",
+      "{T}: The next spell an opponent casts this turn has affinity for artifacts.",
+      "{T}: Spells you cast this turn have affinity for artifacts.",
+      "{T}: The first spell you cast this turn has affinity for artifacts."
+    ]
+  },
+  {
+    "id": "eff.stdrx26.nextSpell.has.convoke",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 601.2a",
+      "CR 601.2f",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.51a"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn has convoke",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "keyword",
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "convoke",
+        "text": "convoke"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: The next spell you cast this turn has convoke."
+      },
+      {
+        "text": "Scry 1. The next creature spell you cast this turn has convoke."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: The next spell you cast has convoke.",
+      "{1}, {T}: The next spell an opponent casts this turn has convoke.",
+      "{1}, {T}: Spells you cast this turn have convoke."
+    ]
+  },
+  {
+    "id": "eff.stdrx26.nextSpell.has.improvise",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 601.2a",
+      "CR 601.2f",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.126a"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn has improvise",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "keyword",
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "improvise",
+        "text": "improvise"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: The next spell you cast this turn has improvise."
+      },
+      {
+        "text": "Surveil 1. The next artifact spell you cast this turn has improvise."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: The next spell you cast has improvise.",
+      "{2}, {T}: The next spell an opponent casts this turn has improvise.",
+      "{2}, {T}: Spells you cast this turn have improvise."
+    ]
+  },
+  {
+    "id": "sta.stdrx26.plotting.fromHand.costsLess",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.170a",
+      "CR 116.2k",
+      "CR 601.2f",
+      "CR 118.7"
+    ],
+    "pattern": "plotting cards from your hand costs {m:ManaCost} less",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "plot": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Plotting cards from your hand costs {1} less."
+      },
+      {
+        "text": "Plotting cards from your hand costs {3} less."
+      }
+    ],
+    "counterExamples": [
+      "Plotting cards from your hand costs {1} more.",
+      "Plotting cards from your graveyard costs {1} less.",
+      "Casting cards from your hand costs {1} less."
+    ]
+  },
+  {
+    "id": "trg.stdrx26.you.discover",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.57a",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you discover",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discover",
+          "actor": "you"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you discover, you gain 2 life."
+      },
+      {
+        "text": "Whenever you discover, draw a card. This ability triggers only once each turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you discover 3, you gain 2 life.",
+      "Whenever an opponent discovers, you gain 2 life.",
+      "Whenever you explore, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdrx26.discover.again.sameValue",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.57a",
+      "CR 603.4",
+      "CR 608.2h"
+    ],
+    "pattern": "discover again for the same value",
+    "build": {
+      "op": "action",
+      "action": "discover",
+      "who": {
+        "ref": "you"
+      },
+      "n": {
+        "q": "eventAmount"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:ev.action.discover"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you discover, draw a card, then discover again for the same value."
+      },
+      {
+        "text": "Whenever you discover, you lose 1 life and discover again for the same value."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you discover, discover again.",
+      "Whenever you discover, discover again for a different value.",
+      "Whenever you discover, discover 3."
+    ],
+    "consumes": [
+      "again",
+      "same"
+    ]
+  },
+  {
+    "id": "eff.stdrx26.distribute.counters.anyNumber.nontarget",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 122.1",
+      "CR 601.2d"
+    ],
+    "pattern": "distribute {n:Qty} {k:CounterKind} counters among any number of {f:Filter}",
+    "build": {
+      "op": "putCounters",
+      "on": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "kind": "$k",
+      "count": "$n",
+      "distribute": true
+    },
+    "subject": "none",
+    "consumes": [
+      "distribute",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Distribute two +1/+1 counters among any number of creatures you control."
+      },
+      {
+        "text": "Tap target creature, then distribute two stun counters among any number of tapped creatures your opponents control."
+      }
+    ],
+    "counterExamples": [
+      "Distribute two +1/+1 counters among any number of target creatures you control.",
+      "Distribute two +1/+1 counters among each creature you control.",
+      "Distribute two +1/+1 counters among up to two creatures you control."
+    ]
+  },
+  {
+    "id": "eff.stdrx26.player.gainControl.targets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 115.1",
+      "CR 601.2c"
+    ],
+    "pattern": "{p:Player} gains control of {o:Targets}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": "$p"
+            }
+          ]
+        }
+      ],
+      "as": "gainedControl"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent gains control of up to two target creatures you control."
+      },
+      {
+        "text": "When ~ enters, target player gains control of any number of target artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent gains control of up to two target creatures you control until end of turn.",
+      "Target opponent gains control of up to two creatures you control.",
+      "Target opponent loses control of up to two target creatures you control."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.stdrx26.draw.forEach.gainedControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 121.1",
+      "CR 613.1b"
+    ],
+    "pattern": "draw a card for each one they gained control of this way",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "gainedControl"
+            }
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent gains control of up to two target creatures you control. Draw a card for each one they gained control of this way."
+      },
+      {
+        "text": "When ~ dies, target player gains control of any number of target artifacts you control. Draw a card for each one they gained control of this way."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card for each one they gained control of this way.",
+      "Target opponent gains control of up to two target creatures you control. Draw a card for each one they lost control of this way.",
+      "Target opponent gains control of up to two target creatures you control. Draw a card for each one you gained control of this way."
+    ]
+  }
+]

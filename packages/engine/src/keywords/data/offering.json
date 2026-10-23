@@ -1,0 +1,16 @@
+{
+  "name": "offering",
+  "rule": "702.48",
+  "params": [
+    {
+      "name": "filter",
+      "type": "filter"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may cast this card any time you could cast an instant by sacrificing a {quality} and paying the difference in mana costs between this and the sacrificed {quality}. Mana cost includes color.",
+  "multiple": "independent",
+  "status": "planned"
+}

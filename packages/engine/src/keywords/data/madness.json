@@ -1,0 +1,98 @@
+{
+  "name": "madness",
+  "rule": "702.35",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "replacement",
+    "expands",
+    "castOption"
+  ],
+  "reminder": "If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Madness {cost}",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "hand",
+            "to": "graveyard",
+            "cause": "discard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            },
+            "then": {
+              "as": "madness",
+              "do": [
+                {
+                  "op": "reflexive",
+                  "when": {
+                    "did": "madness"
+                  },
+                  "targets": [],
+                  "do": [
+                    {
+                      "op": "cast",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "what": {
+                        "ref": "bound",
+                        "name": "madness"
+                      },
+                      "costChange": {
+                        "kind": "set",
+                        "cost": "$cost",
+                        "name": "madness"
+                      },
+                      "optional": true,
+                      "as": "madnessCast"
+                    },
+                    {
+                      "op": "if",
+                      "cond": {
+                        "cond": "did",
+                        "step": "madnessCast",
+                        "not": true
+                      },
+                      "then": [
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "madness"
+                          },
+                          "to": {
+                            "zone": "graveyard"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

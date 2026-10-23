@@ -1,0 +1,4 @@
+# std-cardcopy-2: the golden cards of the round (test/m5/golden/cards/cloud-std-cardcopy-2-review.json)
+Mardu Siegebreaker
+Sothera, the Supervoid
+Symbiote Spider-Man

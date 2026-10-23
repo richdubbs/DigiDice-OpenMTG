@@ -1,0 +1,141 @@
+[
+  {
+    "id": "eff.mx3.ring.tempts",
+    "kind": "effect",
+    "cr": [
+      "CR 701.54a",
+      "CR 701.54c",
+      "CR 701.54d"
+    ],
+    "pattern": "the ring tempts you",
+    "build": {
+      "op": "action",
+      "action": "ringTempts",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:ringTempts"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact. The Ring tempts you.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "Destroy target artifact. The Ring tempts you.",
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "object",
+                  "min": 1,
+                  "max": 1,
+                  "text": "target artifact",
+                  "filter": {
+                    "types": [
+                      "Artifact"
+                    ]
+                  }
+                }
+              ],
+              "steps": [
+                {
+                  "op": "destroy",
+                  "what": {
+                    "ref": "target",
+                    "id": "t0"
+                  }
+                },
+                {
+                  "op": "action",
+                  "action": "ringTempts",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "You gain 2 life. The Ring tempts you."
+      }
+    ],
+    "counterExamples": [
+      "The Ring tempts target opponent.",
+      "The Ring tempts each player."
+    ],
+    "status": "stable",
+    "since": 7
+  },
+  {
+    "id": "abl.mx3.aslong.mustBeBlocked",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 509.1c"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} must be blocked if able",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "must",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is tapped, it must be blocked if able.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "As long as ~ is tapped, it must be blocked if able.",
+            "condition": {
+              "cond": "matches",
+              "object": {
+                "ref": "self"
+              },
+              "filter": {
+                "tapped": true
+              }
+            },
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "self"
+                },
+                "mode": "mustIfAble",
+                "action": "beBlocked"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "As long as you control a Swamp, ~ must be blocked if able."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is tapped, it must be blocked by two or more creatures if able.",
+      "As long as ~ is tapped, it can be blocked if able."
+    ],
+    "status": "stable",
+    "since": 7
+  }
+]

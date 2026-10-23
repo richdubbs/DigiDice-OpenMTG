@@ -1,0 +1,109 @@
+[
+  {
+    "id": "eff.stdfreecast2.gy.castOne.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 404.1",
+      "CR 611.2a"
+    ],
+    "pattern": "you may cast ( a | an ) {f:Filter} from your graveyard this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "single": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: You may cast an artifact spell from your graveyard this turn."
+      },
+      {
+        "text": "Draw a card. You may cast an instant spell from your graveyard this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: You may cast an artifact spell from your hand this turn.",
+      "{2}, {T}: You may cast an artifact spell from an opponent's graveyard this turn.",
+      "{2}, {T}: You may cast artifact spells from your graveyard this turn."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "rid.stdfreecast2.ifYouDo.entersWith.isSubtype",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 122.1h",
+      "CR 205.1b"
+    ],
+    "pattern": "if you do , it enters with ( a | an ) {k:CounterKind} counter on it and is ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "$patchPrevious": {
+        "effects": [
+          {
+            "entersWith": {
+              "@new": [
+                {
+                  "kind": "$k",
+                  "count": 1
+                }
+              ]
+            },
+            "entersSubtypes": {
+              "@new": "$st"
+            }
+          }
+        ],
+        "@require": {
+          "effects.0.s": "permit",
+          "effects.0.action": "cast",
+          "effects.0.from": "graveyard",
+          "effects.0.single": true,
+          "effects.1": null
+        }
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "if",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{T}: You may cast an artifact spell from your graveyard this turn. If you do, it enters with a finality counter on it and is a Zombie in addition to its other types."
+      },
+      {
+        "text": "Draw a card. You may cast a creature spell from your graveyard this turn. If you do, it enters with a shield counter on it and is a Spirit in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If you do, it enters with a finality counter on it and is a Zombie in addition to its other types.",
+      "{T}: You may cast artifact spells from your graveyard this turn. If you do, it enters with a finality counter on it and is a Zombie in addition to its other types.",
+      "{T}: You may cast an artifact spell from your graveyard this turn. If you do, it enters with a finality counter on it and is a Zombie."
+    ]
+  }
+]

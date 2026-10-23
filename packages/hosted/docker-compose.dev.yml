@@ -1,0 +1,104 @@
+# The hosted server's development stack (docs/design/m13-hosted-server.md 10.1, answer 6; package M13-14), on the owner's machine only (answer 1: no
+# server is rented before the launch). From the repository root:
+#
+#   cp packages/hosted/.env.example packages/hosted/.env        # then fill in the secrets (openssl rand -hex 32)
+#   docker compose -f packages/hosted/docker-compose.dev.yml --env-file packages/hosted/.env up --build
+#
+# - Caddy ends TLS with a local certificate and is the ONLY service with published ports, on 127.0.0.1 only: https://localhost:8443 (the browser's
+#   WebSocket goes to wss://localhost:8443/ws). The gateway, the metrics listener and PostgreSQL stay on the compose network.
+# - The gateway trusts only Caddy (TRUST_PROXY, Caddy's fixed address on this network) and runs read-only, as a non-root user, with its data on a volume.
+# - PostgreSQL 16 keeps its data on a volume. The schema belongs to the owner's role (POSTGRES_USER); the server connects as the service role made at the
+#   database's first start (deploy/postgres-init.sh), which cannot change the schema. Apply the migrations once (and after an update) with the owner's
+#   role: see docs/ops/hosted.md, "Migrations".
+# - The card index is mounted read-only from CARD_INDEX_DIR (the cards package's cache: `npm run cards -- refresh` fills it).
+
+name: openmtg-hosted
+
+networks:
+  hosted:
+    ipam:
+      config:
+        - subnet: 172.31.213.0/24
+
+volumes:
+  hosted-data:
+  postgres-data:
+  caddy-data:
+
+services:
+  caddy:
+    image: caddy:2.10
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8443:8443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    networks:
+      hosted:
+        ipv4_address: 172.31.213.10
+    depends_on:
+      hosted:
+        condition: service_healthy
+
+  hosted:
+    build:
+      context: ../..
+      dockerfile: packages/hosted/Dockerfile
+    image: openmtg-hosted:dev
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    stop_grace_period: 4h
+    environment:
+      STORE: postgres
+      DATABASE_URL: postgres://openmtg_service:${OPENMTG_SERVICE_PASSWORD:?set OPENMTG_SERVICE_PASSWORD in .env}@postgres:5432/openmtg
+      LEDGER_SECRET: ${LEDGER_SECRET:?set LEDGER_SECRET in .env}
+      METRICS_TOKEN: ${METRICS_TOKEN:?set METRICS_TOKEN in .env}
+      METRICS_PORT: "9464"
+      PORT: "8787"
+      BIND: 0.0.0.0
+      TRUST_PROXY: 172.31.213.10
+      PUBLIC_ORIGINS: ${PUBLIC_ORIGINS:-}
+      ALLOW_DESKTOP_ORIGINS: ${ALLOW_DESKTOP_ORIGINS:-true}
+      DATA_DIR: /data
+      CARD_DATA_DIR: /cards
+      PODS_ENABLED: ${PODS_ENABLED:-false}
+      CAPACITY_UNITS: ${CAPACITY_UNITS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - hosted-data:/data
+      - ${CARD_INDEX_DIR:?set CARD_INDEX_DIR in .env (the card index folder)}:/cards:ro
+    networks:
+      hosted:
+        ipv4_address: 172.31.213.20
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "packages/hosted/src/obs/probe.mjs", "readyz"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: openmtg
+      POSTGRES_USER: openmtg_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      OPENMTG_SERVICE_PASSWORD: ${OPENMTG_SERVICE_PASSWORD:?set OPENMTG_SERVICE_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./deploy/postgres-init.sh:/docker-entrypoint-initdb.d/10-service-role.sh:ro
+    networks:
+      hosted:
+        ipv4_address: 172.31.213.30
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openmtg_owner -d openmtg"]
+      interval: 5s
+      timeout: 5s
+      retries: 20

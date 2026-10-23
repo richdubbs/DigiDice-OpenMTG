@@ -1,0 +1,362 @@
+[
+  {
+    "id": "eff.t50.untilEot.whenever",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 603.7c",
+      "CR 514.2"
+    ],
+    "pattern": "until end of turn , whenever {e:Event} , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": "$e.0"
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, whenever a creature you control deals combat damage to a player, investigate."
+      },
+      {
+        "text": "Until end of turn, whenever ~ deals combat damage to a player, draw two cards."
+      },
+      {
+        "text": "Until end of turn, whenever a Wolf, Bear, or Cat attacks, draw a card."
+      },
+      {
+        "text": "Until end of turn, whenever one or more creatures you control deal combat damage to a player, investigate."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control deals combat damage to a player, investigate.",
+      "Until end of turn, whenever a creature you control deals combat damage to a player unless you pay {1}, investigate.",
+      "Until your next turn, whenever a creature you control deals combat damage to a player, investigate."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t50.whenever.thisTurn",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 603.7c",
+      "CR 514.2"
+    ],
+    "pattern": "whenever {e:Event} this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": "$e.0"
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control deals combat damage to a player or planeswalker this turn, draw a card."
+      },
+      {
+        "text": "Whenever a creature you control enters this turn, draw a card."
+      },
+      {
+        "text": "Whenever a nontoken creature you control dies this turn, create a 2/2 black Rat creature token with \"This token can't block.\""
+      },
+      {
+        "text": "Whenever you attack this turn, create two 1/1 red Warrior creature tokens that are tapped and attacking."
+      },
+      {
+        "text": "Whenever a creature you control attacks alone this turn, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control enters, each opponent loses 1 life and you gain 1 life.",
+      "Whenever a creature you control deals combat damage to a player this turn unless you pay {1}, draw a card.",
+      "Whenever a creature you control deals combat damage to a player until your next turn, draw a card.",
+      "Whenever a creature you control deals combat damage to a player next turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t50.whenever.thisTurn.drain",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 603.7c",
+      "CR 608.2c",
+      "CR 119.3"
+    ],
+    "pattern": "whenever {e:Event} this turn , each opponent loses {n:Qty} life and you gain {m:Qty} life",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": "$e.0"
+      },
+      "do": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "amount": "$n"
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$m"
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "priority": 1,
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "each",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control enters this turn, each opponent loses 1 life and you gain 1 life."
+      },
+      {
+        "text": "Whenever a creature you control dies this turn, each opponent loses 2 life and you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control enters, each opponent loses 1 life and you gain 1 life.",
+      "Whenever a creature you control enters this turn, each opponent loses 1 life and you gain 2 life and draw a card.",
+      "Whenever a creature you control enters this turn, each opponent loses 1 life."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t50.whenIt.dies.thisTurn",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 700.4"
+    ],
+    "pattern": "when {o:Obj} dies this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "is": "$o"
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. When it dies this turn, draw a card."
+      },
+      {
+        "text": "Target creature gets +2/+0 until end of turn. When that creature dies this turn, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. When it dies, draw a card.",
+      "Target creature gets +2/+0 until end of turn. When it leaves the battlefield this turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t50.whenever.thatCreature.combatDamage.thisTurn",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 510.2",
+      "CR 514.2"
+    ],
+    "pattern": "whenever {o:Obj} deals combat damage to a player this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "damage",
+          "source": {
+            "is": "$o"
+          },
+          "combat": true,
+          "recipient": {
+            "player": "any"
+          }
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a player this turn, you draw a card."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. Whenever it deals combat damage to a player this turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a player, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals damage to a player this turn, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a creature this turn, you draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t50.whenIt.dies.underYourControl.thisTurn",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 700.4"
+    ],
+    "pattern": "when {o:Obj} dies under your control this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "is": "$o",
+            "controller": "you"
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. When it dies under your control this turn, draw a card."
+      },
+      {
+        "text": "Target creature gets +2/+0 until end of turn. When that creature dies under your control this turn, draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. When it dies this turn, draw a card.",
+      "Target creature gets +2/+0 until end of turn. When it dies under an opponent's control this turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t50.exile.thoseWhenLeaves",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 406.2"
+    ],
+    "pattern": "exile {o:Objs} when ~ leaves the battlefield",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "from": "battlefield"
+        }
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "Create two 1/1 white Spirit creature tokens. Exile those tokens when ~ leaves the battlefield."
+      },
+      {
+        "text": "Create a 2/2 black Zombie creature token. Exile that token when ~ leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Create two 1/1 white Spirit creature tokens. Exile those tokens when ~ dies.",
+      "Create two 1/1 white Spirit creature tokens. Exile those tokens when ~ leaves the battlefield this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

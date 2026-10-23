@@ -1,0 +1,40 @@
+[
+  {
+    "id": "rid.p2refs2.noregen.destroyedThisWay",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.19c",
+      "CR 701.8a",
+      "CR 608.2c"
+    ],
+    "pattern": "( a creature | creatures | an artifact | artifacts | a land | lands | a permanent | permanents ) destroyed this way can't be regenerated",
+    "build": {
+      "$patchPrevious": {
+        "regeneration": "cant"
+      }
+    },
+    "attachTo": "destroy",
+    "consumes": [
+      "can't",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target green creature. A creature destroyed this way can't be regenerated."
+      },
+      {
+        "text": "Destroy all artifacts you don't control. Artifacts destroyed this way can't be regenerated."
+      },
+      {
+        "text": "Destroy all nonblack creatures. Creatures destroyed this way can't be regenerated."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. A creature destroyed this way can't be regenerated.",
+      "Destroy target creature. A creature destroyed this way can be regenerated.",
+      "Destroy all artifacts. Creatures destroyed this way can't be regenerated."
+    ]
+  }
+]

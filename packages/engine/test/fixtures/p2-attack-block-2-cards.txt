@@ -1,0 +1,15 @@
+# p2-attack-block-2 (lane p2-attack-block): the golden cards of the round (block bans, defender permissions, goad groups; CR 509.1b, 609.4, 701.15a)
+Hunted Ghoul
+Spitfire Handler
+Cyclops Tyrant
+Orcish Veteran
+Silumgar Assassin
+Scuttlegator
+Karsus Depthguard
+Ogre Jailbreaker
+Slithering Shade
+Taunt from the Rampart
+Felhide Brawler
+Howlpack Wolf
+Vantress Gargoyle
+Faithbound Judge // Sinner's Judgment

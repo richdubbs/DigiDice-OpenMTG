@@ -1,0 +1,1244 @@
+[
+  {
+    "id": "sta.r4static.attached.pump.allTypes",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.4c",
+      "CR 205.3m"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and is all creature types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "all": true
+          }
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+0 and is all creature types."
+      },
+      {
+        "text": "Enchanted creature gets +1/+2 and is all creature types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+0 and is all creature types until end of turn.",
+      "Equipped creature gets +2/+0 and is all land types.",
+      "Equipped creature gets +2/+0 or is all creature types."
+    ]
+  },
+  {
+    "id": "sta.r4static.aslong.pump.allTypes",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.3m"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} gets {pt:PT} and is all creature types",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control four or more artifacts, ~ gets +1/+1 and is all creature types."
+      },
+      {
+        "text": "As long as it's your turn, ~ gets +3/+0 and is all creature types."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control four or more artifacts, ~ gets +1/+1 and is all land types.",
+      "Unless you control four or more artifacts, ~ gets +1/+1 and is all creature types."
+    ]
+  },
+  {
+    "id": "sta.r4static.aslong.grant.addType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} has {a:Abilities} and is (a | an) {st:Subtypes} in addition to its other types",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As long as it's your turn, ~ has first strike and is a Knight in addition to its other types."
+      },
+      {
+        "text": "As long as you control three or more artifacts, ~ has flying and is a Dragon in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, ~ has first strike and is a Knight instead of its other types.",
+      "As long as it's your turn, ~ has first strike or is a Knight in addition to its other types."
+    ]
+  },
+  {
+    "id": "sta.r4static.attached.base.grant.addType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1b"
+    ],
+    "pattern": "( enchanted | equipped ) creature has base power and toughness {pt:BasePT} , has {a:Abilities} , and is (a | an) {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has base power and toughness 2/2, has menace, and is a Rogue in addition to its other types."
+      },
+      {
+        "text": "Enchanted creature has base power and toughness 0/4, has defender, and is a Wall in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has base power 2, has menace, and is a Rogue in addition to its other types.",
+      "Enchanted creature has base power and toughness 2/2, has menace, and is a Rogue."
+    ]
+  },
+  {
+    "id": "sta.r4static.attached.pump.foreach.addType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.4c",
+      "CR 205.1b"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each {f:Filter} and is (a | an) {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+1 for each Equipment you control and is a Soldier in addition to its other types."
+      },
+      {
+        "text": "Enchanted creature gets +1/+0 for each enchantment you control and is a Spirit in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+1 for every Equipment you control and is a Soldier.",
+      "Equipped creature gets +1/+1 unless you control an Equipment and is a Soldier in addition to its other types."
+    ]
+  },
+  {
+    "id": "sta.r4static.group.pump.cantBeBlockedBy",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 509.1b"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} and can't be blocked by {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Goblins you control get +1/+0 and can't be blocked by creatures with flying."
+      },
+      {
+        "text": "Creatures you control with flying get +1/+1 and can't be blocked by Walls."
+      }
+    ],
+    "counterExamples": [
+      "Goblins you control get +1/+0 and can block creatures with flying.",
+      "Goblins you control get +1/+0 until end of turn and can't be blocked by creatures with flying."
+    ]
+  },
+  {
+    "id": "eff.r4static.pump.loseKeyword",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} and loses {k:Keyword} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature gets -1/-0 and loses flying until end of turn."
+      },
+      {
+        "text": "Target creature an opponent controls gets -3/-0 and loses first strike until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets -1/-0 and gains flying until end of turn.",
+      "Target creature gets -1/-0 or loses flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.r4static.self.pump.damage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 120.3",
+      "CR 608.2c"
+    ],
+    "pattern": "~ gets {pt:PT} {d:Dur} and deals {n:Qty} damage to {to:Recipient}",
+    "build": [
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": {
+              "ref": "self"
+            },
+            "mods": [
+              {
+                "layer": "7c",
+                "power": "$pt.p",
+                "toughness": "$pt.t"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "damage",
+        "source": {
+          "ref": "self"
+        },
+        "to": "$to",
+        "amount": "$n"
+      }
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Whenever you cast an instant spell, ~ gets +1/+0 until end of turn and deals 1 damage to each opponent."
+      },
+      {
+        "text": "Whenever ~ attacks, ~ gets +2/+0 until end of turn and deals 2 damage to any target."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, ~ gets +2/+0 until end of turn or deals 2 damage to any target.",
+      "Whenever ~ attacks, ~ gets +2/+0 until end of turn and prevents 2 damage to any target."
+    ]
+  },
+  {
+    "id": "sta.r4static.aslong.extraLand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 305.2"
+    ],
+    "pattern": "as long as {c:Cond} , you may play an additional land on each of your turns",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "playLand"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "may",
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Forest, you may play an additional land on each of your turns."
+      },
+      {
+        "text": "As long as you control four or more lands, you may play an additional land on each of your turns."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Forest, you may play two additional lands on each of your turns.",
+      "As long as you control a Forest, you may play an additional land on each of your opponents' turns."
+    ]
+  },
+  {
+    "id": "sta.r4static.aslong.is.artifactCreature",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 301.7"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} is an artifact creature",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control three or more artifacts, ~ is an artifact creature."
+      },
+      {
+        "text": "As long as it's your turn, ~ is an artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control three or more artifacts, ~ is an artifact land.",
+      "Unless you control three or more artifacts, ~ is an artifact creature."
+    ]
+  },
+  {
+    "id": "eff.r4static.draw.forEachOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 109.2",
+      "CR 608.2h"
+    ],
+    "pattern": "draw a card for each other {f:Filter}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "other": true,
+            "attacking": "$f.attacking",
+            "blocking": "$f.blocking",
+            "tapped": "$f.tapped",
+            "token": "$f.token",
+            "faceDown": "$f.faceDown",
+            "types": "$f.types",
+            "allTypes": "$f.allTypes",
+            "notTypes": "$f.notTypes",
+            "subtypes": "$f.subtypes",
+            "notSubtypes": "$f.notSubtypes",
+            "supertypes": "$f.supertypes",
+            "notSupertypes": "$f.notSupertypes",
+            "colors": "$f.colors",
+            "notColors": "$f.notColors",
+            "colorless": "$f.colorless",
+            "multicolored": "$f.multicolored",
+            "keyword": "$f.keyword",
+            "notKeyword": "$f.notKeyword",
+            "name": "$f.name",
+            "notName": "$f.notName",
+            "power": "$f.power",
+            "toughness": "$f.toughness",
+            "manaValue": "$f.manaValue",
+            "counters": "$f.counters",
+            "zone": "$f.zone",
+            "controller": "$f.controller"
+          }
+        }
+      }
+    },
+    "priority": 1,
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, draw a card for each other Elf you control."
+      },
+      {
+        "text": "When ~ enters, draw a card for each other creature you control with flying."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, draw a card for each Elf you control.",
+      "When ~ enters, draw two cards for each other Elf you control."
+    ]
+  },
+  {
+    "id": "eff.r4static.pump.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ],
+      "guard": "$c"
+    },
+    "subject": "object",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target creature an opponent controls gets -2/-2 until end of turn if you control an artifact."
+      },
+      {
+        "text": "Target creature gets +3/+3 until end of turn if it's your turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +3/+3 until end of turn unless you control an artifact.",
+      "Target creature gets +3/+3 until end of turn if."
+    ]
+  },
+  {
+    "id": "sta.r4static.self.shrink.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 107.3"
+    ],
+    "pattern": "~ gets -x/-x , where x is {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              -1,
+              "$q"
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              -1,
+              "$q"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ gets -X/-X, where X is the number of cards in your hand."
+      },
+      {
+        "text": "~ gets -X/-X, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +X/+X, where X is the number of cards in your hand.",
+      "~ gets -X/-0, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "sta.r4static.self.pump.forEvery",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c"
+    ],
+    "pattern": "~ gets {pt:PT} for every {n:Qty} {f:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "math",
+                "op": "floorDiv",
+                "args": [
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  },
+                  "$n"
+                ]
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "math",
+                "op": "floorDiv",
+                "args": [
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  },
+                  "$n"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "every"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+1 for every three cards in your graveyard."
+      },
+      {
+        "text": "~ gets +1/+0 for every two artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each three cards in your graveyard.",
+      "~ gets +1/+1 until end of turn for every three cards in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.r4static.draw.forEachDiedUnderYourControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.4",
+      "CR 121.1",
+      "CR 608.2h"
+    ],
+    "pattern": "draw a card for each {f:Filter} that died under your control this turn",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "controller": "you",
+            "attacking": "$f.attacking",
+            "blocking": "$f.blocking",
+            "tapped": "$f.tapped",
+            "token": "$f.token",
+            "faceDown": "$f.faceDown",
+            "types": "$f.types",
+            "allTypes": "$f.allTypes",
+            "notTypes": "$f.notTypes",
+            "subtypes": "$f.subtypes",
+            "notSubtypes": "$f.notSubtypes",
+            "supertypes": "$f.supertypes",
+            "notSupertypes": "$f.notSupertypes",
+            "colors": "$f.colors",
+            "notColors": "$f.notColors",
+            "colorless": "$f.colorless",
+            "multicolored": "$f.multicolored",
+            "keyword": "$f.keyword",
+            "notKeyword": "$f.notKeyword",
+            "name": "$f.name",
+            "notName": "$f.notName",
+            "power": "$f.power",
+            "toughness": "$f.toughness",
+            "manaValue": "$f.manaValue",
+            "counters": "$f.counters",
+            "zone": "$f.zone"
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        },
+        "scope": "turn"
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards. Then draw a card for each creature that died under your control this turn."
+      },
+      {
+        "text": "When ~ enters, draw a card for each nontoken creature that died under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card for each creature that died this turn.",
+      "Draw a card for each creature that left the battlefield under your control this turn."
+    ]
+  },
+  {
+    "id": "sta.r4static.group.are.artifactSubtype.have",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b"
+    ],
+    "pattern": "{f:Filter} are {st:Subtypes} artifacts in addition to their other types and have {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Artifact"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "priority": 1,
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Other creatures are Clue artifacts in addition to their other types and have \"{2}, Sacrifice this permanent: Draw a card.\""
+      },
+      {
+        "text": "Creatures you control are Treasure artifacts in addition to their other types and have \"{T}, Sacrifice this permanent: Add one mana of any color.\""
+      }
+    ],
+    "counterExamples": [
+      "Other creatures are Clue artifacts and have \"{2}, Sacrifice this permanent: Draw a card.\"",
+      "Other creatures are Clue enchantments in addition to their other types and have \"{2}, Sacrifice this permanent: Draw a card.\""
+    ]
+  },
+  {
+    "id": "sta.r4static.grant.cardsInHand.two",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 113.6"
+    ],
+    "pattern": "{f:Filter} cards and {g:Filter} cards in your hand have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ],
+              "zone": "hand",
+              "owner": "you"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Artifact cards and blue instant cards in your hand have flash."
+      },
+      {
+        "text": "Enchantment cards and green creature cards in your hand have warp {1}{G}."
+      }
+    ],
+    "counterExamples": [
+      "Artifact cards or blue instant cards in your hand have flash.",
+      "Artifact cards and blue instant cards in your graveyard have flash."
+    ]
+  },
+  {
+    "id": "eff.r4static.mayHave.fight",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.14a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {a:Obj} fight {b:Obj}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "fight",
+          "a": "$a",
+          "b": "$b"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may have it fight target creature an opponent controls."
+      },
+      {
+        "text": "Whenever ~ attacks, you may have ~ fight target creature with flying."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may have it block target creature you don't control.",
+      "When ~ enters, you may have it fight each creature you don't control."
+    ]
+  },
+  {
+    "id": "sta.r4static.aslong.base.grant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} has base power and toughness {pt:BasePT} and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as it's your turn, ~ has base power and toughness 6/6 and has trample."
+      },
+      {
+        "text": "As long as you control seven or more lands, ~ has base power and toughness 8/8 and has flying and haste."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, ~ has base power 6 and has trample.",
+      "As long as it's your turn, ~ gets +6/+6 and has trample."
+    ]
+  },
+  {
+    "id": "eff.r4static.itIs.addType.noAbilities",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b"
+    ],
+    "pattern": "{o:ItIs} (a | an) {st:Subtypes} in addition to its other types and has no abilities",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Return target creature card from your graveyard to the battlefield. It's a Zombie in addition to its other types and has no abilities."
+      },
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. It's a Spirit in addition to its other types and has no abilities."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to the battlefield. It's a Spirit in addition to its other types and has flying.",
+      "Return target creature card from your graveyard to the battlefield. It's a Spirit and has no abilities."
+    ]
+  },
+  {
+    "id": "sta.r4static.untap.othersUntapStep.group",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 502.3"
+    ],
+    "pattern": "untap ( each | all ) {f:Filter} during each other player 's untap step",
+    "build": {
+      "s": "rule",
+      "rule": "untapDuringOtherUntapSteps",
+      "of": "$f"
+    },
+    "consumes": [
+      "each",
+      "all",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Untap all enchantments you control during each other player's untap step."
+      },
+      {
+        "text": "Untap each creature you control with flying during each other player's untap step."
+      }
+    ],
+    "counterExamples": [
+      "Untap all artifacts you control during your untap step.",
+      "Tap all artifacts you control during each other player's untap step."
+    ]
+  },
+  {
+    "id": "eff.r4static.mayHave.basePower.equal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 613.4b",
+      "CR 608.2h"
+    ],
+    "pattern": "you may have {o:Obj} 's base power become equal to {q:Qty} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7b",
+                  "power": "$q"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another Elf you control enters, you may have ~'s base power become equal to that creature's power until end of turn."
+      },
+      {
+        "text": "When ~ enters, you may have target creature's base power become equal to the number of cards in your hand until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another Elf you control enters, you may have ~'s base toughness become equal to that creature's power until end of turn.",
+      "Whenever another Elf you control enters, you may have ~'s power become equal to that creature's power until end of turn."
+    ]
+  },
+  {
+    "id": "sta.r4static.each.pump.perOwnCreatureType.max",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 205.3m"
+    ],
+    "pattern": "each {f:Filter} gets +1/+1 for each of its creature types , to a maximum of {n:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "min",
+            "args": [
+              "$n",
+              {
+                "q": "distinct",
+                "what": "creatureTypes",
+                "among": {
+                  "ref": "subject"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "min",
+            "args": [
+              "$n",
+              {
+                "q": "distinct",
+                "what": "creatureTypes",
+                "among": {
+                  "ref": "subject"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each Elf creature you control gets +1/+1 for each of its creature types, to a maximum of 5."
+      },
+      {
+        "text": "Each other creature you control gets +1/+1 for each of its creature types, to a maximum of 3."
+      }
+    ],
+    "counterExamples": [
+      "Each Elf creature you control gets +1/+1 for each of its colors, to a maximum of 5.",
+      "Each Elf creature you control gets +1/+1 for each creature type, to a maximum of 5."
+    ]
+  }
+]

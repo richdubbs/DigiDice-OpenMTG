@@ -1,0 +1,584 @@
+[
+ {
+  "card": "Ugin, Eye of the Storms",
+  "expect": "full",
+  "verified": "Standard round rx3 (std-rx3) review, by hand against the Oracle text and the rules cited (eff.stdrx3.search.anyNumber, eff.stdrx3.permit.free.cast.group.durFirst): a cast trigger and a colorless-spell trigger each exiling up to one target permanent that is one or more colors; +2 gain 3 life and draw a card; 0 add {C}{C}{C}; -11 a search for any number of colorless nonland cards, exiled, a shuffle, then until end of turn a permission to cast those cards without paying their mana costs (CR 603.2, 601.2i, 606.3, 701.23a, 118.9, 601.2b, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When you cast ~, exile up to one target permanent that's one or more colors.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target permanent that's one or more colors",
+         "filter": {
+          "colorless": false
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        }
+       ]
+      },
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you cast a colorless spell, exile up to one target permanent that's one or more colors.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "colorless": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target permanent that's one or more colors",
+         "filter": {
+          "colorless": false
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "+2: You gain 3 life and draw a card.",
+      "cost": {
+       "loyalty": 2
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 3
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "0: Add {C}{C}{C}.",
+      "cost": {
+       "loyalty": 0
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "units": [
+          [
+           "C"
+          ],
+          [
+           "C"
+          ],
+          [
+           "C"
+          ]
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "-11: Search your library for any number of colorless nonland cards, exile them, then shuffle. Until end of turn, you may cast those cards without paying their mana costs.",
+      "cost": {
+       "loyalty": -11
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library",
+         "filter": {
+          "colorless": true,
+          "notTypes": [
+           "Land"
+          ]
+         },
+         "min": 0,
+         "max": "any",
+         "as": "search"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "cast",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "search"
+            }
+           },
+           "costChange": {
+            "kind": "set",
+            "cost": {}
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mana Severance",
+  "expect": "full",
+  "verified": "Standard round rx3 (std-rx3) review, by hand against the Oracle text and the rules cited (eff.stdrx3.search.anyNumber): a search of your library for any number of land cards, exiled, then a shuffle (CR 701.23a, 107.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Search your library for any number of land cards, exile them, then shuffle.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library",
+         "filter": {
+          "types": [
+           "Land"
+          ]
+         },
+         "min": 0,
+         "max": "any",
+         "as": "search"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Iname, Death Aspect",
+  "expect": "full",
+  "verified": "Standard round rx3 (std-rx3) review, by hand against the Oracle text and the rules cited (eff.stdrx3.search.anyNumber): an enters trigger with an option to search your library for any number of Spirit cards and put them into your graveyard, then shuffle (CR 603.2, 701.23a, 608.2d; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, you may search your library for any number of Spirit cards, put them into your graveyard, then shuffle.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "search",
+           "who": {
+            "ref": "you"
+           },
+           "zone": "library",
+           "filter": {
+            "subtypes": [
+             "Spirit"
+            ]
+           },
+           "min": 0,
+           "max": "any",
+           "as": "search"
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "search"
+           },
+           "to": {
+            "zone": "graveyard"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Secret Salvage",
+  "expect": "full",
+  "verified": "Standard round rx3 (std-rx3) review, by hand against the Oracle text and the rules cited (eff.stdrx3.search.anyNumber): exile target nonland card from your graveyard, then search your library for any number of cards with the same name as that card, reveal them, put them into your hand and shuffle (CR 115.1, 701.23a, 701.20a, 608.2h; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Exile target nonland card from your graveyard. Search your library for any number of cards with the same name as that card, reveal them, put them into your hand, then shuffle.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target nonland card from your graveyard",
+         "filter": {
+          "notTypes": [
+           "Land"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        },
+        {
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library",
+         "filter": {
+          "sharesWith": {
+           "with": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "quality": "name"
+          }
+         },
+         "min": 0,
+         "max": "any",
+         "as": "search"
+        },
+        {
+         "op": "reveal",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Transcendent Archaic",
+  "expect": "full",
+  "verified": "Standard round rx3 (std-rx3) review, by hand against the Oracle text and the rules cited (Cond reading \"if you draw one or more cards this way\", no template of the round): vigilance; converge: an enters trigger with an option to draw X cards (X the colors of mana spent to cast it), then two discards only if that draw drew a card (CR 702.20a, 702.119a, 603.2, 608.2c, 121.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "vigilance",
+      "text": "Vigilance"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, you may draw X cards, where X is the number of colors of mana spent to cast ~. If you draw one or more cards this way, discard two cards.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": {
+            "q": "colorsSpent"
+           },
+           "as": "drew"
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "drew"
+         },
+         "then": [
+          {
+           "op": "discard",
+           "who": {
+            "ref": "you"
+           },
+           "count": 2
+          }
+         ]
+        }
+       ]
+      },
+      "label": "Converge"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thranduil's Decree",
+  "expect": "full",
+  "verified": "std-rx30 review, by hand against the Oracle text and the rules cited (eff.counter, eff.stdrx3.permit.free.cast.obj.dur, rid.stdrx30.countered.ifSpellOfKind.exileInstead) counter target spell; a permanent spell countered this way is exiled instead of going to its owner's graveyard and you may cast that card without paying its mana cost while it remains exiled (CR 701.6a, 614.15, 400.7, 118.9, 611.2b); CR cites from memory, unverified.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Counter target spell. If a permanent spell is countered this way, exile it instead of putting it into its owner's graveyard. You may cast that card without paying its mana cost for as long as it remains exiled.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "spell",
+         "min": 1,
+         "max": 1,
+         "text": "target spell"
+        }
+       ],
+       "steps": [
+        {
+         "op": "counter",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "as": "moved",
+         "to": {
+          "zone": "exile"
+         },
+         "toIf": {
+          "types": [
+           "Artifact",
+           "Battle",
+           "Creature",
+           "Enchantment",
+           "Land",
+           "Planeswalker"
+          ],
+          "stackKind": "spell",
+          "zone": "stack"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "remainsExiled"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "cast",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "moved"
+            }
+           },
+           "costChange": {
+            "kind": "set",
+            "cost": {}
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

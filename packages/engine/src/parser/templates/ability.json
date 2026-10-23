@@ -1,0 +1,264 @@
+[
+  {
+    "id": "abl.aslong.pump",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c"],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "As long as you control a Swamp, ~ gets +4/+0." },
+      { "text": "As long as it's your turn, ~ gets +0/+3." }
+    ],
+    "counterExamples": [
+      "As long as you control a Swamp, ~ gets +4/+0 until end of turn.",
+      "If you control a Swamp, ~ gets +4/+0."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.pump.aslong",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c"],
+    "pattern": "{o:Obj} get[s] {pt:PT} as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "~ gets +4/+0 as long as you control a Swamp." },
+      { "text": "Enchanted creature gets +3/+3 as long as it's your turn." }
+    ],
+    "counterExamples": [
+      "~ gets +4/+0 unless you control a Swamp.",
+      "~ gets +4/+0 as long as."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.aslong.grant",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f"],
+    "pattern": "as long as {c:Cond} , {o:Obj} (has | have) {a:Abilities}",
+    "build": { "kind": "static", "condition": "$c", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "add": "$a" }] }] },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "As long as you control a Plains, ~ has flying." },
+      { "text": "As long as it's your turn, ~ has first strike and lifelink." }
+    ],
+    "counterExamples": [
+      "As long as you control a Plains, ~ has flying until end of turn.",
+      "As long as you control a Plains, ~ loses flying."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.grant.aslong",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f"],
+    "pattern": "{o:Obj} (has | have) {a:Abilities} as long as {c:Cond}",
+    "build": { "kind": "static", "condition": "$c", "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": 6, "add": "$a" }] }] },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "~ has flying as long as you control a Plains." },
+      { "text": "~ has trample as long as you control three or more artifacts." }
+    ],
+    "counterExamples": [
+      "~ has flying unless you control a Plains.",
+      "~ has flying as long as."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.aslong.pumpgrant",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 613.1f"],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] {pt:PT} and (has | have) {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }, { "layer": 6, "add": "$a" }] }]
+    },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "As long as you control a Mountain, ~ gets +2/+0 and has haste." },
+      { "text": "As long as it's your turn, ~ gets +1/+1 and has trample." }
+    ],
+    "counterExamples": [
+      "As long as you control a Mountain, ~ gets +2/+0 and loses haste.",
+      "As long as you control a Mountain, ~ gets +2/+0 and has haste until end of turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.pumpgrant.aslong",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 613.1f"],
+    "pattern": "{o:Obj} get[s] {pt:PT} and (has | have) {a:Abilities} as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }, { "layer": 6, "add": "$a" }] }]
+    },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "~ gets +2/+2 and has vigilance as long as you control an artifact." },
+      { "text": "Enchanted creature gets +1/+2 and has deathtouch as long as you control a Swamp." }
+    ],
+    "counterExamples": [
+      "~ gets +2/+2 and has vigilance unless you control an artifact.",
+      "~ gets +2/+2 and has vigilance as long as."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.aslong.anthem",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c"],
+    "pattern": "as long as {c:Cond} , {f:Filter} get {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [{ "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "As long as it's your turn, creatures you control get +2/+0." },
+      { "text": "As long as you control an Island, other Merfolk you control get +1/+1." }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, creatures you control get +2/+0 until end of turn.",
+      "Until end of turn, creatures you control get +2/+0."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.anthem.aslong",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c"],
+    "pattern": "{f:Filter} get {pt:PT} as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [{ "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "consumes": ["as long as"],
+    "examples": [
+      { "text": "Creatures you control get +1/+0 as long as it's your turn." },
+      { "text": "Golems you control get +2/+2 as long as you control an Island." }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+0 unless it's your turn.",
+      "Creatures you control get +1/+0 until your next turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.kicked.counters.grant",
+    "kind": "static",
+    "cr": ["CR 702.33d", "CR 702.33e", "CR 614.1c", "CR 613.1f", "CR 400.7d"],
+    "pattern": "if ~ was kicked , it enters with {n:Qty} {k:CounterKind} counter[s] on it and with {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": { "cond": "wasCast", "kicked": true },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "counters": [{ "kind": "$k", "count": "$n" }] }
+        },
+        { "s": "continuous", "affects": { "ref": "self" }, "mods": [{ "layer": 6, "add": "$a" }] }
+      ]
+    },
+    "consumes": ["if"],
+    "examples": [
+      { "text": "If ~ was kicked, it enters with five +1/+1 counters on it and with flying." },
+      { "text": "If ~ was kicked, it enters with four +1/+1 counters on it and with trample." }
+    ],
+    "counterExamples": [
+      "If ~ wasn't kicked, it enters with five +1/+1 counters on it and with flying.",
+      "If ~ was kicked, it enters with five +1/+1 counters on target creature and with flying."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.kicked.counters",
+    "kind": "static",
+    "cr": ["CR 702.33d", "CR 702.33e", "CR 614.1c", "CR 400.7d"],
+    "pattern": "if ~ was kicked , it enters with {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "condition": { "cond": "wasCast", "kicked": true },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "counters": [{ "kind": "$k", "count": "$n" }] }
+        }
+      ]
+    },
+    "consumes": ["if"],
+    "examples": [
+      { "text": "If ~ was kicked, it enters with seven +1/+1 counters on it." },
+      { "text": "If ~ was kicked, it enters with two charge counters on it." }
+    ],
+    "counterExamples": [
+      "If ~ wasn't kicked, it enters with five +1/+1 counters on it.",
+      "If ~ was kicked, target creature enters with five +1/+1 counters on it."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.cantcounter",
+    "kind": "static",
+    "cr": ["CR 101.2", "CR 701.6a", "CR 113.6"],
+    "pattern": "~ can't be countered",
+    "build": { "kind": "static", "zone": ["stack"], "effects": [{ "s": "restrict", "subject": { "ref": "self" }, "mode": "cant", "action": "beCountered" }] },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "~ can't be countered." },
+      { "text": "This spell can't be countered." }
+    ],
+    "counterExamples": [
+      "~ can be countered.",
+      "Target spell can't be countered.",
+      "~ can't be countered this turn."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "abl.pregame.begin",
+    "kind": "static",
+    "cr": ["CR 103.6", "CR 103.6a", "CR 113.6"],
+    "pattern": "if ~ is in your opening hand , you may begin the game with it on the battlefield",
+    "build": { "kind": "static", "zone": ["hand"], "effects": [{ "s": "pregame", "action": "beginOnBattlefield", "optional": true }] },
+    "consumes": ["if", "may"],
+    "examples": [
+      { "text": "If ~ is in your opening hand, you may begin the game with it on the battlefield." },
+      { "text": "If this card is in your opening hand, you may begin the game with it on the battlefield." }
+    ],
+    "counterExamples": [
+      "If ~ is in your graveyard, you may begin the game with it on the battlefield.",
+      "If ~ is in your opening hand, you may begin the game with it in exile."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

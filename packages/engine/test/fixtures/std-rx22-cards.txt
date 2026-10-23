@@ -1,0 +1,13 @@
+# std-rx22 (card wave 2, EDH lane rx22): the golden cards of the round
+# (std-ry7: Aetherflux Reservoir is listed once, in std-rm-cards.txt; a duplicate line fails packages/cards/test/fixtures.test.ts)
+Sol Talisman
+Resurgent Belief
+Wheel of Fate
+Pyroblast
+Hydroblast
+Disrupting Shoal
+Pristine Talisman
+The Great Henge
+Black Dragon Gate
+Citadel Gate
+Cliffgate

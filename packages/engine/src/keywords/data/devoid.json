@@ -1,0 +1,43 @@
+{
+  "name": "devoid",
+  "rule": "702.114",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "This card has no color.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Devoid",
+      "zone": [
+        "battlefield",
+        "hand",
+        "library",
+        "graveyard",
+        "stack",
+        "exile",
+        "command"
+      ],
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": []
+              }
+            }
+          ],
+          "cda": true
+        }
+      ]
+    }
+  ]
+}

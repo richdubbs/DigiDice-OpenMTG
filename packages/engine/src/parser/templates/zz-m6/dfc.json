@@ -1,0 +1,324 @@
+[
+  {
+    "id": "trg.m6.self.transformsInto",
+    "kind": "trigger",
+    "cr": [
+      "CR 701.27e",
+      "CR 603.2"
+    ],
+    "pattern": "( when | whenever ) ~ transform[s] into ~",
+    "build": {
+      "on": [
+        {
+          "ev": "becomes",
+          "what": "transformed",
+          "object": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "into"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ transforms into ~, you gain 3 life.",
+        "expect": {
+          "on": [
+            {
+              "ev": "becomes",
+              "what": "transformed",
+              "object": {
+                "self": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "text": "When ~ transforms into ~, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ transforms into a creature, you gain 3 life.",
+      "Whenever ~ becomes tapped into ~, you gain 3 life."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "trg.m6.self.entersOrTransformsInto",
+    "kind": "trigger",
+    "cr": [
+      "CR 701.27e",
+      "CR 603.2",
+      "CR 603.6a"
+    ],
+    "pattern": "( when | whenever ) ~ enter[s] or transform[s] into ~",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "to": "battlefield"
+        },
+        {
+          "ev": "becomes",
+          "what": "transformed",
+          "object": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "into"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ enters or transforms into ~, you gain 2 life.",
+        "expect": {
+          "on": [
+            {
+              "ev": "zoneChange",
+              "subject": {
+                "self": true
+              },
+              "to": "battlefield"
+            },
+            {
+              "ev": "becomes",
+              "what": "transformed",
+              "object": {
+                "self": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "text": "When ~ enters or transforms into ~, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ enters or dies, you gain 2 life.",
+      "Whenever ~ enters or transforms into a creature, you gain 2 life."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.convert",
+    "kind": "effect",
+    "cr": [
+      "CR 701.28a",
+      "CR 712.9"
+    ],
+    "pattern": "convert {o:Obj}",
+    "build": {
+      "op": "changeFace",
+      "what": "$o",
+      "to": "convert"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}: Convert ~.",
+        "expect": {
+          "targets": [],
+          "steps": [
+            {
+              "op": "changeFace",
+              "what": {
+                "ref": "self"
+              },
+              "to": "convert"
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever you cast a noncreature spell, convert ~."
+      }
+    ],
+    "counterExamples": [
+      "Convert ~ unless you pay {2}.",
+      "Convert each creature you control."
+    ],
+    "status": "experimental",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.flip",
+    "kind": "effect",
+    "cr": [
+      "CR 710.4",
+      "CR 110.5c"
+    ],
+    "pattern": "flip {o:Obj}",
+    "build": {
+      "op": "changeFace",
+      "what": "$o",
+      "to": "flip"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ deals damage to an opponent, flip it.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "Whenever ~ deals damage to an opponent, flip it.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "damage",
+                  "source": {
+                    "self": true
+                  },
+                  "recipient": {
+                    "player": "opponent"
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "changeFace",
+                  "what": {
+                    "ref": "event",
+                    "role": "source"
+                  },
+                  "to": "flip"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{2}, {T}: Flip ~."
+      }
+    ],
+    "counterExamples": [
+      "Flip ~ unless you pay {2}.",
+      "Flip each creature you control."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.return.bf.transformed",
+    "kind": "effect",
+    "cr": [
+      "CR 712.14a",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Objs} to the battlefield transformed [under your control]",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "transformed": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{U}: Exile ~, then return it to the battlefield transformed under your control."
+      },
+      {
+        "text": "When ~ dies, return it to the battlefield transformed under your control."
+      }
+    ],
+    "counterExamples": [
+      "{2}{U}: Exile ~, then return it to the battlefield under your control.",
+      "{2}{U}: Exile ~, then return it to the battlefield transformed under target opponent's control."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.return.bf.owner.transformed",
+    "kind": "effect",
+    "cr": [
+      "CR 712.14a",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Objs} to the battlefield transformed under ( its owner 's | their owners' | their owner 's ) control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "transformed": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, exile it, then return it to the battlefield transformed under its owner's control."
+      },
+      {
+        "text": "{3}: Exile ~, then return it to the battlefield transformed under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, exile it, then return it to the battlefield under its owner's control.",
+      "When ~ dies, exile it, then return it to the battlefield transformed under your control."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "eff.m6.return.bf.owner.tapped.transformed",
+    "kind": "effect",
+    "cr": [
+      "CR 712.14a",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Objs} to the battlefield tapped and transformed under ( its owner 's | their owners' | their owner 's ) control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "tapped": true,
+        "transformed": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, return it to the battlefield tapped and transformed under its owner's control."
+      },
+      {
+        "text": "{3}: Exile ~, then return it to the battlefield tapped and transformed under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return it to the battlefield tapped under its owner's control.",
+      "When ~ dies, return it to the battlefield transformed under its owner's control and tapped."
+    ],
+    "status": "stable",
+    "since": 6
+  }
+]

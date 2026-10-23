@@ -1,0 +1,301 @@
+[
+  {
+    "id": "rep.t15.enters.bf.tapped",
+    "kind": "static",
+    "since": 5,
+    "status": "experimental",
+    "cr": ["CR 614.1d", "CR 614.12"],
+    "pattern": "~ enters the battlefield tapped",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "tapped": true }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "~ enters the battlefield tapped." },
+      { "text": "This artifact enters the battlefield tapped." }
+    ],
+    "counterExamples": [
+      "~ enters the battlefield untapped.",
+      "Each creature enters the battlefield tapped.",
+      "~ enters the battlefield tapped and doesn't untap."
+    ]
+  },
+  {
+    "id": "rep.t15.enters.tapped.unless.anyplayer.life",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 614.1d", "CR 614.12", "CR 119.1"],
+    "pattern": "~ enters tapped unless a player has {n:Qty} or less life",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "tappedUnless": {
+              "cond": "any",
+              "of": [
+                { "cond": "compare", "left": { "q": "life", "of": { "ref": "you" } }, "op": "<=", "right": "$n" },
+                { "cond": "compare", "left": { "q": "life", "of": { "ref": "each", "who": "opponent" } }, "op": "<=", "right": "$n" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": ["unless"],
+    "examples": [
+      { "text": "~ enters tapped unless a player has 13 or less life." },
+      { "text": "This artifact enters tapped unless a player has 7 or less life." }
+    ],
+    "counterExamples": [
+      "~ enters tapped unless a player has 13 or more life.",
+      "~ enters tapped if a player has 13 or less life.",
+      "~ enters tapped unless an opponent has 13 or less life."
+    ]
+  },
+  {
+    "id": "rep.t15.enters.tapped.nountap",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 614.1d", "CR 614.12", "CR 502.3"],
+    "pattern": "~ enters tapped and doesn't untap during your untap step",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "tapped": true }
+        },
+        { "s": "restrict", "subject": { "ref": "self" }, "mode": "cant", "action": "untapDuringUntapStep" }
+      ]
+    },
+    "consumes": ["not"],
+    "examples": [
+      { "text": "~ enters tapped and doesn't untap during your untap step." },
+      { "text": "This artifact enters tapped and doesn't untap during your untap step." }
+    ],
+    "counterExamples": [
+      "~ enters tapped and untaps during your untap step.",
+      "~ enters tapped and doesn't untap during your upkeep.",
+      "Each creature enters tapped and doesn't untap during your untap step."
+    ]
+  },
+  {
+    "id": "rep.t15.enters.counters.casthand",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 122.6", "CR 601.2a"],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counter[s] on it if you cast it from your hand",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "condition": { "cond": "wasCast", "from": "hand" },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "counters": [{ "kind": "$k", "count": "$n" }] }
+        }
+      ]
+    },
+    "consumes": ["if"],
+    "examples": [
+      { "text": "~ enters with three divinity counters on it if you cast it from your hand." },
+      { "text": "~ enters with two +1/+1 counters on it if you cast it from your hand." }
+    ],
+    "counterExamples": [
+      "~ enters with a divinity counter on it if you cast it from your graveyard.",
+      "~ enters with a divinity counter on it unless you cast it from your hand.",
+      "~ enters with a divinity counter on target creature if you cast it from your hand."
+    ]
+  },
+  {
+    "id": "rst.t15.opponents.cant.gainlife",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 119.7", "CR 101.2"],
+    "pattern": "your opponents can't gain life",
+    "build": { "s": "restrict", "subject": { "ref": "each", "who": "opponent" }, "mode": "cant", "action": "gainLife" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Your opponents can't gain life." },
+      { "text": "Your opponents can't gain life.\n{2}{B}, {T}: Draw a card." }
+    ],
+    "counterExamples": [
+      "Your opponents can gain life.",
+      "Your opponents can't lose life.",
+      "Your opponents can't gain life this turn."
+    ]
+  },
+  {
+    "id": "rst.t15.players.cant.gainlife",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 119.7", "CR 101.2"],
+    "pattern": "players can't gain life",
+    "build": { "s": "restrict", "subject": { "ref": "each", "who": "player" }, "mode": "cant", "action": "gainLife" },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Players can't gain life." },
+      { "text": "Players can't gain life.\n{1}{R}, {T}: Draw a card." }
+    ],
+    "counterExamples": [
+      "Players can gain life.",
+      "Players can't lose life.",
+      "Players can't gain life this turn."
+    ]
+  },
+  {
+    "id": "eff.t15.player.cant.gainlife.dur",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 611.2a", "CR 119.7", "CR 101.2"],
+    "pattern": "{p:Player} can't gain life {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$p", "mode": "cant", "action": "gainLife" }] },
+    "subject": "player",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Your opponents can't gain life this turn." },
+      { "text": "Each opponent can't gain life until end of turn." }
+    ],
+    "counterExamples": [
+      "Your opponents can gain life this turn.",
+      "Your opponents can't lose life this turn.",
+      "Target player can't gain life."
+    ]
+  },
+  {
+    "id": "rst.t15.player.cant.cast.yourturn",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 601.3", "CR 101.2", "CR 500.1"],
+    "pattern": "{p:Player} can't cast spells during your turn",
+    "build": { "s": "restrict", "subject": "$p", "mode": "cant", "action": "cast", "when": { "cond": "turnOf", "whose": "you" } },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "You can't cast spells during your turn." },
+      { "text": "Each opponent can't cast spells during your turn." }
+    ],
+    "counterExamples": [
+      "Your opponents can cast spells during your turn.",
+      "Your opponents can't cast spells during your upkeep.",
+      "Your opponents can't activate abilities during your turn."
+    ]
+  },
+  {
+    "id": "rst.t15.you.hexproof",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 702.11c", "CR 115.1", "CR 101.2"],
+    "pattern": "you have hexproof",
+    "build": { "s": "restrict", "subject": { "ref": "you" }, "mode": "cant", "action": "beTargeted", "other": { "controller": "opponent" } },
+    "examples": [
+      { "text": "You have hexproof." },
+      { "text": "You have hexproof.\n{3}{W}, {T}: You gain 4 life." }
+    ],
+    "counterExamples": [
+      "You have shroud and hexproof.",
+      "Artifacts you control have hexproof.",
+      "You have hexproof from white."
+    ]
+  },
+  {
+    "id": "rst.t15.you.shroud",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 702.18a", "CR 115.1", "CR 101.2"],
+    "pattern": "you have shroud",
+    "build": { "s": "restrict", "subject": { "ref": "you" }, "mode": "cant", "action": "beTargeted" },
+    "examples": [
+      { "text": "You have shroud." },
+      { "text": "You have shroud.\n{3}{W}, {T}: You gain 4 life." }
+    ],
+    "counterExamples": [
+      "You have shroud and hexproof.",
+      "Artifacts you control have shroud.",
+      "You have shroud until end of turn."
+    ]
+  },
+  {
+    "id": "prm.t15.flash",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 601.3b", "CR 702.8a", "CR 609.4"],
+    "pattern": "you may cast {f:Filter} as though they had flash",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "haveFlash", "of": "$f" },
+    "consumes": ["may", "as though"],
+    "examples": [
+      { "text": "You may cast red creature spells as though they had flash." },
+      { "text": "You may cast Elf spells as though they had flash." },
+      { "text": "You may cast artifact creature spells as though they had flash." }
+    ],
+    "counterExamples": [
+      "You may cast creature spells as though they had haste.",
+      "Your opponents may cast creature spells as though they had flash.",
+      "You may cast creature spells from your graveyard as though they had flash."
+    ]
+  },
+  {
+    "id": "prm.t15.flash.two",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 601.3b", "CR 702.8a", "CR 609.4"],
+    "pattern": "you may cast {a:Filter} and {b:Filter} as though they had flash",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "haveFlash", "of": { "anyOf": ["$a", "$b"] } },
+    "consumes": ["may", "as though"],
+    "examples": [
+      { "text": "You may cast Aura spells and creature spells as though they had flash." },
+      { "text": "You may cast Goblin spells and artifact spells as though they had flash." }
+    ],
+    "counterExamples": [
+      "You may cast Aura spells and creature spells as though they had haste.",
+      "You may cast Aura spells or creature spells as though they had flash.",
+      "Your opponents may cast Aura spells and creature spells as though they had flash."
+    ]
+  },
+  {
+    "id": "eff.t15.flash.thisturn",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 601.3b", "CR 702.8a", "CR 611.2a", "CR 514.2"],
+    "pattern": "you may cast {f:Filter} this turn as though they had flash",
+    "build": { "op": "effect", "duration": { "d": "endOfTurn" }, "effects": [{ "s": "permit", "who": { "ref": "you" }, "action": "haveFlash", "of": "$f" }] },
+    "subject": "none",
+    "consumes": ["may", "as though"],
+    "examples": [
+      { "text": "You may cast creature spells this turn as though they had flash." },
+      { "text": "You may cast artifact spells this turn as though they had flash." }
+    ],
+    "counterExamples": [
+      "You may cast creature spells this turn as though they had haste.",
+      "You may cast creature spells as though they had flash this turn and draw a card.",
+      "Target player may cast creature spells this turn as though they had flash."
+    ]
+  }
+]

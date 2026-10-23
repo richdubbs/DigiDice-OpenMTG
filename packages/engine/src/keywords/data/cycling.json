@@ -1,0 +1,49 @@
+{
+  "name": "cycling",
+  "rule": "702.29",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Discard this card: Draw a card.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{printed}",
+      "zone": [
+        "hand"
+      ],
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "discard",
+              "self": true,
+              "count": 1
+            }
+          ]
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

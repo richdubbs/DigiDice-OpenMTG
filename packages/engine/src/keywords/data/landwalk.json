@@ -1,0 +1,23 @@
+{
+  "name": "landwalk",
+  "rule": "702.14",
+  "params": [
+    {
+      "name": "quality",
+      "type": "quality"
+    }
+  ],
+  "mechanisms": [
+    "flag",
+    "hook"
+  ],
+  "reminder": "This creature can't be blocked as long as defending player controls a {quality}.",
+  "multiple": "redundantPerParam",
+  "status": "implemented",
+  "hooks": [
+    "canBeBlocked"
+  ],
+  "readers": [
+    "rules/combat-rules.ts#blockDenial"
+  ]
+}

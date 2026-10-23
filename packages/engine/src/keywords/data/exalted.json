@@ -1,0 +1,58 @@
+{
+  "name": "exalted",
+  "rule": "702.83",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever a creature you control attacks alone, that creature gets +1/+1 until end of turn.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            },
+            "alone": true
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "event",
+                  "role": "attacker"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 1,
+                    "toughness": 1
+                  }
+                ]
+              }
+            ],
+            "duration": {
+              "d": "endOfTurn"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+[
+  {
+    "id": "eff.counters.player",
+    "kind": "effect",
+    "cr": ["CR 122.1", "CR 122.1f", "CR 122.6"],
+    "pattern": "{p:Player} get[s] {n:Qty} {k:CounterKind} counter[s]",
+    "build": { "op": "putCounters", "on": "$p", "kind": "$k", "count": "$n" },
+    "subject": "player",
+    "examples": [
+      { "text": "Each opponent gets three poison counters." },
+      { "text": "Target player gets an experience counter." }
+    ],
+    "counterExamples": ["Each opponent gets three poison counters for each Elf you control.", "Target creature gets +1/+1 counters."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.energy.1",
+    "kind": "effect",
+    "cr": ["CR 107.14", "CR 122.1"],
+    "pattern": "{p:Player} get[s] {e}",
+    "build": { "op": "putCounters", "on": "$p", "kind": "energy", "count": 1 },
+    "subject": "player",
+    "examples": [
+      { "text": "Draw two cards, then you get {E}." },
+      { "text": "Target player draws three cards. You get {E}." }
+    ],
+    "counterExamples": ["You get {E} for each Elf you control.", "You pay {E}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.energy.2",
+    "kind": "effect",
+    "cr": ["CR 107.14", "CR 122.1"],
+    "pattern": "{p:Player} get[s] {e}{e}",
+    "build": { "op": "putCounters", "on": "$p", "kind": "energy", "count": 2 },
+    "subject": "player",
+    "examples": [
+      { "text": "Draw three cards, then you get {E}{E}." },
+      { "text": "Target player draws four cards. You get {E}{E}." }
+    ],
+    "counterExamples": ["You get {E}{E} for each Elf you control.", "You get {E}{E} unless an opponent pays {3}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.energy.3",
+    "kind": "effect",
+    "cr": ["CR 107.14", "CR 122.1"],
+    "pattern": "{p:Player} get[s] {e}{e}{e}",
+    "build": { "op": "putCounters", "on": "$p", "kind": "energy", "count": 3 },
+    "subject": "player",
+    "examples": [
+      { "text": "Draw five cards, then you get {E}{E}{E}." },
+      { "text": "Target player draws two cards. You get {E}{E}{E}." }
+    ],
+    "counterExamples": ["You get {E}{E}{E} for each Elf you control.", "You get {E}{E}{E} unless an opponent pays {3}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.energy.4",
+    "kind": "effect",
+    "cr": ["CR 107.14", "CR 122.1"],
+    "pattern": "{p:Player} get[s] {e}{e}{e}{e}",
+    "build": { "op": "putCounters", "on": "$p", "kind": "energy", "count": 4 },
+    "subject": "player",
+    "examples": [
+      { "text": "Draw six cards, then you get {E}{E}{E}{E}." },
+      { "text": "Target player draws five cards. You get {E}{E}{E}{E}." }
+    ],
+    "counterExamples": ["You get {E}{E}{E}{E} for each Elf you control.", "You get {E}{E}{E}{E} unless an opponent pays {3}."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.counters.put",
+    "kind": "effect",
+    "cr": ["CR 122.1", "CR 122.6"],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on {o:Objs}",
+    "build": { "op": "putCounters", "on": "$o", "kind": "$k", "count": "$n" },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put three +1/+1 counters on target nongreen creature.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "Put three +1/+1 counters on target nongreen creature.",
+            "effect": {
+              "targets": [{ "id": "t0", "kind": "object", "min": 1, "max": 1, "text": "target nongreen creature", "filter": { "types": ["Creature"], "notColors": ["G"] } }],
+              "steps": [{ "op": "putCounters", "on": { "ref": "target", "id": "t0" }, "kind": "+1/+1", "count": 3 }]
+            }
+          }
+        ]
+      },
+      { "text": "Put five -1/-1 counters on up to one target creature." },
+      { "text": "Draw two cards, then put four charge counters on ~." }
+    ],
+    "counterExamples": ["Put a +1/+1 counter on target creature for each Elf you control.", "Put a +1/+1 counter on target creature unless it is red."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.counters.remove",
+    "kind": "effect",
+    "cr": ["CR 122.1"],
+    "pattern": "remove {n:Qty} {k:CounterKind} counter[s] from {o:Objs}",
+    "build": { "op": "removeCounters", "from": "$o", "kind": "$k", "count": "$n" },
+    "subject": "none",
+    "examples": [
+      { "text": "Remove three time counters from target permanent." },
+      { "text": "Remove a -1/-1 counter from each creature you control." }
+    ],
+    "counterExamples": ["Remove a +1/+1 counter from target creature for each Elf you control.", "Remove +1/+1 counters from target creature."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.counters.remove.all",
+    "kind": "effect",
+    "cr": ["CR 122.1"],
+    "pattern": "remove all {k:CounterKind} counters from {o:Objs}",
+    "build": { "op": "removeCounters", "from": "$o", "kind": "$k", "count": "all" },
+    "subject": "none",
+    "consumes": ["all"],
+    "examples": [
+      { "text": "Remove all +1/+1 counters from target nonblack creature." },
+      { "text": "Remove all charge counters from each artifact you control." }
+    ],
+    "counterExamples": ["Remove all +1/+1 counters from target creature unless it is red.", "Remove all but one +1/+1 counter from target creature."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.counters.remove.any",
+    "kind": "effect",
+    "cr": ["CR 122.1"],
+    "pattern": "remove {n:Qty} counter[s] from {o:Objs}",
+    "build": { "op": "removeCounters", "from": "$o", "kind": "any", "count": "$n" },
+    "subject": "none",
+    "examples": [
+      { "text": "Remove three counters from target artifact." },
+      { "text": "Remove a counter from target nonland permanent." }
+    ],
+    "counterExamples": ["Remove a counter from target permanent for each Elf you control.", "Remove a counter of each kind from target permanent."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.counters.remove.any.all",
+    "kind": "effect",
+    "cr": ["CR 122.1"],
+    "pattern": "remove all counters from {o:Objs}",
+    "build": { "op": "removeCounters", "from": "$o", "kind": "any", "count": "all" },
+    "subject": "none",
+    "consumes": ["all"],
+    "examples": [
+      { "text": "Remove all counters from target nonland permanent." },
+      { "text": "Remove all counters from each artifact you control." }
+    ],
+    "counterExamples": ["Remove all counters from target permanent unless it is red.", "Remove all but one counter from target permanent."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.counters.move",
+    "kind": "effect",
+    "cr": ["CR 122.1", "CR 122.5"],
+    "pattern": "move {n:Qty} {k:CounterKind} counter[s] from {a:Obj} ( onto | to ) {b:Obj}",
+    "build": { "op": "moveCounters", "from": "$a", "to": "$b", "kind": "$k", "count": "$n" },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw a card, then move a +1/+1 counter from ~ onto target nonblue creature." },
+      { "text": "Draw two cards, then move three charge counters from ~ onto target artifact." }
+    ],
+    "counterExamples": ["Move a +1/+1 counter from ~ onto each creature you control.", "Move a +1/+1 counter from ~ onto target creature for each Elf you control."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.counters.move.all",
+    "kind": "effect",
+    "cr": ["CR 122.1", "CR 122.5"],
+    "pattern": "move all {k:CounterKind} counters from {a:Obj} ( onto | to ) {b:Obj}",
+    "build": { "op": "moveCounters", "from": "$a", "to": "$b", "kind": "$k", "count": "all" },
+    "subject": "none",
+    "consumes": ["all"],
+    "examples": [
+      { "text": "Draw a card, then move all +1/+1 counters from ~ onto target nonwhite creature." },
+      { "text": "Draw two cards, then move all charge counters from ~ onto target artifact." }
+    ],
+    "counterExamples": ["Move all +1/+1 counters from ~ onto each creature you control.", "Move all but one +1/+1 counter from ~ onto target creature."],
+    "status": "experimental",
+    "since": 1
+  }
+]

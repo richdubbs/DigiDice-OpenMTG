@@ -1,0 +1,1113 @@
+[
+  {
+    "id": "eff.stdlci.explores.again",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.44a",
+      "CR 701.44b",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Obj} explores , then it explores again",
+    "build": {
+      "op": "action",
+      "action": "explore",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "subject": "$o",
+      "n": 2
+    },
+    "subject": "object",
+    "consumes": [
+      "again"
+    ],
+    "needs": [
+      "action:explore"
+    ],
+    "examples": [
+      {
+        "text": "Target Merfolk you control explores, then it explores again."
+      },
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. That creature explores, then it explores again. You gain 2 life."
+      },
+      {
+        "text": "When ~ enters, it explores, then it explores again."
+      }
+    ],
+    "counterExamples": [
+      "Target Merfolk you control explores, then it explores.",
+      "Target Merfolk you control explores, then it explores again unless you pay {2}.",
+      "Target Merfolk you control explores, then target creature you control explores again.",
+      "Target Merfolk you control explores again."
+    ]
+  },
+  {
+    "id": "eff.stdlci.return.upto.yourhand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 400.7",
+      "CR 107.1c"
+    ],
+    "pattern": "[ then ] return up to {n:Qty} {f:Filter} to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Return up to three artifact cards from your graveyard to your hand."
+      },
+      {
+        "text": "Mill four cards. Then return up to two land cards from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return up to three artifact cards from your graveyard to the battlefield.",
+      "Return up to three target artifact cards from your graveyard to your hand.",
+      "Return three artifact cards from your graveyard to your hand.",
+      "Return up to three artifact cards from your graveyard to your hand at random."
+    ]
+  },
+  {
+    "id": "eff.stdlci.search.or.reveal.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card or [ ( a | an ) ] {g:Filter} card , reveal it , then shuffle and put ( it | that card ) on top",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "anyOf": [
+            "$f",
+            "$g"
+          ]
+        },
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for a basic Mountain card or Dragon card, reveal it, then shuffle and put that card on top."
+      },
+      {
+        "text": "Search your library for a basic Forest card or Treefolk card, reveal it, then shuffle and put that card on top."
+      },
+      {
+        "text": "Search your library for a basic land card or a Gate card, reveal it, then shuffle and put it on top."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a basic Mountain card or Dragon card, then shuffle and put that card on top.",
+      "Search your library for a basic Mountain card or Dragon card, reveal it, then shuffle and put that card on the bottom.",
+      "Search your library for a basic Mountain card and a Dragon card, reveal them, then shuffle and put those cards on top."
+    ]
+  },
+  {
+    "id": "eff.stdlci.search.may.or.reveal.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 401.2",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card or [ ( a | an ) ] {g:Filter} card , reveal it , then shuffle and put ( it | that card ) on top",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ]
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "library",
+            "position": "top"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for a basic Island card or Wizard card, reveal it, then shuffle and put that card on top."
+      },
+      {
+        "text": "You may search your library for a basic Plains card or Cleric card, reveal it, then shuffle and put that card on top."
+      },
+      {
+        "text": "When ~ enters, you may search your library for a Plains card or a Cave card, reveal it, then shuffle and put it on top."
+      }
+    ],
+    "counterExamples": [
+      "You may search your library for a basic Island card or Wizard card, then shuffle and put that card on top.",
+      "You may search your library for a basic Island card or Wizard card, reveal it, put it into your hand, then shuffle.",
+      "Target player may search their library for a basic Island card or Wizard card, reveal it, then shuffle and put that card on top."
+    ]
+  },
+  {
+    "id": "eff.stdlci.put.anyNumber.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 107.1c"
+    ],
+    "pattern": "put any number of {f:Filter} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, put any number of artifact cards from your hand onto the battlefield."
+      },
+      {
+        "text": "Draw two cards, then put any number of Elf cards from your hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put any number of artifact cards from your hand onto the battlefield tapped.",
+      "When ~ enters, put any number of artifact cards from your graveyard onto the battlefield.",
+      "When ~ enters, put two artifact cards from your hand onto the battlefield.",
+      "When ~ enters, put any number of artifact cards from your hand into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.stdlci.put.anyNumber.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 110.5b",
+      "CR 400.7",
+      "CR 107.1c"
+    ],
+    "pattern": "put any number of {f:Filter} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Put any number of land cards from your hand onto the battlefield tapped."
+      },
+      {
+        "text": "When ~ enters, put any number of Forest cards from your hand onto the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Put any number of land cards from your hand onto the battlefield.",
+      "{2}: Put any number of land cards from your hand onto the battlefield untapped.",
+      "{2}: Put a land card from your hand onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.stdlci.may.exile.handcard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 610.3",
+      "CR 400.7"
+    ],
+    "pattern": "you may exile ( a | an ) {c:HandCard} [ {d:Dur} ]",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$c",
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "until": "$d"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at target opponent's hand. You may exile a creature card from it until ~ leaves the battlefield."
+      },
+      {
+        "text": "When ~ enters, target player reveals their hand. You may exile an instant card from it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, look at target opponent's hand. You may exile a creature card from your hand until ~ leaves the battlefield.",
+      "When ~ enters, look at target opponent's hand. You may exile two creature cards from it until ~ leaves the battlefield.",
+      "When ~ enters, look at target opponent's hand. Target opponent may exile a creature card from it until ~ leaves the battlefield."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.stdlci.exile.handcard",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 610.3",
+      "CR 400.7"
+    ],
+    "pattern": "exile ( a | an ) {c:HandCard} [ {d:Dur} ]",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$c",
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "until": "$d"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, look at target opponent's hand. Exile an artifact card from it until ~ leaves the battlefield."
+      },
+      {
+        "text": "When ~ enters, target opponent reveals their hand. Exile a noncreature card from it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, look at target opponent's hand. Exile an artifact card from your graveyard until ~ leaves the battlefield.",
+      "When ~ enters, look at target opponent's hand. Exile all artifact cards from it until ~ leaves the battlefield.",
+      "When ~ enters, look at target opponent's hand. Exile an artifact card from it until end of turn unless they pay {2}."
+    ]
+  },
+  {
+    "id": "eff.stdlci.counters.put.forEachLeftUnderYourControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 603.10a",
+      "CR 700.4",
+      "CR 608.2h"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {o:Objs} for each {f:Filter} that left the battlefield under your control this turn",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          },
+          "from": "battlefield"
+        },
+        "scope": "turn"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, put a +1/+1 counter on ~ for each creature that left the battlefield under your control this turn."
+      },
+      {
+        "text": "Put a +1/+1 counter on target creature for each artifact that left the battlefield under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put a +1/+1 counter on ~ for each creature that left the battlefield under an opponent's control this turn.",
+      "When ~ enters, put a +1/+1 counter on ~ for each creature that left the battlefield under your control last turn.",
+      "When ~ enters, put two +1/+1 counters on ~ for each creature that left the battlefield under your control this turn.",
+      "When ~ enters, put a +1/+1 counter on ~ for each creature that entered the battlefield under your control this turn."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "rid.stdlci.mana.spendOnly.cantBeCountered",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 101.2",
+      "CR 608.2c",
+      "CR 607.2d"
+    ],
+    "pattern": "spend this mana only to {r:ManaSpend} , and that spell can't be countered",
+    "build": {
+      "$patchPrevious": {
+        "restriction": {
+          "spells": "$r.spells",
+          "spellRider": "cantBeCountered"
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "only",
+      "can't"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\n{1}, {T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type, and that spell can't be countered."
+      },
+      {
+        "text": "{T}: Add {G}. Spend this mana only to cast an artifact spell, and that spell can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. Spend this mana only to cast an artifact spell, and that spell can be countered.",
+      "{T}: Add {G}. Spend this mana only to cast an artifact spell, and that spell can't be countered this turn.",
+      "{T}: Add {G}. Spend this mana only to cast an artifact spell or activate an ability of an artifact, and that spell can't be countered.",
+      "{T}: Add {G}. Spend this mana only to cast an artifact spell, and that spell has flash."
+    ]
+  },
+  {
+    "id": "trg.stdlci.attacks.mostLife",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 508.1b",
+      "CR 119.1",
+      "CR 702.105a"
+    ],
+    "pattern": "( when | whenever ) ~ attacks the player with the most life or tied for most life",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "self": true
+          },
+          "defender": "any"
+        }
+      ],
+      "while": {
+        "cond": "compare",
+        "left": {
+          "q": "countPlayers",
+          "of": {
+            "ref": "each",
+            "who": "player"
+          },
+          "lifeVs": {
+            "op": ">",
+            "than": {
+              "ref": "event",
+              "role": "defender"
+            }
+          }
+        },
+        "op": "==",
+        "right": 0
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever"
+    ],
+    "needs": [
+      "feature:trigger.while",
+      "feature:q.countPlayers.lifeVs"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks the player with the most life or tied for most life, draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks the player with the most life or tied for most life, put two +1/+1 counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks the player with the most life, draw a card.",
+      "Whenever ~ attacks the player with the least life or tied for least life, draw a card.",
+      "Whenever ~ attacks a player, draw a card.",
+      "Whenever ~ attacks the player with the most cards in hand or tied for most cards in hand, draw a card."
+    ]
+  },
+  {
+    "id": "eff.stdlci.reveal.n.fromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.2",
+      "CR 608.2c"
+    ],
+    "pattern": "reveal {n:Qty} cards from the top of your library",
+    "build": {
+      "op": "reveal",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "topCards",
+        "player": {
+          "ref": "you"
+        },
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, reveal that many cards from the top of your library."
+      },
+      {
+        "text": "Whenever you gain life, reveal that many cards from the top of your library."
+      }
+    ],
+    "counterExamples": [
+      "Reveal that many cards from the bottom of your library.",
+      "Reveal that many cards from the top of your graveyard.",
+      "Reveal that many cards from your hand."
+    ]
+  },
+  {
+    "id": "eff.stdlci.dig.anyNumber.bf.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 401.4",
+      "CR 701.24c"
+    ],
+    "pattern": "put any number of {f:Filter} cards from among {g:Seen} onto the battlefield and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "consumes": [
+      "any number",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, reveal that many cards from the top of your library. Put any number of Elf creature cards from among them onto the battlefield and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. Put any number of land cards from among them onto the battlefield and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. Put any number of land cards from among them onto the battlefield and the rest on the bottom of your library in any order.",
+      "Look at the top five cards of your library. Put any number of land cards from among them into your hand and the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. Put any number of land cards from among them onto the battlefield and the rest on top of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.stdlci.dig.put.eitherOr.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card and/or ( a | an ) {g:Filter} card from among {s:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$s",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "is": "$s",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenOther"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenOther"
+            }
+          ]
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may put a creature card and/or a land card from among them into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may put a creature card and/or an enchantment card from among them into your hand. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may put a creature card or a land card from among them into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may put a creature card and/or a land card from among them into your graveyard. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. Put a creature card and/or a land card from among them into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.stdlci.dig.put.eitherOr.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card and/or ( a | an ) {g:Filter} card from among {s:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$s",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "is": "$s",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenOther"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenOther"
+            }
+          ]
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, reveal that many cards from the top of your library. You may put an artifact card and/or a land card from among them onto the battlefield. Put the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top six cards of your library. You may put a Saga card and/or a land card from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may put a creature card and/or a land card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may put a creature card or a land card from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may put two creature cards and/or a land card from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.stdlci.thenIf.counters.removeTransform",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.27a",
+      "CR 712.9",
+      "CR 608.2c"
+    ],
+    "pattern": "then if there are {n:Qty} or more {k:CounterKind} counters on {o:Obj} , remove those counters and transform it",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "removeCounters",
+          "from": "$o",
+          "kind": "$k",
+          "count": "all"
+        },
+        {
+          "op": "changeFace",
+          "what": "$o",
+          "to": "transform"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, if you descended this turn, put a bore counter on ~. Then if there are three or more bore counters on it, remove those counters and transform it."
+      },
+      {
+        "text": "{T}: Put a charge counter on ~. Then if there are four or more charge counters on it, remove those counters and transform it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Put a charge counter on ~. Then if there are four or fewer charge counters on it, remove those counters and transform it.",
+      "{T}: Put a charge counter on ~. Then if there are four or more charge counters on it, remove those counters and sacrifice it.",
+      "{T}: Put a charge counter on ~. Then if there are four or more charge counters on it, remove a counter and transform it."
+    ]
+  },
+  {
+    "id": "eff.stdlci.return.bf.owner.tapped.transformed.counters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 712.14a",
+      "CR 400.7",
+      "CR 110.2",
+      "CR 122.6"
+    ],
+    "pattern": "return {o:Objs} to the battlefield tapped and transformed under ( its owner 's | their owners' | their owner 's ) control with {n:Qty} {k:CounterKind} counters on ( it | them )",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "tapped": true,
+        "transformed": true,
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, return it to the battlefield tapped and transformed under its owner's control with two charge counters on it."
+      },
+      {
+        "text": "{3}: Exile ~, then return it to the battlefield tapped and transformed under its owner's control with two +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return it to the battlefield transformed under its owner's control with three time counters on it.",
+      "When ~ dies, return it to the battlefield tapped and transformed under your control with three time counters on it.",
+      "When ~ dies, return it to the battlefield tapped and transformed under its owner's control with three time counters on target creature."
+    ]
+  },
+  {
+    "id": "eff.stdlci.player.discovers.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.57a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "[ then ] {p:Player} discovers x , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "action",
+          "action": "discover",
+          "who": "$p",
+          "n": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "needs": [
+      "action:discover"
+    ],
+    "examples": [
+      {
+        "text": "The owner of target artifact or creature with mana value 1 or greater shuffles it into their library. Then that player discovers X, where X is its mana value."
+      },
+      {
+        "text": "Target player discovers X, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Target player discovers X.",
+      "Target player discovers X, where X is its power.",
+      "Target player discover X, where X is the number of lands they control or more."
+    ]
+  },
+  {
+    "id": "eff.stdlci.player.discovers",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 701.57a"
+    ],
+    "pattern": "[ then ] {p:Player} discovers {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "discover",
+      "who": "$p",
+      "n": "$n"
+    },
+    "subject": "player",
+    "needs": [
+      "action:discover"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent discovers 3."
+      },
+      {
+        "text": "Each player discovers 4."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent discovers.",
+      "Target opponent discovers 3 cards.",
+      "Target opponent discovers a card."
+    ]
+  }
+]

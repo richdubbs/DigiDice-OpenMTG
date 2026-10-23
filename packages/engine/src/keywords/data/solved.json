@@ -1,0 +1,12 @@
+{
+  "name": "solved",
+  "rule": "702.169",
+  "params": [],
+  "mechanisms": [
+    "expands",
+    "structural"
+  ],
+  "reminder": "",
+  "multiple": "independent",
+  "status": "planned"
+}

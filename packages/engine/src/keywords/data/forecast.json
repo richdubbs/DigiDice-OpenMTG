@@ -1,0 +1,26 @@
+{
+  "name": "forecast",
+  "rule": "702.57",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Activate only during your upkeep and only once each turn.",
+  "multiple": "independent",
+  "status": "planned",
+  "modifies": {
+    "kind": "activated",
+    "zone": [
+      "hand"
+    ],
+    "limit": {
+      "per": "turn",
+      "max": 1
+    },
+    "onlyIf": {
+      "cond": "turnOf",
+      "whose": "you",
+      "step": "upkeep"
+    }
+  }
+}

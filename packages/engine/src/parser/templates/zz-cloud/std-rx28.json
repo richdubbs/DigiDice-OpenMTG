@@ -1,0 +1,312 @@
+[
+  {
+    "id": "rep.stdrx28.enters.lookHand.choose.cardType.otherThanCreature",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 402.3",
+      "CR 205.2a"
+    ],
+    "pattern": "as ~ enters , look at an opponent 's hand , then choose a card type other than creature",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "lookAtHand": "opponent",
+            "choose": [
+              {
+                "what": "cardType",
+                "link": "cardType",
+                "exclude": [
+                  "Creature"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "then",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As this artifact enters, look at an opponent's hand, then choose a card type other than creature."
+      },
+      {
+        "text": "As this enchantment enters, look at an opponent's hand, then choose a card type other than creature."
+      }
+    ],
+    "counterExamples": [
+      "As this artifact enters, look at an opponent's hand, then choose a card type other than land.",
+      "As this artifact enters, look at an opponent's hand, then choose a card type.",
+      "As this artifact enters, look at target opponent's hand, then choose a card type other than creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.stdrx28.enters.counters.whereX.ifCond",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 107.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "if {c:Cond} , ~ enters with x {k:CounterKind} counters on ( it | ~ ) , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "If ~ was kicked, ~ enters with X +1/+1 counters on it, where X is the number of Elves you control."
+      },
+      {
+        "text": "If you control a Wizard, ~ enters with X +1/+1 counters on ~, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "If ~ was kicked, ~ enters with X +1/+1 counters on target creature, where X is the number of Elves you control.",
+      "~ enters with X +1/+1 counters on it, where X is the number of Elves you control.",
+      "If ~ was kicked, ~ enters with two +1/+1 counters on it, where X is the number of Elves you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.stdrx28.enters.choose.nonlandCardName",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 201.3"
+    ],
+    "pattern": "as ~ enters , choose ( a | any ) nonland card name",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "cardName",
+                "link": "cardName",
+                "cardKind": "nonland"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As this enchantment enters, choose any nonland card name."
+      },
+      {
+        "text": "As this artifact enters, choose any nonland card name."
+      }
+    ],
+    "counterExamples": [
+      "As this enchantment enters, choose any land card name.",
+      "As this enchantment enters, choose two nonland card names.",
+      "As this enchantment attacks, choose any nonland card name."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdrx28.choose.landCardName",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 201.3",
+      "CR 607.2d"
+    ],
+    "pattern": "choose a land card name",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "cardName",
+      "as": "chosenCardName",
+      "link": "cardName",
+      "cardKind": "land"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this artifact enters, choose a land card name."
+      },
+      {
+        "text": "Choose a land card name. Destroy all lands with that name."
+      }
+    ],
+    "counterExamples": [
+      "Choose a nonland card name.",
+      "Target opponent chooses a land card name.",
+      "Choose two land card names."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdrx28.choose.nonlandCardName",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 201.3",
+      "CR 607.2d"
+    ],
+    "pattern": "choose a nonland card name",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "cardName",
+      "as": "chosenCardName",
+      "link": "cardName",
+      "cardKind": "nonland"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this artifact enters, choose a nonland card name."
+      },
+      {
+        "text": "Choose a nonland card name. Exile all cards with that name from target player's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Choose a land card name.",
+      "Target opponent chooses a nonland card name.",
+      "Choose two nonland card names."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "sta.stdrx28.costMod.chosenName.more",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 605.1a",
+      "CR 118.7",
+      "CR 201.3",
+      "CR 607.2d"
+    ],
+    "pattern": "activated abilities of sources with ( the chosen name | that name ) cost {m:ManaCost} more to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "zone": "any",
+                "chosen": {
+                  "link": "cardName",
+                  "quality": "cardName"
+                }
+              }
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As this enchantment enters, choose any nonland card name.\nActivated abilities of sources with the chosen name cost {3} more to activate."
+      },
+      {
+        "text": "As this enchantment enters, choose any card name.\nActivated abilities of sources with that name cost {1} more to activate."
+      }
+    ],
+    "counterExamples": [
+      "As this enchantment enters, choose any nonland card name.\nActivated abilities of sources with the chosen name cost {3} less to activate.",
+      "As this enchantment enters, choose any nonland card name.\nCreature spells with the chosen name cost {3} more to cast.",
+      "As this enchantment enters, choose any nonland card name.\nActivated abilities of sources you control cost {3} more to activate."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

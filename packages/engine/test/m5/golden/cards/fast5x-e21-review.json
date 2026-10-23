@@ -1,0 +1,1065 @@
+[
+  {
+    "card": "Essence Channeler",
+    "expect": "full",
+    "verified": "FAST5X E21 review, by hand against the Oracle text and the rules: when it dies, every counter of every kind it had is put on the target creature you control (moveCounters kind any, count all; CR 122.5, 122.8, 603.10a, 608.2h); the static and the life-gain trigger as before (CR 119.10, 611.3a)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "As long as you've lost life this turn, ~ has flying and vigilance.",
+            "condition": {
+              "cond": "happened",
+              "event": {
+                "ev": "life",
+                "change": "loss",
+                "player": "you"
+              },
+              "scope": "turn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "flying",
+                        "text": "flying"
+                      },
+                      {
+                        "kind": "keyword",
+                        "keyword": "vigilance",
+                        "text": "vigilance"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever you gain life, put a +1/+1 counter on ~.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "life",
+                  "change": "gain",
+                  "player": "you"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "putCounters",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "kind": "+1/+1",
+                  "count": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "triggered",
+            "text": "When ~ dies, put its counters on target creature you control.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "object",
+                  "min": 1,
+                  "max": 1,
+                  "text": "target creature you control",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you"
+                  }
+                }
+              ],
+              "steps": [
+                {
+                  "op": "moveCounters",
+                  "from": {
+                    "ref": "event",
+                    "role": "subject"
+                  },
+                  "to": {
+                    "ref": "target",
+                    "id": "t0"
+                  },
+                  "kind": "any",
+                  "count": "all"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Scolding Administrator",
+    "expect": "full",
+    "verified": "FAST5X E21 review: when it dies, if it had counters on it (CR 603.4, 603.10a: last known information, CR 608.2h), those counters are put on up to one target creature (CR 122.8); menace (CR 702.111)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "menace",
+            "text": "Menace"
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever you cast an instant or sorcery spell that targets a creature, put a +1/+1 counter on ~.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "cast",
+                  "player": "you",
+                  "spell": {
+                    "types": [
+                      "Instant",
+                      "Sorcery"
+                    ],
+                    "targets": {
+                      "ref": "each",
+                      "filter": {
+                        "types": [
+                          "Creature"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "putCounters",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "kind": "+1/+1",
+                  "count": 1
+                }
+              ]
+            },
+            "label": "Repartee"
+          },
+          {
+            "kind": "triggered",
+            "text": "When ~ dies, if it had counters on it, put those counters on up to one target creature.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "interveningIf": {
+              "cond": "matches",
+              "object": {
+                "ref": "event",
+                "role": "subject"
+              },
+              "filter": {
+                "counters": {
+                  "kind": "any"
+                }
+              }
+            },
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "object",
+                  "min": 0,
+                  "max": 1,
+                  "text": "up to one target creature",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  }
+                }
+              ],
+              "steps": [
+                {
+                  "op": "moveCounters",
+                  "from": {
+                    "ref": "event",
+                    "role": "subject"
+                  },
+                  "to": {
+                    "ref": "target",
+                    "id": "t0"
+                  },
+                  "kind": "any",
+                  "count": "all"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Buzzard-Wasp Colony",
+    "expect": "full",
+    "verified": "FAST5X E21 review: whenever another creature you control dies, if it had counters on it, its counters are put on this creature (CR 122.8, 603.4, 603.10a); flying and the enters trigger as before (CR 702.9)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "flying",
+            "text": "Flying"
+          },
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, you may sacrifice an artifact or creature. If you do, draw a card.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "may",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "do": [
+                    {
+                      "op": "sacrificeChoice",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "filter": {
+                        "types": [
+                          "Artifact",
+                          "Creature"
+                        ]
+                      },
+                      "count": 1
+                    }
+                  ],
+                  "as": "did"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "did"
+                  },
+                  "then": [
+                    {
+                      "op": "draw",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "count": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever another creature you control dies, if it had counters on it, put its counters on ~.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "other": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "interveningIf": {
+              "cond": "matches",
+              "object": {
+                "ref": "event",
+                "role": "subject"
+              },
+              "filter": {
+                "counters": {
+                  "kind": "any"
+                }
+              }
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "moveCounters",
+                  "from": {
+                    "ref": "event",
+                    "role": "subject"
+                  },
+                  "to": {
+                    "ref": "self"
+                  },
+                  "kind": "any",
+                  "count": "all"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Ambitious Augmenter",
+    "expect": "full",
+    "verified": "FAST5X E21 review: when it dies, if it had one or more counters on it, create the 0/0 Fractal token, then put its counters on that token (CR 122.8, 111.1, 603.4, 603.10a); the token's toughness is checked only after the ability resolves (CR 704.3)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "increment",
+            "text": "Increment"
+          },
+          {
+            "kind": "triggered",
+            "text": "When ~ dies, if it had one or more counters on it, create a 0/0 green and blue Fractal creature token, then put ~'s counters on that token.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "interveningIf": {
+              "cond": "matches",
+              "object": {
+                "ref": "event",
+                "role": "subject"
+              },
+              "filter": {
+                "counters": {
+                  "kind": "any"
+                }
+              }
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1,
+                  "token": {
+                    "colors": [
+                      "G",
+                      "U"
+                    ],
+                    "types": [
+                      "Creature"
+                    ],
+                    "subtypes": [
+                      "Fractal"
+                    ],
+                    "power": 0,
+                    "toughness": 0
+                  },
+                  "as": "token"
+                },
+                {
+                  "op": "moveCounters",
+                  "from": {
+                    "ref": "event",
+                    "role": "subject"
+                  },
+                  "to": {
+                    "ref": "bound",
+                    "name": "token"
+                  },
+                  "kind": "any",
+                  "count": "all"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Encumbered Reejerey",
+    "expect": "full",
+    "verified": "FAST5X E21 review: enters with three -1/-1 counters (CR 122.6, 614.1c); whenever it becomes tapped while it has a -1/-1 counter on it (a condition of the trigger event, judged when it becomes tapped, CR 603.2), remove a -1/-1 counter from it (CR 122.1)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "~ enters with three -1/-1 counters on it.",
+            "zone": [
+              "stack",
+              "battlefield"
+            ],
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                },
+                "body": {
+                  "b": "enters",
+                  "counters": [
+                    {
+                      "kind": "-1/-1",
+                      "count": 3
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever ~ becomes tapped while it has a -1/-1 counter on it, remove a -1/-1 counter from it.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "becomes",
+                  "what": "tapped",
+                  "object": {
+                    "self": true
+                  }
+                }
+              ],
+              "while": {
+                "cond": "matches",
+                "object": {
+                  "ref": "event",
+                  "role": "subject"
+                },
+                "filter": {
+                  "counters": {
+                    "kind": "-1/-1"
+                  }
+                }
+              }
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "removeCounters",
+                  "from": {
+                    "ref": "event",
+                    "role": "subject"
+                  },
+                  "kind": "-1/-1",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Reluctant Dounguard",
+    "expect": "full",
+    "verified": "FAST5X E21 review: enters with two -1/-1 counters (CR 122.6); whenever another creature you control enters while it has a -1/-1 counter on it (CR 603.2, 603.6a), remove a -1/-1 counter from it",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "~ enters with two -1/-1 counters on it.",
+            "zone": [
+              "stack",
+              "battlefield"
+            ],
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                },
+                "body": {
+                  "b": "enters",
+                  "counters": [
+                    {
+                      "kind": "-1/-1",
+                      "count": 2
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever another creature you control enters while ~ has a -1/-1 counter on it, remove a -1/-1 counter from ~.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "other": true
+                  },
+                  "to": "battlefield"
+                }
+              ],
+              "while": {
+                "cond": "matches",
+                "object": {
+                  "ref": "self"
+                },
+                "filter": {
+                  "counters": {
+                    "kind": "-1/-1"
+                  }
+                }
+              }
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "removeCounters",
+                  "from": {
+                    "ref": "self"
+                  },
+                  "kind": "-1/-1",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Bristlebane Battler",
+    "expect": "full",
+    "verified": "FAST5X E21 review: trample, ward {2}, enters with five -1/-1 counters (CR 702.19, 702.21, 122.6); whenever another creature you control enters while it has a -1/-1 counter on it, remove a -1/-1 counter from it (CR 603.2, 603.6a)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "trample",
+            "text": "Trample"
+          },
+          {
+            "kind": "keyword",
+            "keyword": "ward",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 2
+                }
+              ]
+            },
+            "text": "ward {2}"
+          },
+          {
+            "kind": "static",
+            "text": "~ enters with five -1/-1 counters on it.",
+            "zone": [
+              "stack",
+              "battlefield"
+            ],
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                },
+                "body": {
+                  "b": "enters",
+                  "counters": [
+                    {
+                      "kind": "-1/-1",
+                      "count": 5
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever another creature you control enters while ~ has a -1/-1 counter on it, remove a -1/-1 counter from ~.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "other": true
+                  },
+                  "to": "battlefield"
+                }
+              ],
+              "while": {
+                "cond": "matches",
+                "object": {
+                  "ref": "self"
+                },
+                "filter": {
+                  "counters": {
+                    "kind": "-1/-1"
+                  }
+                }
+              }
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "removeCounters",
+                  "from": {
+                    "ref": "self"
+                  },
+                  "kind": "-1/-1",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Stocking the Pantry",
+    "expect": "full",
+    "verified": "FAST5X E21 review: whenever you put one or more +1/+1 counters on a creature you control (the player who puts them: CR 122.6, 122.6a; one trigger per creature, CR 603.2c), put a supply counter on it; the activated ability as before (CR 602.2)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "text": "Whenever you put one or more +1/+1 counters on a creature you control, put a supply counter on ~.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "counters",
+                  "change": "put",
+                  "kind": "+1/+1",
+                  "on": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you"
+                  },
+                  "by": "you"
+                }
+              ],
+              "batch": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "putCounters",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "kind": "supply",
+                  "count": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "activated",
+            "text": "{2}, Remove a supply counter from ~: Draw a card.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 2
+                }
+              ],
+              "other": [
+                {
+                  "kind": "removeCounters",
+                  "counter": "supply",
+                  "count": 1,
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Terrasymbiosis",
+    "expect": "full",
+    "verified": "FAST5X E21 review: whenever you put one or more +1/+1 counters on a creature you control, you may draw that many cards (the counters put on that creature, CR 603.2c, 608.2h); do this only once each turn: it triggers only while you have not drawn this way this turn (CR 603.2h)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "text": "Whenever you put one or more +1/+1 counters on a creature you control, you may draw that many cards. Do this only once each turn.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "counters",
+                  "change": "put",
+                  "kind": "+1/+1",
+                  "on": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you"
+                  },
+                  "by": "you"
+                }
+              ],
+              "batch": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "may",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "do": [
+                    {
+                      "op": "draw",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "count": {
+                        "q": "eventAmount"
+                      }
+                    }
+                  ],
+                  "as": "once"
+                }
+              ]
+            },
+            "limit": {
+              "per": "turn",
+              "max": 1,
+              "action": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Mazemind Tome",
+    "expect": "full",
+    "verified": "FAST5X E21 review: when there are four or more page counters on it (a state trigger, CR 603.8), exile it; if you do, you gain 4 life (CR 608.2c); the two activated abilities as before (CR 602.2, 701.20)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "activated",
+            "text": "{T}, Put a page counter on ~: Scry 1.",
+            "cost": {
+              "tap": true,
+              "other": [
+                {
+                  "kind": "putCounters",
+                  "counter": "page",
+                  "count": 1,
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "scry",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "activated",
+            "text": "{2}, {T}, Put a page counter on ~: Draw a card.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 2
+                }
+              ],
+              "tap": true,
+              "other": [
+                {
+                  "kind": "putCounters",
+                  "counter": "page",
+                  "count": 1,
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "triggered",
+            "text": "When there are four or more page counters on ~, exile it. If you do, you gain 4 life.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "state",
+                  "cond": {
+                    "cond": "compare",
+                    "left": {
+                      "q": "counters",
+                      "on": {
+                        "ref": "self"
+                      },
+                      "kind": "page"
+                    },
+                    "op": ">=",
+                    "right": 4
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "self"
+                  },
+                  "to": {
+                    "zone": "exile"
+                  },
+                  "as": "did"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "did"
+                  },
+                  "then": [
+                    {
+                      "op": "gainLife",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "amount": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Heartless Act",
+    "expect": "full",
+    "verified": "FAST5X E21 review: choose one (CR 700.2): destroy target creature with no counters on it (no counter of any kind, CR 122.1, 115.1), or remove up to three counters from target creature (CR 122.1, 608.2d)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "text": "Choose one --\n• Destroy target creature with no counters on it.\n• Remove up to three counters from target creature.",
+            "effect": {
+              "targets": [],
+              "steps": [],
+              "modes": {
+                "min": 1,
+                "max": 1,
+                "options": [
+                  {
+                    "text": "Destroy target creature with no counters on it.",
+                    "program": {
+                      "targets": [
+                        {
+                          "id": "t0",
+                          "kind": "object",
+                          "min": 1,
+                          "max": 1,
+                          "text": "target creature with no counters on it",
+                          "filter": {
+                            "types": [
+                              "Creature"
+                            ],
+                            "counters": {
+                              "kind": "any",
+                              "cmp": {
+                                "op": "==",
+                                "value": 0
+                              }
+                            }
+                          }
+                        }
+                      ],
+                      "steps": [
+                        {
+                          "op": "destroy",
+                          "what": {
+                            "ref": "target",
+                            "id": "t0"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "text": "Remove up to three counters from target creature.",
+                    "program": {
+                      "targets": [
+                        {
+                          "id": "t1",
+                          "kind": "object",
+                          "min": 1,
+                          "max": 1,
+                          "text": "target creature",
+                          "filter": {
+                            "types": [
+                              "Creature"
+                            ]
+                          }
+                        }
+                      ],
+                      "steps": [
+                        {
+                          "op": "removeCounters",
+                          "from": {
+                            "ref": "target",
+                            "id": "t1"
+                          },
+                          "kind": "any",
+                          "count": 3,
+                          "upTo": true
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

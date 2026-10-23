@@ -1,0 +1,5 @@
+# std-rx16 (wave 2, slice s11; test/cloud/std-rx16, golden cloud-std-rx16-review.json): "Each creature spell you cast with toughness greater than its power costs
+# {1} less to cast", "Whenever a creature you control attacks or blocks, it gets +X/+X ..., where X is the difference between its power and toughness" (Doran);
+# "For each of those cards, its owner may play it for as long as it remains exiled" (Extraordinary Journey)
+Doran, Besieged by Time
+Extraordinary Journey

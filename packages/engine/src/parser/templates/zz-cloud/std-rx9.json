@@ -1,0 +1,176 @@
+[
+  {
+    "id": "rep.stdrx9.enters.choose.landtype.tappedUnlessPay",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a",
+      "CR 118.12"
+    ],
+    "pattern": "as ~ enters , choose a basic land type . then you may {c:Cost} . if you don't , it enters tapped",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "landType",
+                "link": "landType",
+                "options": [
+                  "Plains",
+                  "Island",
+                  "Swamp",
+                  "Mountain",
+                  "Forest"
+                ]
+              }
+            ],
+            "tappedUnlessPay": "$c"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "then",
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a basic land type. Then you may pay 3 life. If you don't, it enters tapped."
+      },
+      {
+        "text": "As ~ enters, choose a basic land type. Then you may discard a card. If you don't, it enters tapped."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a basic land type. Then you may pay 3 life. If you do, it enters tapped.",
+      "As ~ enters, choose a creature type. Then you may pay 3 life. If you don't, it enters tapped.",
+      "As ~ enters, choose a basic land type. Then pay 3 life. If you don't, it enters tapped."
+    ]
+  },
+  {
+    "id": "sta.stdrx9.self.chosenLandType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.7",
+      "CR 205.3i",
+      "CR 607.2d",
+      "CR 613.1d"
+    ],
+    "pattern": "~ is the chosen ( type | basic land type )",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "chosen": "landType",
+            "chosenSets": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a basic land type.\n~ is the chosen basic land type."
+      },
+      {
+        "text": "~ enters tapped.\nAs ~ enters, choose a basic land type.\n~ is the chosen basic land type."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a basic land type.\n~ is the chosen basic land type in addition to its other types.",
+      "As ~ enters, choose a basic land type.\n~ is the chosen color.",
+      "As ~ enters, choose a basic land type.\n~ is the chosen basic land type until end of turn."
+    ]
+  },
+  {
+    "id": "sta.stdrx9.cast.graveyard.usingTheir.sneak",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 702.190a",
+      "CR 113.6f",
+      "CR 118.9",
+      "CR 613.1f"
+    ],
+    "pattern": "you may cast creature ( spells | cards ) from your graveyard using their sneak abilities",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "static",
+              "text": "You may cast this card from your graveyard using its sneak ability.",
+              "effects": [
+                {
+                  "s": "castWith",
+                  "method": "sneak",
+                  "from": "graveyard"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Creature cards in your graveyard have sneak {2}{U}.\nYou may cast creature cards from your graveyard using their sneak abilities."
+      },
+      {
+        "text": "Flying\nYou may cast creature cards from your graveyard using their sneak abilities."
+      }
+    ],
+    "counterExamples": [
+      "You may cast creature cards from your hand using their sneak abilities.",
+      "You may cast creature cards from your graveyard using their warp abilities.",
+      "You may cast instant cards from your graveyard using their sneak abilities."
+    ]
+  }
+]

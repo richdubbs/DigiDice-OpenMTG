@@ -1,0 +1,22 @@
+# Standard round 9 (std-r9): new templates and template status. Golden cards of the round (test/m5/golden/cards/cloud-*-review.json entries headed
+# "Standard round 9 review") and the cards of its scenario tests.
+# Promotion evidence (design 6.9): sta.r3static.anthem.foreach (three cards)
+Kellan, the Fae-Blooded // Birthright Boon
+Heavenly Blademaster
+Armament Master
+# One- and two-card promotions (a 6.9 deviation named in the round record)
+Marina Vendrell's Grimoire
+The Regalia
+Clifftop Lookout
+Living Conundrum
+Smuggler's Surprise
+The Neutrinos
+The Apprentice's Folly
+# New templates (zz-cloud/std-r9.json): "you can't cast ~ during your first, second, or third turns of the game" (three cards) and "when you next attack this turn"
+Jace Reawakened
+Spider-Man 2099
+Serra Avenger
+All-Out Assault
+# Loyalty cost of minus X (CostDef.loyaltyX; CR 606.4, 107.3a)
+Chandra, Chill of Compliance
+Ugin, the Spirit Dragon

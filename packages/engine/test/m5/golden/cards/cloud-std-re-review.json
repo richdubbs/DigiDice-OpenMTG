@@ -1,0 +1,907 @@
+[
+ {
+  "card": "Balin, Loremaster",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review, by hand against the Oracle text and the rules cited (kw.line, trg.selfOrAnother.enters, ch.may, eff.discard.hand.you, eff.fxz.draw.whereX.imp, cond.if, eff.damage; family draw-where-x, render/steps-cards.ts and render/steps-util.ts#markX): storied (CR 702.188, unverified); whenever it or another Dwarf you control enters (it is a Dwarf, so: a Dwarf you control, CR 603.6a), you may discard your hand (CR 701.9a); you draw as many cards as were discarded this way, none if you did not (CR 608.2c, 121.1); then if you have an enduring story it deals that same X damage to each opponent (CR 107.3, 120.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "storied"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "subtypes": [
+           "Dwarf"
+          ],
+          "controller": "you"
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "discard",
+           "who": {
+            "ref": "you"
+           },
+           "count": "hand",
+           "as": "discard"
+          }
+         ]
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "discard",
+          "which": {
+           "isCard": true
+          }
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "designation",
+          "who": {
+           "ref": "you"
+          },
+          "what": "enduringStory"
+         },
+         "then": [
+          {
+           "op": "damage",
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "each",
+            "who": "opponent"
+           },
+           "amount": {
+            "q": "resultCount",
+            "step": "discard",
+            "which": {
+             "isCard": true
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Boiling Rock Rioter",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review (Standard, tuning half), the evidence of eff.stdre.cast.fromLinkedExile.owned (a wording printed on this card only, design 6.9 deviation), by hand against the Oracle text and the rules cited (kw.line, eff.exile, trg.when, eff.stdre.cast.fromLinkedExile.owned; render/fold.ts#castFromLinkedExile): firebending 1 (CR 702.189, unverified); tap an untapped Ally you control, itself included (CR 302.6): exile target card from a graveyard, the cards this ability exiles being the ones the attack trigger reads (CR 607.2a); whenever it attacks you may choose one nonland Ally card you own among them and cast it during the resolution, paying its costs (CR 608.2g, 601.2, 305.9, 108.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "firebending",
+      "amount": 1
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "other": [
+        {
+         "kind": "tapUntapped",
+         "filter": {
+          "subtypes": [
+           "Ally"
+          ],
+          "controller": "you"
+         },
+         "count": 1
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "link": "exiled"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Ally"
+             ]
+            }
+           ],
+           "notTypes": [
+            "Land"
+           ],
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           },
+           "zone": "any",
+           "owner": "you"
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "cast"
+        },
+        {
+         "op": "cast",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Finneas, Ace Archer",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review (Standard, held-out half: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (parser/holes/filter.ts#thatsKinds, render/np.ts#thatAreForm, eff.counters.put, eff.t34.thenIf): reach, vigilance; whenever it attacks, a +1/+1 counter on each other creature you control that is a token or a Rabbit, then a card if the total power of creatures you control is 10 or greater (CR 111.1, 205.3m, 122.1, 208.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "reach",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "filter": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Rabbit"
+             ]
+            },
+            {
+             "token": true
+            }
+           ],
+           "controller": "you",
+           "other": true,
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         },
+         "op": "putCounters"
+        },
+        {
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "of": {
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            },
+            "ref": "each"
+           },
+           "q": "stat",
+           "stat": "power",
+           "sum": true
+          },
+          "op": ">=",
+          "right": 10
+         },
+         "op": "if",
+         "then": [
+          {
+           "count": 1,
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lotuslight Dancers",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review (Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdre.search.oneOfEach3): lifelink; when it enters you search your library for a black card, a green card and a blue card (one card for each description, a card that is several colors chosen for one of them only; any you can't find is not found), put them into your graveyard, then shuffle (CR 701.23a, 701.23b, 401.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "lifelink",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "and": [
+          {
+           "colors": [
+            "G"
+           ]
+          },
+          {
+           "colors": [
+            "U"
+           ]
+          }
+         ],
+         "as": "b0",
+         "filter": {
+          "colors": [
+           "B"
+          ]
+         },
+         "max": 1,
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library"
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "graveyard"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Skeleton Crew",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review (non-Standard, tuning half), by hand against the Oracle text and the rules cited (parser/holes/filter.ts#thatsKinds, render/np.ts#thatAreForm one article): each other creature you control that is a Skeleton or a Pirate gets +1/+1; whenever one or more creature cards leave your graveyard, a 2/2 black Skeleton Pirate token; {5}{B}: return it from your graveyard to the battlefield tapped (CR 205.3m, 613.4c, 603.10a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "anyOf": [
+           {
+            "subtypes": [
+             "Pirate"
+            ]
+           },
+           {
+            "subtypes": [
+             "Skeleton"
+            ]
+           }
+          ],
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "B"
+          ],
+          "power": 2,
+          "subtypes": [
+           "Pirate",
+           "Skeleton"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "graveyard",
+         "subject": {
+          "isCard": true,
+          "owner": "you",
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 5,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "tapped": true,
+          "zone": "battlefield"
+         },
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated",
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Overwhelmed Apprentice",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review (non-Standard, tuning half of the hash split), by hand against the Oracle text and the rules cited (eff.stdre.you.scry, eff.stdfra.then.effects): when it enters, each opponent mills two cards, then you (its controller) scry 2 (CR 701.13a, 701.22a, 109.5; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "op": "mill",
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        },
+        {
+         "count": 2,
+         "op": "scry",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kami of Restless Shadows",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review (non-Standard, tuning half of the hash split), by hand against the Oracle text and the rules cited (parser/holes/filter.ts#shape, subtypes before one card type): when it enters, choose one: return up to one target creature card from your graveyard that is a Ninja or a Rogue to your hand; or put target creature card from your graveyard on top of your library (CR 205.3m, 205.2a, 700.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "move",
+             "to": {
+              "zone": "hand"
+             },
+             "what": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "isCard": true,
+              "owner": "you",
+              "subtypes": [
+               "Ninja",
+               "Rogue"
+              ],
+              "types": [
+               "Creature"
+              ],
+              "zone": "graveyard"
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 0
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "move",
+             "to": {
+              "zone": "library"
+             },
+             "what": {
+              "id": "t1",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "isCard": true,
+              "owner": "you",
+              "types": [
+               "Creature"
+              ],
+              "zone": "graveyard"
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mayor of Avabruck // Howlpack Alpha",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review (non-Standard, tuning half of the hash split), by hand against the Oracle text and the rules cited (parser/holes/filter.ts#thatsKinds): front: other Human creatures you control get +1/+1, transforms at an upkeep after a turn with no spells; back: each other creature you control that is a Werewolf or a Wolf gets +1/+1, a 2/2 Wolf at your end step, transforms back after a turn in which a player cast two or more spells (CR 205.3m, 613.4c, 701.28a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "other": true,
+          "subtypes": [
+           "Human"
+          ],
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "changeFace",
+         "to": "transform",
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "not",
+       "of": {
+        "cond": "happened",
+        "event": {
+         "ev": "cast"
+        },
+        "scope": "lastTurn"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "anyOf": [
+           {
+            "subtypes": [
+             "Werewolf"
+            ]
+           },
+           {
+            "subtypes": [
+             "Wolf"
+            ]
+           }
+          ],
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "G"
+          ],
+          "power": 2,
+          "subtypes": [
+           "Wolf"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "changeFace",
+         "to": "transform",
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "event": {
+         "ev": "cast"
+        },
+        "per": "player",
+        "q": "happenedCount",
+        "scope": "lastTurn"
+       },
+       "op": ">=",
+       "right": 2
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Grassland Crusader",
+  "expect": "full",
+  "verified": "Standard round E (std-re) review (non-Standard, tuning half of the hash split), by hand against the Oracle text and the rules cited (parser/holes/filter.ts#shape, subtypes before one card type): {T}: target creature that is an Elf or a Soldier gets +2/+2 until end of turn (CR 205.3m, 205.2a, 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 2
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "subtypes": [
+           "Elf",
+           "Soldier"
+          ],
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ }
+]

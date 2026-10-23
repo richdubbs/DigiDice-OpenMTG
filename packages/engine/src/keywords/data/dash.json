@@ -1,0 +1,84 @@
+{
+  "name": "dash",
+  "rule": "702.109",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this spell for its dash cost. If you do, it gains haste, and it's returned from the battlefield to its owner's hand at the beginning of the next end step.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Dash {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "dash",
+          "delay": {
+            "when": {
+              "at": "step",
+              "step": "end",
+              "next": true
+            },
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "permanent"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "static",
+      "text": "As long as ~'s dash cost was paid, it has haste.",
+      "condition": {
+        "cond": "wasCast",
+        "via": "dash"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "haste",
+                  "text": "haste"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

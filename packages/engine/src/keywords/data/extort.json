@@ -1,0 +1,68 @@
+{
+  "name": "extort",
+  "rule": "702.101",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain that much life.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever you cast a spell, you may pay {W/B}. If you do, each opponent loses 1 life and you gain life equal to the total life lost this way.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "pay",
+            "who": {
+              "ref": "you"
+            },
+            "cost": {
+              "mana": [
+                {
+                  "kind": "hybrid",
+                  "colors": [
+                    "W",
+                    "B"
+                  ]
+                }
+              ]
+            },
+            "then": [
+              {
+                "op": "loseLife",
+                "who": {
+                  "ref": "each",
+                  "who": "opponent"
+                },
+                "amount": 1,
+                "as": "extorted"
+              },
+              {
+                "op": "gainLife",
+                "who": {
+                  "ref": "you"
+                },
+                "amount": {
+                  "q": "resultCount",
+                  "step": "extorted"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

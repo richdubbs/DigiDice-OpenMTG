@@ -1,0 +1,433 @@
+[
+  {
+    "id": "eff.stdtla.they.get",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:They} [each] get {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Untap one or two target creatures. They each get +3/+1 until end of turn."
+      },
+      {
+        "text": "Tap up to two target creatures. They get -2/-0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Untap one or two target creatures. They each get +3/+1.",
+      "Untap one or two target creatures. They each get +3/+1 for each Elf you control until end of turn.",
+      "They each get +3/+1 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdtla.gain.allbasiclandtypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3i",
+      "CR 305.6",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d"
+    ],
+    "pattern": "{f:Filter} gain all basic land types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": [
+                  "Plains",
+                  "Island",
+                  "Swamp",
+                  "Mountain",
+                  "Forest"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Forests you control gain all basic land types until end of turn. Scry 1."
+      },
+      {
+        "text": "Nonbasic lands you control gain all basic land types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Forests you control gain all basic land types.",
+      "Forests you control gain all creature types until end of turn.",
+      "Forests you control lose all basic land types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.stdtla.if.cast.self.flash",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "if {c:Cond} , you may cast ~ as though it had flash",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "If there are four or more instant cards in your graveyard, you may cast ~ as though it had flash."
+      },
+      {
+        "text": "If you control a Wizard, you may cast ~ as though it had flash."
+      }
+    ],
+    "counterExamples": [
+      "If you control a Wizard, you may cast ~ as though it had haste.",
+      "If you control a Wizard, you may cast ~.",
+      "If you control a Wizard, you may cast ~ as though it had flash if you pay {2} more to cast it."
+    ]
+  },
+  {
+    "id": "eff.stdtla.flicker.it",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 400.7",
+      "CR 610.3c",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "exile {o:Obj} , then return it to the battlefield under its owner 's control",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "exile"
+        },
+        "as": "moved"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "moved"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, if you control three or more artifacts, exile up to one target artifact you control, then return it to the battlefield under its owner's control."
+      },
+      {
+        "text": "When ~ enters, exile target creature you control, then return it to the battlefield under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature you control, then return it to the battlefield under your control.",
+      "When ~ enters, exile target creature you control, then return it to the battlefield tapped under its owner's control.",
+      "When ~ enters, exile two target creatures you control, then return it to the battlefield under its owner's control."
+    ]
+  },
+  {
+    "id": "sta.stdtla.duringturn.each.grant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , each {f:Filter} has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, each Arcane card in your graveyard has flashback {2}."
+      },
+      {
+        "text": "During your turn, each Spirit card in your graveyard has flashback {3}."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, each Arcane card in your graveyard has flashback {2} until end of turn.",
+      "During your end step, each Arcane card in your graveyard has flashback {2}.",
+      "During your turn, each Arcane card in your graveyard loses flashback."
+    ]
+  },
+  {
+    "id": "sta.stdtla.duringturn.each.flashback.manacost",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 702.34a",
+      "CR 118.9",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , each {f:Filter} has flashback . the flashback cost is equal to ( its | that card 's ) mana cost",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "flashback",
+                  "text": "flashback",
+                  "costIsManaCost": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "during",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, each instant card in your graveyard has flashback. The flashback cost is equal to that card's mana cost."
+      },
+      {
+        "text": "During your turn, each noncreature, nonland card in your graveyard has flashback. The flashback cost is equal to its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, each instant card in your graveyard has flashback. The flashback cost is equal to its power.",
+      "During your turn, each instant card in your graveyard has flashback {2}. The flashback cost is equal to its mana cost.",
+      "Each instant card in your graveyard has flashback. The flashback cost is equal to that card's mana cost."
+    ]
+  },
+  {
+    "id": "eff.stdtla.each.loseall",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} loses all abilities {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Each creature with mana value 2 or less loses all abilities until end of turn. Destroy those creatures."
+      },
+      {
+        "text": "Each creature your opponents control loses all abilities until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Each creature your opponents control loses all abilities.",
+      "Each creature your opponents control loses flying until end of turn.",
+      "Each creature your opponents control gains all abilities until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdtla.milledThisWay.may.put.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card {g:MilledThisWay} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Mill two cards. You may put a creature card milled this way into your hand."
+      },
+      {
+        "text": "Mill four cards. You may put an artifact card milled this way into your hand."
+      }
+    ],
+    "counterExamples": [
+      "You may put a creature card milled this way into your hand.",
+      "Mill two cards. You may put a creature card milled this way onto the battlefield.",
+      "Mill two cards. You may put a creature card discarded this way into your hand."
+    ],
+    "subject": "none"
+  }
+]

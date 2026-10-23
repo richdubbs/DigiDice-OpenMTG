@@ -1,0 +1,205 @@
+[
+  {
+    "id": "sta.e14.top.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": ["CR 601.3", "CR 601.3e", "CR 401.5", "CR 611.3a"],
+    "pattern": "you may cast {f:Filter} from the top of your library",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "cast", "of": "$f", "fromTop": true },
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may cast artifact spells from the top of your library." },
+      { "text": "You may cast Elf spells from the top of your library." },
+      { "text": "You may cast instant and sorcery spells from the top of your library." }
+    ],
+    "counterExamples": [
+      "You may cast creature spells from the top of target player's library.",
+      "You may cast creature spells from your graveyard.",
+      "Your opponents may cast creature spells from the top of your library.",
+      "You may cast creature spells from the bottom of your library."
+    ]
+  },
+  {
+    "id": "sta.e14.top.cast.two",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 601.3", "CR 601.3e", "CR 401.5", "CR 611.3a"],
+    "pattern": "you may cast {a:Filter} and {b:Filter} from the top of your library",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "cast", "of": { "anyOf": ["$a", "$b"] }, "fromTop": true },
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may cast Goblin spells and noncreature spells from the top of your library." },
+      { "text": "You may cast Elf spells and artifact spells from the top of your library." }
+    ],
+    "counterExamples": [
+      "You may cast Goblin spells or noncreature spells from the top of your library.",
+      "You may cast Goblin spells and noncreature spells from your graveyard.",
+      "Your opponents may cast Goblin spells and noncreature spells from the top of your library."
+    ]
+  },
+  {
+    "id": "sta.e14.top.lands",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 305.1", "CR 305.2", "CR 401.5", "CR 611.3a"],
+    "pattern": "you may play lands from the top of your library",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "play", "of": { "types": ["Land"] }, "fromTop": true },
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may play lands from the top of your library." },
+      { "text": "Flying\nYou may play lands from the top of your library." }
+    ],
+    "counterExamples": [
+      "You may play lands from your graveyard.",
+      "You may play lands from the top of target player's library.",
+      "Your opponents may play lands from the top of your library."
+    ]
+  },
+  {
+    "id": "sta.e14.top.lands.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 305.1", "CR 305.2", "CR 601.3", "CR 601.3e", "CR 401.5", "CR 611.3a"],
+    "pattern": "you may play lands and cast {f:Filter} from the top of your library",
+    "build": [
+      { "s": "permit", "who": { "ref": "you" }, "action": "play", "of": { "types": ["Land"] }, "fromTop": true },
+      { "s": "permit", "who": { "ref": "you" }, "action": "cast", "of": "$f", "fromTop": true }
+    ],
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may play lands and cast Elf spells from the top of your library." },
+      { "text": "You may play lands and cast spells with mana value 3 or greater from the top of your library." },
+      { "text": "You may play lands and cast Elf, Goblin, or Faerie spells from the top of your library." }
+    ],
+    "counterExamples": [
+      "You may play lands and cast Elf spells from your graveyard.",
+      "You may play lands or cast Elf spells from the top of your library.",
+      "Your opponents may play lands and cast Elf spells from the top of your library."
+    ]
+  },
+  {
+    "id": "sta.e14.top.once.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 601.3", "CR 601.3e", "CR 401.5", "CR 611.3a"],
+    "pattern": "once each turn , you may cast {f:Filter} from the top of your library",
+    "build": { "s": "permit", "who": { "ref": "you" }, "action": "cast", "of": "$f", "fromTop": true, "oncePerTurn": true },
+    "consumes": ["may", "each"],
+    "examples": [
+      { "text": "Once each turn, you may cast an artifact spell from the top of your library." },
+      { "text": "Once each turn, you may cast a creature spell with power 3 or less from the top of your library." }
+    ],
+    "counterExamples": [
+      "Once each turn, you may cast an artifact spell from your graveyard.",
+      "Twice each turn, you may cast an artifact spell from the top of your library.",
+      "Once each turn, your opponents may cast an artifact spell from the top of your library."
+    ]
+  },
+  {
+    "id": "sta.e14.top.attacked.play",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 601.3", "CR 305.1", "CR 401.5", "CR 611.3a"],
+    "pattern": "as long as ~ attacked this turn , you may play the top card of your library",
+    "build": {
+      "kind": "static",
+      "condition": { "cond": "matches", "object": { "ref": "self" }, "filter": { "attackedThisTurn": true } },
+      "effects": [{ "s": "permit", "who": { "ref": "you" }, "action": "play", "fromTop": true }]
+    },
+    "consumes": ["as long as", "may"],
+    "examples": [
+      { "text": "As long as ~ attacked this turn, you may play the top card of your library." },
+      { "text": "Flying\nAs long as ~ attacked this turn, you may play the top card of your library." }
+    ],
+    "counterExamples": [
+      "As long as ~ blocked this turn, you may play the top card of your library.",
+      "As long as ~ attacked this turn, you may play the top card of target player's library.",
+      "As long as ~ attacked this turn, you may play the bottom card of your library."
+    ]
+  },
+  {
+    "id": "sta.e14.top.look.lands.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 401.5", "CR 305.1", "CR 601.3", "CR 601.3e", "CR 611.3a"],
+    "pattern": "you may look at the top card of your library any time , and you may play lands and cast {f:Filter} from the top of your library",
+    "build": [
+      { "s": "permit", "who": { "ref": "you" }, "action": "lookAt" },
+      { "s": "permit", "who": { "ref": "you" }, "action": "play", "of": { "types": ["Land"] }, "fromTop": true },
+      { "s": "permit", "who": { "ref": "you" }, "action": "cast", "of": "$f", "fromTop": true }
+    ],
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may look at the top card of your library any time, and you may play lands and cast artifact spells from the top of your library." },
+      { "text": "You may look at the top card of your library any time, and you may play lands and cast Elf spells from the top of your library." }
+    ],
+    "counterExamples": [
+      "You may look at the top card of your library any time, and you may play lands and cast artifact spells from your graveyard.",
+      "You may look at the top two cards of your library any time, and you may play lands and cast artifact spells from the top of your library.",
+      "You may look at the top card of your library any time, and you may play lands or cast artifact spells from the top of your library."
+    ]
+  },
+  {
+    "id": "eff.e14.top.eot.look.lands.cast",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 401.5", "CR 305.1", "CR 601.3", "CR 601.3e", "CR 611.2a", "CR 514.2"],
+    "pattern": "until end of turn , you may look at the top card of your library any time , and you may play lands and cast {f:Filter} from the top of your library",
+    "build": {
+      "op": "effect",
+      "duration": { "d": "endOfTurn" },
+      "effects": [
+        { "s": "permit", "who": { "ref": "you" }, "action": "lookAt" },
+        { "s": "permit", "who": { "ref": "you" }, "action": "play", "of": { "types": ["Land"] }, "fromTop": true },
+        { "s": "permit", "who": { "ref": "you" }, "action": "cast", "of": "$f", "fromTop": true }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["may", "until"],
+    "examples": [
+      { "text": "Until end of turn, you may look at the top card of your library any time, and you may play lands and cast spells from the top of your library." },
+      { "text": "Draw a card. Until end of turn, you may look at the top card of your library any time, and you may play lands and cast creature spells from the top of your library." }
+    ],
+    "counterExamples": [
+      "Until end of turn, you may look at the top card of your library any time, and you may play lands and cast spells from your graveyard.",
+      "Until your next turn, you may look at the top card of your library any time, and you may play lands and cast spells from the top of your library.",
+      "Until end of turn, you may look at the top card of your library any time, and you may play lands or cast spells from the top of your library."
+    ]
+  },
+  {
+    "id": "eff.e14.top.eot.look.play",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 401.5", "CR 305.1", "CR 601.3", "CR 611.2a", "CR 514.2"],
+    "pattern": "until end of turn , you may look at the top card of your library any time and you may play cards from the top of your library",
+    "build": {
+      "op": "effect",
+      "duration": { "d": "endOfTurn" },
+      "effects": [
+        { "s": "permit", "who": { "ref": "you" }, "action": "lookAt" },
+        { "s": "permit", "who": { "ref": "you" }, "action": "play", "fromTop": true }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["may", "until"],
+    "examples": [
+      { "text": "Until end of turn, you may look at the top card of your library any time and you may play cards from the top of your library." },
+      { "text": "Draw a card. Until end of turn, you may look at the top card of your library any time and you may play cards from the top of your library." }
+    ],
+    "counterExamples": [
+      "Until end of turn, you may look at the top card of your library any time and you may play cards from your graveyard.",
+      "Until your next turn, you may look at the top card of your library any time and you may play cards from the top of your library.",
+      "Until end of turn, you may look at the top card of your library any time and you may play cards from the top of target player's library."
+    ]
+  }
+]

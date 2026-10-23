@@ -1,0 +1,950 @@
+[
+ {
+  "card": "Desert",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (render/abil.ts family activation-any-step): {T}: add {C}; {T}: 1 damage to target attacking creature, activated only during the end of combat step of any player's turn (CR 602.5b, 511.1, 605.1a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "C"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "amount": 1,
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "attacking": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "activated",
+      "onlyIf": {
+       "cond": "turnOf",
+       "step": "endCombat",
+       "whose": "any"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lavinia, Foil to Conspiracy",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (parser/lower/activation.ts DURING_ANY): vigilance; whenever you cast your second spell each turn, investigate; {T}: add {C}{C}, a mana ability activated only during an opponent's turn (CR 602.5b, 605.1a, 701.16a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "action": "investigate",
+         "op": "action",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "nth": 2,
+         "player": "you"
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "C"
+          ],
+          [
+           "C"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated",
+      "onlyIf": {
+       "cond": "turnOf",
+       "whose": "opponent"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Return to Dust",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (Cond \"you cast ~ during your main phase\", asCast): exile target artifact or enchantment; if this spell was cast during a main phase of your turn (decided as it became cast), you may exile up to one other target artifact or enchantment, chosen as you cast it (CR 601.2c, 601.2i, 505.1, 115.3; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "cond": {
+          "cond": "asCast",
+          "held": {
+           "cond": "turnOf",
+           "step": [
+            "main1",
+            "main2"
+           ],
+           "whose": "you"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "do": [
+            {
+             "op": "move",
+             "to": {
+              "zone": "exile"
+             },
+             "what": {
+              "id": "t1",
+              "ref": "target"
+             }
+            }
+           ],
+           "op": "may",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Artifact",
+           "Enchantment"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        },
+        {
+         "distinctFrom": [
+          "t0"
+         ],
+         "filter": {
+          "types": [
+           "Artifact",
+           "Enchantment"
+          ]
+         },
+         "id": "t1",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Might of Old Krosa",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (Cond \"you cast ~ during your main phase\", asCast): target creature gets +4/+4 until end of turn if this spell was cast during your main phase, else +2/+2 (CR 601.2i, 505.1, 608.2c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "cond": {
+          "cond": "asCast",
+          "held": {
+           "cond": "turnOf",
+           "step": [
+            "main1",
+            "main2"
+           ],
+           "whose": "you"
+          }
+         },
+         "else": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "mods": [
+              {
+               "layer": "7c",
+               "power": 2,
+               "toughness": 2
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ],
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "mods": [
+              {
+               "layer": "7c",
+               "power": 4,
+               "toughness": 4
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Haunting Hymn",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (Cond \"you cast ~ during your main phase\", asCast): target player discards four cards if this spell was cast during your main phase, else two (CR 601.2i, 505.1, 701.8a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "cond": {
+          "cond": "asCast",
+          "held": {
+           "cond": "turnOf",
+           "step": [
+            "main1",
+            "main2"
+           ],
+           "whose": "you"
+          }
+         },
+         "else": [
+          {
+           "count": 2,
+           "op": "discard",
+           "who": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "if",
+         "then": [
+          {
+           "count": 4,
+           "op": "discard",
+           "who": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Arrester's Zeal",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (Cond \"you cast ~ during your main phase\", asCast): target creature gets +2/+2 until end of turn; Addendum (ability word, CR 207.2c): if this spell was cast during your main phase, it also gains flying until end of turn (CR 601.2i, 505.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 2
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "cond": {
+          "cond": "asCast",
+          "held": {
+           "cond": "turnOf",
+           "step": [
+            "main1",
+            "main2"
+           ],
+           "whose": "you"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "id": "t0",
+              "ref": "target"
+             },
+             "mods": [
+              {
+               "add": [
+                {
+                 "keyword": "flying",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell",
+      "label": "Addendum"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Unbreakable Formation",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (Cond \"you cast ~ during your main phase\", asCast): creatures you control gain indestructible until end of turn; Addendum: if cast during your main phase, a +1/+1 counter on each creature you control and they gain vigilance until end of turn (the same creatures at that moment, CR 608.2c) (CR 601.2i, 505.1, 122.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            },
+            "ref": "each"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "indestructible",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "cond": {
+          "cond": "asCast",
+          "held": {
+           "cond": "turnOf",
+           "step": [
+            "main1",
+            "main2"
+           ],
+           "whose": "you"
+          }
+         },
+         "op": "if",
+         "then": [
+          {
+           "count": 1,
+           "kind": "+1/+1",
+           "on": {
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            },
+            "ref": "each"
+           },
+           "op": "putCounters"
+          },
+          {
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "affects": {
+              "filter": {
+               "controller": "you",
+               "types": [
+                "Creature"
+               ]
+              },
+              "ref": "each"
+             },
+             "mods": [
+              {
+               "add": [
+                {
+                 "keyword": "vigilance",
+                 "kind": "keyword"
+                }
+               ],
+               "layer": 6
+              }
+             ],
+             "s": "continuous"
+            }
+           ],
+           "op": "effect"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell",
+      "label": "Addendum"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Struggle // Survive",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (eff.stdrn.eachPlayer.shuffle.graveyard): Struggle: damage to target creature equal to the number of lands you control; Survive: aftermath; each player puts every card of their graveyard into their library and shuffles it, one player after another, which changes nothing for any other player (CR 702.127a, 701.24a, 401.1, 608.2e; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "amount": {
+          "of": {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Land"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "keyword": "aftermath",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "each",
+         "do": [
+          {
+           "op": "move",
+           "to": {
+            "owner": {
+             "name": "each",
+             "ref": "bound"
+            },
+            "zone": "library"
+           },
+           "what": {
+            "filter": {
+             "owner": {
+              "name": "each",
+              "ref": "bound"
+             },
+             "zone": "graveyard"
+            },
+            "ref": "each"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "name": "each",
+            "ref": "bound"
+           }
+          }
+         ],
+         "op": "forEach",
+         "over": {
+          "ref": "each",
+          "who": "player"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Temporal Cascade",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (eff.stdrn.eachPlayer.shuffle.handGraveyard): choose one, or both with entwine {2}; each player shuffles their hand and graveyard into their library; each player draws seven cards (CR 700.2, 702.42a, 701.24a, 402.1, 404.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "as": "each",
+             "do": [
+              {
+               "op": "move",
+               "to": {
+                "owner": {
+                 "name": "each",
+                 "ref": "bound"
+                },
+                "zone": "library"
+               },
+               "what": {
+                "filter": {
+                 "owner": {
+                  "name": "each",
+                  "ref": "bound"
+                 },
+                 "zone": [
+                  "hand",
+                  "graveyard"
+                 ]
+                },
+                "ref": "each"
+               }
+              },
+              {
+               "op": "shuffle",
+               "who": {
+                "name": "each",
+                "ref": "bound"
+               }
+              }
+             ],
+             "op": "forEach",
+             "over": {
+              "ref": "each",
+              "who": "player"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 7,
+             "op": "draw",
+             "who": {
+              "ref": "each",
+              "who": "player"
+             }
+            }
+           ],
+           "targets": []
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        }
+       ]
+      },
+      "keyword": "entwine",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Timetwister",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (eff.stdrn.eachPlayer.shuffle.handGraveyard.draw): each player puts every card of their hand and graveyard into their library, shuffles it, then draws seven cards; one player after another, which changes nothing for any other player (CR 701.24a, 121.1, 402.1, 404.1, 608.2e; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "each",
+         "do": [
+          {
+           "op": "move",
+           "to": {
+            "owner": {
+             "name": "each",
+             "ref": "bound"
+            },
+            "zone": "library"
+           },
+           "what": {
+            "filter": {
+             "owner": {
+              "name": "each",
+              "ref": "bound"
+             },
+             "zone": [
+              "hand",
+              "graveyard"
+             ]
+            },
+            "ref": "each"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "name": "each",
+            "ref": "bound"
+           }
+          },
+          {
+           "count": 7,
+           "op": "draw",
+           "who": {
+            "name": "each",
+            "ref": "bound"
+           }
+          }
+         ],
+         "op": "forEach",
+         "over": {
+          "ref": "each",
+          "who": "player"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Day's Undoing",
+  "expect": "full",
+  "verified": "std-rn review (parallel slot N, Commander precon cards; tuning half), by hand against the Oracle text and the rules cited (eff.stdrn.eachPlayer.shuffle.handGraveyard.draw): each player shuffles their hand and graveyard into their library, then draws seven cards; then, if it's your turn, end the turn (CR 701.24a, 121.1, 608.2e, 724.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "each",
+         "do": [
+          {
+           "op": "move",
+           "to": {
+            "owner": {
+             "name": "each",
+             "ref": "bound"
+            },
+            "zone": "library"
+           },
+           "what": {
+            "filter": {
+             "owner": {
+              "name": "each",
+              "ref": "bound"
+             },
+             "zone": [
+              "hand",
+              "graveyard"
+             ]
+            },
+            "ref": "each"
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "name": "each",
+            "ref": "bound"
+           }
+          },
+          {
+           "count": 7,
+           "op": "draw",
+           "who": {
+            "name": "each",
+            "ref": "bound"
+           }
+          }
+         ],
+         "op": "forEach",
+         "over": {
+          "ref": "each",
+          "who": "player"
+         }
+        },
+        {
+         "cond": {
+          "cond": "turnOf",
+          "whose": "you"
+         },
+         "op": "if",
+         "then": [
+          {
+           "op": "endTurn"
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ }
+]

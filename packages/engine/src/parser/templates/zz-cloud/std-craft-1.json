@@ -1,0 +1,88 @@
+[
+  {
+    "id": "kw.stdcraft1.craft.list4",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.167a",
+      "CR 702.167b",
+      "CR 118.3"
+    ],
+    "pattern": "craft with ( a | an ) {a:Filter} , ( a | an ) {b:Filter} , ( a | an ) {c:Filter} , and ( a | an ) {d:Filter} {m:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "craft",
+      "cost": {
+        "mana": "$m",
+        "other": [
+          { "kind": "exileFrom", "zone": "battlefield", "orGraveyard": true, "filter": "$a", "count": 1 },
+          { "kind": "exileFrom", "zone": "battlefield", "orGraveyard": true, "filter": "$b", "count": 1 },
+          { "kind": "exileFrom", "zone": "battlefield", "orGraveyard": true, "filter": "$c", "count": 1 },
+          { "kind": "exileFrom", "zone": "battlefield", "orGraveyard": true, "filter": "$d", "count": 1 }
+        ]
+      }
+    },
+    "examples": [
+      {
+        "text": "Craft with a Goblin, an Elf, a Wizard, and a Rogue {3}"
+      },
+      {
+        "text": "Craft with an artifact, a land, an enchantment, and a creature {2}{B}"
+      }
+    ],
+    "counterExamples": [
+      "Craft with a Goblin, an Elf, a Wizard, and a Rogue",
+      "Craft with a Goblin, an Elf, and a Wizard {3}",
+      "Craft with a Goblin, an Elf, a Wizard, or a Rogue {3}"
+    ]
+  },
+  {
+    "id": "eff.stdcraft1.put.craftExiled.attacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.167c",
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 506.3",
+      "CR 400.7"
+    ],
+    "pattern": "you may put an exiled {f:Filter} card used to craft ( ~ | it ) onto the battlefield under your control tapped and attacking",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": { "ref": "you" },
+        "from": { "ref": "each", "filter": { "anyOf": ["$f"], "is": { "ref": "linked", "link": "craft" }, "zone": "exile" } },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": { "ref": "bound", "name": "chosen" },
+        "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true, "attacking": true }
+      }
+    ],
+    "consumes": [
+      "may",
+      "exiled",
+      "used"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may put an exiled artifact card used to craft ~ onto the battlefield under your control tapped and attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, draw a card. Then you may put an exiled Soldier card used to craft it onto the battlefield under your control tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may put an exiled creature card onto the battlefield under your control tapped and attacking.",
+      "Whenever ~ attacks, you may put an exiled creature card used to craft ~ onto the battlefield under your control.",
+      "Whenever ~ attacks, put an exiled creature card used to craft ~ into your hand."
+    ]
+  }
+]

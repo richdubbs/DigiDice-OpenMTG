@@ -1,0 +1,87 @@
+{
+  "name": "partner with",
+  "rule": "702.124",
+  "params": [
+    {
+      "name": "filter",
+      "type": "filter"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this creature enters, target player may put {quality} into their hand from their library, then shuffle.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, target player may search their library for a card named the partner, reveal it, put it into their hand, then shuffle.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "player",
+            "min": 1,
+            "max": 1,
+            "text": "target player",
+            "players": {
+              "who": "any"
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "target",
+              "id": "t0"
+            },
+            "do": [
+              {
+                "op": "search",
+                "who": {
+                  "ref": "target",
+                  "id": "t0"
+                },
+                "zone": "library",
+                "filter": "$filter",
+                "max": 1,
+                "reveal": true,
+                "as": "partner"
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "partner"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              },
+              {
+                "op": "shuffle",
+                "who": {
+                  "ref": "target",
+                  "id": "t0"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "trample",
+  "rule": "702.19",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "This creature can deal excess combat damage to the player or planeswalker it's attacking.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "core/combat-damage.ts#assignAttacker"
+  ]
+}

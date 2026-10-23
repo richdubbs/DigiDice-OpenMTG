@@ -1,0 +1,64 @@
+{
+  "name": "bushido",
+  "rule": "702.45",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature blocks or becomes blocked, it gets +{n}/+{n} until end of turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ blocks or becomes blocked, it gets +{n}/+{n} until end of turn.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "blocks",
+            "blocker": {
+              "self": true
+            }
+          },
+          {
+            "ev": "becomesBlocked",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": "$amount",
+                    "toughness": "$amount"
+                  }
+                ]
+              }
+            ],
+            "duration": {
+              "d": "endOfTurn"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

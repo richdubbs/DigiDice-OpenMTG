@@ -1,0 +1,79 @@
+{
+  "name": "offspring",
+  "rule": "702.175",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may pay an additional {cost} as you cast this spell. If you do, when this creature enters, create a 1/1 token copy of it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Offspring {cost}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$cost",
+          "optional": true,
+          "name": {
+            "$ordinal": "offspring"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When this permanent enters, if its offspring cost was paid, create a token that's a copy of it, except it's 1/1.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "wasCast",
+        "kicked": {
+          "$ordinal": "offspring"
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "copy",
+            "what": {
+              "ref": "self"
+            },
+            "result": "token",
+            "who": {
+              "ref": "you"
+            },
+            "except": [
+              {
+                "layer": "7b",
+                "power": 1,
+                "toughness": 1
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

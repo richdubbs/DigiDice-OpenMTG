@@ -1,0 +1,46 @@
+{
+  "name": "cascade",
+  "rule": "702.85",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When you cast this spell, exile cards from the top of your library until you exile a nonland card that costs less. You may cast it without paying its mana cost. Put the exiled cards on the bottom in a random order.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, cascade.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "action",
+            "action": "cascade",
+            "who": {
+              "ref": "you"
+            },
+            "subject": {
+              "ref": "self"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

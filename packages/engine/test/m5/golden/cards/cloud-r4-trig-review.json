@@ -1,0 +1,1806 @@
+[
+ {
+  "card": "Sokka, Lateral Strategist",
+  "expect": "full",
+  "verified": "r4-trig review, by hand against the Oracle text and the rules cited: (trg.r4trig.selfAndOthers.attack.one) ~ is one of two or more attackers declared together (CR 508.1, 603.2; battalion's form, render/evt.ts); vigilance (CR 702.20)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "vigilance"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         },
+         "count": {
+          "op": ">=",
+          "value": 2
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Contested Game Ball",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: (eff.r4trig.gainControl.untapIt) \"you're dealt combat damage\" is damage to the controller, one occurrence for a combat damage step (Event hole, CR 120.2, 510.2, 603.2c; triggers/occurrences.ts groups a recipient-only pattern by its recipient); \"the attacking player\" is the active player (CR 506.2), who gains control for good (CR 108.4, 613.1b, 611.2a) and the artifact untaps (CR 701.26b); the activated ability is unchanged",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "recipient": {
+          "player": "you"
+         },
+         "combat": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 2,
+             "controller": {
+              "ref": "active"
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "untap",
+         "what": {
+          "ref": "self"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "point",
+         "count": 1
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "object": {
+           "ref": "self"
+          },
+          "filter": {
+           "counters": {
+            "kind": "point",
+            "cmp": {
+             "op": ">=",
+             "value": 5
+            }
+           }
+          }
+         },
+         "then": [
+          {
+           "op": "sacrifice",
+           "what": {
+            "ref": "self"
+           }
+          },
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "predefined": "Treasure"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Unshakable Tail",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: (trg.stdecl.entersAndWhenever, folded in wave 7) its own enters and your upkeep, either event (CR 603.2, 603.6a, 503.1); surveil 1 (CR 701.25a); the other abilities are unchanged",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "surveil",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Creature"
+          ],
+          "isCard": true,
+          "owner": "you"
+         },
+         "from": "library",
+         "to": "graveyard"
+        }
+       ],
+       "batch": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "action",
+         "action": "investigate",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "subtypes": [
+           "Clue"
+          ]
+         },
+         "count": 1
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hulkling, Burgeoning Bruiser",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: the intervening if (CR 603.4) \"it has greater power or toughness than ~\" compares each statistic with its own, the comparison evolve expands to (CR 702.100a-b; keywords/data/evolve.json), read by the Filter hole (anyOf of power and toughness, parser/holes/filter.ts)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "vigilance"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       },
+       "filter": {
+        "anyOf": [
+         {
+          "power": {
+           "op": ">",
+           "value": {
+            "q": "stat",
+            "stat": "power",
+            "of": {
+             "ref": "self"
+            }
+           }
+          }
+         },
+         {
+          "toughness": {
+           "op": ">",
+           "value": {
+            "q": "stat",
+            "stat": "toughness",
+            "of": {
+             "ref": "self"
+            }
+           }
+          }
+         }
+        ]
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Genji Glove",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"if it's the first combat phase of the turn\" is the condition firstCombat (CR 500.8, 505.1a: the combat in progress is the turn's first, rules/combat-state.ts); untap the attacker (CR 701.26b) and an additional combat phase after this one (CR 500.8)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "double strike"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "types": [
+           "Creature"
+          ],
+          "attachedToSource": true
+         }
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "firstCombat"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "ref": "event",
+          "role": "attacker"
+         }
+        },
+        {
+         "op": "extraPhase",
+         "phase": "combat"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Raph & Leo, Sibling Rivals",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: the condition firstCombat (CR 500.8, 505.1a); one or two target attacking creatures untap (CR 115.1, 701.26b); an additional combat phase (CR 500.8)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "firstCombat"
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 2,
+         "filter": {
+          "attacking": true,
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         }
+        },
+        {
+         "op": "extraPhase",
+         "phase": "combat"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Avengers Assemble!",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"you attacked with a Hero this turn\" is a history of the turn (Cond hole, CR 508.1, 603.4), or a Hero entered under your control (CR 603.6a); flash and the anthem unchanged",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flash"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Hero"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 2
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "any",
+       "of": [
+        {
+         "cond": "happened",
+         "event": {
+          "ev": "attacks",
+          "attacker": {
+           "subtypes": [
+            "Hero"
+           ],
+           "controller": "you"
+          }
+         },
+         "scope": "turn"
+        },
+        {
+         "cond": "happened",
+         "event": {
+          "ev": "zoneChange",
+          "subject": {
+           "subtypes": [
+            "Hero"
+           ],
+           "controller": "you"
+          },
+          "to": "battlefield"
+         },
+         "scope": "turn"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rocket-Powered Goblin Glider",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"if it was cast from your graveyard\" is the cast record's zone and its owner (wasCast.fromOwner; CR 601.2a, 400.3, 400.7d, 603.4); attach (CR 701.3a); mayhem casts it from the graveyard (CR 702.187a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "wasCast",
+       "from": "graveyard",
+       "fromOwner": "you"
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "attach",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "flying"
+           },
+           {
+            "kind": "keyword",
+            "keyword": "haste"
+           }
+          ]
+         },
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 0
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "mayhem",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Swordsman, Sharp Scoundrel",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"an equipped creature you control\" is a description (an Equipment attached, CR 301.5; the article never starts the source's own host); connive (CR 701.50a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "subtypes": [
+           "Villain"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "filter": {
+          "subtypes": [
+           "Equipment"
+          ],
+          "controller": "you"
+         }
+        },
+        {
+         "id": "t1",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "attach",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t1"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "equipped": true,
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "action",
+         "action": "connive",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "event",
+           "role": "attacker"
+          }
+         },
+         "subject": {
+          "ref": "event",
+          "role": "attacker"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fecund Greenshell",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"another creature you control with toughness greater than its power\" is the filter toughnessGreaterThanPower (CR 208.1), the object itself an event of its own; look at the top card, a land onto the battlefield tapped, otherwise into the hand (CR 401.1, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "reach"
+     },
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "exists",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "types": [
+          "Land"
+         ],
+         "controller": "you"
+        }
+       },
+       "atLeast": 10
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 2
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "toughnessGreaterThanPower": true,
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "look",
+         "who": {
+          "ref": "you"
+         },
+         "at": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 1
+         },
+         "as": "seen"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "object": {
+           "ref": "bound",
+           "name": "seen"
+          },
+          "filter": {
+           "types": [
+            "Land"
+           ],
+           "isCard": true
+          }
+         },
+         "then": [
+          {
+           "op": "may",
+           "who": {
+            "ref": "you"
+           },
+           "do": [
+            {
+             "op": "move",
+             "what": {
+              "ref": "bound",
+              "name": "seen"
+             },
+             "to": {
+              "zone": "battlefield",
+              "controller": {
+               "ref": "you"
+              },
+              "tapped": true
+             }
+            }
+           ]
+          }
+         ],
+         "else": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "seen"
+           },
+           "to": {
+            "zone": "hand"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Shadow of the Goblin",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"you play a land or cast a spell from anywhere other than your hand\": a land play from a zone other than the hand (playLand notFrom, CR 305.1) or a spell not cast from the hand (CR 601.2a), the zone said once for both",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "main1",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      },
+      "label": "Unreliable Visions"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "action",
+         "verb": "playLand",
+         "actor": "you",
+         "notFrom": "hand"
+        },
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "not": {
+           "castFrom": "hand"
+          }
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "each",
+          "who": "opponent"
+         },
+         "amount": 1
+        }
+       ]
+      },
+      "label": "Undying Vengeance"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Danitha, Spear of Agony",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"a spell that targets an opponent or a creature an opponent controls\": one of its targets is such a player or such a creature (CR 115.9b, 102.3); first strike",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "first strike"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "anyOf": [
+           {
+            "targets": {
+             "ref": "each",
+             "who": "opponent"
+            }
+           },
+           {
+            "targets": {
+             "ref": "each",
+             "filter": {
+              "types": [
+               "Creature"
+              ],
+              "controller": "opponent"
+             }
+            }
+           }
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tarrian's Soulcleaver",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: another artifact or creature put into a graveyard from the battlefield (CR 700.4; the mixed-type wording, render/evt.ts); a counter on the equipped creature (CR 301.5, 122.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "vigilance"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Artifact",
+           "Creature"
+          ],
+          "other": true
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "attachedTo"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Jiang Yanggu, Alone",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"attacks a player alone\" (CR 506.5, 508.1b); discard, then draw (CR 701.9a, 121.1); the counters are every discard by you this turn, read as the instruction runs (CR 608.2h), on the attacker",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "menace"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "defender": "any",
+         "alone": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "event",
+          "role": "attacker"
+         },
+         "kind": "+1/+1",
+         "count": {
+          "q": "happenedCount",
+          "event": {
+           "ev": "action",
+           "verb": "discard",
+           "actor": "you"
+          },
+          "scope": "turn"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Furious Forebear",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: (trg.r4trig.whileInGraveyard) a creature you control dies while ~ is in your graveyard: a trigger condition judged as the event happens (CR 603.1, 603.2; TriggerDef.while), and the ability functions in the graveyard (CR 113.6k-m); you may pay {1}{W}, and if you do ~ returns to the hand (CR 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ],
+       "while": {
+        "cond": "matches",
+        "object": {
+         "ref": "self"
+        },
+        "filter": {
+         "zone": "graveyard",
+         "owner": "you"
+        }
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "you"
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           },
+           {
+            "kind": "colored",
+            "color": "W"
+           }
+          ]
+         },
+         "then": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "self"
+           },
+           "to": {
+            "zone": "hand"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Loki, God of Mischief",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"a player or permanent becomes the target of an ability you control\" is two events, a player target (becomes targeted with player, CR 115.1) and a permanent target on the battlefield (CR 110.1), by an ability you control (CR 113.7, 603.2); triggers only once each turn (CR 603.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "what": "targeted",
+         "object": {},
+         "player": "any",
+         "by": {
+          "controller": "you",
+          "stackKind": "ability"
+         }
+        },
+        {
+         "ev": "becomes",
+         "what": "targeted",
+         "object": {
+          "zone": "battlefield"
+         },
+         "by": {
+          "controller": "you",
+          "stackKind": "ability"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      },
+      "limit": {
+       "per": "turn",
+       "max": 1
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tolsimir, Midnight's Light",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"if Tolsimir attacked this combat\" is a history of this combat (CR 508.1, 603.4); \"that Wolf\" is the attacker (the attacker role is called by its description, lower/scope.ts); the target must block it if able this combat (CR 509.1c); the named Wolf token (CR 111.4) and lifelink unchanged",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "lifelink"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "name": "Voja Fenstalker",
+          "colors": [
+           "G",
+           "W"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Wolf"
+          ],
+          "power": 5,
+          "toughness": 5,
+          "keywords": [
+           "trample"
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "subtypes": [
+           "Wolf"
+          ],
+          "controller": "you"
+         }
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "attacks",
+        "attacker": {
+         "self": true
+        }
+       },
+       "scope": "combat"
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfCombat"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "mustIfAble",
+           "action": "block",
+           "other": {
+            "is": {
+             "ref": "event",
+             "role": "attacker"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fearless Swashbuckler",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"if a Pirate and a Vehicle attacked this combat\" is two different attackers of this combat, one of each (history counting each attacker once, CR 508.1, 603.4; one Pirate Vehicle alone is not both: unverified against the rulings); draw three, then discard two (CR 121.1, 701.9a); haste for Vehicles unchanged",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "haste"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Vehicle"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "haste"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ],
+       "batch": true
+      },
+      "interveningIf": {
+       "cond": "all",
+       "of": [
+        {
+         "cond": "happened",
+         "event": {
+          "ev": "attacks",
+          "attacker": {
+           "subtypes": [
+            "Pirate"
+           ]
+          }
+         },
+         "scope": "combat"
+        },
+        {
+         "cond": "happened",
+         "event": {
+          "ev": "attacks",
+          "attacker": {
+           "subtypes": [
+            "Vehicle"
+           ]
+          }
+         },
+         "scope": "combat"
+        },
+        {
+         "cond": "happened",
+         "event": {
+          "ev": "attacks",
+          "attacker": {
+           "anyOf": [
+            {
+             "subtypes": [
+              "Pirate"
+             ]
+            },
+            {
+             "subtypes": [
+              "Vehicle"
+             ]
+            }
+           ]
+          }
+         },
+         "scope": "combat",
+         "times": {
+          "op": ">=",
+          "value": 2
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 3
+        },
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Betor, Kin to All",
+  "expect": "full",
+  "verified": "r4-trig review, by hand: \"creatures you control have total toughness N or greater\" is the sum of their toughnesses (CR 208.1), the intervening if (CR 603.4) and two conditions checked as the ability resolves (CR 608.2c); untap each creature you control (CR 701.26b); (eff.r4trig.eachLoseHalfLife) each opponent loses half their own life, rounded up (CR 119.3, 107.1a, 608.2f); flying",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "q": "stat",
+        "stat": "toughness",
+        "of": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        },
+        "sum": true
+       },
+       "op": ">=",
+       "right": 10
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "q": "stat",
+           "stat": "toughness",
+           "of": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ],
+             "controller": "you"
+            }
+           },
+           "sum": true
+          },
+          "op": ">=",
+          "right": 20
+         },
+         "then": [
+          {
+           "op": "untap",
+           "what": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ],
+             "controller": "you"
+            }
+           }
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "q": "stat",
+           "stat": "toughness",
+           "of": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ],
+             "controller": "you"
+            }
+           },
+           "sum": true
+          },
+          "op": ">=",
+          "right": 40
+         },
+         "then": [
+          {
+           "op": "forEach",
+           "over": {
+            "ref": "each",
+            "who": "opponent"
+           },
+           "as": "each",
+           "do": [
+            {
+             "op": "loseLife",
+             "who": {
+              "ref": "bound",
+              "name": "each"
+             },
+             "amount": {
+              "q": "math",
+              "op": "ceilDiv",
+              "args": [
+               {
+                "q": "life",
+                "of": {
+                 "ref": "bound",
+                 "name": "each"
+                }
+               },
+               2
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

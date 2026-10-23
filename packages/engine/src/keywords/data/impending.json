@@ -1,0 +1,163 @@
+{
+  "name": "impending",
+  "rule": "702.176",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    },
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "replacement",
+    "expands"
+  ],
+  "reminder": "If you cast this spell for its impending cost, it enters with {n} time counters and isn't a creature until the last is removed. At the beginning of your end step, remove a time counter from it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Impending {n}--{cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "impending"
+        }
+      ]
+    },
+    {
+      "kind": "static",
+      "text": "If you chose to pay ~'s impending cost, it enters with {n} time counters on it.",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "wasCast",
+        "via": "impending"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "time",
+                "count": "$amount"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "static",
+      "text": "As long as ~'s impending cost was paid and it has a time counter on it, it's not a creature.",
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "wasCast",
+            "via": "impending"
+          },
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "counters": {
+                "kind": "time"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "remove": [
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "At the beginning of your end step, if ~'s impending cost was paid and it has a time counter on it, remove a time counter from it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "step",
+            "step": "end",
+            "whose": "you"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "wasCast",
+            "via": "impending"
+          },
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "counters": {
+                "kind": "time"
+              }
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "removeCounters",
+            "from": {
+              "ref": "self"
+            },
+            "kind": "time",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

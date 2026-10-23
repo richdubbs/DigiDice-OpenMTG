@@ -1,0 +1,340 @@
+[
+  {
+    "id": "eff.t14.unless.you.cost",
+    "kind": "effect",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 118.3"
+    ],
+    "pattern": "{e:Effects} unless you {c:Cost}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": "$c",
+      "else": "$e"
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Sacrifice ~ unless you discard a card."
+      },
+      {
+        "text": "{1}: Sacrifice ~ unless you return an untapped Forest you control to its owner's hand."
+      },
+      {
+        "text": "{2}: Sacrifice ~ unless you exile a card from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Sacrifice ~ unless an opponent discards a card.",
+      "{T}: Sacrifice ~ if you discard a card.",
+      "{T}: Sacrifice ~ unless you control a Forest."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t14.unless.pays.forEach",
+    "kind": "effect",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 608.2h"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {c:Cost} for each {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "times": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell unless its controller pays {1} for each Island you control."
+      },
+      {
+        "text": "Counter target creature spell unless its controller pays {2} for each enchantment you control."
+      }
+    ],
+    "counterExamples": [
+      "Counter target creature spell unless its controller pays {5}.",
+      "Counter target spell unless its controller pays {1} for each time it was kicked.",
+      "Counter target spell if its controller pays {1} for each Island you control."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t14.look.top.targetPlayer",
+    "kind": "effect",
+    "cr": [
+      "CR 401.2",
+      "CR 115.1"
+    ],
+    "pattern": "look at the top card of {p:Player} 's library",
+    "build": {
+      "op": "look",
+      "who": {
+        "ref": "you"
+      },
+      "at": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": 1
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top card of target player's library."
+      },
+      {
+        "text": "Look at the top card of target opponent's library. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top two cards of target player's library.",
+      "Look at the top card of target player's graveyard.",
+      "Reveal the top card of target player's library."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t14.player.exilesNFromHand",
+    "kind": "effect",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} exiles {n:Qty} cards from their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent exiles three cards from their hand."
+      },
+      {
+        "text": "Target player exiles two cards from their hand. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles three cards from their graveyard.",
+      "Target opponent exiles three cards from your hand.",
+      "Target opponent discards three cards."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t14.player.exilesFromGraveyard",
+    "kind": "effect",
+    "cr": [
+      "CR 404.1",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} exiles a card from their graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player exiles a card from their graveyard."
+      },
+      {
+        "text": "Target opponent exiles a card from their graveyard. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player exiles two cards from their graveyard.",
+      "Target player exiles a card from your graveyard.",
+      "Target player exiles a creature card from their graveyard."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t14.player.exilesTopOfLibrary",
+    "kind": "effect",
+    "cr": [
+      "CR 401.2",
+      "CR 406.1"
+    ],
+    "pattern": "{p:Player} exiles the top card of their library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": 1
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent exiles the top card of their library."
+      },
+      {
+        "text": "Target player exiles the top card of their library. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles the top two cards of their library.",
+      "Target opponent exiles the top card of your library.",
+      "Target opponent mills a card."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t14.exile.opponentsGraveyards",
+    "kind": "effect",
+    "cr": [
+      "CR 404.1",
+      "CR 406.1"
+    ],
+    "pattern": "exile all opponents' graveyards",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "graveyard",
+          "owner": "opponent"
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Exile all opponents' graveyards."
+      },
+      {
+        "text": "Exile all opponents' graveyards. You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Exile all graveyards. You gain 3 life.",
+      "Exile target opponent's graveyard.",
+      "Exile all opponents' hands."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.t14.player.shufflesTargetsIntoLibrary",
+    "kind": "effect",
+    "cr": [
+      "CR 701.24a",
+      "CR 115.1",
+      "CR 400.3"
+    ],
+    "pattern": "{p:Player} shuffle[s] {o:Objs} into their library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": "$p"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player shuffles up to five target cards from their graveyard into their library."
+      },
+      {
+        "text": "Target opponent shuffles up to four target cards from their graveyard into their library."
+      }
+    ],
+    "counterExamples": [
+      "Target player shuffles up to two target cards from their graveyard into your library.",
+      "Target player shuffles up to two target cards from your graveyard into their library.",
+      "Target opponent shuffles their graveyard into their library. Draw a card."
+    ],
+    "status": "stable",
+    "since": 5
+  }
+]

@@ -1,0 +1,103 @@
+[
+  {
+    "id": "eff.moved.draw.foreach.cardType.among",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 205.2a",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} draw[s] a card for each card type among {f:Filter}",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": {
+        "q": "distinct",
+        "what": "cardTypes",
+        "among": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent discards two cards. Then you draw a card for each card type among cards discarded this way."
+      },
+      {
+        "text": "Target player discards three cards. You draw a card for each card type among cards discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent discards two cards. Then you draw two cards for each card type among cards discarded this way.",
+      "Each opponent discards two cards. Then you draw a card for each color among cards discarded this way.",
+      "Each opponent discards two cards. Then you draw a card for each card type among cards discarded this turn."
+    ]
+  },
+  {
+    "id": "eff.moved.put.upToOne.battlefieldTapped.yours",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "put up to one {f:Filter} onto the battlefield tapped under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent discards three cards. Put up to one creature card discarded this way onto the battlefield tapped under your control."
+      },
+      {
+        "text": "Target opponent discards two cards. Put up to one artifact card discarded this way onto the battlefield tapped under your control."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent discards two cards. Put up to two artifact cards discarded this way onto the battlefield tapped under your control.",
+      "Target opponent discards two cards. Put up to one artifact card discarded this way onto the battlefield under your control.",
+      "Target opponent discards two cards. Put up to one artifact card discarded this way into your hand."
+    ]
+  }
+]

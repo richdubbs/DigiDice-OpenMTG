@@ -1,0 +1,495 @@
+[
+  {
+    "id": "sta.p2tc1.obj.isCreature.basept.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 604.1"
+    ],
+    "pattern": "{o:Obj} is a creature with base power and toughness {pt:BasePT} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Creature"
+            ]
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchant artifact\nEnchanted artifact is a creature with base power and toughness 3/6 in addition to its other types."
+      },
+      {
+        "text": "Enchant land\nEnchanted land is a creature with base power and toughness 2/7 in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Enchant artifact\nEnchanted artifact is a creature with base power and toughness 3/6.",
+      "Enchant artifact\nEnchanted artifact is a creature with base power and toughness 3/6 in addition to its other types until end of turn.",
+      "Enchant artifact\nEnchanted artifact is a Golem creature with base power and toughness 3/6 in addition to its other types."
+    ]
+  },
+  {
+    "id": "sta.p2tc1.attached.isChosenLandType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.7",
+      "CR 607.2d",
+      "CR 613.1d",
+      "CR 604.1"
+    ],
+    "pattern": "enchanted land is the chosen ( type | basic land type )",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "chosen": "landType",
+            "chosenSets": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Enchant land\nAs this Aura enters, choose a basic land type.\nEnchanted land is the chosen basic land type."
+      },
+      {
+        "text": "Enchant land\nAs this Aura enters, choose a basic land type.\nEnchanted land is the chosen type.\n{3}: You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Enchant land\nAs this Aura enters, choose a basic land type.\nEnchanted land is the chosen type in addition to its other types.",
+      "Enchant land\nAs this Aura enters, choose a basic land type.\nEnchanted creature is the chosen type."
+    ]
+  },
+  {
+    "id": "sta.p2tc1.creatures.areArtifacts.sameIsTrue",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 108.3",
+      "CR 109.4",
+      "CR 110.4"
+    ],
+    "pattern": "creatures you control are artifacts in addition to their other types . the same is true for creature spells you control and creature cards you own that aren't on the battlefield",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "zone": [
+                    "stack"
+                  ]
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "owner": "you",
+                  "isCard": true,
+                  "zone": [
+                    "hand",
+                    "graveyard",
+                    "library",
+                    "exile",
+                    "command",
+                    "stack"
+                  ]
+                }
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "same",
+      "aren't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control are artifacts in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.\n{4}: You gain 3 life."
+      },
+      {
+        "text": "{1}: Draw a card.\nCreatures you control are artifacts in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control are artifacts in addition to their other types. The same is true for creature spells you control.",
+      "Creatures you control are artifacts. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.\n{4}: You gain 3 life."
+    ]
+  },
+  {
+    "id": "sta.p2tc1.nonlandPermanents.areArtifacts.sameIsTrue",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 108.3",
+      "CR 109.4",
+      "CR 110.4"
+    ],
+    "pattern": "nonland permanents you control are artifacts in addition to their other types . the same is true for permanent spells you control and nonland permanent cards you own that aren't on the battlefield",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "each",
+                "filter": {
+                  "notTypes": [
+                    "Land"
+                  ],
+                  "controller": "you"
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Artifact",
+                    "Battle",
+                    "Creature",
+                    "Enchantment",
+                    "Land",
+                    "Planeswalker"
+                  ],
+                  "controller": "you",
+                  "zone": [
+                    "stack"
+                  ]
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Artifact",
+                    "Battle",
+                    "Creature",
+                    "Enchantment",
+                    "Land",
+                    "Planeswalker"
+                  ],
+                  "notTypes": [
+                    "Land"
+                  ],
+                  "owner": "you",
+                  "isCard": true,
+                  "zone": [
+                    "hand",
+                    "graveyard",
+                    "library",
+                    "exile",
+                    "command",
+                    "stack"
+                  ]
+                }
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "same",
+      "aren't"
+    ],
+    "examples": [
+      {
+        "text": "Nonland permanents you control are artifacts in addition to their other types. The same is true for permanent spells you control and nonland permanent cards you own that aren't on the battlefield.\n{4}: You gain 3 life."
+      },
+      {
+        "text": "{1}: Draw a card.\nNonland permanents you control are artifacts in addition to their other types. The same is true for permanent spells you control and nonland permanent cards you own that aren't on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Nonland permanents you control are artifacts in addition to their other types. The same is true for permanent spells you control.",
+      "Nonland permanents you control are artifacts. The same is true for permanent spells you control and nonland permanent cards you own that aren't on the battlefield.\n{4}: You gain 3 life."
+    ]
+  },
+  {
+    "id": "sta.p2tc1.nonlandPermanents.andSpells.are.type",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 108.3",
+      "CR 109.4",
+      "CR 110.4"
+    ],
+    "pattern": "nonland permanents you control and permanent spells you control are enchantments in addition to their other types",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "each",
+                "filter": {
+                  "notTypes": [
+                    "Land"
+                  ],
+                  "controller": "you"
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Artifact",
+                    "Battle",
+                    "Creature",
+                    "Enchantment",
+                    "Land",
+                    "Planeswalker"
+                  ],
+                  "controller": "you",
+                  "zone": [
+                    "stack"
+                  ]
+                }
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Enchantment"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Nonland permanents you control and permanent spells you control are enchantments in addition to their other types.\n{4}: You gain 3 life."
+      },
+      {
+        "text": "{1}: Draw a card.\nNonland permanents you control and permanent spells you control are enchantments in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Nonland permanents you control and permanent spells you control are enchantments.\n{4}: You gain 3 life.",
+      "Nonland permanents you control are enchantments in addition to their other types.\n{4}: You gain 3 life."
+    ]
+  },
+  {
+    "id": "eff.p2tc1.group.become.artifactCreatures.basept",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Objs} become artifact creatures with base power and toughness {pt:BasePT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Artifacts you control become artifact creatures with base power and toughness 3/3 until end of turn."
+      },
+      {
+        "text": "Noncreature artifacts target player controls become artifact creatures with base power and toughness 1/4 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Artifacts you control become artifact creatures with base power and toughness 3/3.",
+      "Artifacts you control become creatures with base power and toughness 3/3 until end of turn.",
+      "Artifacts you control get +3/+3 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.p2tc1.each.becomes.sized.artifactCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "each {f:Filter} becomes ( a | an ) {pt:BasePT} artifact creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Each noncreature artifact you control becomes a 3/3 artifact creature until end of turn."
+      },
+      {
+        "text": "Each artifact target opponent controls becomes a 1/1 artifact creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Each noncreature artifact you control becomes a 3/3 artifact creature.",
+      "Each noncreature artifact you control becomes a 3/3 creature until end of turn.",
+      "Target noncreature artifact you control becomes a 3/3 artifact creature until end of turn and gains flying."
+    ]
+  }
+]

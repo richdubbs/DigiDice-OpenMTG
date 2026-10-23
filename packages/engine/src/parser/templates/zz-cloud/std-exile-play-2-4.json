@@ -1,0 +1,347 @@
+[
+  {
+    "id": "eff.sxp24.permit.play.yoursAndLesserMv.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 400.7"
+    ],
+    "pattern": "until end of turn , you may play the card you own exiled this way and each other card exiled this way with lesser mana value than it without paying their mana costs",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "each",
+              "filter": {
+                "zone": "exile",
+                "is": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "set",
+                    "number": "plural",
+                    "head": "card",
+                    "participle": "exiled this way",
+                    "text": "cards exiled this way"
+                  }
+                },
+                "anyOf": [
+                  {
+                    "owner": "you"
+                  },
+                  {
+                    "manaValue": {
+                      "op": "<",
+                      "value": {
+                        "q": "stat",
+                        "stat": "manaValue",
+                        "of": {
+                          "ref": "each",
+                          "filter": {
+                            "zone": "exile",
+                            "is": {
+                              "ref": "bound",
+                              "name": "",
+                              "$anaphor": {
+                                "sort": "set",
+                                "number": "plural",
+                                "head": "card",
+                                "participle": "exiled this way",
+                                "text": "cards exiled this way"
+                              }
+                            },
+                            "owner": "you"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "until",
+      "each",
+      "other",
+      "each other",
+      "this way",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each player exiles the top card of their library. Until end of turn, you may play the card you own exiled this way and each other card exiled this way with lesser mana value than it without paying their mana costs."
+      },
+      {
+        "text": "{2}, {T}: Each player exiles the top card of their library. Until end of turn, you may play the card you own exiled this way and each other card exiled this way with lesser mana value than it without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, each player exiles the top card of their library. Until end of turn, you may play the card you own exiled this way and each other card exiled this way with greater mana value than it without paying their mana costs.",
+      "At the beginning of your end step, each player exiles the top card of their library. Until end of turn, you may play the card you own exiled this way and each other card exiled this way with lesser mana value than it.",
+      "At the beginning of your end step, each player exiles the top card of their library. Until your next turn, you may play the card you own exiled this way and each other card exiled this way with lesser mana value than it without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.sxp24.forEachColor.mayExileOfThatColor.fromRevealed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.20a",
+      "CR 406.1"
+    ],
+    "pattern": "for each of those colors , you may exile a card of that color from among the revealed cards",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library",
+            "colors": [
+              "W"
+            ]
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "byColorW",
+        "guard": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "controller": "you",
+              "colors": [
+                "W"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library",
+            "colors": [
+              "U"
+            ]
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "byColorU",
+        "guard": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "controller": "you",
+              "colors": [
+                "U"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library",
+            "colors": [
+              "B"
+            ]
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "byColorB",
+        "guard": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "controller": "you",
+              "colors": [
+                "B"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library",
+            "colors": [
+              "R"
+            ]
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "byColorR",
+        "guard": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "controller": "you",
+              "colors": [
+                "R"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library",
+            "colors": [
+              "G"
+            ]
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "byColorG",
+        "guard": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "controller": "you",
+              "colors": [
+                "G"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "byColorW"
+            },
+            {
+              "ref": "bound",
+              "name": "byColorU"
+            },
+            {
+              "ref": "bound",
+              "name": "byColorB"
+            },
+            {
+              "ref": "bound",
+              "name": "byColorR"
+            },
+            {
+              "ref": "bound",
+              "name": "byColorG"
+            }
+          ]
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiledByColor"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, reveal cards from the top of your library until you reveal X nonland cards, where X is the number of colors among permanents you control. For each of those colors, you may exile a card of that color from among the revealed cards. Then shuffle."
+      },
+      {
+        "text": "{3}, {T}: Reveal cards from the top of your library until you reveal X nonland cards, where X is the number of colors among permanents you control. For each of those colors, you may exile a card of that color from among the revealed cards. Then shuffle. You may cast the exiled cards this turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Reveal cards from the top of your library until you reveal X nonland cards, where X is the number of colors among permanents you control. For each of those colors, you may exile two cards of that color from among the revealed cards. Then shuffle.",
+      "{3}, {T}: Reveal cards from the top of your library until you reveal X nonland cards, where X is the number of colors among permanents you control. For each of those colors, exile a card of that color from among the revealed cards. Then shuffle.",
+      "{3}, {T}: Reveal cards from the top of your library until you reveal X nonland cards, where X is the number of creatures you control. For each of those colors, you may exile a card of that color from among the revealed cards. Then shuffle."
+    ]
+  }
+]

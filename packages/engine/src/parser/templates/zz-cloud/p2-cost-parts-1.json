@@ -1,0 +1,55 @@
+[
+  {
+    "id": "cm.p2cp1.additional.choiceOfThree",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.2h"
+    ],
+    "pattern": "as an additional cost to cast ~ , {a:Cost} , {b:Cost} , or {c:Cost}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$a",
+          "choiceGroup": "cost"
+        },
+        {
+          "s": "additionalCost",
+          "cost": "$b",
+          "choiceGroup": "cost"
+        },
+        {
+          "s": "additionalCost",
+          "cost": "$c",
+          "choiceGroup": "cost"
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, sacrifice an artifact, discard two cards, or pay 3 life."
+      },
+      {
+        "text": "As an additional cost to cast ~, pay 2 life, sacrifice a land, or discard a card."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, sacrifice an artifact, discard two cards, and pay 3 life.",
+      "As an additional cost to cast ~, you may sacrifice an artifact, discard two cards, or pay 3 life.",
+      "As an additional cost to activate ~, sacrifice an artifact, discard two cards, or pay 3 life."
+    ]
+  }
+]

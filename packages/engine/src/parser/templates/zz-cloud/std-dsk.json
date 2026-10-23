@@ -1,0 +1,752 @@
+[
+  {
+    "id": "sta.stddsk.attached.pump.foreach.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 301.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets +1/+1 for each {f:Filter} and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          },
+          "toughness": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1 for each Swamp you control and has deathtouch."
+      },
+      {
+        "text": "Equipped creature gets +1/+1 for each artifact you control and has vigilance and trample."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+1 for each Swamp you control and has deathtouch until end of turn.",
+      "Enchanted creature gets +1/+1 for each Swamp you control and loses deathtouch.",
+      "Enchanted creature gets +2/+2 for each Swamp you control and has deathtouch."
+    ]
+  },
+  {
+    "id": "sta.stddsk.attached.pump.foreach.power.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 301.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets +1/+0 for each {f:Filter} and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+0 for each Island you control and has flying."
+      },
+      {
+        "text": "Equipped creature gets +1/+0 for each Equipment you control and has haste and menace."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+0 for each Island you control and has flying as long as it's your turn.",
+      "Enchanted creature gets +0/+1 for each Island you control and has flying.",
+      "Enchanted creature gets +1/+0 for each Island you control and gains flying."
+    ]
+  },
+  {
+    "id": "sta.stddsk.attached.pump.foreach.scaled.has",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 301.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each {f:Filter} and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+2 for each Forest you control and has reach."
+      },
+      {
+        "text": "Equipped creature gets +2/+1 for each Equipment you control and has first strike and trample."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +2/+2 for each Forest you control and has reach until end of turn.",
+      "Enchanted creature gets +2/+2 for each Forest you control and loses reach.",
+      "Enchanted creature gets +2/+2 for each other Forest and has reach unless you control a Swamp."
+    ]
+  },
+  {
+    "id": "eff.stddsk.counters.choice3",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2d"
+    ],
+    "pattern": "put ( a | an ) {k1:ListedCounterKind} , {k2:ListedCounterKind} , or {k3:ListedCounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterChoice",
+        "link": "counterChoice",
+        "options": [
+          "$k1",
+          "$k2",
+          "$k3"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k1"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k1",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k2"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k2",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k3"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k3",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put a vigilance, reach, or +1/+1 counter on target creature you control."
+      },
+      {
+        "text": "When ~ enters, put a menace, trample, or first strike counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Put a vigilance, reach, and +1/+1 counter on target creature you control.",
+      "Put a vigilance, reach, or +1/+1 counter on each creature you control.",
+      "Put a vigilance, reach, or glorbix counter on target creature you control."
+    ]
+  },
+  {
+    "id": "eff.stddsk.counters.choice3.yourChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2d"
+    ],
+    "pattern": "put your choice of ( a | an ) {k1:ListedCounterKind} , {k2:ListedCounterKind} , or {k3:ListedCounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterChoice",
+        "link": "counterChoice",
+        "options": [
+          "$k1",
+          "$k2",
+          "$k3"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k1"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k1",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k2"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k2",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k3"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k3",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put your choice of a deathtouch, lifelink, or hexproof counter on target creature you control."
+      },
+      {
+        "text": "Whenever ~ attacks, put your choice of a flying, vigilance, or +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Put your choice of a deathtouch, lifelink, and hexproof counter on target creature you control.",
+      "Put your choice of a deathtouch, lifelink, or hexproof counter on each creature you control.",
+      "Put your choice of two deathtouch, lifelink, or hexproof counters on target creature you control."
+    ]
+  },
+  {
+    "id": "eff.stddsk.counters.choice4.yourChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2d"
+    ],
+    "pattern": "put your choice of ( a | an ) {k1:ListedCounterKind} , {k2:ListedCounterKind} , {k3:ListedCounterKind} , or {k4:ListedCounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterChoice",
+        "link": "counterChoice",
+        "options": [
+          "$k1",
+          "$k2",
+          "$k3",
+          "$k4"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k1"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k1",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k2"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k2",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k3"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k3",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k4"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k4",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put your choice of a flying, deathtouch, menace, or trample counter on target creature."
+      },
+      {
+        "text": "{2}{G}: Put your choice of a reach, vigilance, trample, or +1/+1 counter on target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Put your choice of a flying, deathtouch, menace, and trample counter on target creature.",
+      "Put your choice of a flying, deathtouch, menace, or trample counter on each creature.",
+      "Put your choice of a flying, deathtouch, menace, or trample counter on target creature unless its controller pays {2}."
+    ]
+  },
+  {
+    "id": "eff.stddsk.counters.choice3.eachNamed",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2d"
+    ],
+    "pattern": "put your choice of ( a | an ) {k1:ListedCounterKind} counter , ( a | an ) {k2:ListedCounterKind} counter , or ( a | an ) {k3:ListedCounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterChoice",
+        "link": "counterChoice",
+        "options": [
+          "$k1",
+          "$k2",
+          "$k3"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k1"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k1",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k2"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k2",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k3"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k3",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put your choice of a menace counter, a haste counter, or a lifelink counter on target creature you control."
+      },
+      {
+        "text": "When ~ enters, put your choice of a reach counter, a deathtouch counter, or a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Put your choice of a menace counter, a haste counter, and a lifelink counter on target creature you control.",
+      "Put a menace counter, a haste counter, or a lifelink counter on each creature you control.",
+      "Put your choice of a menace counter, a haste counter, or two lifelink counters on target creature you control."
+    ]
+  },
+  {
+    "id": "eff.stddsk.search.reveal.notSameName",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 201.2"
+    ],
+    "pattern": "search your library for ( a | an ) {f:NotSameNameCard} , reveal it",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Search your library for an Aura card that doesn't have the same name as an Aura you control, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, search your library for a creature card that doesn't have the same name as a creature you control, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an Aura card that has the same name as an Aura you control, reveal it, put it into your hand, then shuffle.",
+      "Search your graveyard for an Aura card that doesn't have the same name as an Aura you control, reveal it, put it into your hand, then shuffle.",
+      "Search your library for an Aura card that doesn't have the same name as an Aura you control, reveal them, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.stddsk.winGame.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 104.2b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} win[s] the game if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "winGame",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, draw a card. You win the game if you have fifteen or more cards in hand."
+      },
+      {
+        "text": "Whenever ~ attacks, you win the game if you control twelve or more Mountains."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, draw a card. You win the game unless you have fifteen or more cards in hand.",
+      "At the beginning of your end step, draw a card. You lose the game if you have fifteen or more cards in hand.",
+      "Whenever ~ attacks, you win the game if you control twelve or more Mountains until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stddsk.loseGame.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 104.3e",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] the game if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "loseGame",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, mill two cards. You lose the game if you have no cards in hand."
+      },
+      {
+        "text": "Whenever ~ attacks, you lose the game if you control no Islands."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, mill two cards. You lose the game unless you have no cards in hand.",
+      "At the beginning of your upkeep, mill two cards. You win the game if you have no cards in hand.",
+      "Whenever ~ attacks, you lose the game if you control no Islands at random."
+    ]
+  },
+  {
+    "id": "trg.stddsk.youTurnFaceUp",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.37e",
+      "CR 708.2",
+      "CR 701.40b",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you turn ( a | an ) {f:Filter} face up",
+    "build": {
+      "on": [
+        {
+          "ev": "becomes",
+          "what": "turnedFaceUp",
+          "object": "$f",
+          "player": "you"
+        }
+      ]
+    },
+    "needs": [
+      "feature:ev.becomes.turnedFaceUp.player"
+    ],
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you turn a permanent face up, draw a card.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "Whenever you turn a permanent face up, draw a card.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "becomes",
+                  "what": "turnedFaceUp",
+                  "object": {},
+                  "player": "you"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Whenever you turn a creature face up, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you turn a permanent face down, draw a card.",
+      "Whenever an opponent turns a permanent face up, draw a card.",
+      "Whenever a permanent is turned face up, you gain 2 life."
+    ]
+  }
+]

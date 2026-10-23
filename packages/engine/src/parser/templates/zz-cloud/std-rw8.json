@@ -1,0 +1,16 @@
+[
+  {
+    "id": "cost.stdrw8.oneOf",
+    "kind": "cost",
+    "cr": ["CR 601.2b", "CR 602.2b", "CR 118.3"],
+    "pattern": "{a:Cost} or {b:Cost}",
+    "build": { "kind": "oneOf", "options": ["$a", "$b"] },
+    "examples": [
+      { "text": "Sacrifice a creature or discard a card", "expect": { "other": [{ "kind": "oneOf", "options": [{ "other": [{ "kind": "sacrifice", "filter": { "types": ["Creature"] }, "count": 1 }] }, { "other": [{ "kind": "discard", "count": 1 }] }] }] } },
+      { "text": "{2}, {T}, Discard a nonland card or sacrifice a land: Draw a card." }
+    ],
+    "counterExamples": ["Sacrifice a creature and discard a card", "Sacrifice a creature or", "Or discard a card"],
+    "status": "stable",
+    "since": 8
+  }
+]

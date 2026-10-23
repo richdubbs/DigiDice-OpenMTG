@@ -1,0 +1,109 @@
+[
+  {
+    "id": "trg.m6.self.mutates",
+    "kind": "trigger",
+    "cr": [
+      "CR 702.140d",
+      "CR 603.2"
+    ],
+    "pattern": "( when | whenever ) ~ mutate[s]",
+    "build": {
+      "on": [
+        {
+          "ev": "becomes",
+          "what": "mutated",
+          "object": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ mutates, destroy target artifact or enchantment an opponent controls.",
+        "expect": {
+          "on": [
+            {
+              "ev": "becomes",
+              "what": "mutated",
+              "object": {
+                "self": true
+              }
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever ~ mutates, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ mutates into a creature, draw a card.",
+      "Whenever ~ transforms, draw a card."
+    ],
+    "status": "stable",
+    "since": 6
+  },
+  {
+    "id": "trg.m6.yourCreature.mutates",
+    "kind": "trigger",
+    "cr": [
+      "CR 702.140d",
+      "CR 603.2"
+    ],
+    "pattern": "( when | whenever ) a creature you control mutate[s]",
+    "build": {
+      "on": [
+        {
+          "ev": "becomes",
+          "what": "mutated",
+          "object": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "creature",
+      "you",
+      "control"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control mutates, you gain 2 life.",
+        "expect": {
+          "on": [
+            {
+              "ev": "becomes",
+              "what": "mutated",
+              "object": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever a creature you control mutates, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature an opponent controls mutates, draw a card.",
+      "Whenever a creature you control transforms, draw a card."
+    ],
+    "status": "stable",
+    "since": 6
+  }
+]

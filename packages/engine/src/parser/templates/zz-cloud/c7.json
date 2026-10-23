@@ -1,0 +1,91 @@
+[
+  {
+    "id": "eff.c7.draw.foreach.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 121.1", "CR 121.2", "CR 608.2c", "CR 608.2h"],
+    "pattern": "{p:Player} draw[s] a card for each {f:Filter}",
+    "build": {"op": "draw", "who": "$p", "count": {"q": "count", "of": {"ref": "each", "filter": "$f"}}},
+    "subject": "player",
+    "consumes": ["each"],
+    "priority": -1,
+    "examples": [
+      {"text": "Each opponent discards a card. You draw a card for each card discarded this way."},
+      {"text": "Destroy all creatures. You draw a card for each creature destroyed this way."}
+    ],
+    "counterExamples": [
+      "Each opponent discards a card. You draw two cards for each card discarded this way.",
+      "Each opponent discards a card. You draw a card for each card discarded this turn.",
+      "Destroy all creatures. You draw a card for each creature dealt damage this way."
+    ]
+  },
+  {
+    "id": "eff.c7.loselife.2.foreach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 119.1", "CR 119.3", "CR 608.2c", "CR 608.2h"],
+    "pattern": "{p:Player} lose[s] 2 life for each {f:Filter}",
+    "build": {"op": "loseLife", "who": "$p", "amount": {"q": "math", "op": "*", "args": [2, {"q": "count", "of": {"ref": "each", "filter": "$f"}}]}},
+    "subject": "player",
+    "consumes": ["each"],
+    "examples": [
+      {"text": "Exile all creature cards from target player's graveyard. That player loses 2 life for each card exiled this way."},
+      {"text": "Sacrifice any number of creatures. Each opponent loses 2 life for each creature sacrificed this way."}
+    ],
+    "counterExamples": [
+      "Destroy all creatures. Each opponent loses 2 life for each creature destroyed this turn.",
+      "Destroy all creatures. Each opponent gains 2 life for each creature destroyed this way.",
+      "Destroy all creatures. Each opponent loses 3 life for each creature destroyed this way."
+    ]
+  },
+  {
+    "id": "eff.c7.discard.anyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.9a", "CR 701.9b", "CR 608.2d"],
+    "pattern": "discard any number of cards",
+    "build": [
+      { "op": "chooseObjects", "who": { "ref": "you" }, "from": { "ref": "each", "filter": { "zone": "hand", "owner": "you" }}, "min": 0, "max": "any", "as": "toDiscard" },
+      { "op": "discard", "who": { "ref": "you" }, "count": { "q": "count", "of": { "ref": "bound", "name": "toDiscard" }}, "filter": { "is": { "ref": "bound", "name": "toDiscard" }}}
+    ],
+    "subject": "none",
+    "consumes": ["any number"],
+    "priority": -1,
+    "examples": [
+      {"text": "Discard any number of cards. You gain 2 life for each card discarded this way."},
+      {"text": "Discard any number of cards. You draw a card for each card discarded this way."}
+    ],
+    "counterExamples": [
+      "Discard any number of lands. You gain 2 life for each card discarded this way.",
+      "Discard two cards. You gain 2 life for each card discarded this way.",
+      "Target player discards any number of cards. You gain 2 life for each card discarded this way."
+    ]
+  },
+  {
+    "id": "eff.c7.sacrifice.anyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.21a", "CR 608.2d"],
+    "pattern": "sacrifice any number of {f:Filter}",
+    "build": [
+      { "op": "chooseObjects", "who": { "ref": "you" }, "from": { "ref": "each", "filter": { "controller": "you", "anyOf": ["$f"]}}, "min": 0, "max": "any", "as": "toSacrifice" },
+      { "op": "sacrifice", "what": { "ref": "bound", "name": "toSacrifice" }}
+    ],
+    "subject": "none",
+    "consumes": ["any number"],
+    "priority": -1,
+    "examples": [
+      {"text": "Sacrifice any number of lands. You gain 2 life for each land sacrificed this way."},
+      {"text": "Sacrifice any number of creatures. Draw a card for each creature sacrificed this way."}
+    ],
+    "counterExamples": [
+      "Sacrifice two permanents. You gain 2 life for each permanent sacrificed this way.",
+      "Each player sacrifices any number of permanents. You gain 2 life for each permanent sacrificed this way.",
+      "Sacrifice any number of permanents. You gain 2 life for each permanent destroyed this way."
+    ]
+  }
+]

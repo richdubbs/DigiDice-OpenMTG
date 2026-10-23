@@ -1,0 +1,18 @@
+{
+  "name": "exhaust",
+  "rule": "702.177",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Activate each exhaust ability only once.",
+  "multiple": "independent",
+  "status": "implemented",
+  "modifies": {
+    "kind": "activated",
+    "limit": {
+      "per": "game",
+      "max": 1
+    }
+  }
+}

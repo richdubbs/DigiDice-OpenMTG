@@ -1,0 +1,136 @@
+[
+  {
+    "id": "eff.sxp23.exile.upTo.fromPlayerGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 404.1"
+    ],
+    "pattern": "exile up to one {f:CardDesc} from {p:Player} 's graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "exile"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exile"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target player mills two cards. Exile up to one creature card from that player's graveyard."
+      },
+      {
+        "text": "Target opponent mills four cards. Exile up to one instant or sorcery card from that player's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Target player mills two cards. Exile one creature card from that player's graveyard.",
+      "Target player mills two cards. Exile up to one creature card from your graveyard.",
+      "Target player mills two cards. Return up to one creature card from that player's graveyard to the battlefield."
+    ],
+    "consumes": [
+      "up to"
+    ]
+  },
+  {
+    "id": "eff.sxp23.permit.cast.duringYourTurn.waterbendManaValue",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2b",
+      "CR 601.3",
+      "CR 118.9",
+      "CR 701.67a",
+      "CR 202.3",
+      "CR 400.7"
+    ],
+    "pattern": "for as long as you control ~ , you may cast {o:Obj} during your turn by waterbending {x} rather than paying its mana cost , where x is its mana value",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileSource",
+        "as": "controlled"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "while": {
+            "cond": "turnOf",
+            "whose": "you"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {
+              "other": [
+                {
+                  "kind": "action",
+                  "action": "waterbend",
+                  "arg": {
+                    "q": "stat",
+                    "stat": "manaValue",
+                    "of": "$o"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "during",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target player mills two cards. Exile up to one instant card from that player's graveyard. For as long as you control ~, you may cast the exiled card during your turn by waterbending {X} rather than paying its mana cost, where X is its mana value."
+      },
+      {
+        "text": "{T}: Exile the top card of your library. For as long as you control ~, you may cast that card during your turn by waterbending {X} rather than paying its mana cost, where X is its mana value."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top card of your library. For as long as you control ~, you may cast that card during your turn by waterbending {X} in addition to paying its mana cost, where X is its mana value.",
+      "{T}: Exile the top card of your library. For as long as you control ~, you may cast that card by waterbending {X} rather than paying its mana cost, where X is its mana value.",
+      "{T}: Exile the top card of your library. For as long as you control ~, you may cast that card during your turn by waterbending {X} rather than paying its mana cost, where X is its power."
+    ]
+  }
+]

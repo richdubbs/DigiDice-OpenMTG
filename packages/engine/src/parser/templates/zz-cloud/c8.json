@@ -1,0 +1,139 @@
+[
+  {
+    "id": "eff.c8.becomes.xx.artifactcreature.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) x/x {st:Subtypes} artifact creature {d:Dur} , where x is {q:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$q",
+              "toughness": "$q"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}, Discard a creature card: ~ becomes an X/X Construct artifact creature until end of turn, where X is the discarded card's mana value."
+      },
+      {
+        "text": "{3}: ~ becomes an X/X Golem artifact creature until end of turn, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes an X/X Golem artifact creature, where X is the number of artifacts you control.",
+      "{3}: ~ becomes an X/X Golem creature until end of turn, where X is the number of artifacts you control.",
+      "{3}: ~ becomes an X/X Golem artifact creature with flying until end of turn, where X is the number of artifacts you control."
+    ]
+  },
+  {
+    "id": "eff.c8.drain.x.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] x life and you gain x life , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{2}{B}, Sacrifice a creature: Target player loses X life and you gain X life, where X is the sacrificed creature's power."
+      },
+      {
+        "text": "Whenever ~ attacks, target opponent loses X life and you gain X life, where X is the number of Bats you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, target opponent loses X life and you gain X life.",
+      "Whenever ~ attacks, target opponent loses X life and you gain 2 life, where X is the number of Bats you control.",
+      "Whenever ~ attacks, target opponent gains X life and you lose X life, where X is the number of Bats you control."
+    ]
+  },
+  {
+    "id": "eff.c8.discard.numberEqual",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} discard[s] a number of cards equal to {n:Qty}",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "{1}{B}, {T}, Sacrifice a creature: Target opponent discards a number of cards equal to the sacrificed creature's toughness."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player discards a number of cards equal to the number of Rats you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, that player discards a number of cards equal to the number of Rats you control at random.",
+      "Whenever ~ deals combat damage to a player, that player mills a number of cards equal to the number of Rats you control.",
+      "Whenever ~ deals combat damage to a player, that player discards a number of lands equal to the number of Rats you control."
+    ]
+  }
+]

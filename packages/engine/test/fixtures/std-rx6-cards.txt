@@ -1,0 +1,7 @@
+# std-rx6 (wave 2, slice s21; test/cloud/std-rx6, golden cloud-std-rx6-review.json): "As ~ enters, choose a card name" (and a look at an
+# opponent's hand first); activated abilities of sources with the chosen name, or of a group, can't be activated unless they're mana abilities;
+# "<group> can't attack you"
+Pithing Needle
+Sorcerous Spyglass
+Damping Matrix
+Reverence

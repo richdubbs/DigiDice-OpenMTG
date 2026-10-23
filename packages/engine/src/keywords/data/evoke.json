@@ -1,0 +1,67 @@
+{
+  "name": "evoke",
+  "rule": "702.74",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this spell for its evoke cost. If you do, it's sacrificed when it enters.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Evoke {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "evoke"
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, if its evoke cost was paid, its controller sacrifices it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "wasCast",
+        "via": "evoke"
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "sacrifice",
+            "what": {
+              "ref": "self"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

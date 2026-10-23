@@ -1,0 +1,203 @@
+[
+  {
+    "id": "eff.stdr9b.search.playerGraveyardHandLibrary.sameName.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 201.2",
+      "CR 608.2h",
+      "CR 406.1"
+    ],
+    "pattern": "search {p:Player} 's graveyard , hand [,] and library for any number of cards with the same name as {o:Obj} and exile them",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "owner": "$p",
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "allZones": true,
+        "filter": {
+          "sharesWith": {
+            "with": "$o",
+            "quality": "name"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Exile target artifact. Search its controller's graveyard, hand, and library for any number of cards with the same name as that artifact and exile them. Then that player shuffles."
+      },
+      {
+        "text": "Destroy target enchantment. Search its owner's graveyard, hand and library for any number of cards with the same name as that enchantment and exile them. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Exile target Equipment. Search its controller's graveyard, hand, and library for all cards with the same name as that Equipment and exile them. Then that player shuffles.",
+      "Exile target artifact. Search its controller's graveyard, hand, and library for any number of cards with the same name as that artifact and put them into your hand. Then that player shuffles.",
+      "Exile target artifact. Search its controller's graveyard and library for any number of cards with the same name as that artifact and exile them. Then that player shuffles."
+    ]
+  },
+  {
+    "id": "eff.stdr9b.player.shuffles.thenDraws.foreach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} shuffles , then draws a card for each {f:Filter}",
+    "build": [
+      {
+        "op": "shuffle",
+        "who": "$p"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile target artifact. Search its controller's graveyard, hand, and library for any number of cards with the same name as that artifact and exile them. That player shuffles, then draws a card for each card exiled from their hand this way."
+      },
+      {
+        "text": "Destroy target enchantment. Search its owner's graveyard, hand and library for any number of cards with the same name as that enchantment and exile them. That player shuffles, then draws a card for each card exiled from their hand this way."
+      }
+    ],
+    "counterExamples": [
+      "Exile target artifact. Search its controller's graveyard, hand, and library for any number of cards with the same name as that artifact and exile them. That player shuffles, then draws two cards for each card exiled from their hand this way.",
+      "Exile target artifact. Search its controller's graveyard, hand, and library for any number of cards with the same name as that artifact and exile them. That player shuffles, then discards a card for each card exiled from their hand this way.",
+      "Exile target artifact. Search its controller's graveyard, hand, and library for any number of cards with the same name as that artifact and exile them. You shuffle, then draw a card for each card exiled from their hand this way."
+    ]
+  },
+  {
+    "id": "eff.stdr9b.linked.putAll.hands",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "put all cards exiled with ~ into their owners' hands",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes tapped, exile the top card of your library face down.\nWhen ~ leaves the battlefield, put all cards exiled with ~ into their owners' hands."
+      },
+      {
+        "text": "When ~ enters, exile up to two target creatures your opponents control.\nAt the beginning of your end step, put all cards exiled with ~ into their owners' hands."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes tapped, exile the top card of your library face down.\nWhen ~ leaves the battlefield, put all cards exiled with ~ into your hand.",
+      "Whenever ~ becomes tapped, exile the top card of your library face down.\nWhen ~ leaves the battlefield, put all cards exiled with ~ into their owners' graveyards.",
+      "When ~ leaves the battlefield, put all cards exiled with ~ into their owners' hands."
+    ]
+  },
+  {
+    "id": "sta.stdr9b.group.chosenType.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 607.2d",
+      "CR 613.1d"
+    ],
+    "pattern": "{f:Filter} are the chosen [creature] type in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "chosen": "type"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\nArtifact creatures you control are the chosen type in addition to their other types."
+      },
+      {
+        "text": "As ~ enters, choose a creature type.\nOther creatures you control are the chosen creature type in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.\nArtifact creatures you control are the chosen type.",
+      "As ~ enters, choose a creature type.\nArtifact creatures you control are the chosen type in addition to their other types until end of turn.",
+      "As ~ enters, choose a color.\nArtifact creatures you control are the chosen color in addition to their other colors."
+    ]
+  }
+]

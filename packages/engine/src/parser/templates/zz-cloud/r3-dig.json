@@ -1,0 +1,667 @@
+[
+  {
+    "id": "eff.r3dig.revealUntil",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "reveal cards from the top of your library until you reveal {f:DiscardDesc}",
+    "build": {
+      "op": "revealUntil",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "as": "hit",
+      "revealed": "revealed"
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ attacks, reveal cards from the top of your library until you reveal a nonland card. Put that card into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of target player's library until they reveal a land card.",
+      "Exile cards from the top of your library until you exile a creature card.",
+      "Reveal cards from the top of your library until you reveal a creature card or a land card."
+    ]
+  },
+  {
+    "id": "eff.r3dig.revealUntil.two",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "reveal cards from the top of your library until you reveal two {f:Filter} cards",
+    "build": {
+      "op": "revealUntil",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "count": 2,
+      "as": "hit",
+      "revealed": "revealed"
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal two creature cards. Put those cards into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal two artifact cards. Put those cards onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two or more land cards.",
+      "Reveal cards from the top of your library until you reveal three land cards.",
+      "Reveal the top two land cards of your library."
+    ]
+  },
+  {
+    "id": "eff.r3dig.putThat.hand.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Obj} into your hand and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When ~ enters, reveal cards from the top of your library until you reveal an instant card. Put that card into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand."
+    ]
+  },
+  {
+    "id": "eff.r3dig.putThat.battlefield.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "{2}, {T}: Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.r3dig.putThat.battlefieldTapped.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield tapped and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "At the beginning of your end step, reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield tapped and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield tapped and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.r3dig.putThose.hand.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Objs} into your hand and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal two creature cards. Put those cards into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When ~ enters, reveal cards from the top of your library until you reveal two instant cards. Put those cards into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those cards into your hand and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those cards into your hand and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those cards into your hand."
+    ]
+  },
+  {
+    "id": "eff.r3dig.putThose.battlefieldTapped.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield tapped and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal two land cards. Put those cards onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "{5}: Reveal cards from the top of your library until you reveal two land cards. Put those cards onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two land cards. Put those cards onto the battlefield tapped and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal two land cards. Put those cards onto the battlefield tapped and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal two land cards. Put those cards onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.r3dig.exile.randomFromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile a card at random from your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile a card at random from your graveyard. You may play that card this turn."
+      },
+      {
+        "text": "{1}, {T}: Exile a card at random from your graveyard. You may play that card this turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Exile a card from your graveyard. You may play that card this turn.",
+      "{1}, {T}: Exile two cards at random from your graveyard. You may play those cards this turn.",
+      "{1}, {T}: Exile a card at random from target player's graveyard. You may play that card this turn."
+    ]
+  },
+  {
+    "id": "eff.r3dig.dig.upToTotalMV.battlefield.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 401.4"
+    ],
+    "pattern": "put up to {n:Qty} {f:Filter} cards with total mana value {m:Qty} or less from among {g:Seen} onto the battlefield and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen",
+        "groupLimit": {
+          "stat": "manaValue",
+          "cmp": {
+            "op": "<=",
+            "value": "$m"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top seven cards of your library. Put up to two creature cards with total mana value 5 or less from among them onto the battlefield and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal the top ten cards of your library. Put up to three artifact cards with total mana value 7 or less from among them onto the battlefield and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top seven cards of your library. Put up to two creature cards with total mana value 5 or greater from among them onto the battlefield and the rest on the bottom of your library in a random order.",
+      "Look at the top seven cards of your library. Put up to two creature cards with total mana value 5 or less from among them into your hand and the rest on the bottom of your library in a random order.",
+      "Look at the top seven cards of your library. Put up to two creature cards with total power 5 or less from among them onto the battlefield and the rest on the bottom of your library in a random order."
+    ],
+    "needs": [
+      "op:chooseObjects.groupLimit"
+    ]
+  },
+  {
+    "id": "eff.r3dig.look.putAny.battlefieldTapped.shuffle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.24a"
+    ],
+    "pattern": "look at the top {n:Qty} cards of your library , put any number of {f:Filter} cards from among them onto the battlefield tapped , then shuffle",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "seen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "seen"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top twelve cards of your library, put any number of land cards from among them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "When ~ enters, look at the top six cards of your library, put any number of artifact cards from among them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top twelve cards of your library, put any number of land cards from among them onto the battlefield, then shuffle.",
+      "Look at the top twelve cards of your library, put any number of land cards from among them into your hand, then shuffle.",
+      "Look at the top twelve cards of your library, put any number of land cards from among them onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.r3dig.putThoseTyped.hand.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:TypedThose} into your hand and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal two creature cards. Put those creature cards into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When ~ enters, reveal cards from the top of your library until you reveal two artifact cards. Put those artifact cards into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those creature cards into your hand and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those creature cards into your hand and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those creature cards into your hand."
+    ]
+  },
+  {
+    "id": "eff.r3dig.putThoseTyped.battlefieldTapped.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:TypedThose} onto the battlefield tapped and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal two land cards. Put those land cards onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "{6}: Reveal cards from the top of your library until you reveal two artifact cards. Put those artifact cards onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two land cards. Put those land cards onto the battlefield tapped and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal two land cards. Put those land cards onto the battlefield tapped and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal two land cards. Put those land cards onto the battlefield tapped."
+    ]
+  }
+]

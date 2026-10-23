@@ -1,0 +1,72 @@
+[
+  {
+    "id": "rep.stdlibrary4.payLife.while.libraryAtLeast.exileTop",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.4",
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 406.1"
+    ],
+    "pattern": "if you would pay life while your library has at least {n:Qty} cards in it , exile {m:Qty} cards from the top of your library instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "payLife",
+        "actor": "you"
+      },
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "zoneSize",
+          "zone": "library",
+          "of": {
+            "ref": "you"
+          }
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "topCards",
+              "player": {
+                "ref": "you"
+              },
+              "count": "$m"
+            },
+            "to": {
+              "zone": "exile"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "at least"
+    ],
+    "examples": [
+      {
+        "text": "If you would pay life while your library has at least ten cards in it, exile two cards from the top of your library instead."
+      },
+      {
+        "text": "If you would pay life while your library has at least that many cards in it, exile three cards from the top of your library instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would pay life while your library has at least ten cards in it, mill two cards instead.",
+      "If an opponent would pay life while your library has at least ten cards in it, exile two cards from the top of your library instead.",
+      "If you would lose life while your library has at least ten cards in it, exile two cards from the top of your library instead."
+    ]
+  }
+]

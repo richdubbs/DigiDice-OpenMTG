@@ -1,0 +1,2749 @@
+[
+ {
+  "card": "Fumigate",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.destroy, eff.gainlife.foreach): the count is the creatures the destroy actually destroyed, as each last existed (resultCount with which {types: Creature}): an indestructible or regenerated creature is not destroyed (CR 701.8a, 702.12b, 701.19a), a token destroyed is (CR 111.7, 608.2h); 1 life each (CR 119.1) Wave-2 merge: std-tdm's Qty reading of \"for each <permanent> destroyed this way\" outranks C7's (fewer unspecific holes), {q:'resultCount', step} without `which`: the same count, since the destroy step destroys only objects of that description (CR 608.2c, 608.2h, 701.8a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Destroy all creatures. You gain 1 life for each creature destroyed this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          }
+         },
+         "as": "destroy"
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": {
+          "q": "resultCount",
+          "step": "destroy"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Death Begets Life",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.destroy, eff.draw.foreach.you): the destroy moves every creature and enchantment that is destroyed; \"for each permanent destroyed this way\" is every object it reports (which {}), one card drawn each (CR 701.8a, 121.1, 608.2c) Wave-2 merge: std-tdm's Qty reading of \"for each <permanent> destroyed this way\" outranks C7's (fewer unspecific holes), {q:'resultCount', step} without `which`: the same count, since the destroy step destroys only objects of that description (CR 608.2c, 608.2h, 701.8a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Destroy all creatures and enchantments. Draw a card for each permanent destroyed this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature",
+            "Enchantment"
+           ]
+          }
+         },
+         "as": "destroy"
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "destroy"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Paraselene",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.destroy, eff.gainlife.foreach): one destroy of all enchantments; 1 life for each enchantment it actually destroyed (CR 701.8a, 608.2c, 608.2h) Wave-2 merge: std-tdm's Qty reading of \"for each <permanent> destroyed this way\" outranks C7's (fewer unspecific holes), {q:'resultCount', step} without `which`: the same count, since the destroy step destroys only objects of that description (CR 608.2c, 608.2h, 701.8a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Destroy all enchantments. You gain 1 life for each enchantment destroyed this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Enchantment"
+           ]
+          }
+         },
+         "as": "destroy"
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": {
+          "q": "resultCount",
+          "step": "destroy"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Decree of Pain",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.destroy, rid.noregen, eff.draw.foreach.you, kw.line, trg.when, eff.cont.pump.each): destroy all creatures with no regeneration (CR 701.19c), then a card for each creature destroyed this way (CR 701.8a, 121.1, 608.2c) Wave-2 merge: std-tdm's Qty reading of \"for each <permanent> destroyed this way\" outranks C7's (fewer unspecific holes), {q:'resultCount', step} without `which`: the same count, since the destroy step destroys only objects of that description (CR 608.2c, 608.2h, 701.8a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Destroy all creatures. They can't be regenerated. Draw a card for each creature destroyed this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          }
+         },
+         "regeneration": "cant",
+         "as": "destroy"
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "destroy"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "cycling",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ]
+      },
+      "text": "Cycling {3}{B}{B}"
+     },
+     {
+      "kind": "triggered",
+      "text": "When you cycle ~, all creatures get -2/-2 until end of turn.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "action",
+         "verb": "cycle",
+         "actor": "you",
+         "object": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": -2,
+             "toughness": -2
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Overwhelming Forces",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.destroy, eff.draw.foreach.you): the creatures target opponent controls are destroyed; a card is drawn for each one destroyed (CR 701.8a, 121.1, 608.2c, 608.2h) Wave-2 merge: std-tdm's Qty reading of \"for each <permanent> destroyed this way\" outranks C7's (fewer unspecific holes), {q:'resultCount', step} without `which`: the same count, since the destroy step destroys only objects of that description (CR 608.2c, 608.2h, 701.8a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Destroy all creatures target opponent controls. Draw a card for each creature destroyed this way.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target opponent",
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "controller": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         },
+         "as": "destroy"
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "destroy"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ori, Plate Stacker",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (trg.enters, eff.destroy, eff.gainlife.foreach): the artifacts and enchantments your opponents control are destroyed; 1 life for each permanent destroyed this way (CR 701.8a, 608.2c) Wave-2 merge: std-tdm's Qty reading of \"for each <permanent> destroyed this way\" outranks C7's (fewer unspecific holes), {q:'resultCount', step} without `which`: the same count, since the destroy step destroys only objects of that description (CR 608.2c, 608.2h, 701.8a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, destroy all artifacts and enchantments your opponents control. You gain 1 life for each permanent destroyed this way.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Artifact",
+            "Enchantment"
+           ],
+           "controller": "opponent"
+          }
+         },
+         "as": "destroy"
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": {
+          "q": "resultCount",
+          "step": "destroy"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bane of Progress",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (trg.enters, eff.destroy, eff.t28.counters.put.forEach): destroy all artifacts and enchantments, then one +1/+1 counter on the creature for each permanent destroyed this way (CR 701.8a, 122.1, 608.2c) Wave-2 merge: std-tdm's Qty reading of \"for each <permanent> destroyed this way\" outranks C7's (fewer unspecific holes), {q:'resultCount', step} without `which`: the same count, since the destroy step destroys only objects of that description (CR 608.2c, 608.2h, 701.8a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, destroy all artifacts and enchantments. Put a +1/+1 counter on ~ for each permanent destroyed this way.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Artifact",
+            "Enchantment"
+           ]
+          }
+         },
+         "as": "destroy"
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": {
+          "q": "resultCount",
+          "step": "destroy"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Whiptongue Hydra",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (kw.line, trg.enters, eff.destroy, eff.t28.counters.put.forEach): destroy all creatures with flying, then one +1/+1 counter for each creature destroyed this way, read as each was on the battlefield (CR 701.8a, 122.1, 608.2h) Wave-2 merge: std-tdm's Qty reading of \"for each <permanent> destroyed this way\" outranks C7's (fewer unspecific holes), {q:'resultCount', step} without `which`: the same count, since the destroy step destroys only objects of that description (CR 608.2c, 608.2h, 701.8a).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "reach",
+      "text": "Reach"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, destroy all creatures with flying. Put a +1/+1 counter on ~ for each creature destroyed this way.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "keyword": "flying"
+          }
+         },
+         "as": "destroy"
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": {
+          "q": "resultCount",
+          "step": "destroy"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Noxious Gearhulk",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (kw.line, trg.enters, ch.may, eff.destroy, cond.if, eff.gainlife.equal): an optional destroy of another target creature; \"if a creature is destroyed this way\" (present tense, the same condition as E17's \"was\") reads what the destroy reported, false when the option is declined (CR 608.2c, 118.12); the life is the target's toughness as it last existed (CR 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "menace",
+      "text": "Menace"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, you may destroy another target creature. If a creature is destroyed this way, you gain life equal to its toughness.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "another target creature",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "other": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "destroy",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "as": "did"
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did",
+          "which": {
+           "types": [
+            "Creature"
+           ]
+          }
+         },
+         "then": [
+          {
+           "op": "gainLife",
+           "who": {
+            "ref": "you"
+           },
+           "amount": {
+            "q": "stat",
+            "stat": "toughness",
+            "of": {
+             "ref": "target",
+             "id": "t0"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Overwrite the Multiverse",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.exile, eff.mx6.empower.jace.whereX): exile all creatures; X is the number of creatures the move put into exile (a commander put into the command zone instead is not counted, CR 903.9a, 608.2c), then empower Jace with that number (the existing empower action, FAST5 MX6)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Exile all creatures. Empower Jace X, where X is the number of creatures exiled this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ]
+          }
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "move"
+        },
+        {
+         "op": "action",
+         "action": "empower",
+         "who": {
+          "ref": "you"
+         },
+         "n": {
+          "q": "resultCount",
+          "step": "move",
+          "which": {
+           "types": [
+            "Creature"
+           ]
+          }
+         },
+         "arg": "Jace"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Release to Memory",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.t6.exile.graveyard.player, eff.t67.token.forEach.lead): exile target opponent's graveyard (CR 701.13a); for each creature card that ended in exile, one 1/1 Spirit token (CR 111.1, 608.2c); \"For each X, create\" is the same creation as \"create ... for each X\" (family token-for-each-lead) Wave-2 merge: std-lci's reading of \"<cards> exiled this way\" outranks C7's: the cards the exile's binding holds, counted in exile with the description (CR 608.2c, 400.7: the effect finds the cards it moved to a public zone), the same cards C7's result count reads.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Exile target opponent's graveyard. For each creature card exiled this way, create a 1/1 colorless Spirit creature token.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target opponent",
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "zone": "graveyard",
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "them"
+        },
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "zone": "exile",
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            },
+            "isCard": true
+           }
+          }
+         },
+         "token": {
+          "colors": [],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Spirit"
+          ],
+          "power": 1,
+          "toughness": 1
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Canoptek Scarab Swarm",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (kw.line, trg.enters, eff.t6.exile.graveyard.player, eff.t67.token.forEach.lead): exile target player's graveyard; one 1/1 flying Insect artifact creature token for each artifact or land card exiled this way (types list is any of, CR 205.2a, 608.2c) Wave-2 merge: std-lci's reading of \"<cards> exiled this way\" outranks C7's: the cards the exile's binding holds, counted in exile with the description (CR 608.2c, 400.7: the effect finds the cards it moved to a public zone), the same cards C7's result count reads.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, exile target player's graveyard. For each artifact or land card exiled this way, create a 1/1 colorless Insect artifact creature token with flying.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target player",
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "zone": "graveyard",
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "them"
+        },
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Artifact",
+             "Land"
+            ],
+            "zone": "exile",
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            },
+            "isCard": true
+           }
+          }
+         },
+         "token": {
+          "colors": [],
+          "types": [
+           "Artifact",
+           "Creature"
+          ],
+          "subtypes": [
+           "Insect"
+          ],
+          "power": 1,
+          "toughness": 1,
+          "keywords": [
+           "flying"
+          ]
+         }
+        }
+       ]
+      },
+      "label": "Feeder Mandibles"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Malanthrope",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (kw.line, trg.enters, eff.t6.exile.graveyard.player, eff.t28.counters.put.forEach): exile target player's graveyard; one +1/+1 counter for each creature card exiled this way (CR 701.13a, 122.1, 608.2c) Wave-2 merge: std-lci's reading of \"<cards> exiled this way\" outranks C7's: the cards the exile's binding holds, counted in exile with the description (CR 608.2c, 400.7: the effect finds the cards it moved to a public zone), the same cards C7's result count reads.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, exile target player's graveyard. Put a +1/+1 counter on ~ for each creature card exiled this way.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target player",
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "zone": "graveyard",
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "them"
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "zone": "exile",
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            },
+            "isCard": true
+           }
+          }
+         }
+        }
+       ]
+      },
+      "label": "Scavenge the Dead"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Necromancer's Covenant",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (trg.enters, eff.exile, eff.t17.token.forEach, sta.grant.each): exile all creature cards from target player's graveyard, then a 2/2 Zombie for each card exiled this way (CR 701.13a, 111.1, 608.2c); the lifelink grant is unchanged Wave-2 merge: std-lci's reading of \"<cards> exiled this way\" outranks C7's: the cards the exile's binding holds, counted in exile with the description (CR 608.2c, 400.7: the effect finds the cards it moved to a public zone), the same cards C7's result count reads.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, exile all creature cards from target player's graveyard, then create a 2/2 black Zombie creature token for each card exiled this way.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target player",
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "zone": "graveyard",
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "isCard": true
+          }
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "them"
+        },
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "zone": "exile",
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            },
+            "isCard": true
+           }
+          }
+         },
+         "token": {
+          "colors": [
+           "B"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Zombie"
+          ],
+          "power": 2,
+          "toughness": 2
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "Zombies you control have lifelink.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Zombie"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "lifelink",
+            "text": "lifelink"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tymaret, Chosen from Death",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (sta.cda.toughness, eff.exile, eff.gainlife.foreach): exile up to two target cards from graveyards; 1 life for each creature card that ended in exile (CR 701.13a, 608.2c, 608.2h) Wave-2 merge: std-lci's reading of \"<cards> exiled this way\" outranks C7's: the cards the exile's binding holds, counted in exile with the description (CR 608.2c, 400.7: the effect finds the cards it moved to a public zone), the same cards C7's result count reads.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~'s toughness is equal to your devotion to black.",
+      "effects": [
+       {
+        "s": "continuous",
+        "cda": true,
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7a",
+          "toughness": {
+           "q": "devotion",
+           "to": [
+            "B"
+           ],
+           "of": {
+            "ref": "you"
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{1}{B}: Exile up to two target cards from graveyards. You gain 1 life for each creature card exiled this way.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 2,
+         "text": "up to two target cards from graveyards",
+         "filter": {
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "them"
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "zone": "exile",
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            },
+            "isCard": true
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Titania's Command",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.t6.exile.graveyard.player, eff.gainlife.foreach, eff.t30.search.upTo.bf.tapped, eff.token.you, eff.counters.put): mode one: exile target player's graveyard, 1 life for each card exiled this way (CR 701.13a, 608.2c, 700.2) Wave-2 merge: std-lci's reading of \"<cards> exiled this way\" outranks C7's: the cards the exile's binding holds, counted in exile with the description (CR 608.2c, 400.7: the effect finds the cards it moved to a public zone), the same cards C7's result count reads.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Choose two --\n• Exile target player's graveyard. You gain 1 life for each card exiled this way.\n• Search your library for up to two land cards, put them onto the battlefield tapped, then shuffle.\n• Create two 2/2 green Bear creature tokens.\n• Put two +1/+1 counters on each creature you control.",
+      "effect": {
+       "targets": [],
+       "steps": [],
+       "modes": {
+        "min": 2,
+        "max": 2,
+        "options": [
+         {
+          "text": "Exile target player's graveyard. You gain 1 life for each card exiled this way.",
+          "program": {
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "player",
+             "min": 1,
+             "max": 1,
+             "text": "target player",
+             "players": {
+              "who": "any"
+             }
+            }
+           ],
+           "steps": [
+            {
+             "op": "move",
+             "what": {
+              "ref": "each",
+              "filter": {
+               "zone": "graveyard",
+               "owner": {
+                "ref": "target",
+                "id": "t0"
+               }
+              }
+             },
+             "to": {
+              "zone": "exile"
+             },
+             "as": "them"
+            },
+            {
+             "op": "gainLife",
+             "who": {
+              "ref": "you"
+             },
+             "amount": {
+              "q": "count",
+              "of": {
+               "ref": "each",
+               "filter": {
+                "zone": "exile",
+                "is": {
+                 "ref": "bound",
+                 "name": "them"
+                },
+                "isCard": true
+               }
+              }
+             }
+            }
+           ]
+          }
+         },
+         {
+          "text": "Search your library for up to two land cards, put them onto the battlefield tapped, then shuffle.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "search",
+             "who": {
+              "ref": "you"
+             },
+             "zone": "library",
+             "filter": {
+              "types": [
+               "Land"
+              ]
+             },
+             "min": 0,
+             "max": 2,
+             "as": "search"
+            },
+            {
+             "op": "move",
+             "what": {
+              "ref": "bound",
+              "name": "search"
+             },
+             "to": {
+              "zone": "battlefield",
+              "controller": {
+               "ref": "you"
+              },
+              "tapped": true
+             }
+            },
+            {
+             "op": "shuffle",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ]
+          }
+         },
+         {
+          "text": "Create two 2/2 green Bear creature tokens.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "createToken",
+             "who": {
+              "ref": "you"
+             },
+             "count": 2,
+             "token": {
+              "colors": [
+               "G"
+              ],
+              "types": [
+               "Creature"
+              ],
+              "subtypes": [
+               "Bear"
+              ],
+              "power": 2,
+              "toughness": 2
+             }
+            }
+           ]
+          }
+         },
+         {
+          "text": "Put two +1/+1 counters on each creature you control.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "putCounters",
+             "on": {
+              "ref": "each",
+              "filter": {
+               "types": [
+                "Creature"
+               ],
+               "controller": "you"
+              }
+             },
+             "kind": "+1/+1",
+             "count": 2
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ignis Scientia",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (trg.enters, eff.look.top, eff.t43.dig.put.battlefieldTapped, eff.t43.dig.rest.bottomRandom, eff.exile, cond.if, eff.token.you): exile target card from a graveyard; \"if a creature card was exiled this way\" is did with which {Creature card} and to exile (CR 608.2c, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, look at the top six cards of your library. You may put a land card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "look",
+         "who": {
+          "ref": "you"
+         },
+         "at": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 6
+         },
+         "as": "them"
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Land"
+             ]
+            }
+           ],
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "zone": "library"
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "chosen"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          },
+          "tapped": true
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "not": {
+            "is": {
+             "ref": "bound",
+             "name": "chosen"
+            }
+           },
+           "zone": "library"
+          }
+         },
+         "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "{1}{G}{U}, {T}: Exile target card from a graveyard. If a creature card was exiled this way, create a Food token.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "G"
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target card from a graveyard",
+         "filter": {
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did",
+          "which": {
+           "types": [
+            "Creature"
+           ],
+           "isCard": true
+          },
+          "to": "exile"
+         },
+         "then": [
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "predefined": "Food"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "label": "I've Come Up with a New Recipe!"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Raven Eagle",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (kw.line, trg.when, eff.exile, cond.if, eff.token.you, eff.loselife, eff.gainlife): exile up to one target card from a graveyard; \"if a creature card is exiled this way\" (present tense) is the same condition: false when no target was chosen or it did not end in exile (CR 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ enters or attacks, exile up to one target card from a graveyard. If a creature card is exiled this way, create a Clue token.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target card from a graveyard",
+         "filter": {
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did",
+          "which": {
+           "types": [
+            "Creature"
+           ],
+           "isCard": true
+          },
+          "to": "exile"
+         },
+         "then": [
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "predefined": "Clue"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you draw your second card each turn, each opponent loses 1 life and you gain 1 life.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "draw",
+         "player": "you",
+         "nth": 2
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         },
+         "amount": 1
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mastermind Plum",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (trg.when, eff.exile, cond.if, eff.token.you, eff.draw, eff.loselife): exile up to one target card from a graveyard; a Treasure if an artifact card was exiled this way (CR 608.2c, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, exile up to one target card from a graveyard. If an artifact card was exiled this way, create a Treasure token.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target card from a graveyard",
+         "filter": {
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did",
+          "which": {
+           "types": [
+            "Artifact"
+           ],
+           "isCard": true
+          },
+          "to": "exile"
+         },
+         "then": [
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "predefined": "Treasure"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you cast a spell, if mana from a Treasure was spent to cast it, you draw a card and you lose 1 life.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "q": "spellManaSpent",
+        "of": {
+         "ref": "event",
+         "role": "spell"
+        },
+        "from": {
+         "subtypes": [
+          "Treasure"
+         ]
+        }
+       },
+       "op": ">=",
+       "right": 1
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Deathgorge Scavenger",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (trg.when, ch.may, eff.exile, cond.if, eff.gainlife, eff.pump): an optional exile of target card from a graveyard, then two conditions on what it exiled: a creature card (2 life) and a noncreature card (+1/+1 until end of turn); a declined option exiled nothing, both false (CR 608.2c, 118.12)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ enters or attacks, you may exile target card from a graveyard. If a creature card is exiled this way, you gain 2 life. If a noncreature card is exiled this way, ~ gets +1/+1 until end of turn.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target card from a graveyard",
+         "filter": {
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "to": {
+            "zone": "exile"
+           },
+           "as": "did"
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did",
+          "which": {
+           "types": [
+            "Creature"
+           ],
+           "isCard": true
+          },
+          "to": "exile"
+         },
+         "then": [
+          {
+           "op": "gainLife",
+           "who": {
+            "ref": "you"
+           },
+           "amount": 2
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did",
+          "which": {
+           "notTypes": [
+            "Creature"
+           ],
+           "isCard": true
+          },
+          "to": "exile"
+         },
+         "then": [
+          {
+           "op": "effect",
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "layer": "7c",
+               "power": 1,
+               "toughness": 1
+              }
+             ]
+            }
+           ],
+           "duration": {
+            "d": "endOfTurn"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ardyn, the Usurper",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (sta.grant.each, trg.at, eff.exile, cond.if, eff.m6.copy.token.ptColorSubtype): exile up to one target creature card from a graveyard; \"if you exiled a card this way\" is did with which {card} and to exile (the active wording of the same condition); the token copies that card (CR 707.2, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Demons you control have menace, lifelink, and haste.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Demon"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "menace",
+            "text": "menace"
+           },
+           {
+            "kind": "keyword",
+            "keyword": "lifelink",
+            "text": "lifelink"
+           },
+           {
+            "kind": "keyword",
+            "keyword": "haste",
+            "text": "haste"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "At the beginning of combat on your turn, exile up to one target creature card from a graveyard. If you exiled a card this way, create a token that's a copy of that card, except it's a 5/5 black Demon.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target creature card from a graveyard",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "moved"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "moved",
+          "which": {
+           "isCard": true
+          },
+          "to": "exile"
+         },
+         "then": [
+          {
+           "op": "copy",
+           "what": {
+            "ref": "bound",
+            "name": "moved"
+           },
+           "result": "token",
+           "who": {
+            "ref": "you"
+           },
+           "except": [
+            {
+             "layer": "7b",
+             "power": 5,
+             "toughness": 5
+            },
+            {
+             "layer": 5,
+             "colors": {
+              "set": [
+               "B"
+              ]
+             }
+            },
+            {
+             "layer": 4,
+             "subtypes": {
+              "set": [
+               "Demon"
+              ]
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "label": "Starscourge"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bonehoard Dracosaur",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (kw.line, trg.at, eff.exile, eff.t70.permit.play.thisTurn.group, cond.if, eff.token.you): exile the top two cards, a play permission for them this turn, then \"if you exiled a land card this way\" and \"a nonland card\": the exile is the one earlier instruction of that kind (the permission is not), each condition reads what it exiled, both can hold (CR 608.2c, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "first strike",
+      "text": "first strike"
+     },
+     {
+      "kind": "triggered",
+      "text": "At the beginning of your upkeep, exile the top two cards of your library. You may play them this turn. If you exiled a land card this way, create a 3/1 red Dinosaur creature token. If you exiled a nonland card this way, create a Treasure token.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 2
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "impulse"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "play",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "impulse"
+            }
+           }
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "impulse",
+          "which": {
+           "types": [
+            "Land"
+           ],
+           "isCard": true
+          },
+          "to": "exile"
+         },
+         "then": [
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "colors": [
+             "R"
+            ],
+            "types": [
+             "Creature"
+            ],
+            "subtypes": [
+             "Dinosaur"
+            ],
+            "power": 3,
+            "toughness": 1
+           }
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "impulse",
+          "which": {
+           "notTypes": [
+            "Land"
+           ],
+           "isCard": true
+          },
+          "to": "exile"
+         },
+         "then": [
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "predefined": "Treasure"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Reckless Handling",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (se.library.reveal, eff.put.hand, eff.shuffle, eff.discard.random.you, cond.if, eff.damage): search, put into hand, shuffle, then discard a card at random; \"if an artifact card was discarded this way\" reads what the discard reported as it was in the hand (CR 701.9a, 608.2c, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Search your library for an artifact card, reveal it, put it into your hand, shuffle, then discard a card at random. If an artifact card was discarded this way, ~ deals 2 damage to each opponent.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library",
+         "filter": {
+          "types": [
+           "Artifact"
+          ]
+         },
+         "max": 1,
+         "reveal": true,
+         "as": "search"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "mode": "random",
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did",
+          "which": {
+           "types": [
+            "Artifact"
+           ],
+           "isCard": true
+          }
+         },
+         "then": [
+          {
+           "op": "damage",
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "each",
+            "who": "opponent"
+           },
+           "amount": 2
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gerrard's Verdict",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.discard, eff.t8.gainlife.foreach3): target player discards two cards; 3 life for each land card among them, as each was in the hand (eff.t8.gainlife.foreach3; CR 701.9a, 119.1, 608.2c, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Target player discards two cards. You gain 3 life for each land card discarded this way.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target player",
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "discard",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "count": 2,
+         "as": "discard"
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": {
+          "q": "math",
+          "op": "*",
+          "args": [
+           3,
+           {
+            "q": "resultCount",
+            "step": "discard",
+            "which": {
+             "types": [
+              "Land"
+             ],
+             "isCard": true
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Syphon Mind",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.discard, eff.c7.draw.foreach.player): each other player discards a card; you draw a card for each card discarded this way (eff.c7.draw.foreach.player; CR 701.9a, 121.1, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Each other player discards a card. You draw a card for each card discarded this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "discard",
+         "who": {
+          "ref": "each",
+          "who": "otherPlayer"
+         },
+         "count": 1,
+         "as": "discard"
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "discard",
+          "which": {
+           "isCard": true
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Liliana's Indignation",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.mill.you, eff.c7.loselife.2.foreach): mill X cards; target player loses 2 life for each creature card the mill put into your graveyard (a card exiled instead by a replacement effect is not counted; eff.c7.loselife.2.foreach; CR 701.17a, 614.1a, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Mill X cards. Target player loses 2 life for each creature card put into your graveyard this way.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "text": "target player",
+         "players": {
+          "who": "any"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "mill",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "X"
+         },
+         "as": "mill"
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": {
+          "q": "math",
+          "op": "*",
+          "args": [
+           2,
+           {
+            "q": "resultCount",
+            "step": "mill",
+            "which": {
+             "types": [
+              "Creature"
+             ],
+             "owner": "you",
+             "isCard": true
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Renounce",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.c7.sacrifice.anyNumber, eff.t8.gainlife.foreach2): choose any number of the permanents you control, sacrifice exactly those (eff.c7.sacrifice.anyNumber; CR 701.21a, 608.2d), then 2 life for each permanent sacrificed this way (eff.t8.gainlife.foreach2; CR 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Sacrifice any number of permanents. You gain 2 life for each permanent sacrificed this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "controller": "you",
+           "anyOf": [
+            {}
+           ]
+          }
+         },
+         "min": 0,
+         "max": "any",
+         "as": "toSacrifice"
+        },
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+         },
+         "as": "sacrifice"
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": {
+          "q": "math",
+          "op": "*",
+          "args": [
+           2,
+           {
+            "q": "resultCount",
+            "step": "sacrifice",
+            "which": {}
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Reprocess",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.c7.sacrifice.anyNumber, eff.draw.foreach.you): choose any number of the artifacts, creatures and lands you control, sacrifice them (eff.c7.sacrifice.anyNumber; CR 701.21a, 608.2d), then a card for each permanent sacrificed this way (CR 121.1, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Sacrifice any number of artifacts, creatures, and/or lands. Draw a card for each permanent sacrificed this way.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "controller": "you",
+           "anyOf": [
+            {
+             "types": [
+              "Artifact",
+              "Creature",
+              "Land"
+             ]
+            }
+           ]
+          }
+         },
+         "min": 0,
+         "max": "any",
+         "as": "toSacrifice"
+        },
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+         },
+         "as": "sacrifice"
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "sacrifice",
+          "which": {}
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Voracious Fell Beast",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (kw.line, trg.enters, eff.t6.sacrifice.theirChoice, eff.t17.token.forEach): each opponent sacrifices a creature of their choice; a Food token for each creature sacrificed this way (CR 701.21a, 111.1, 608.2c, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, each opponent sacrifices a creature of their choice. Create a Food token for each creature sacrificed this way.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "sacrificeChoice",
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         },
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "count": 1,
+         "as": "sacrificechoice"
+        },
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "sacrificechoice",
+          "which": {
+           "types": [
+            "Creature"
+           ]
+          }
+         },
+         "token": {
+          "predefined": "Food"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rites of Refusal",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.c7.discard.anyNumber, eff.t14.unless.pays.forEach, eff.counter): discard any number of cards (eff.c7.discard.anyNumber; CR 701.9a, 608.2d); counter target spell unless its controller pays {3} once for each card discarded this way (CR 118.12a, 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Discard any number of cards. Counter target spell unless its controller pays {3} for each card discarded this way.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "spell",
+         "min": 1,
+         "max": 1,
+         "text": "target spell"
+        }
+       ],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "zone": "hand",
+           "owner": "you"
+          }
+         },
+         "min": 0,
+         "max": "any",
+         "as": "toDiscard"
+        },
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "count",
+          "of": {
+           "ref": "bound",
+           "name": "toDiscard"
+          }
+         },
+         "filter": {
+          "is": {
+           "ref": "bound",
+           "name": "toDiscard"
+          }
+         },
+         "as": "discard"
+        },
+        {
+         "op": "pay",
+         "who": {
+          "ref": "controllerOf",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          }
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 3
+           }
+          ]
+         },
+         "times": {
+          "q": "resultCount",
+          "step": "discard",
+          "which": {
+           "isCard": true
+          }
+         },
+         "else": [
+          {
+           "op": "counter",
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Paradoxical Outcome",
+  "expect": "full",
+  "verified": "cloud C7 review, by hand against the Oracle text and the rules cited (eff.return.hand, eff.draw.foreach.you): return any number of target nonland, nontoken permanents you control to their owners' hands; \"for each card returned to your hand this way\" counts only the cards you own (CR 400.3, 608.2c, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Return any number of target nonland, nontoken permanents you control to their owners' hands. Draw a card for each card returned to your hand this way.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": "any",
+         "text": "any number of target nonland, nontoken permanents you control",
+         "filter": {
+          "notTypes": [
+           "Land"
+          ],
+          "token": false,
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "hand"
+         },
+         "as": "move"
+        },
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "resultCount",
+          "step": "move",
+          "which": {
+           "owner": "you",
+           "isCard": true
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

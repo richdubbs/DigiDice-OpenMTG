@@ -1,0 +1,227 @@
+[
+  {
+    "id": "eff.stdrw6.eachOpponentMay.discardOrSacrifice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 118.12",
+      "CR 608.2d",
+      "CR 701.9a",
+      "CR 701.21a"
+    ],
+    "pattern": "each opponent may discard a card or sacrifice ( a | an ) {f:Filter} [ of their choice ]",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "discard",
+                "count": 1
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "pay",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "cost": {
+                "other": [
+                  {
+                    "kind": "sacrifice",
+                    "filter": "$f",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent may discard a card or sacrifice a creature. ~ deals 2 damage to each opponent who didn't."
+      },
+      {
+        "text": "At the beginning of your upkeep, each opponent may discard a card or sacrifice an artifact of their choice. ~ deals 1 damage to each opponent who didn't."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent may discard a card and sacrifice a creature. ~ deals 2 damage to each opponent who didn't.",
+      "When ~ enters, each opponent may discard two cards or sacrifice a creature. ~ deals 2 damage to each opponent who didn't.",
+      "When ~ enters, each opponent discards a card or sacrifices a creature. ~ deals 2 damage to each opponent who didn't."
+    ]
+  },
+  {
+    "id": "rid.stdrw6.eachOpponentWhoDidnt.damage",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 118.12",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to each opponent who ( didn't | doesn't )",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "over.ref": "each",
+          "over.who": "opponent",
+          "do.0.op": "pay",
+          "do.0.else.0.op": "pay",
+          "do.0.then": null,
+          "do.0.else.0.then": null,
+          "do.0.else.0.else": null
+        },
+        "do": [
+          {
+            "else": [
+              {
+                "else": {
+                  "@new": [
+                    {
+                      "op": "damage",
+                      "source": "$src",
+                      "to": {
+                        "ref": "bound",
+                        "name": "@previous.as"
+                      },
+                      "amount": "$n"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "forEach",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent may discard a card or sacrifice a creature. ~ deals 2 damage to each opponent who didn't."
+      },
+      {
+        "text": "{T}: Each opponent may discard a card or sacrifice a land. ~ deals 3 damage to each opponent who doesn't."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent may discard a card or sacrifice a creature. ~ deals 2 damage to each opponent who did.",
+      "When ~ enters, each opponent may discard a card or sacrifice a creature. ~ deals 2 damage to each opponent.",
+      "When ~ enters, draw a card. ~ deals 2 damage to each opponent who didn't."
+    ]
+  },
+  {
+    "id": "eff.stdrw6.eot.saddledIfMount.creatureIfVehicle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.171b",
+      "CR 301.7b",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "until end of turn , {o:Obj} becomes saddled if it's ( a | an ) {f:Filter} and becomes an artifact creature if it's ( a | an ) {g:Filter}",
+    "build": [
+      {
+        "op": "if",
+        "cond": {
+          "cond": "matches",
+          "object": "$o",
+          "filter": "$f"
+        },
+        "then": [
+          {
+            "op": "designateObject",
+            "what": "$o",
+            "designation": "saddled"
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "matches",
+          "object": "$o",
+          "filter": "$g"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 4,
+                    "types": {
+                      "add": [
+                        "Artifact",
+                        "Creature"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "until",
+      "if"
+    ],
+    "needs": [
+      "op:designateObject.saddled"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, choose up to one target Mount or Vehicle you control. Until end of turn, that permanent becomes saddled if it's a Mount and becomes an artifact creature if it's a Vehicle."
+      },
+      {
+        "text": "{1}, {T}: Choose target Mount or Vehicle. Until end of turn, that permanent becomes saddled if it's a Mount and becomes an artifact creature if it's a Vehicle."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, choose up to one target Mount or Vehicle you control. Until end of turn, that permanent becomes saddled if it's a Vehicle and becomes an artifact creature if it's a Mount.",
+      "Whenever ~ attacks, choose up to one target Mount or Vehicle you control. Until end of turn, that permanent becomes saddled if it's a Mount and becomes an artifact land if it's a Vehicle.",
+      "Whenever ~ attacks, choose up to one target Mount or Vehicle you control. That permanent becomes saddled if it's a Mount and becomes an artifact creature if it's a Vehicle."
+    ]
+  }
+]

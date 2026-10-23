@@ -1,0 +1,505 @@
+[
+  {
+    "id": "sta.p2cf1.rule.toughnessDamage.each",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 604.1",
+      "CR 613.11"
+    ],
+    "pattern": "each {f:Filter} assigns combat damage equal to its toughness rather than its power",
+    "build": {
+      "s": "rule",
+      "rule": "combatDamageUsesToughness",
+      "of": "$f"
+    },
+    "consumes": [
+      "each",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Each Wall you control assigns combat damage equal to its toughness rather than its power."
+      },
+      {
+        "text": "Each artifact creature assigns combat damage equal to its toughness rather than its power."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control assigns combat damage equal to its power rather than its toughness.",
+      "Each creature you control assigns combat damage equal to its toughness.",
+      "Each creature you control deals combat damage equal to its toughness rather than its power."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.p2cf1.rule.toughnessDamage.each.noDefender",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 604.1",
+      "CR 613.11",
+      "CR 702.3b"
+    ],
+    "pattern": "each {f:Filter} assigns combat damage equal to its toughness rather than its power and can attack as though it didn't have defender",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "combatDamageUsesToughness",
+          "of": "$f"
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "rather than",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Each Wall you control assigns combat damage equal to its toughness rather than its power and can attack as though it didn't have defender."
+      },
+      {
+        "text": "Each artifact creature you control assigns combat damage equal to its toughness rather than its power and can attack as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control with defender assigns combat damage equal to its toughness rather than its power and can block as though it didn't have defender.",
+      "Each creature you control with defender assigns combat damage equal to its toughness rather than its power and can attack as though it didn't have flying.",
+      "Each creature you control with defender assigns combat damage equal to its toughness rather than its power and can attack this turn as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "eff.p2cf1.toughnessDamage.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Obj} assigns combat damage equal to its toughness rather than its power this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "combatDamageUsesToughness",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "{1}{G}: Target creature you control assigns combat damage equal to its toughness rather than its power this turn."
+      },
+      {
+        "text": "When ~ enters, target creature assigns combat damage equal to its toughness rather than its power this turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control assigns combat damage equal to its toughness rather than its power.",
+      "Target creature you control assigns combat damage equal to its power rather than its toughness this turn.",
+      "Target creature you control deals combat damage equal to its toughness rather than its power this turn."
+    ]
+  },
+  {
+    "id": "eff.p2cf1.exile.selfAndObj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 701.13a",
+      "CR 608.2c"
+    ],
+    "pattern": "exile ~ and {o:Obj}",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "self"
+          },
+          "$o"
+        ]
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{W}, {T}: Exile ~ and target creature an opponent controls."
+      },
+      {
+        "text": "{1}{B}, {T}: Exile ~ and target attacking creature without flying."
+      }
+    ],
+    "counterExamples": [
+      "{2}{W}, {T}: Exile ~ or target creature an opponent controls.",
+      "{2}{W}, {T}: Destroy ~ and target creature an opponent controls.",
+      "{2}{W}, {T}: Exile ~ and target creature an opponent controls until ~ leaves the battlefield."
+    ]
+  },
+  {
+    "id": "rst.p2cf1.cast.self.declareBlockers",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 506.1",
+      "CR 509.1"
+    ],
+    "pattern": "cast ~ only during the declare blockers step",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "step": [
+              "declareBlockers"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during the declare blockers step."
+      },
+      {
+        "text": "Cast Example Subject only during the declare blockers step.\nTarget attacking creature gets +3/+2 until end of turn."
+      },
+      {
+        "text": "Cast Example Subject only during the declare blockers step.\nTarget blocking creature gets -3/-1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during the declare attackers step.\nTarget blocking creature gets -3/-1 until end of turn.",
+      "Cast Example Subject only during your declare blockers step.\nTarget blocking creature gets -3/-1 until end of turn."
+    ]
+  },
+  {
+    "id": "rst.p2cf1.cast.self.afterBlockers",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 506.1",
+      "CR 509.1",
+      "CR 510.1",
+      "CR 511.1"
+    ],
+    "pattern": "cast ~ only during combat after blockers are declared",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "step": [
+              "declareBlockers",
+              "combatDamage",
+              "endCombat"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during combat after blockers are declared."
+      },
+      {
+        "text": "Cast Example Subject only during combat after blockers are declared.\nTarget blocking creature gets -2/-3 until end of turn."
+      },
+      {
+        "text": "Cast Example Subject only during combat after blockers are declared.\nTarget blocking creature gets -1/-2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during combat before blockers are declared.\nTarget blocking creature gets -1/-2 until end of turn.",
+      "Cast Example Subject only during combat after attackers are declared.\nTarget blocking creature gets -1/-2 until end of turn."
+    ]
+  },
+  {
+    "id": "rst.p2cf1.cast.self.combatYourTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 506.1",
+      "CR 102.1"
+    ],
+    "pattern": "cast ~ only during combat on your turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "you",
+            "step": [
+              "beginCombat",
+              "declareAttackers",
+              "declareBlockers",
+              "combatDamage",
+              "endCombat"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during combat on your turn."
+      },
+      {
+        "text": "Cast Example Subject only during combat on your turn.\nTarget creature you control gets +3/+1 until end of turn."
+      },
+      {
+        "text": "Cast Example Subject only during combat on your turn.\nUntap target creature you control. It gets +1/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during combat on an opponent's turn.\nUntap target creature you control. It gets +1/+2 until end of turn.",
+      "Cast Example Subject only during your turn.\nUntap target creature you control. It gets +1/+2 until end of turn."
+    ]
+  },
+  {
+    "id": "rst.p2cf1.cast.self.combatOpponentTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 506.1",
+      "CR 102.1",
+      "CR 102.3"
+    ],
+    "pattern": "cast ~ only during combat on an opponent 's turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "opponent",
+            "step": [
+              "beginCombat",
+              "declareAttackers",
+              "declareBlockers",
+              "combatDamage",
+              "endCombat"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during combat on an opponent's turn."
+      },
+      {
+        "text": "Cast Example Subject only during combat on an opponent's turn.\nTarget creature gets +2/+3 until end of turn."
+      },
+      {
+        "text": "Cast Example Subject only during combat on an opponent's turn.\nTap target attacking creature. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during combat on your turn.\nTap target attacking creature. You gain 2 life.",
+      "Cast Example Subject only during an opponent's turn.\nTap target attacking creature. You gain 2 life."
+    ]
+  },
+  {
+    "id": "rst.p2cf1.cast.self.beforeBlockers",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 506.1",
+      "CR 508.1",
+      "CR 509.1"
+    ],
+    "pattern": "cast ~ only before combat or during combat before blockers are declared",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "step": [
+              "untap",
+              "upkeep",
+              "draw",
+              "main1",
+              "beginCombat",
+              "declareAttackers"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only before combat or during combat before blockers are declared."
+      },
+      {
+        "text": "Cast Example Subject only before combat or during combat before blockers are declared.\nTarget creature gets +2/+3 until end of turn."
+      },
+      {
+        "text": "Cast Example Subject only before combat or during combat before blockers are declared.\nTarget attacking creature gets +3/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only before combat or during combat after blockers are declared.\nTarget attacking creature gets +3/+2 until end of turn.",
+      "Cast Example Subject only after combat or during combat before blockers are declared.\nTarget attacking creature gets +3/+2 until end of turn."
+    ]
+  },
+  {
+    "id": "rst.p2cf1.all.must.block",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1c"
+    ],
+    "pattern": "all {f:Filter} block each combat if able",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "mustIfAble",
+      "action": "block"
+    },
+    "consumes": [
+      "all",
+      "each",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "All green creatures block each combat if able."
+      },
+      {
+        "text": "All Goblin creatures block each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "All green creatures block this combat if able.",
+      "All green creatures attack each combat if able.",
+      "All green creatures block each combat."
+    ]
+  }
+]

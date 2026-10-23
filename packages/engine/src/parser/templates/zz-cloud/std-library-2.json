@@ -1,0 +1,261 @@
+[
+  {
+    "id": "eff.stdlibrary2.return.another.yourHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 109.2",
+      "CR 400.3",
+      "CR 400.7"
+    ],
+    "pattern": "return another {f:Filter} to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "other": true,
+            "zone": "$f.zone"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Each player sacrifices a creature. If you sacrificed a creature this way, return another creature card from your graveyard to your hand."
+      },
+      {
+        "text": "{2}, {T}: Return another Goblin card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, return another Goblin card from your graveyard to the battlefield.",
+      "When ~ enters, return two other Goblin cards from your graveyard to your hand.",
+      "When ~ enters, return another target Goblin card from your graveyard to your hand."
+    ]
+  },
+  {
+    "id": "eff.stdlibrary2.eachPlayer.may.putAny.fromHand.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "each player may put any number of {f:CardsDesc} from their hand onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player may put any number of Goblin cards from their hand onto the battlefield."
+      },
+      {
+        "text": "{4}, {T}: Each player may put any number of land cards from their hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each player may put any number of Goblin cards from their graveyard onto the battlefield.",
+      "When ~ enters, each opponent may put any number of Goblin cards from their hand onto the battlefield.",
+      "When ~ enters, each player may put a Goblin card from their hand onto the battlefield.",
+      "When ~ enters, each player may put any number of Goblin cards from their hand onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.stdlibrary2.prevent.nextSourceOfChoice.you.whenPrevented.damageDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 615.1",
+      "CR 615.5",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 603.12",
+      "CR 608.2h"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to you {d:Dur} , prevent that damage . when damage is prevented this way , ~ deals that much damage to that source 's controller and you draw that many cards",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all",
+              "as": "prevented",
+              "then": [
+                {
+                  "op": "reflexive",
+                  "when": {
+                    "did": "prevented"
+                  },
+                  "targets": [],
+                  "do": [
+                    {
+                      "op": "damage",
+                      "source": {
+                        "ref": "self"
+                      },
+                      "to": {
+                        "ref": "controllerOf",
+                        "object": {
+                          "ref": "bound",
+                          "name": "damageSource"
+                        }
+                      },
+                      "amount": {
+                        "q": "preventedAmount"
+                      }
+                    },
+                    {
+                      "op": "draw",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "count": {
+                        "q": "preventedAmount"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "choice",
+      "this way",
+      "when",
+      "that much",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "{1}{R}{W}: The next time a source of your choice would deal damage to you this turn, prevent that damage. When damage is prevented this way, ~ deals that much damage to that source's controller and you draw that many cards."
+      },
+      {
+        "text": "{3}{W}, {T}: The next time a source of your choice would deal damage to you this turn, prevent that damage. When damage is prevented this way, ~ deals that much damage to that source's controller and you draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "The next time a source of your choice would deal damage to you this turn, prevent that damage. When damage is prevented this way, ~ deals that much damage to any target and you draw that many cards.",
+      "The next time a source of your choice would deal damage to you this turn, prevent that damage. When damage is prevented this way, ~ deals 2 damage to that source's controller and you draw that many cards.",
+      "The next time a source of your choice would deal damage to you this turn, prevent that damage. When damage is prevented this way, ~ deals that much damage to that source's controller and you discard that many cards."
+    ]
+  }
+]

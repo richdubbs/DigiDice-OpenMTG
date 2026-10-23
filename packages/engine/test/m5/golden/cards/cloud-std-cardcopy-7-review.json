@@ -1,0 +1,105 @@
+[
+ {
+  "card": "Baron Helmut Zemo",
+  "expect": "full",
+  "verified": "std-cardcopy-7 review, by hand against the Oracle text and the rules cited (rid.stdcardcopy7.mayCastUpToNCopies.free): whenever you cast a black spell from your hand, it connives (CR 701.50); boast (activate only if it attacked this turn and only once each turn, CR 702.142a): the cost exiles any number of black cards from your graveyard whose mana costs have together fifteen or more black mana symbols (a hybrid or Phyrexian black symbol counts, CR 107.4, 118.3); the effect creates a copy in exile of each card the cost exiled and you may cast up to three of them, chosen at once, without paying their mana costs (CR 707.12, 608.2d, 118.9); copies not cast cease to exist (CR 707.10a, 704.5e)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "action": "connive",
+         "op": "action",
+         "subject": {
+          "ref": "self"
+         },
+         "who": {
+          "object": {
+           "ref": "self"
+          },
+          "ref": "controllerOf"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "from": "hand",
+         "player": "you",
+         "spell": {
+          "colors": [
+           "B"
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "cost": {
+       "other": [
+        {
+         "count": "any",
+         "filter": {
+          "colors": [
+           "B"
+          ]
+         },
+         "kind": "exileFrom",
+         "zone": "graveyard",
+         "symbolTotal": {
+          "atLeast": 15,
+          "color": "B"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "copyIn": "exile",
+         "free": true,
+         "op": "cast",
+         "optional": true,
+         "select": {
+          "max": 3
+         },
+         "what": {
+          "ref": "costExiled"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "keyword": "boast",
+      "kind": "activated",
+      "limit": {
+       "max": 1,
+       "per": "turn"
+      },
+      "onlyIf": {
+       "cond": "happened",
+       "event": {
+        "attacker": {
+         "self": true
+        },
+        "ev": "attacks"
+       },
+       "scope": "turn"
+      }
+     }
+    ]
+   }
+  ]
+ },
+{"card":"Uldaros Theorix","expect":"full","verified":"std-cardcopy-11 review (evidence for rid.stdcardcopy7.mayCastTotalMVFromCopies.free), by hand against the Oracle text and the rules cited: flying; when it enters, if you cast it (CR 603.4, 601.2), exile up to one target nonland card of each card type from your graveyard (one target for each card type, the set given distinct types, CR 115.1, 205.2a), then a copy of each exiled card is created in exile and you may cast, in one choice, any number of those copies whose mana values total 6 or less without paying their mana costs (CR 707.12, 608.2d, 202.3, 118.9); a permanent spell cast this way becomes a token (CR 111.1, 707.12); copies not cast cease to exist (CR 707.10a, 704.5e)","faces":[{"abilities":[{"keyword":"flying","kind":"keyword"},{"effect":{"steps":[{"as":"b0","op":"move","to":{"zone":"exile"},"what":{"id":"t0","ref":"target"}},{"copyIn":"exile","free":true,"op":"cast","optional":true,"select":{"totalManaValue":6},"what":{"name":"b0","ref":"bound"},"who":{"ref":"you"}}],"targets":[{"filter":{"isCard":true,"notTypes":["Land"],"owner":"you","zone":"graveyard"},"id":"t0","kind":"object","max":1,"min":0,"perCardType":true}]},"interveningIf":{"by":"you","cond":"wasCast"},"kind":"triggered","trigger":{"on":[{"ev":"zoneChange","subject":{"self":true},"to":"battlefield"}]}}]}]}
+]

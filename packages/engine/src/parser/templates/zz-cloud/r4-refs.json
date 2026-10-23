@@ -1,0 +1,1599 @@
+[
+  {
+    "id": "eff.r4refs.sacrificeChoice.andLoseLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice and lose[s] {m:Qty} life",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$n"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent sacrifices an artifact of their choice and loses 2 life."
+      },
+      {
+        "text": "Target player sacrifices two creatures of their choice and loses 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices an artifact of your choice and loses 2 life.",
+      "Each opponent sacrifices an artifact of their choice and gains 2 life.",
+      "Each opponent sacrifices an artifact of their choice or loses 2 life."
+    ]
+  },
+  {
+    "id": "eff.r4refs.sacrificeChoice.otherThan",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 109.2"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice other than {o:Obj}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": {
+        "anyOf": [
+          "$f"
+        ],
+        "not": {
+          "is": "$o"
+        }
+      },
+      "count": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target player sacrifices a creature of their choice other than enchanted creature."
+      },
+      {
+        "text": "When ~ enters, each opponent sacrifices an artifact of their choice other than target artifact."
+      }
+    ],
+    "counterExamples": [
+      "Target player sacrifices a creature of your choice other than enchanted creature.",
+      "Target player sacrifices a creature of their choice other than enchanted creatures.",
+      "Target player destroys a creature of their choice other than enchanted creature."
+    ]
+  },
+  {
+    "id": "eff.r4refs.exile.theyControl.andGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 109.4",
+      "CR 404.1"
+    ],
+    "pattern": "{p:Player} exile[s] ( a | an ) {f:Filter} they control and their graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiledChosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledChosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "$p"
+          }
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent exiles an artifact they control and their graveyard."
+      },
+      {
+        "text": "When ~ enters, target player exiles a creature they control and their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles an artifact you control and their graveyard.",
+      "Target opponent exiles an artifact they control and your graveyard.",
+      "Target opponent sacrifices an artifact they control and their graveyard."
+    ]
+  },
+  {
+    "id": "eff.r4refs.exile.theyControl.thenTheyExileFromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} exile[s] ( a | an ) {f:Filter} they control , then they exile ( a | an ) {g:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiledChosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledChosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": "$g"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiledCard"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledCard"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent exiles a creature they control, then they exile an instant card from their graveyard."
+      },
+      {
+        "text": "Target player exiles a nontoken artifact they control, then they exile a creature card from their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles a creature they control, then you exile an instant card from their graveyard.",
+      "Target opponent exiles a creature they control, then they exile an instant card from your graveyard.",
+      "Target opponent exiles a creature they control, then they sacrifice an instant card from their graveyard."
+    ]
+  },
+  {
+    "id": "eff.r4refs.becomes.ptSubtypeCreature.with.inAddition.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} in addition to its other types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, ~ becomes a 2/4 Wall creature with defender in addition to its other types until end of turn."
+      },
+      {
+        "text": "{2}: ~ becomes a 4/4 Horror creature with menace and trample in addition to its other types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ becomes a 4/4 Horror creature with menace in addition to its other colors until end of turn.",
+      "{2}: ~ becomes a 4/4 Horror creature with menace until end of turn.",
+      "{2}: ~ becomes a 4/4 Horror artifact with menace in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.r4refs.counters.put.andItBecomes.colorSubtypes.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 608.2c"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on {o:Obj} and it becomes ( a | an ) {c:Color} {st:Subtypes} in addition to its other colors and types",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": "$n"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "permanent"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 4,
+                "subtypes": {
+                  "add": "$st"
+                }
+              },
+              {
+                "layer": 5,
+                "colors": {
+                  "add": [
+                    "$c"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{4}: Put two +1/+1 counters on ~ and it becomes a red Dragon in addition to its other colors and types. Activate only once."
+      },
+      {
+        "text": "When ~ enters, put a +1/+1 counter on target creature you control and it becomes a white Angel in addition to its other colors and types."
+      }
+    ],
+    "counterExamples": [
+      "{4}: Put two +1/+1 counters on ~ and it becomes a red Dragon in addition to its other types.",
+      "{4}: Put two +1/+1 counters on ~ and it becomes a red Dragon.",
+      "{4}: Put two +1/+1 counters on ~ and target creature becomes a red Dragon in addition to its other colors and types."
+    ]
+  },
+  {
+    "id": "eff.r4refs.if.playerHasExactlyLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.1",
+      "CR 608.2c",
+      "CR 115.1"
+    ],
+    "pattern": "if {p:Player} has exactly {n:Qty} life , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "life",
+          "of": "$p"
+        },
+        "op": "==",
+        "right": "$n"
+      },
+      "then": "$e"
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "If target player has exactly 7 life, you draw two cards."
+      },
+      {
+        "text": "If target opponent has exactly 3 life, that player loses the game."
+      }
+    ],
+    "counterExamples": [
+      "If target player has 7 or more life, ~ deals 7 damage to that player.",
+      "If target player has exactly 7 poison counters, ~ deals 7 damage to that player.",
+      "If target player had exactly 7 life, ~ deals 7 damage to that player."
+    ]
+  },
+  {
+    "id": "eff.r4refs.damage.equalToItsPower.toItself",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} deal[s] damage equal to its power to itself",
+    "build": {
+      "op": "damage",
+      "source": "$o",
+      "to": "$o",
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": "$o"
+      }
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature an opponent controls deals damage equal to its power to itself."
+      },
+      {
+        "text": "{2}, {T}: Target tapped creature deals damage equal to its power to itself."
+      }
+    ],
+    "counterExamples": [
+      "Target creature deals damage equal to its toughness to itself.",
+      "Target creature deals damage equal to its power to each other creature.",
+      "Target creature deals damage equal to its power to itself unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.r4refs.search.library.cardNamed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 201.2",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for a card named {n:Name}",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {
+        "name": "$n"
+      },
+      "max": 1,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}: Search your library for a card named Llanowar Elves, put it onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "{2}, {T}: Search your library for a card named Shivan Dragon, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "{3}: Search your library for a card not named Llanowar Elves, put it onto the battlefield tapped, then shuffle.",
+      "{3}: Search your graveyard for a card named Llanowar Elves, put it onto the battlefield tapped.",
+      "{3}: Search your library for two cards named Llanowar Elves, put them onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.r4refs.counters.put.forEachSpellCast.otherThanFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 601.2i",
+      "CR 608.2h"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on {o:Obj} for each spell you've cast this turn other than the first",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$n",
+          {
+            "q": "math",
+            "op": "max",
+            "args": [
+              {
+                "q": "math",
+                "op": "-",
+                "args": [
+                  {
+                    "q": "spellsCastThisTurn"
+                  },
+                  1
+                ]
+              },
+              0
+            ]
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "other",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, put a +1/+1 counter on ~ for each spell you've cast this turn other than the first."
+      },
+      {
+        "text": "When ~ enters, create a 1/1 green Saproling creature token, then put two +1/+1 counters on that token for each spell you've cast this turn other than the first."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put a +1/+1 counter on ~ for each spell you've cast this turn other than the second.",
+      "When ~ enters, put a +1/+1 counter on ~ for each spell an opponent has cast this turn other than the first.",
+      "When ~ enters, put a +1/+1 counter on ~ for each spell you've cast this turn."
+    ]
+  },
+  {
+    "id": "eff.r4refs.chooseTarget.thenAirbend.allOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.65a",
+      "CR 115.1",
+      "CR 109.2",
+      "CR 608.2c"
+    ],
+    "pattern": "choose {o:Obj} , then airbend all other {g:Filter}",
+    "build": {
+      "op": "action",
+      "action": "airbend",
+      "who": {
+        "ref": "you"
+      },
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$g"
+          ],
+          "not": {
+            "is": "$o"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "other",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Choose up to one target creature, then airbend all other creatures."
+      },
+      {
+        "text": "Choose target artifact, then airbend all other artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Choose up to one target creature, then airbend all creatures.",
+      "Choose up to one target creature, then destroy all other creatures.",
+      "Choose up to one target creature, then airbend all other creatures you control unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.r4refs.dur.player.cantCast.otherThanHands",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2a",
+      "CR 611.2a",
+      "CR 102.3"
+    ],
+    "pattern": "{d:Dur} , {p:Player} can't cast spells from anywhere other than their hands",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "cast",
+          "other": {
+            "not": {
+              "castFrom": "hand"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't",
+      "other",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Untap target creature. Until your next turn, your opponents can't cast spells from anywhere other than their hands."
+      },
+      {
+        "text": "Draw a card. Until end of turn, your opponents can't cast spells from anywhere other than their hands."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, your opponents can't cast spells from their hands.",
+      "Until your next turn, your opponents can't cast creature spells from anywhere other than their hands.",
+      "Until your next turn, your opponents can't activate abilities from anywhere other than their hands."
+    ]
+  },
+  {
+    "id": "eff.r4refs.draw.x.cardsPutIntoGraveyardFromLibraryThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 107.3",
+      "CR 400.7",
+      "CR 608.2h"
+    ],
+    "pattern": "draw x cards , where x is the number of cards that were put into {p:Player} 's graveyard from their library this turn",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "owner": "$p"
+          },
+          "from": "library",
+          "to": "graveyard"
+        },
+        "scope": "turn"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw X cards, where X is the number of cards that were put into target opponent's graveyard from their library this turn."
+      },
+      {
+        "text": "{2}, {T}: Draw X cards, where X is the number of cards that were put into target player's graveyard from their library this turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw X cards, where X is the number of cards that were put into target player's graveyard from their hand this turn.",
+      "Draw X cards, where X is the number of cards that were put into target player's graveyard from their library.",
+      "Draw X cards, where X is the number of creature cards that were put into target player's graveyard from their library this turn."
+    ]
+  },
+  {
+    "id": "eff.r4refs.if.thereAreCountersOn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "[then] if there are {n:Qty} or more {k:CounterKind} counters on {o:Obj} , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": "$e"
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, put a charge counter on ~. Then if there are five or more charge counters on it, draw a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, put a fade counter on ~. Then if there are three or more fade counters on it, sacrifice it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, put a charge counter on ~. Then if there are five or fewer charge counters on it, draw a card.",
+      "Whenever you cast a spell, put a charge counter on ~. Then if there are five or more charge counters on it, draw a card instead.",
+      "Whenever you cast a spell, put a charge counter on ~. Then if there were five or more charge counters on it, draw a card."
+    ]
+  },
+  {
+    "id": "eff.r4refs.if.thereAreCountersOn.removeThose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "[then] if there are {n:Qty} or more {k:CounterKind} counters on {o:Obj} , remove those counters and {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": {
+        "$concat": [
+          {
+            "op": "removeCounters",
+            "from": "$o",
+            "kind": "$k",
+            "count": "all"
+          },
+          "$e"
+        ]
+      }
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, put a charge counter on ~. Then if there are five or more charge counters on it, remove those counters and draw two cards."
+      },
+      {
+        "text": "At the beginning of your upkeep, put a time counter on ~. Then if there are four or more time counters on it, remove those counters and it deals 4 damage to each opponent."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, put a charge counter on ~. Then if there are five or more charge counters on it, remove a counter and draw two cards.",
+      "Whenever you cast a spell, put a charge counter on ~. Then if there are five or more charge counters on it, remove those counters or draw two cards.",
+      "Whenever you cast a spell, put a charge counter on ~. Then if there are five or more charge counters on it, move those counters and draw two cards."
+    ]
+  },
+  {
+    "id": "eff.r4refs.may.put.faceUpExiledCardOwned.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 404.1",
+      "CR 608.2d"
+    ],
+    "pattern": "you may put a face-up exiled card {p:Player} own[s] into their graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "exile",
+            "faceDown": false,
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "exiledCard"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledCard"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent loses 2 life. You may put a face-up exiled card that player owns into their graveyard."
+      },
+      {
+        "text": "Choose target player. You may put a face-up exiled card they own into their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 2 life. You may put a face-down exiled card that player owns into their graveyard.",
+      "Target opponent loses 2 life. You may put a face-up exiled card that player owns into your graveyard.",
+      "Target opponent loses 2 life. You may put a face-up exiled card that player owns into their hand."
+    ]
+  },
+  {
+    "id": "eff.r4refs.becomes.chosenColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.3",
+      "CR 611.2a",
+      "CR 613.1e",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} becomes the chosen color",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "chosen": "color"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, choose a color. ~ becomes the chosen color."
+      },
+      {
+        "text": "{1}, {T}: Choose a color. Target creature becomes the chosen color."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose a color. ~ becomes the chosen color until end of turn.",
+      "When ~ enters, choose a color. ~ becomes the chosen type.",
+      "When ~ enters, choose a color. ~ is the chosen color and gains flying."
+    ]
+  },
+  {
+    "id": "eff.r4refs.counters.put.additional.one",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "put an additional {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Put a +1/+1 counter on target creature. If it's a Knight, put an additional +1/+1 counter on it."
+      },
+      {
+        "text": "Whenever you cast a spell, put a charge counter on ~. If that spell is an instant, put an additional charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter on target creature. If it's a Knight, put two additional +1/+1 counters on it.",
+      "Put a +1/+1 counter on target creature. If it's a Knight, put an additional +1/+1 counter on each creature.",
+      "Put a +1/+1 counter on target creature. If it's a Knight, remove an additional +1/+1 counter from it."
+    ]
+  },
+  {
+    "id": "eff.r4refs.sacrifice.self.andItDeals",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.21a",
+      "CR 120.3",
+      "CR 608.2h"
+    ],
+    "pattern": "sacrifice ~ and it deals {n:Qty} damage to {to:Recipient}",
+    "build": [
+      {
+        "op": "sacrifice",
+        "what": {
+          "ref": "self"
+        }
+      },
+      {
+        "op": "damage",
+        "source": {
+          "ref": "self"
+        },
+        "to": "$to",
+        "amount": "$n"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Sacrifice ~ and it deals 3 damage to each opponent."
+      },
+      {
+        "text": "At the beginning of your end step, if you control no artifacts, sacrifice ~ and it deals 2 damage to any target."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Sacrifice ~ and it gains 3 life.",
+      "{T}: Sacrifice target creature and it deals 3 damage to each opponent.",
+      "{T}: Sacrifice ~ and it deals 3 damage to each opponent unless that player pays {1}."
+    ]
+  },
+  {
+    "id": "eff.r4refs.untilEot.toughnessDamage.group",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 510.1c",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "until end of turn , {f:Filter} you control with toughness greater than their power assign combat damage equal to their toughness rather than their power",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "combatDamageUsesToughness",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          },
+          "onlyIf": "toughnessGreaterThanPower"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, creatures you control with toughness greater than their power assign combat damage equal to their toughness rather than their power."
+      },
+      {
+        "text": "Whenever you attack, you may pay {1}. If you do, until end of turn, Walls you control with toughness greater than their power assign combat damage equal to their toughness rather than their power."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, creatures you control with power greater than their toughness assign combat damage equal to their toughness rather than their power.",
+      "Until end of turn, creatures you control with toughness greater than their power assign combat damage equal to their power rather than their toughness.",
+      "Until end of turn, creatures your opponents control with toughness greater than their power assign combat damage equal to their toughness rather than their power."
+    ]
+  },
+  {
+    "id": "eff.r4refs.player.searches.bf.tappedWithCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 122.6",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} searches their library for ( a | an ) {f:Filter} card , puts it onto the battlefield tapped with {n:Qty} {k:CounterKind} counter[s] on it , then shuffles",
+    "build": [
+      {
+        "op": "search",
+        "who": "$p",
+        "zone": "library",
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "$p",
+          "tapped": true,
+          "counters": [
+            {
+              "kind": "$k",
+              "count": "$n"
+            }
+          ]
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Destroy target land. Its controller searches their library for a basic land card, puts it onto the battlefield tapped with a stun counter on it, then shuffles."
+      },
+      {
+        "text": "Target opponent searches their library for a Forest card, puts it onto the battlefield tapped with two -1/-1 counters on it, then shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent searches their library for a Forest card, puts it onto the battlefield with a stun counter on it, then shuffles.",
+      "Target opponent searches your library for a Forest card, puts it onto the battlefield tapped with a stun counter on it, then shuffles.",
+      "Target opponent searches their library for a Forest card, puts it into their hand with a stun counter on it, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.r4refs.search.handAndOrLibrary.andPutBattlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2c"
+    ],
+    "pattern": "search your hand and/or library for ( a | an ) {f:Filter} card and put it onto the battlefield",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "hand",
+        "alsoZones": [
+          "library"
+        ],
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your hand and/or library for a Dragon card and put it onto the battlefield. If you search your library this way, shuffle."
+      },
+      {
+        "text": "{5}, {T}: Search your hand and/or library for an Equipment card and put it onto the battlefield. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your hand and/or graveyard for a Dragon card and put it onto the battlefield.",
+      "Search your hand and/or library for a Dragon card and put it into your graveyard. If you search your library this way, shuffle.",
+      "Search your hand and/or library for two Dragon cards and put them onto the battlefield. If you search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.r4refs.put.ownersLibrary.secondFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.3",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} into its owner 's library second from the top",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 2
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target nonland permanent into its owner's library second from the top. Draw a card."
+      },
+      {
+        "text": "When ~ enters, put up to one target artifact an opponent controls into its owner's library second from the top."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature into its owner's graveyard second from the top.",
+      "Put target creature into your library second from the top.",
+      "Put target creature into its owner's library second from the bottom."
+    ]
+  },
+  {
+    "id": "eff.r4refs.put.ownersLibrary.thirdFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.3",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} into its owner 's library third from the top",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 3
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target nonland permanent into its owner's library third from the top. Draw a card."
+      },
+      {
+        "text": "When ~ enters, put up to one target artifact an opponent controls into its owner's library third from the top."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature into its owner's graveyard third from the top.",
+      "Put target creature into your library third from the top.",
+      "Put target creature into its owner's library third from the bottom."
+    ]
+  },
+  {
+    "id": "eff.r4refs.forEachOpponent.put.ownersLibrary.secondFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "priority": 1,
+    "cr": [
+      "CR 401.3",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "for each opponent , put {o:OppTarget} into its owner 's library second from the top",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 2
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, put up to one target creature that player controls into its owner's library second from the top."
+      },
+      {
+        "text": "For each opponent, put up to one target nonland permanent that player controls into its owner's library second from the top."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, put up to one target creature that player controls into its owner's graveyard second from the top.",
+      "For each opponent, put up to one target creature you control into its owner's library second from the top.",
+      "For each opponent, put up to two target creatures that player controls into their owners' libraries second from the top."
+    ]
+  },
+  {
+    "id": "eff.r4refs.forEachOpponent.put.ownersLibrary.thirdFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 401.3",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "for each opponent , put {o:OppTarget} into its owner 's library third from the top",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 3
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, put up to one target creature that player controls into its owner's library third from the top."
+      },
+      {
+        "text": "For each opponent, put up to one target nonland permanent that player controls into its owner's library third from the top."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, put up to one target creature that player controls into its owner's graveyard third from the top.",
+      "For each opponent, put up to one target creature you control into its owner's library third from the top.",
+      "For each opponent, put up to two target creatures that player controls into their owners' libraries third from the top."
+    ]
+  },
+  {
+    "id": "eff.r4refs.token.thenCounters.eachOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 111.1",
+      "CR 122.1",
+      "CR 109.2",
+      "CR 608.2c"
+    ],
+    "pattern": "create {c:Qty} {t:TokenDesc} , then put {n:Qty} {k:CounterKind} counter[s] on each other {g:Filter}",
+    "build": [
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$c",
+        "token": "$t"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "",
+                "$anaphor": {
+                  "sort": "object",
+                  "number": "singular",
+                  "text": "other"
+                }
+              }
+            }
+          }
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "other",
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Create a 1/1 white Soldier creature token, then put a +1/+1 counter on each other Soldier you control."
+      },
+      {
+        "text": "When ~ enters, create a 2/2 black Zombie creature token, then put a +1/+1 counter on each other Zombie token you control."
+      }
+    ],
+    "counterExamples": [
+      "Create a 1/1 white Soldier creature token, then put a +1/+1 counter on each Soldier you control.",
+      "Create a 1/1 white Soldier creature token, then remove a +1/+1 counter from each other Soldier you control.",
+      "Create two 1/1 white Soldier creature tokens, then put a +1/+1 counter on each other Soldier you control unless it is tapped."
+    ]
+  },
+  {
+    "id": "dl.r4refs.nextUpkeep.tail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 503.1"
+    ],
+    "pattern": "{e:Effects} at the beginning of the next upkeep",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "upkeep",
+        "next": true
+      },
+      "do": "$e"
+    },
+    "examples": [
+      {
+        "text": "Create a 1/1 red Goblin creature token. Sacrifice that token at the beginning of the next upkeep."
+      },
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. Exile it at the beginning of the next upkeep."
+      }
+    ],
+    "counterExamples": [
+      "Create a 1/1 red Goblin creature token. Sacrifice that token at the beginning of your upkeep.",
+      "Create a 1/1 red Goblin creature token. Sacrifice that token at the beginning of the next end step unless you pay {1}.",
+      "Create a 1/1 red Goblin creature token. Sacrifice that token at the end of the next upkeep."
+    ]
+  },
+  {
+    "id": "eff.r4refs.eachYouControl.deals.damage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2c"
+    ],
+    "pattern": "each {f:Filter} you control deals {n:Qty} damage to {to:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you"
+        }
+      },
+      "to": "$to",
+      "amount": "$n",
+      "perSource": true
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control deals 1 damage to target creature you don't control."
+      },
+      {
+        "text": "Choose target creature an opponent controls. Each Goblin you control deals 2 damage to that creature."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control deals 1 damage to itself.",
+      "Each creature you control deals damage equal to its power to target creature.",
+      "Each creature you control deals 1 damage to target creature unless it is tapped."
+    ]
+  },
+  {
+    "id": "eff.r4refs.player.losesLife.searchesAnyCard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.23a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life , searches their library for a card , puts it into their hand , then shuffles",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "search",
+        "who": "$p",
+        "zone": "library",
+        "filter": {},
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player loses 2 life, searches their library for a card, puts it into their hand, then shuffles."
+      },
+      {
+        "text": "Target opponent loses 1 life, searches their library for a card, puts it into their hand, then shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 1 life, searches their library for a card, puts it into your hand, then shuffles.",
+      "Target opponent gains 1 life, searches their library for a card, puts it into their hand, then shuffles.",
+      "Target opponent loses 1 life, searches your library for a card, puts it into their hand, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.r4refs.eachOfThem.is.ptSubtype.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 608.2c"
+    ],
+    "pattern": "each of {g:Them} is ( a | an ) {pt:BasePT} {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$g",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "other",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Return all creature cards from your graveyard to the battlefield. Each of them is a 1/1 Zombie in addition to its other types."
+      },
+      {
+        "text": "Return up to two target creature cards from your graveyard to the battlefield. Each of them is a 2/2 Spirit in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Return all creature cards from your graveyard to the battlefield. Each of them is a 1/1 Zombie.",
+      "Return all creature cards from your graveyard to the battlefield. Each of them is a 1/1 Zombie in addition to its other colors.",
+      "Return all creature cards from your graveyard to the battlefield. Each of them gets +1/+1 in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.r4refs.search.playerGraveyardHandLibrary.chosenName.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 201.2",
+      "CR 607.2d",
+      "CR 608.2c",
+      "CR 406.1"
+    ],
+    "pattern": "search {p:Player} 's graveyard , hand [,] and library for up to {n:Qty} cards with that name and exile them",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "owner": "$p",
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "allZones": true,
+        "filter": {
+          "chosen": {
+            "link": "chosenCardName",
+            "quality": "cardName"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Choose a card name. Search target opponent's graveyard, hand, and library for up to three cards with that name and exile them. Then that player shuffles."
+      },
+      {
+        "text": "Choose a card name. Search target player's graveyard, hand and library for up to two cards with that name and exile them. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Choose a card name. Search target opponent's graveyard, hand, and library for up to three cards with that name and put them into your hand. Then that player shuffles.",
+      "Choose a card name. Search target opponent's graveyard, hand, and library for any number of creature cards and exile them. Then that player shuffles.",
+      "Choose a card name. Search your graveyard, hand, and library for up to three cards with that name and exile them. Then shuffle."
+    ]
+  }
+]

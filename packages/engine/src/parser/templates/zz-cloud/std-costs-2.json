@@ -1,0 +1,220 @@
+[
+  {
+    "id": "eff.stdcosts2.additional.chooseOrExile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2h",
+      "CR 702.185a"
+    ],
+    "pattern": "as an additional cost to cast ~ , choose ( a | an ) {f:Filter} you control or ( a | an ) {g:Filter} you own in exile",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "chooseObject",
+                "filters": [
+                  {
+                    "anyOf": [
+                      "$f"
+                    ],
+                    "zone": "battlefield",
+                    "controller": "you"
+                  },
+                  {
+                    "anyOf": [
+                      "$g"
+                    ],
+                    "zone": "exile",
+                    "owner": "you",
+                    "isCard": true
+                  }
+                ],
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, choose an artifact you control or a warped artifact card you own in exile."
+      },
+      {
+        "text": "As an additional cost to cast ~, choose a Goblin you control or a warped Goblin card you own in exile.\nTarget player gains life equal to the power of the chosen creature or card."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, choose a creature you control or a warped creature card you own in your graveyard.\nYou gain 4 life and scry 1.",
+      "As an additional cost to cast ~, choose a creature an opponent controls or a warped creature card you own in exile.\nYou gain 4 life and scry 1."
+    ]
+  },
+  {
+    "id": "dl.stdcosts2.nextUpkeep.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 503.1"
+    ],
+    "pattern": "at the beginning of the next upkeep , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "upkeep",
+        "next": true
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. At the beginning of the next upkeep, draw two cards."
+      },
+      {
+        "text": "Return target creature you control to its owner's hand. At the beginning of the next upkeep, create a 2/2 green Bear creature token for each creature returned to your hand this way."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each upkeep, draw a card.",
+      "Draw a card. At the beginning of the next upkeep, draw a card unless it is blue.",
+      "Draw a card. At the beginning of the upkeep, draw two cards."
+    ]
+  },
+  {
+    "id": "eff.stdcosts2.additional.chooseType.behold",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 205.3m",
+      "CR 701.4a",
+      "CR 607.2d"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may choose a creature type and behold {n:Qty} creatures of that type",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "optional": true,
+          "chooseType": {
+            "what": "creatureType",
+            "link": "costType"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "behold",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "chosen": {
+                    "link": "costType",
+                    "quality": "creatureType"
+                  }
+                },
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, you may choose a creature type and behold three creatures of that type."
+      },
+      {
+        "text": "As an additional cost to cast ~, you may choose a creature type and behold four creatures of that type.\nTarget player mills three cards and you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, choose a creature type and behold three creatures of that type.\nYou gain 4 life and scry 1.",
+      "As an additional cost to cast ~, you may choose a color and behold three creatures of that color.\nYou gain 4 life and scry 1."
+    ]
+  },
+  {
+    "id": "rid.stdcosts2.putOntoBattlefieldInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 614.15",
+      "CR 400.7"
+    ],
+    "pattern": "if {c:Cond} , put that card onto the battlefield instead of putting it into your hand",
+    "build": {
+      "$patchPrevious": {
+        "@step": -2,
+        "@names": true,
+        "@require": {
+          "to.zone": "hand"
+        },
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "move",
+            "what": "@previous.what",
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              }
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Kicker {4}{W}{U}\nSearch your library for a creature card, reveal it, put it into your hand, then shuffle. If this spell was kicked, put that card onto the battlefield instead of putting it into your hand."
+      },
+      {
+        "text": "Kicker {3}{G}{G}{G}\nSearch your library for an artifact card with mana value 2 or less, reveal it, put it into your hand, then shuffle. If this spell was kicked, put that card onto the battlefield instead of putting it into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Kicker {4}{W}{U}\nSearch your library for a creature card, reveal it, put it into your hand, then shuffle. If this spell was kicked, put that card into your graveyard instead of putting it into your hand.",
+      "Kicker {4}{W}{U}\nDraw a card. If this spell was kicked, put that card onto the battlefield instead of putting it into your hand."
+    ]
+  }
+]

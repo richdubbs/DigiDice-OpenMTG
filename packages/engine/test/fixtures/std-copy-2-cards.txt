@@ -1,0 +1,3 @@
+# std-copy-2 (lane std-copy): the round's golden cards (test/m5/golden/cards/cloud-std-copy-2-review.json)
+Codie, Ravenous Codex
+Spinerock Tyrant

@@ -1,0 +1,65 @@
+{
+  "name": "buyback",
+  "rule": "702.27",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "replacement"
+  ],
+  "reminder": "You may pay an additional {cost} as you cast this spell. If you do, put this spell into your hand as it resolves.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Buyback {cost}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$cost",
+          "optional": true,
+          "name": "buyback"
+        }
+      ]
+    },
+    {
+      "kind": "static",
+      "text": "If the buyback cost was paid, put this spell into its owner's hand instead of into its owner's graveyard as it resolves.",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "stack",
+            "to": "graveyard",
+            "cause": "resolve"
+          },
+          "condition": {
+            "cond": "wasCast",
+            "kicked": "buyback"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "hand"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

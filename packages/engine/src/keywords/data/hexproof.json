@@ -1,0 +1,24 @@
+{
+  "name": "hexproof",
+  "rule": "702.11",
+  "params": [
+    {
+      "name": "quality",
+      "type": "quality",
+      "optional": true
+    }
+  ],
+  "mechanisms": [
+    "flag",
+    "hook"
+  ],
+  "reminder": "This creature can't be the target of spells or abilities your opponents control.",
+  "multiple": "redundantPerParam",
+  "status": "implemented",
+  "hooks": [
+    "canBeTargetedBy"
+  ],
+  "readers": [
+    "rules/targets.ts#isTargetable"
+  ]
+}

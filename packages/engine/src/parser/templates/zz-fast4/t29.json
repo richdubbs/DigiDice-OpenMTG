@@ -1,0 +1,1354 @@
+[
+  {
+    "id": "sta.t29.self.pump.foreach.other.1.0",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 109.4"
+    ],
+    "pattern": "~ gets +1/+0 for each other {f:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "other": true,
+                "attacking": "$f.attacking",
+                "blocking": "$f.blocking",
+                "tapped": "$f.tapped",
+                "token": "$f.token",
+                "faceDown": "$f.faceDown",
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue",
+                "counters": "$f.counters",
+                "zone": "$f.zone",
+                "controller": "$f.controller"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "~ gets +1/+0 for each other Golem you control."
+      },
+      {
+        "text": "~ gets +1/+0 for each other artifact you control."
+      },
+      {
+        "text": "~ gets +1/+0 for each other tapped creature you control."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+0 for each Golem you control.",
+      "~ gets +1/+0 until end of turn for each other Golem you control.",
+      "Enchanted creature gets +1/+0 for each other Golem you control."
+    ]
+  },
+  {
+    "id": "sta.t29.self.pump.foreach.other.1.1",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 109.4"
+    ],
+    "pattern": "~ gets +1/+1 for each other {f:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "other": true,
+                "attacking": "$f.attacking",
+                "blocking": "$f.blocking",
+                "tapped": "$f.tapped",
+                "token": "$f.token",
+                "faceDown": "$f.faceDown",
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue",
+                "counters": "$f.counters",
+                "zone": "$f.zone",
+                "controller": "$f.controller"
+              }
+            }
+          },
+          "toughness": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "other": true,
+                "attacking": "$f.attacking",
+                "blocking": "$f.blocking",
+                "tapped": "$f.tapped",
+                "token": "$f.token",
+                "faceDown": "$f.faceDown",
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue",
+                "counters": "$f.counters",
+                "zone": "$f.zone",
+                "controller": "$f.controller"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "~ gets +1/+1 for each other Golem you control."
+      },
+      {
+        "text": "~ gets +1/+1 for each other artifact you control."
+      },
+      {
+        "text": "~ gets +1/+1 for each other tapped creature you control."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each Golem you control.",
+      "~ gets +1/+1 until end of turn for each other Golem you control.",
+      "Enchanted creature gets +1/+1 for each other Golem you control."
+    ]
+  },
+  {
+    "id": "sta.t29.pump.foreach.two",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.1"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} for each {f:Filter} and each {g:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "math",
+                "op": "+",
+                "args": [
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  },
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$g"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "math",
+                "op": "+",
+                "args": [
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  },
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$g"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+1 for each Elf you control and each Elf card in your graveyard."
+      },
+      {
+        "text": "~ gets +2/+0 for each artifact you control and each artifact card in your graveyard."
+      },
+      {
+        "text": "~ gets +1/+0 for each other Elf you control and each Elf card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each Elf you control or each Elf card in your graveyard.",
+      "~ gets +1/+1 until end of turn for each Elf you control and each Elf card in your graveyard.",
+      "~ gets +1/+1 for each Elf you control and each Elf card in an opponent's graveyard."
+    ]
+  },
+  {
+    "id": "sta.t29.cda.pt.allhands",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.3",
+      "CR 613.4a",
+      "CR 208.2a",
+      "CR 402.1"
+    ],
+    "pattern": "~ 's power and toughness are each equal to the total number of cards in all players' hands",
+    "build": {
+      "s": "continuous",
+      "cda": true,
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7a",
+          "power": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "zone": "hand"
+              }
+            }
+          },
+          "toughness": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "zone": "hand"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "~'s power and toughness are each equal to the total number of cards in all players' hands."
+      },
+      {
+        "text": "Flying\n~'s power and toughness are each equal to the total number of cards in all players' hands."
+      }
+    ],
+    "counterExamples": [
+      "~'s power and toughness are each equal to the total number of cards in all players' graveyards.",
+      "~'s power is equal to the total number of cards in all players' hands.",
+      "~'s toughness is equal to the total number of cards in all players' hands."
+    ]
+  },
+  {
+    "id": "sta.t29.grant.duringturn.after",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 500.1"
+    ],
+    "pattern": "{o:Obj} (has | have) {a:Abilities} during your turn",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ has double strike during your turn."
+      },
+      {
+        "text": "~ has lifelink and vigilance during your turn."
+      },
+      {
+        "text": "Equipped creature has deathtouch during your turn."
+      }
+    ],
+    "counterExamples": [
+      "~ has first strike during your opponent's turn.",
+      "~ has first strike until end of turn.",
+      "~ gains first strike during your turn."
+    ]
+  },
+  {
+    "id": "sta.t29.aslong.equipped.pump",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 301.5"
+    ],
+    "pattern": "as long as ~ is equipped , it gets {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Equipment"
+            ],
+            "attachedToObject": {
+              "ref": "self"
+            }
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is equipped, it gets +2/+1."
+      },
+      {
+        "text": "As long as ~ is equipped, it gets +0/+3."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is enchanted, it gets +1/+1.",
+      "As long as ~ is equipped, it gets +1/+1 until end of turn.",
+      "As long as ~ is tapped, it gets +1/+1."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "sta.t29.aslong.equipped.pumpgrant",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 301.5"
+    ],
+    "pattern": "as long as ~ is equipped , it gets {pt:PT} and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Equipment"
+            ],
+            "attachedToObject": {
+              "ref": "self"
+            }
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is equipped, it gets +2/+2 and has flying."
+      },
+      {
+        "text": "As long as ~ is equipped, it gets +2/+0 and has menace and haste."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is enchanted, it gets +1/+1 and has flying.",
+      "As long as ~ is equipped, it gets +1/+1 and loses flying.",
+      "As long as ~ is equipped, it gets +1/+1 and gains flying until end of turn."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "sta.t29.attached.pump.addtype",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.4c",
+      "CR 205.1b",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and is (a | an) {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +3/+1 and is a Wizard in addition to its other types."
+      },
+      {
+        "text": "Enchanted creature gets +2/+2 and is a Zombie in addition to its other types."
+      },
+      {
+        "text": "Equipped creature gets +1/+0 and is an Archer in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +3/+1 and is a Wizard.",
+      "Equipped creature gets +3/+1 until end of turn and is a Wizard in addition to its other types.",
+      "Enchanted creature gets +3/+1 and is a Wizard in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t29.attached.pump.grant.addtype",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 205.1b",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , has {a:Abilities} , and is (a | an) {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+2, has vigilance and reach, and is a Monk in addition to its other types."
+      },
+      {
+        "text": "Equipped creature gets +2/+2, has ward {2}, and is a Cleric in addition to its other types."
+      },
+      {
+        "text": "Equipped creature gets +1/+1, has flying, and is an Angel in addition to its other types."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1, has deathtouch, and is a Vampire in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+2, has vigilance and reach, and is a Monk.",
+      "Equipped creature gets +1/+2, loses vigilance, and is a Monk in addition to its other types.",
+      "Equipped creature gets +1/+2, has vigilance and reach, and is a Monk in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t29.attached.grant.unblockable",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1b",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} and can't be blocked",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has lifelink and can't be blocked."
+      },
+      {
+        "text": "Equipped creature has shroud and can't be blocked."
+      },
+      {
+        "text": "Enchanted creature has flying and can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has lifelink and can't block.",
+      "Equipped creature has lifelink and can't be blocked by Walls.",
+      "Equipped creature gains lifelink and can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "sta.t29.attached.unblockable.grant",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1b",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature can't be blocked and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beBlocked"
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't be blocked and has hexproof."
+      },
+      {
+        "text": "Equipped creature can't be blocked and has lifelink and vigilance."
+      },
+      {
+        "text": "Enchanted creature can't be blocked and has menace."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature can't block and has hexproof.",
+      "Equipped creature can't be blocked by Walls and has hexproof.",
+      "Equipped creature can't be blocked and loses hexproof."
+    ]
+  },
+  {
+    "id": "sta.t29.aslong.control.either.grant",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as you control (a | an) {f:Filter} or (a | an) {g:Filter} , {o:Obj} (has | have) {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "anyOf": [
+              "$f",
+              "$g"
+            ]
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an artifact creature or a Wizard, ~ has hexproof."
+      },
+      {
+        "text": "As long as you control an Island or a Swamp, ~ has flying and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an artifact creature and a Wizard, ~ has hexproof.",
+      "As long as an opponent controls an artifact creature or a Wizard, ~ has hexproof.",
+      "As long as you control an artifact creature or a Wizard, ~ gains hexproof until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t29.lords.two.pumpgrant",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 109.4"
+    ],
+    "pattern": "{f:Filter} you control and {g:Filter} you control get {pt:PT} and have {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "controller": "you",
+          "anyOf": [
+            "$f",
+            "$g"
+          ]
+        }
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Elves you control and other Druids you control get +1/+1 and have reach."
+      },
+      {
+        "text": "Spirits you control and other Clerics you control get +0/+2 and have flying and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Elves you control and other Druids an opponent controls get +1/+1 and have reach.",
+      "Elves you control and other Druids you control get +1/+1 and have reach until end of turn.",
+      "Elves you control or other Druids you control get +1/+1 and have reach."
+    ]
+  },
+  {
+    "id": "eff.t29.pump.each.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} {d:Dur} , where X is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Creatures you control get +X/+0 until end of turn, where X is the number of Clues you control."
+      },
+      {
+        "text": "Elves you control get +X/+X until end of turn, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +X/+0, where X is the number of Clues you control.",
+      "Creatures you control get +2/+0 until end of turn, where X is the number of Clues you control.",
+      "Creatures you control get +X/+0 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t29.pump.each.singular.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Objs} gets {pt:PT} {d:Dur} , where X is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": -1,
+    "examples": [
+      {
+        "text": "{1}{W}, {T}: Each other creature you control gets +X/+X until end of turn, where X is ~'s power."
+      },
+      {
+        "text": "Each creature you control gets +X/+0 until end of turn, where X is the number of Clues you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}{W}, {T}: Each other creature you control gets +X/+X, where X is ~'s power.",
+      "{1}{W}, {T}: Each other creature you control gets +X/+X until end of turn.",
+      "{1}{W}, {T}: Each other creature you control gets +1/+1 until end of turn, where X is ~'s power."
+    ]
+  },
+  {
+    "id": "eff.t29.grant.pump.each.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Objs} gain {a:Abilities} and get {pt:PT} {d:Dur} , where X is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Creatures you control gain trample and get +X/+X until end of turn, where X is the number of Elves you control."
+      },
+      {
+        "text": "Elves you control gain reach and get +X/+0 until end of turn, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control gain trample and get +X/+X, where X is the number of Elves you control.",
+      "Creatures you control lose trample and get +X/+X until end of turn, where X is the number of Elves you control.",
+      "Creatures you control gain trample and get +X/+X until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t29.grant.pump.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} and gets {pt:PT} {d:Dur} , where X is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature you control gains lifelink and gets +X/+X until end of turn, where X is the number of Elves you control."
+      },
+      {
+        "text": "{2}{R}: Another target creature you control gains haste and gets +X/+0 until end of turn, where X is ~'s power."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gains lifelink and gets +X/+X, where X is the number of Elves you control.",
+      "Target creature you control loses lifelink and gets +X/+X until end of turn, where X is the number of Elves you control.",
+      "Target creature you control gains lifelink and gets +X/+X until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t29.pump.whereX.owntoughness",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 208.1"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} , where X is its toughness",
+    "build": {
+      "lower": "whereX",
+      "value": {
+        "q": "stat",
+        "stat": "toughness",
+        "of": "$o"
+      },
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{2}{W}: ~ gets +X/+0 until end of turn, where X is its toughness."
+      },
+      {
+        "text": "{1}: Target creature gets +X/+0 until end of turn, where X is its toughness."
+      }
+    ],
+    "counterExamples": [
+      "{2}{W}: ~ gets +X/+0, where X is its toughness.",
+      "{2}{W}: ~ gets +X/+0 until end of turn, where X is its power.",
+      "{2}{W}: ~ gets +X/+0 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t29.lead.pump.foreach",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets +1/+1 for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              },
+              "toughness": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{4}: Until end of turn, ~ gets +1/+1 for each creature card in your graveyard."
+      },
+      {
+        "text": "Until end of turn, target creature gets +1/+1 for each Elf you control."
+      }
+    ],
+    "counterExamples": [
+      "{4}: Until end of turn, ~ gets +2/+2 for each creature card in your graveyard.",
+      "{4}: Until end of turn, ~ gets +1/+1 for each creature card in your graveyard and gains trample.",
+      "{4}: Until your next turn, ~ gets +1/+1 for each creature card in your graveyard unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t29.shrink.foreach",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets -1/-1 {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  -1,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  -1,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets -1/-1 until end of turn for each Island you control."
+      },
+      {
+        "text": "Target creature gets -1/-1 until end of turn for each artifact card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets -1/-1 for each Island you control.",
+      "Target creature gets -1/-1 until end of turn for each Island an opponent controls unless it is blue.",
+      "Each creature gets -1/-1 until end of turn for each Island you control."
+    ]
+  },
+  {
+    "id": "eff.t29.shrink.each.foreach",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Objs} get -1/-1 {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  -1,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  -1,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "All creatures get -1/-1 until end of turn for each Island you control."
+      },
+      {
+        "text": "Creatures your opponents control get -1/-1 until end of turn for each Zombie you control."
+      }
+    ],
+    "counterExamples": [
+      "All creatures get -1/-1 for each Island you control.",
+      "Target creature gets -1/-1 until end of turn for each Island you control.",
+      "All creatures get -1/-1 until end of turn for each Island you control unless it is blue."
+    ]
+  }
+]

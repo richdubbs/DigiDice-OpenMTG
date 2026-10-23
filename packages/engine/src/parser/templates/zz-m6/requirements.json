@@ -1,0 +1,140 @@
+[
+  {
+    "id": "sta.must.lure",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 509.1c"],
+    "pattern": "all creatures able to block {o:Obj} do so",
+    "build": { "s": "restrict", "subject": { "ref": "each", "filter": { "types": ["Creature"] } }, "mode": "mustIfAble", "action": "block", "other": { "is": "$o" } },
+    "consumes": ["all", "able", "do so"],
+    "examples": [
+      { "text": "All creatures able to block enchanted permanent do so." },
+      { "text": "All creatures able to block enchanted artifact do so." }
+    ],
+    "counterExamples": [
+      "All creatures able to block equipped creature can do so.",
+      "All creatures able to attack equipped creature do so.",
+      "Creatures able to block equipped creature don't do so."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.must.lure",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 509.1c"],
+    "pattern": "all creatures able to block {o:Obj} {d:Dur} do so",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": { "ref": "each", "filter": { "types": ["Creature"] } }, "mode": "mustIfAble", "action": "block", "other": { "is": "$o" } }] },
+    "subject": "none",
+    "consumes": ["all", "able", "do so"],
+    "examples": [
+      { "text": "All creatures able to block target artifact creature this turn do so." },
+      { "text": "All creatures able to block target creature you control this turn do so." }
+    ],
+    "counterExamples": [
+      "All creatures able to block target artifact creature this turn can do so.",
+      "All creatures able to attack target artifact creature this turn do so."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.must.block.other",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 509.1c"],
+    "pattern": "{o:Obj} blocks {t:Obj} {d:Dur} if able",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "mustIfAble", "action": "block", "other": { "is": "$t" } }] },
+    "subject": "object",
+    "consumes": ["if able"],
+    "examples": [
+      { "text": "Target creature blocks target artifact creature this turn if able." },
+      { "text": "Target creature an opponent controls blocks target creature you control this turn if able." }
+    ],
+    "counterExamples": [
+      "Target creature blocks target artifact creature this turn.",
+      "Target creature can't block target artifact creature this turn.",
+      "Target creature blocks target artifact creature each combat if able."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.must.attack",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 508.1d"],
+    "pattern": "{o:Obj} attacks {d:Dur} if able",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "mustIfAble", "action": "attack" }] },
+    "subject": "object",
+    "consumes": ["if able"],
+    "examples": [
+      { "text": "Target artifact creature attacks this turn if able." },
+      { "text": "Target creature an opponent controls attacks this turn if able." }
+    ],
+    "counterExamples": [
+      "Target artifact creature attacks this turn.",
+      "Target artifact creature can't attack this turn.",
+      "Target artifact creature blocks this turn if able."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.must.each.attack",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 508.1d"],
+    "pattern": "{o:Objs} attack {d:Dur} if able",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "mustIfAble", "action": "attack" }] },
+    "subject": "object",
+    "consumes": ["if able"],
+    "examples": [
+      { "text": "Artifact creatures your opponents control attack this turn if able." },
+      { "text": "Creatures target player controls attack this turn if able." }
+    ],
+    "counterExamples": [
+      "Artifact creatures your opponents control attack this turn.",
+      "Artifact creatures your opponents control can't attack this turn.",
+      "Artifact creatures your opponents control block this turn if able."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.must.block",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 509.1c"],
+    "pattern": "{o:Obj} blocks {d:Dur} if able",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "mustIfAble", "action": "block" }] },
+    "subject": "object",
+    "consumes": ["if able"],
+    "examples": [
+      { "text": "Target artifact creature blocks this turn if able." },
+      { "text": "Target creature an opponent controls blocks this turn if able." }
+    ],
+    "counterExamples": [
+      "Target artifact creature blocks this turn.",
+      "Target artifact creature can't block this turn.",
+      "Target artifact creature attacks this turn if able."
+    ],
+    "status": "stable",
+    "since": 5
+  },
+  {
+    "id": "eff.must.beblocked",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 509.1c"],
+    "pattern": "{o:Obj} must be blocked {d:Dur} if able",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "mustIfAble", "action": "beBlocked" }] },
+    "subject": "object",
+    "consumes": ["must", "if able"],
+    "examples": [
+      { "text": "Target artifact creature must be blocked this turn if able." },
+      { "text": "Target creature you control must be blocked this turn if able." }
+    ],
+    "counterExamples": [
+      "Target artifact creature must be blocked this turn.",
+      "Target artifact creature can't be blocked this turn.",
+      "Target artifact creature must be blocked by two or more creatures this turn if able."
+    ],
+    "status": "stable",
+    "since": 5
+  }
+]

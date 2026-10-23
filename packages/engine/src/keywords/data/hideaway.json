@@ -1,0 +1,107 @@
+{
+  "name": "hideaway",
+  "rule": "702.75",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this permanent enters, look at the top {n} cards of your library, exile one face down, then put the rest on the bottom in a random order.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, look at the top {n} cards of your library. Exile one of them face down and put the rest on the bottom of your library in a random order.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "look",
+            "who": {
+              "ref": "you"
+            },
+            "at": {
+              "ref": "topCards",
+              "player": {
+                "ref": "you"
+              },
+              "count": "$amount"
+            },
+            "as": "them"
+          },
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "them"
+                },
+                "zone": "library"
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "as": "chosen"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            "to": {
+              "zone": "exile",
+              "faceDown": true
+            },
+            "link": "exiled"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "them"
+                },
+                "not": {
+                  "is": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  }
+                },
+                "zone": "library"
+              }
+            },
+            "to": {
+              "zone": "library",
+              "position": "bottom",
+              "order": "random"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

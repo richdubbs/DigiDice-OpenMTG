@@ -1,0 +1,713 @@
+[
+  {
+    "id": "eff.stdmisc.token.you.half.up",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.1a",
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a"
+    ],
+    "pattern": "create half {n:Qty} {t:TokenDesc} , rounded up",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          "$n",
+          2
+        ]
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "half",
+      "rounded"
+    ],
+    "examples": [
+      {
+        "text": "Create half X Treasure tokens, rounded up."
+      },
+      {
+        "text": "Create half the number of creatures you control Clue tokens, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Create half X Treasure tokens.",
+      "Create half X Treasure tokens, rounded down.",
+      "Create half X Treasure tokens, rounded up, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.token.you.half.down",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 107.1a",
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a"
+    ],
+    "pattern": "create half {n:Qty} {t:TokenDesc} , rounded down",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          "$n",
+          2
+        ]
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "half",
+      "rounded"
+    ],
+    "examples": [
+      {
+        "text": "Create half X Treasure tokens, rounded down."
+      },
+      {
+        "text": "Create half the number of cards in your hand Clue tokens, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "Create half X Treasure tokens.",
+      "Create half X Treasure tokens, rounded up.",
+      "Create half X Treasure tokens, rounded down, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.choose.cardName",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 201.3",
+      "CR 607.2d"
+    ],
+    "pattern": "choose a card name",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "cardName",
+      "as": "chosenCardName",
+      "link": "chosenCardName"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose a card name. Whenever a creature with the chosen name deals combat damage to a player this turn, draw a card."
+      },
+      {
+        "text": "Choose a card name. Destroy all creatures with that name."
+      }
+    ],
+    "counterExamples": [
+      "Choose a nonland card name.",
+      "Target opponent chooses a card name.",
+      "Choose two card names."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.token.player.tappedPre",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 110.5b",
+      "CR 701.7a"
+    ],
+    "pattern": "{p:Player} create[s] {n:Qty} tapped {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": "$p",
+      "count": "$n",
+      "token": "$t",
+      "tapped": true
+    },
+    "examples": [
+      {
+        "text": "Target opponent creates a tapped Treasure token."
+      },
+      {
+        "text": "Each opponent creates two tapped Food tokens."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent creates a tapped and attacking Treasure token.",
+      "Target opponent creates an untapped Treasure token.",
+      "Target opponent creates a Treasure token."
+    ]
+  },
+  {
+    "id": "trg.stdmisc.players.discard.wholeBatch",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2c",
+      "CR 701.9a"
+    ],
+    "pattern": "whenever one or more players discard one or more cards",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "any"
+        }
+      ],
+      "batch": true,
+      "wholeBatch": true
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "needs": [
+      "feature:trigger.batch",
+      "feature:trigger.batch.whole"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more players discard one or more cards, investigate.",
+        "expect": {
+          "on": [
+            {
+              "ev": "action",
+              "verb": "discard",
+              "actor": "any"
+            }
+          ],
+          "batch": true,
+          "wholeBatch": true
+        }
+      },
+      {
+        "text": "Whenever one or more players discard one or more cards, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player discards one or more cards, you gain 2 life.",
+      "Whenever one or more players discard two or more cards, you gain 2 life.",
+      "Whenever one or more opponents discard one or more cards, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.choose.number.between",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 107.1"
+    ],
+    "pattern": "choose a number between {lo:Qty} and {hi:Qty}",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "number",
+      "min": "$lo",
+      "max": "$hi",
+      "as": "chosenNumber",
+      "link": "chosenNumber"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose a number between 0 and 8. Exile all creatures with power greater than or equal to the chosen number."
+      },
+      {
+        "text": "Choose a number between 1 and 5. Each opponent loses life equal to the chosen number."
+      }
+    ],
+    "counterExamples": [
+      "Choose a number greater than 0.",
+      "Target opponent chooses a number between 0 and 10.",
+      "Choose two numbers between 0 and 10."
+    ]
+  },
+  {
+    "id": "sta.stdmisc.entering.noTriggers",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} entering [the battlefield] don't cause abilities to trigger",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "to": "battlefield",
+            "subject": "$f"
+          },
+          "abilitiesOf": {},
+          "additional": 0,
+          "suppress": true
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Artifacts entering don't cause abilities to trigger."
+      },
+      {
+        "text": "Lands and creatures entering the battlefield don't cause abilities to trigger."
+      }
+    ],
+    "counterExamples": [
+      "Creatures entering or leaving don't cause abilities to trigger.",
+      "Creatures dying don't cause abilities to trigger.",
+      "Creatures entering don't cause abilities of permanents you control to trigger."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.next.cast.copy.notLegendary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.9b",
+      "CR 707.10",
+      "CR 205.4a"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , copy ( that spell | it ) , except the copy isn't legendary",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          },
+          "except": [
+            {
+              "layer": 4,
+              "supertypes": {
+                "remove": [
+                  "Legendary"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast a creature spell this turn, copy it, except the copy isn't legendary."
+      },
+      {
+        "text": "When you next cast an artifact spell this turn, copy that spell, except the copy isn't legendary."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast a creature spell this turn, copy it, except the copy is legendary.",
+      "When you next cast a creature spell, copy it, except the copy isn't legendary.",
+      "When you next cast a creature spell this turn, copy it twice, except the copies aren't legendary."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.copy.spell.notLegendary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.9b",
+      "CR 707.10",
+      "CR 205.4a"
+    ],
+    "pattern": "copy {o:Obj} , except the copy isn't legendary",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell, copy it, except the copy isn't legendary."
+      },
+      {
+        "text": "Whenever you cast an artifact spell, you may copy it, except the copy isn't legendary."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell, copy it, except the copy is legendary.",
+      "Whenever you cast a creature spell, copy it twice, except the copies aren't legendary.",
+      "Whenever you cast a creature spell, copy it, except the copy isn't legendary and it has haste."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.copy.spell.artifact",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.9b",
+      "CR 707.10",
+      "CR 205.1b"
+    ],
+    "pattern": "copy {o:Obj} , except the copy is an artifact in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Artifact"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a Beast creature spell, you may copy it, except the copy is an artifact in addition to its other types."
+      },
+      {
+        "text": "Whenever you cast a creature spell, copy it, except the copy is an artifact in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell, copy it, except the copy is an artifact.",
+      "Whenever you cast a creature spell, copy it, except the copy is an enchantment in addition to its other types.",
+      "Whenever you cast a creature spell, copy it twice, except the copies are artifacts in addition to their other types."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.gainlife.perColorOf",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 105.2",
+      "CR 119.1",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] 1 life for each of {o:Obj} 's colors",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "distinct",
+        "what": "colors",
+        "among": "$o"
+      }
+    },
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, you gain 1 life for each of that spell's colors."
+      },
+      {
+        "text": "Whenever you cast a multicolored spell, you gain 1 life for each of that spell's colors."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, you gain 2 life for each of that spell's colors.",
+      "Whenever you cast a spell, you gain 1 life for each of that spell's targets.",
+      "Whenever you cast a spell, you lose 1 life for each of that spell's colors."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.stdmisc.gainlife.perColorOf.imp",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 119.1",
+      "CR 608.2h"
+    ],
+    "pattern": "gain 1 life for each of {o:Obj} 's colors",
+    "build": {
+      "op": "gainLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": {
+        "q": "distinct",
+        "what": "colors",
+        "among": "$o"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell that's one or more colors, you may gain 1 life for each of that spell's colors."
+      },
+      {
+        "text": "Whenever you cast a creature spell, you may gain 1 life for each of that spell's colors. Do this only once each turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, you may gain 2 life for each of that spell's colors.",
+      "Whenever you cast a spell, you may gain 1 life for each of that spell's targets.",
+      "Whenever you cast a spell, you may lose 1 life for each of that spell's colors."
+    ]
+  },
+  {
+    "id": "eff.stdmisc.search.differentNames.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 201.2",
+      "CR 406.3",
+      "CR 607.2a"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards ( that have | with ) different names , exile them , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "differentNames": true,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for up to four land cards that have different names, exile them, then shuffle."
+      },
+      {
+        "text": "When ~ enters, search your library for up to three creature cards with different names, exile them, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, search your library for up to five land cards, exile them, then shuffle.",
+      "When ~ enters, search your library for up to five land cards that have different names, put them into your hand, then shuffle.",
+      "When ~ enters, search your library for five land cards that have different names, exile them, then shuffle."
+    ],
+    "consumes": [
+      "up to",
+      "different",
+      "then"
+    ]
+  },
+  {
+    "id": "eff.stdmisc.linked.random.battlefield.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 110.5b"
+    ],
+    "pattern": "choose a card at random exiled with ~ and put it onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "linked",
+          "link": "exiled"
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for up to four land cards that have different names, exile them, then shuffle.\nAt the beginning of your upkeep, choose a card at random exiled with ~ and put it onto the battlefield tapped."
+      },
+      {
+        "text": "When ~ enters, exile target land an opponent controls.\nAt the beginning of your upkeep, choose a card at random exiled with ~ and put it onto the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, choose a card at random exiled with ~ and put it onto the battlefield tapped.",
+      "When ~ enters, exile target land an opponent controls.\nAt the beginning of your upkeep, choose a card exiled with ~ and put it onto the battlefield tapped.",
+      "When ~ enters, exile target land an opponent controls.\nAt the beginning of your upkeep, choose a card at random exiled with ~ and put it into your hand."
+    ],
+    "consumes": [
+      "random"
+    ]
+  },
+  {
+    "id": "trg.stdmisc.you.sacrifice.selfOrAnother",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 603.10a",
+      "CR 603.6c"
+    ],
+    "pattern": "whenever you sacrifice ~ or another {f:Filter}",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "sacrifice",
+          "actor": "you",
+          "object": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you sacrifice ~ or another artifact, draw a card.",
+        "expect": {
+          "on": [
+            {
+              "ev": "action",
+              "verb": "sacrifice",
+              "actor": "you",
+              "object": {
+                "types": [
+                  "Artifact"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever you sacrifice ~ or another creature, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you sacrifice ~ and another artifact, draw a card.",
+      "Whenever an opponent sacrifices ~ or another artifact, draw a card.",
+      "Whenever you sacrifice ~ or another artifact you don't control, draw a card."
+    ]
+  }
+]

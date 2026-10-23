@@ -1,0 +1,420 @@
+[
+  {
+    "id": "sta.stdrl.attached.pump.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 303.4",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets +x/+x , where x is {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$q",
+          "toughness": "$q"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Equipped creature gets +X/+X, where X is the number of Islands you control."
+      },
+      {
+        "text": "Enchant creature\nEnchanted creature gets +X/+X, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +X/+X until end of turn, where X is the number of Islands you control.",
+      "Equipped creature gets +X/+0, where X is the number of Islands you control.",
+      "Target creature gets +X/+X, where X is the number of Islands you control.",
+      "Equipped creature gets +2/+2, where X is the number of Islands you control."
+    ]
+  },
+  {
+    "id": "sta.stdrl.attached.shrink.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 303.4",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets -x/-x , where x is {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              -1,
+              "$q"
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              -1,
+              "$q"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature gets -X/-X, where X is the number of Swamps you control."
+      },
+      {
+        "text": "Equipped creature gets -X/-X, where X is the number of cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets -X/-X until end of turn, where X is the number of Swamps you control.",
+      "Enchanted creature gets -X/-0, where X is the number of Swamps you control.",
+      "Enchanted creature gets +X/+X, where X is the number of Swamps you control.",
+      "Target creature gets -X/-X, where X is the number of Swamps you control."
+    ]
+  },
+  {
+    "id": "eff.stdrl.player.searches.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} searches their library for ( a | an ) {f:Filter} card , puts it onto the battlefield tapped , then shuffles",
+    "build": [
+      {
+        "op": "search",
+        "who": "$p",
+        "zone": "library",
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "$p",
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent searches their library for a Swamp card, puts it onto the battlefield tapped, then shuffles."
+      },
+      {
+        "text": "Destroy target creature. Its controller searches their library for a basic land card, puts it onto the battlefield tapped, then shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent searches their library for a Swamp card, puts it onto the battlefield, then shuffles.",
+      "Target opponent searches your library for a Swamp card, puts it onto the battlefield tapped, then shuffles.",
+      "Target opponent searches their library for a Swamp card, puts it into their hand tapped, then shuffles.",
+      "Target opponent searches their library for a Swamp card, puts it onto the battlefield tapped."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.stdrl.copy.tokens.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 111.4",
+      "CR 107.3",
+      "CR 110.5"
+    ],
+    "pattern": "create {n:Qty} tapped tokens that are copies of {o:Obj}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "tapped": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create three tapped tokens that are copies of target artifact you control."
+      },
+      {
+        "text": "Create two tapped tokens that are copies of ~."
+      }
+    ],
+    "counterExamples": [
+      "Create three tokens that are copies of target artifact you control.",
+      "Create three tapped tokens that are copies of target artifact you control, except they have haste.",
+      "Create a tapped token that's a copy of target artifact you control."
+    ]
+  },
+  {
+    "id": "eff.stdrl.group.attack.nodefender",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.4",
+      "CR 702.3b",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "{f:Filter} can attack this turn as though they didn't have defender",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender",
+          "of": "$f"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: Walls you control can attack this turn as though they didn't have defender."
+      },
+      {
+        "text": "{1}: Creatures you control with power 1 or less can attack this turn as though they didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "{2}{U}: Walls you control can block this turn as though they didn't have defender.",
+      "{2}{U}: Walls you control can attack this turn as though they didn't have flying.",
+      "{2}{U}: Walls you control can attack as though they didn't have defender."
+    ]
+  },
+  {
+    "id": "rst.stdrl.cast.self.onlyIf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 113.6"
+    ],
+    "pattern": "cast ~ only if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": "$c"
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Cast ~ only if you control three or more Islands.\nFlying"
+      },
+      {
+        "text": "Flying\nCast ~ only if an opponent controls a Dragon."
+      }
+    ],
+    "counterExamples": [
+      "Cast ~ only during combat if you control three or more Islands.\nFlying",
+      "Activate only if you control three or more Islands.",
+      "Cast ~ unless you control three or more Islands.\nFlying"
+    ]
+  },
+  {
+    "id": "rst.stdrl.cast.self.onlyIf.anotherSpell",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2i",
+      "CR 109.2"
+    ],
+    "pattern": "cast ~ only if ( you've | you have ) cast another spell this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "happened",
+            "event": {
+              "ev": "cast",
+              "player": "you",
+              "spell": {
+                "other": true
+              }
+            },
+            "scope": "turn",
+            "times": {
+              "op": ">=",
+              "value": 1
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "if",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Cast ~ only if you have cast another spell this turn.\nReach"
+      },
+      {
+        "text": "Cast ~ only if you have cast another spell this turn.\nVigilance"
+      }
+    ],
+    "counterExamples": [
+      "Cast ~ only if you have cast another spell this game.\nReach",
+      "Cast ~ only if an opponent has cast another spell this turn.\nReach",
+      "Cast ~ unless you have cast another spell this turn.\nReach"
+    ]
+  },
+  {
+    "id": "eff.stdrl.counters.put.equalTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "put {k:CounterKind} counters on {o:Objs} equal to {q:Qty}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$q"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put +1/+1 counters on target creature equal to the number of Forests you control."
+      },
+      {
+        "text": "Put -1/-1 counters on target creature an opponent controls equal to the number of Swamps you control."
+      }
+    ],
+    "counterExamples": [
+      "Put +1/+1 counters on target creature equal to the number of Forests you control until end of turn.",
+      "Put a +1/+1 counter on target creature equal to the number of Forests you control.",
+      "Remove +1/+1 counters from target creature equal to the number of Forests you control."
+    ]
+  },
+  {
+    "id": "sta.stdrl.graveyard.landType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 305.2",
+      "CR 305.9",
+      "CR 205.3i",
+      "CR 404.1"
+    ],
+    "pattern": "you may play {f:Filter} from your graveyard",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "play",
+      "of": "$f",
+      "from": "graveyard"
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may play Islands from your graveyard."
+      },
+      {
+        "text": "Reach\nYou may play Mountains from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You may play Islands from the top of your library.",
+      "You may play Islands and cast spells from your graveyard.",
+      "Each player may play Islands from their graveyard."
+    ],
+    "weak": 1
+  }
+]

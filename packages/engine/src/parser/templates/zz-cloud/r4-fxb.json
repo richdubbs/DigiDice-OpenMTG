@@ -1,0 +1,1360 @@
+[
+  {
+    "id": "kw.fxb.firebending.whereX",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.189a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "firebending x , where x is {q:Qty}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "firebending",
+      "amount": "$q"
+    },
+    "examples": [
+      {
+        "text": "Firebending X, where X is this creature's power."
+      },
+      {
+        "text": "Firebending X, where X is the number of Equipment you control."
+      }
+    ],
+    "counterExamples": [
+      "Firebending X",
+      "Firebending X, where X is",
+      "Earthbending X, where X is this creature's power."
+    ]
+  },
+  {
+    "id": "eff.fxb.loseAll.each",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Objs} lose all abilities {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Creatures your opponents control lose all abilities until end of turn."
+      },
+      {
+        "text": "Draw a card. All creatures lose all abilities until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "All creatures lose all abilities.",
+      "Creatures your opponents control lose flying until end of turn.",
+      "All creatures gain all abilities until end of turn."
+    ]
+  },
+  {
+    "id": "eff.fxb.loseAll.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Obj} loses all abilities",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, up to one other target creature loses all abilities."
+      },
+      {
+        "text": "Target creature an opponent controls loses all abilities. Draw a card."
+      },
+      {
+        "text": "When this creature dies, return it to the battlefield under its owner's control and it loses all abilities."
+      },
+      {
+        "text": "Exile target creature you control, then return that card to the battlefield under its owner's control. It loses all abilities."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses all abilities until end of turn.",
+      "Target creature loses flying.",
+      "Target creature gains all abilities.",
+      "When this creature dies, return it to the battlefield under its owner's control and it gains flying.",
+      "When this creature dies, return it to the battlefield under its owner's control and it loses flying."
+    ]
+  },
+  {
+    "id": "eff.fxb.loseAll.gains.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 613.7"
+    ],
+    "pattern": "{o:Obj} loses all abilities and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When this creature dies, return it to the battlefield under its owner's control. It loses all abilities and gains haste."
+      },
+      {
+        "text": "Target creature loses all abilities and gains flying."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses all abilities and gains flying until end of turn.",
+      "Target creature loses flying and gains haste.",
+      "Target creature loses all abilities and gets +1/+1."
+    ]
+  },
+  {
+    "id": "eff.fxb.token.orToken",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.10",
+      "CR 608.2d"
+    ],
+    "pattern": "create ( a | an ) {t1:TokenDesc} or ( a | an ) {t2:TokenDesc}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "tokenChoice",
+        "link": "tokenChoice",
+        "options": [
+          "$t1.predefined",
+          "$t2.predefined"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "tokenChoice",
+          "equals": "$t1.predefined"
+        },
+        "then": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1,
+            "token": "$t1"
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "tokenChoice",
+          "equals": "$t2.predefined"
+        },
+        "then": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1,
+            "token": "$t2"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, create a Food token or a Treasure token."
+      },
+      {
+        "text": "Create a Clue token or a Blood token. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Create a Food token and a Treasure token.",
+      "Create a Food token or two Treasure tokens.",
+      "Create a 1/1 white Soldier creature token or a Treasure token."
+    ]
+  },
+  {
+    "id": "eff.fxb.mustBeBlocked.eachCombat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 509.1c",
+      "CR 506.1"
+    ],
+    "pattern": "{o:Obj} must be blocked each combat this turn if able",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "must",
+      "if able",
+      "if",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{3}{R}: ~ must be blocked each combat this turn if able."
+      },
+      {
+        "text": "Target creature you control must be blocked each combat this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control must be blocked each combat this turn.",
+      "Target creature you control can't be blocked each combat this turn.",
+      "Target creature you control must be blocked each combat if able."
+    ]
+  },
+  {
+    "id": "eff.fxb.ifOpponentControls",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2b"
+    ],
+    "pattern": "if an opponent controls {o:Obj} , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "matches",
+        "object": "$o",
+        "filter": {
+          "controller": "opponent"
+        }
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, tap up to one target creature. If an opponent controls that creature, put a stun counter on it."
+      },
+      {
+        "text": "Tap target creature. If an opponent controls that creature, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Tap target creature. If you control that creature, put a stun counter on it.",
+      "Tap target creature. If an opponent controls that creature, put a stun counter on it instead.",
+      "Tap target creature. If an opponent controls two creatures, draw a card."
+    ]
+  },
+  {
+    "id": "eff.fxb.counter.oneOfThem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 122.1"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on one of them",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "plural",
+                "text": "them"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "kind": "$k",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Tap up to three target creatures. Put a stun counter on one of them."
+      },
+      {
+        "text": "Untap two target lands. Put a +1/+1 counter on one of them."
+      }
+    ],
+    "counterExamples": [
+      "Tap up to three target creatures. Put a stun counter on each of them.",
+      "Tap up to three target creatures. Put two stun counters on one of them.",
+      "Tap up to three target creatures. Put a stun counter on one of those lands."
+    ]
+  },
+  {
+    "id": "eff.fxb.becomes.artifactCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} artifact creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}{U}: ~ becomes a 3/5 artifact creature until end of turn."
+      },
+      {
+        "text": "Target artifact becomes a 2/3 artifact creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{4}: ~ becomes a 4/4 artifact creature.",
+      "{4}: ~ becomes a 4/4 artifact creature with flying until end of turn.",
+      "{4}: ~ becomes a 4/4 enchantment creature until end of turn."
+    ]
+  },
+  {
+    "id": "eff.fxb.becomes.legendary.subtype.inaddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.4a",
+      "CR 613.1d",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes a legendary {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "supertypes": {
+                "add": [
+                  "Legendary"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Put a +1/+1 counter on target creature you control. It becomes a legendary Spider Hero in addition to its other types."
+      },
+      {
+        "text": "Untap target creature you control. That creature becomes a legendary Knight in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Untap target creature you control. It becomes a legendary Knight.",
+      "Untap target creature you control. It becomes a legendary Knight in addition to its other types until end of turn.",
+      "Untap target creature you control. It becomes a snow Knight in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.fxb.becomes.allColors",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 613.1e",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes all colors {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "W",
+                  "U",
+                  "B",
+                  "R",
+                  "G"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control becomes all colors until end of turn."
+      },
+      {
+        "text": "{2}{W}: ~ becomes all colors until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control becomes all colors.",
+      "Target creature you control becomes colorless until end of turn.",
+      "Target creature you control becomes all creature types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.fxb.then.transform.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.28a"
+    ],
+    "pattern": "then transform {o:Obj} if {c:Cond}",
+    "build": {
+      "op": "changeFace",
+      "what": "$o",
+      "to": "transform",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another artifact you control enters, draw a card. Then transform ~ if you control four or more artifacts."
+      },
+      {
+        "text": "At the beginning of your upkeep, you gain 1 life. Then transform ~ if you have 25 or more life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you gain 1 life. Then transform ~ unless you have 25 or more life.",
+      "At the beginning of your upkeep, you gain 1 life. Then untap ~ if you have 25 or more life.",
+      "At the beginning of your upkeep, you gain 1 life. Then transform ~."
+    ]
+  },
+  {
+    "id": "eff.fxb.tokens.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 111.1"
+    ],
+    "pattern": "^ create {n:Qty} {t:TokenDesc} if {c:Cond}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, create two 1/1 blue Fish creature tokens if an opponent controls more creatures than you."
+      },
+      {
+        "text": "Create three Treasure tokens if you control four or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Create three Treasure tokens unless you control four or more artifacts.",
+      "Create three Treasure tokens if you control four or more artifacts instead.",
+      "Draw three cards if you control four or more artifacts."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.fxb.damage.andUpToTarget",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 115.3",
+      "CR 601.2c"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and {m:Qty} damage to {r:Targets}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$r",
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, it deals 4 damage to target creature and 1 damage to up to one target creature token."
+      },
+      {
+        "text": "When ~ enters, it deals 3 damage to target creature and 2 damage to up to one other target creature."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals 4 damage to target creature and 1 damage to each creature token.",
+      "When ~ enters, it deals 4 damage to target creature or 1 damage to up to one target creature token.",
+      "When ~ enters, it deals 4 damage to target creature and 1 damage to up to one target creature token instead."
+    ]
+  },
+  {
+    "id": "eff.fxb.counter.eachOfThem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 122.1"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on each of {g:Group}",
+    "build": {
+      "op": "putCounters",
+      "on": "$g",
+      "kind": "$k",
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Create two 2/2 white Knight creature tokens. Put an indestructible counter on each of them."
+      },
+      {
+        "text": "Return up to two target creature cards from your graveyard to the battlefield. Put a vigilance counter on each of them."
+      }
+    ],
+    "counterExamples": [
+      "Create two 2/2 white Knight creature tokens. Put an indestructible counter on one of them.",
+      "Create two 2/2 white Knight creature tokens. Put two indestructible counters on each of them.",
+      "Create two 2/2 white Knight creature tokens. Put an indestructible counter on each creature you control."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.fxb.gainlife.forEachOfGroup",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.1",
+      "CR 608.2c",
+      "CR 107.1"
+    ],
+    "pattern": "you gain 1 life for each of {g:Group}",
+    "build": {
+      "op": "gainLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": {
+        "q": "count",
+        "of": "$g"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, put a +1/+1 counter on each other creature you control. You gain 1 life for each of those creatures."
+      },
+      {
+        "text": "Untap up to two target creatures. You gain 1 life for each of them."
+      }
+    ],
+    "counterExamples": [
+      "Untap up to two target creatures. You lose 1 life for each of them.",
+      "Untap up to two target creatures. You gain 1 life for each creature you control.",
+      "Untap up to two target creatures. You gain 2 life for each of them."
+    ]
+  },
+  {
+    "id": "eff.fxb.tokens.tapped.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 110.5b"
+    ],
+    "pattern": "create {n:Qty} tapped {t:TokenDesc} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t",
+          "tapped": true
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, create X tapped Treasure tokens, where X is the number of artifacts your opponents control."
+      },
+      {
+        "text": "Create X tapped 1/1 white Soldier creature tokens, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Create X Treasure tokens that are tapped and attacking, where X is the number of artifacts your opponents control.",
+      "Create X tapped Treasure tokens.",
+      "Create two tapped Treasure tokens, where X is the number of artifacts your opponents control."
+    ]
+  },
+  {
+    "id": "eff.fxb.token.forEach.counterKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "create ( a | an ) {t:TokenDesc} for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "counters",
+        "on": "$o",
+        "kind": "$k"
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, create a Treasure token for each +1/+1 counter on it."
+      },
+      {
+        "text": "When ~ dies, create a 1/1 green Saproling creature token for each spore counter on it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, create a Treasure token for each counter on it.",
+      "When ~ dies, create two Treasure tokens for each +1/+1 counter on it.",
+      "When ~ dies, create a Treasure token for each +1/+1 counter on target creature you control."
+    ]
+  },
+  {
+    "id": "eff.fxb.counters.perColorOf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {o:Obj} for each of {s:Obj} 's colors",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "distinct",
+        "what": "colors",
+        "among": "$s"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, put a +1/+1 counter on ~ for each of that spell's colors."
+      },
+      {
+        "text": "Whenever an opponent casts a spell, put a charge counter on ~ for each of that spell's colors."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, put a +1/+1 counter on ~ for each of that spell's types.",
+      "Whenever you cast a spell, put two +1/+1 counters on ~ for each of that spell's colors.",
+      "Whenever you cast a spell, put a +1/+1 counter on ~ for each color."
+    ]
+  },
+  {
+    "id": "eff.fxb.proliferate.xTimes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.34a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "proliferate x times , where x is {q:Qty}",
+    "build": {
+      "op": "action",
+      "action": "proliferate",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$q"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Proliferate X times, where X is the number of creatures you control."
+      },
+      {
+        "text": "When ~ enters, proliferate X times, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Proliferate X times.",
+      "{T}: Investigate X times, where X is the number of creatures you control.",
+      "{T}: Proliferate twice, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.fxb.extraPhases.twoCombat.afterMain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1"
+    ],
+    "pattern": "after this main phase , there are two additional combat phases",
+    "build": [
+      {
+        "op": "extraPhase",
+        "phase": "combat",
+        "after": "main1"
+      },
+      {
+        "op": "extraPhase",
+        "phase": "combat",
+        "after": "main1"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. After this main phase, there are two additional combat phases."
+      },
+      {
+        "text": "After this main phase, there are two additional combat phases. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "After this main phase, there are three additional combat phases.",
+      "After this main phase, there are two additional main phases.",
+      "After this combat phase, there are two additional combat phases."
+    ]
+  },
+  {
+    "id": "dl.fxb.eachCombat.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7b",
+      "CR 603.7c",
+      "CR 506.1",
+      "CR 507.1"
+    ],
+    "pattern": "at the beginning of each combat this turn , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "beginCombat"
+      },
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "After this main phase, there are two additional combat phases. At the beginning of each combat this turn, untap all creatures that attacked this turn."
+      },
+      {
+        "text": "Draw a card. At the beginning of each combat this turn, creatures you control get +1/+0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. At the beginning of the next combat this turn, creatures you control get +1/+0 until end of turn.",
+      "Draw a card. At the beginning of each combat, creatures you control get +1/+0 until end of turn.",
+      "Draw a card. At the beginning of each end step this turn, creatures you control get +1/+0 until end of turn."
+    ]
+  },
+  {
+    "id": "sta.fxb.triggerMod.it",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.10a"
+    ],
+    "pattern": "if a triggered ability of {f:Filter} triggers , it triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "abilitiesOf": "$f",
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If a triggered ability of another Goblin you control triggers, it triggers an additional time."
+      },
+      {
+        "text": "If a triggered ability of another artifact you control triggers, it triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If a triggered ability of another Goblin you control triggers, it triggers two additional times.",
+      "If a triggered ability of another Goblin an opponent controls triggers, it triggers an additional time.",
+      "If an activated ability of another Goblin you control is activated, it triggers an additional time."
+    ]
+  },
+  {
+    "id": "eff.fxb.extraStep.end.afterThisStep",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.9",
+      "CR 513.1"
+    ],
+    "pattern": "there is an additional end step after this step",
+    "build": {
+      "op": "extraStep",
+      "step": "end"
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, draw a card. Then if it's the first end step of the turn, there is an additional end step after this step."
+      },
+      {
+        "text": "At the beginning of each end step, you gain 1 life. There is an additional end step after this step."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, draw a card. There is an additional upkeep step after this step.",
+      "At the beginning of your end step, draw a card. There is an additional end step after this phase.",
+      "At the beginning of your end step, draw a card. There are two additional end steps after this step."
+    ]
+  },
+  {
+    "id": "eff.fxb.extraSteps.upkeep.afterThisPhase",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.9",
+      "CR 503.1"
+    ],
+    "pattern": "you get {n:Qty} additional upkeep steps after this phase",
+    "build": {
+      "op": "extraStep",
+      "step": "upkeep",
+      "count": "$n",
+      "afterPhase": true
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, you get that many additional upkeep steps after this phase."
+      },
+      {
+        "text": "Whenever ~ attacks, you get two additional upkeep steps after this phase."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you get two additional draw steps after this phase.",
+      "Whenever ~ attacks, you get two additional upkeep steps after this turn.",
+      "Whenever ~ attacks, you get two additional combat phases after this phase."
+    ]
+  },
+  {
+    "id": "eff.fxb.changeTarget",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.7",
+      "CR 115.7a"
+    ],
+    "pattern": "change the target of {o:Obj}",
+    "build": {
+      "op": "changeTarget",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Change the target of target instant spell with a single target. Draw a card."
+      },
+      {
+        "text": "When ~ enters, change the target of target spell or ability with a single target."
+      }
+    ],
+    "counterExamples": [
+      "Change the targets of target instant spell. Draw a card.",
+      "Change the text of target instant spell with a single target. Draw a card.",
+      "Choose new targets for target instant spell with a single target. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.fxb.removeCounter.fromOneYouControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "remove a counter from ( a | an ) {f:Filter} you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you",
+            "counters": {
+              "kind": "any"
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "removeCounters",
+        "from": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "kind": "any",
+        "count": 1,
+        "as": "removed"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, remove a counter from a creature you control. If you do, draw a card."
+      },
+      {
+        "text": "{1}: Remove a counter from an artifact you control. If you do, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Remove a counter from target artifact you control. If you do, you gain 2 life.",
+      "{1}: Remove two counters from an artifact you control. If you do, you gain 2 life.",
+      "{1}: Remove a counter from an artifact an opponent controls. If you do, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.fxb.counters.eachOfThem.andGainLife.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 119.1"
+    ],
+    "pattern": "put x {k:CounterKind} counters on each of {g:Group} and you gain x life , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "putCounters",
+          "on": "$g",
+          "kind": "$k",
+          "count": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, create two 0/0 green Ooze creature tokens. Put X +1/+1 counters on each of them and you gain X life, where X is the number of creatures you control."
+      },
+      {
+        "text": "Return up to two target creature cards from your graveyard to the battlefield. Put X +1/+1 counters on each of them and you gain X life, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Create two 0/0 green Ooze creature tokens. Put X +1/+1 counters on each of them and you lose X life, where X is the number of creatures you control.",
+      "Create two 0/0 green Ooze creature tokens. Put X +1/+1 counters on one of them and you gain X life, where X is the number of creatures you control.",
+      "Create two 0/0 green Ooze creature tokens. Put X +1/+1 counters on each of them, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.fxb.damage.eachPlayer.theirCount",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2f",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to each player equal to the number of {f:Filter} that player controls",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "eachPlayer",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "eachPlayer"
+          },
+          "amount": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals damage to each player equal to the number of tapped lands that player controls."
+      },
+      {
+        "text": "{2}{R}: ~ deals damage to each player equal to the number of tapped creatures that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals damage to each opponent equal to the number of nonbasic lands that player controls.",
+      "When ~ enters, it deals damage to each player equal to the number of nonbasic lands you control.",
+      "When ~ enters, it deals 2 damage to each player equal to the number of nonbasic lands that player controls."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.fxb.durFirst.self.becomes.addtype.hisTypes.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , ~ becomes ( a | an ) {st:Subtypes} in addition to ~ 's other types and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{2}{R}: Until end of turn, ~ becomes a Dragon in addition to ~'s other types and gains flying."
+      },
+      {
+        "text": "Whenever ~ attacks, until end of turn, ~ becomes a Demon in addition to ~'s other types and gains menace."
+      }
+    ],
+    "counterExamples": [
+      "{2}{R}: Until end of turn, ~ becomes a Dragon and gains flying.",
+      "{2}{R}: Until end of turn, ~ becomes a Dragon in addition to ~'s other types.",
+      "{2}{R}: ~ becomes a Dragon in addition to ~'s other types and gains flying."
+    ]
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "rep.stdcardcopy3.enters.exileUpTo.countersForEach",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 607.2a",
+      "CR 122.6"
+    ],
+    "pattern": "as ~ enters , exile up to {n:Qty} {f:Filter} . ( it | ~ ) enters with {m:Count} {k:CounterKind} counter[s] on it for each ( card | creature card ) exiled this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "exileCards": {
+              "filter": "$f",
+              "max": "$n",
+              "counters": {
+                "kind": "$k",
+                "per": "$m"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "up to",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, exile up to three creature cards from your graveyard. It enters with two +1/+1 counters on it for each creature card exiled this way."
+      },
+      {
+        "text": "As ~ enters, exile up to two cards from your graveyard. ~ enters with a +1/+1 counter on it for each card exiled this way."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, exile up to X creature cards from a graveyard. It enters with two +1/+1 counters on it for each creature card exiled this way.",
+      "As ~ enters, exile X creature cards from your graveyard. It enters with two +1/+1 counters on it for each creature card exiled this way.",
+      "As ~ enters, exile up to X creature cards from your graveyard. It enters with two +1/+1 counters on it for each card exiled this way."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdcardcopy3.becomeCopy.exceptBasePT.thisAbility",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 613.1a"
+    ],
+    "pattern": "{o:Obj} becomes a copy of {p:Obj} , except it's {pt:BasePT} and has this ability",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": [
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "thisAbility": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "{3}: ~ becomes a copy of another target creature you control, except it's 1/1 and has this ability."
+      },
+      {
+        "text": "{1}{U}: ~ becomes a copy of target artifact creature, except it's 3/3 and has this ability."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes a copy of another target creature you control, except it's 1/1 and has flying.",
+      "{3}: ~ becomes a copy of another target creature you control, except it has this ability.",
+      "{3}: ~ becomes a copy of another target creature you control until end of turn, except it's 1/1 and has this ability."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

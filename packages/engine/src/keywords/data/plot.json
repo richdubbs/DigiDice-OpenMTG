@@ -1,0 +1,21 @@
+{
+  "name": "plot",
+  "rule": "702.170",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "structural"
+  ],
+  "reminder": "You may pay {cost} and exile this card from your hand. Cast it as a sorcery on a later turn without paying its mana cost. Plot only as a sorcery.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "core/special/plot.ts#plotCostOf",
+    "actions/cast-opt/plot.ts#PLOT_CAST_OPTIONS"
+  ]
+}

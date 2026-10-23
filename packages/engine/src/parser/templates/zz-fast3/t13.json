@@ -1,0 +1,1192 @@
+[
+  {
+    "id": "eff.t13.gain.forestwalk",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 702.14a",
+      "CR 702.14c",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gains forestwalk {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "landwalk",
+                  "quality": "forest",
+                  "text": "forestwalk"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}{G}: Target creature gains forestwalk until end of turn."
+      },
+      {
+        "text": "{G}: ~ gains forestwalk until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: Target creature gains forestwalk.",
+      "{2}{G}: Target creature gains islandwalk until end of turn.",
+      "{2}{G}: Target creature gains forestwalk until end of turn and deals 1 damage to you."
+    ]
+  },
+  {
+    "id": "eff.t13.gain.islandwalk",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 702.14a",
+      "CR 702.14c",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gains islandwalk {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "landwalk",
+                  "quality": "island",
+                  "text": "islandwalk"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}{U}: ~ gains islandwalk until end of turn."
+      },
+      {
+        "text": "{3}: Target creature gains islandwalk until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}: ~ gains islandwalk.",
+      "{1}{U}: ~ gains swampwalk until end of turn.",
+      "{1}{U}: ~ gains islandwalk until your next turn."
+    ]
+  },
+  {
+    "id": "eff.t13.gain.swampwalk",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 702.14a",
+      "CR 702.14c",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gains swampwalk {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "landwalk",
+                  "quality": "swamp",
+                  "text": "swampwalk"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}{B}: Target creature gains swampwalk until end of turn."
+      },
+      {
+        "text": "{B}{B}: ~ gains swampwalk until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}{B}: Target creature gains swampwalk.",
+      "{2}{B}: Target creature gains forestwalk until end of turn.",
+      "{2}{B}: Each creature gains swampwalk until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t13.protection.choice",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 105.1"
+    ],
+    "pattern": "{o:Obj} gains protection from the color of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "protectionColor",
+        "link": "protectionColor"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "W"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:W",
+                        "text": "protection from white"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "U"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:U",
+                        "text": "protection from blue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "B"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:B",
+                        "text": "protection from black"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "R"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:R",
+                        "text": "protection from red"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "G"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:G",
+                        "text": "protection from green"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "priority": -1,
+    "examples": [
+      {
+        "text": "{1}{W}: Target creature you control gains protection from the color of your choice until end of turn."
+      },
+      {
+        "text": "Target artifact or creature you control gains protection from the color of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gains protection from the color of your choice.",
+      "Target creature you control gains protection from colorless or from the color of your choice until end of turn.",
+      "Target creature you control gains protection from the color of your choice until end of turn. Scry 1."
+    ]
+  },
+  {
+    "id": "eff.t13.becomes.basiclandtype.choice",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 305.7",
+      "CR 205.3i",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Obj} becomes the basic land type of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "landType",
+        "options": [
+          "Plains",
+          "Island",
+          "Swamp",
+          "Mountain",
+          "Forest"
+        ],
+        "as": "chosenBasicLandType",
+        "link": "chosenBasicLandType"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 4,
+                "subtypes": {
+                  "chosen": "chosenBasicLandType",
+                  "chosenSets": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}, {T}: Target land becomes the basic land type of your choice until end of turn."
+      },
+      {
+        "text": "{1}, {T}: Target land you control becomes the basic land type of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target land becomes the basic land type of your choice.",
+      "{T}: Target land becomes the basic land type of your choice in addition to its other types until end of turn.",
+      "{T}: Target land becomes the land type of your choice until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t13.becomes.creaturetype.choice",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.3m",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Obj} becomes the creature type of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "creatureType",
+        "as": "chosenCreatureType",
+        "link": "chosenCreatureType"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 4,
+                "subtypes": {
+                  "chosen": "chosenCreatureType",
+                  "chosenSets": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: ~ becomes the creature type of your choice until end of turn."
+      },
+      {
+        "text": "{U}: Target creature becomes the creature type of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}: ~ becomes the creature type of your choice.",
+      "{1}: ~ becomes the creature type of your choice in addition to its other types until end of turn.",
+      "{2}: ~ becomes the color of your choice until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t13.chosentype.pump",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 205.3m"
+    ],
+    "pattern": "creatures of the creature type of your choice get {pt:PT} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "creatureType",
+        "as": "chosenCreatureType",
+        "link": "chosenCreatureType"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "chosen": {
+                  "link": "chosenCreatureType",
+                  "quality": "creatureType"
+                }
+              }
+            },
+            "mods": [
+              {
+                "layer": "7c",
+                "power": "$pt.p",
+                "toughness": "$pt.t"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Creatures of the creature type of your choice get +2/+0 until end of turn."
+      },
+      {
+        "text": "{2}{W}: Creatures of the creature type of your choice get +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures of the creature type of your choice get +2/+0.",
+      "Creatures you control of the creature type of your choice get +2/+0 until end of turn.",
+      "Creatures of the creature type of your choice get +2/+0 and gain trample until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t13.becomes.subtype",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 305.7",
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}, {T}: Target land becomes an Island until end of turn."
+      },
+      {
+        "text": "{2}{B}: Target land becomes a Swamp until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target land becomes an Island.",
+      "{T}: Target land becomes an Island in addition to its other types until end of turn.",
+      "{T}: Target land becomes an Island creature until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t13.enchanted.is.subtype",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 305.7",
+      "CR 205.1a",
+      "CR 303.4a",
+      "CR 604.1",
+      "CR 613.1d"
+    ],
+    "pattern": "enchanted ( land | creature ) is ( a | an ) {st:Subtypes}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchant land\nEnchanted land is a Forest."
+      },
+      {
+        "text": "Enchant creature\nEnchanted creature is a Goblin."
+      }
+    ],
+    "counterExamples": [
+      "Enchant land\nEnchanted land is an Island in addition to its other types.",
+      "Enchant land\nEnchanted land is an Island creature.",
+      "Enchant land\nEnchanted land is an Island until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t13.enchanted.loseall.becomes",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 303.4a",
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "enchanted creature loses all abilities and is ( a | an ) {c:Color} {st:Subtypes} creature with base power and toughness {pt:BasePT}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature loses all abilities and is a green Snail creature with base power and toughness 1/2."
+      },
+      {
+        "text": "Enchant creature\nEnchanted creature loses all abilities and is a red Goat creature with base power and toughness 2/2."
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEnchanted creature loses all abilities and is a green Snail creature with base power and toughness 1/2 until end of turn.",
+      "Enchant creature\nEnchanted creature loses flying and is a green Snail creature with base power and toughness 1/2.",
+      "Enchant creature\nEnchanted creature loses all abilities and is a green Snail with base power and toughness 1/2."
+    ]
+  },
+  {
+    "id": "eff.t13.eot.loseall.becomes",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} loses all abilities and becomes ( a | an ) {c:Color} {st:Subtypes} with base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature loses all abilities and becomes a green Snail with base power and toughness 1/2."
+      },
+      {
+        "text": "Until end of turn, target creature loses all abilities and becomes a white Goat with base power and toughness 0/3."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses all abilities and becomes a green Snail with base power and toughness 1/2.",
+      "Until end of turn, target creature loses flying and becomes a green Snail with base power and toughness 1/2.",
+      "Until end of turn, each creature loses all abilities and becomes a green Snail with base power and toughness 1/2."
+    ]
+  },
+  {
+    "id": "eff.t13.becomes.artifactcreature.with",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}: ~ becomes a 4/4 Golem artifact creature with trample until end of turn."
+      },
+      {
+        "text": "{1}{U}: ~ becomes a 2/2 Bird artifact creature with flying until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes a 4/4 Golem artifact creature with trample.",
+      "{3}: ~ becomes a 4/4 Golem creature with trample until end of turn.",
+      "{3}: ~ becomes a 4/4 green Golem artifact creature with trample until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t13.eot.lose.gain",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} loses {k:Keyword} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ],
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, ~ loses defender and gains flying."
+      },
+      {
+        "text": "{1}{R}: Until end of turn, target creature loses flying and gains haste."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ loses defender and gains flying.",
+      "{2}: Until end of turn, ~ gains defender and loses flying.",
+      "{2}: Until end of turn, ~ loses all abilities and gains flying."
+    ]
+  },
+  {
+    "id": "eff.t13.each.lose.two",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.11e"
+    ],
+    "pattern": "{o:Objs} lose {k1:Keyword} and {k2:Keyword} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k1.keyword",
+                "$k2.keyword"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}: Creatures your opponents control lose flying and reach until end of turn."
+      },
+      {
+        "text": "{2}: Permanents your opponents control lose hexproof and indestructible until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Creatures your opponents control lose flying and reach.",
+      "{1}: Creatures your opponents control gain flying and reach until end of turn.",
+      "{1}: Creatures your opponents control lose flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t13.animate.manavalue",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 202.3",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes an artifact creature with power and toughness each equal to its mana value {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": "$o"
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": "$o"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value until end of turn."
+      },
+      {
+        "text": "Target noncreature artifact you control becomes an artifact creature with power and toughness each equal to its mana value until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value.",
+      "{2}: Target noncreature artifact becomes an artifact creature with power and toughness each equal to its power until end of turn.",
+      "{2}: Each noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t13.pump.or.1",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets +1/-1 or -1/+1 {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "+1/-1",
+          "-1/+1"
+        ],
+        "as": "ptChoice",
+        "link": "ptChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "ptChoice",
+          "equals": "+1/-1"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 1,
+                    "toughness": -1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "ptChoice",
+          "equals": "-1/+1"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": -1,
+                    "toughness": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: ~ gets +1/-1 or -1/+1 until end of turn."
+      },
+      {
+        "text": "{U}: Target creature gets +1/-1 or -1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}: ~ gets +1/-1 or -1/+1.",
+      "{1}: ~ gets +1/-1 and -1/+1 until end of turn.",
+      "{1}: ~ gets +1/-1 or -1/+1 until end of turn, where X is 2."
+    ]
+  },
+  {
+    "id": "eff.t13.pump.or.2",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets +2/-2 or -2/+2 {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "+2/-2",
+          "-2/+2"
+        ],
+        "as": "ptChoice",
+        "link": "ptChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "ptChoice",
+          "equals": "+2/-2"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 2,
+                    "toughness": -2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "ptChoice",
+          "equals": "-2/+2"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": -2,
+                    "toughness": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: ~ gets +2/-2 or -2/+2 until end of turn."
+      },
+      {
+        "text": "{1}{U}: Target creature gets +2/-2 or -2/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ gets +2/-2 or -2/+2.",
+      "{2}: ~ gets +2/-2 or -1/+1 until end of turn.",
+      "{2}: Each creature gets +2/-2 or -2/+2 until end of turn."
+    ]
+  }
+]

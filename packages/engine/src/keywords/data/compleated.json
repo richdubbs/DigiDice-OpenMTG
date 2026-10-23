@@ -1,0 +1,12 @@
+{
+  "name": "compleated",
+  "rule": "702.150",
+  "params": [],
+  "mechanisms": [
+    "castOption",
+    "replacement"
+  ],
+  "reminder": "{B/P} can be paid with {B} or 2 life. If life was paid, this planeswalker enters with two fewer loyalty counters.",
+  "multiple": "independent",
+  "status": "planned"
+}

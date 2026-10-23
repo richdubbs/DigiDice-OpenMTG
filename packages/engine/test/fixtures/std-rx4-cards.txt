@@ -1,0 +1,6 @@
+# std-rx4 (card wave 2, slice s23; test/cloud/std-rx4, golden cloud-std-rx4-review.json, plus promotion evidence in fast5-t43-review.json and
+# fast5x-e19-review.json): "they lost life this turn"; the hand revealed inside a branch is "it"; "the sacrificed creature" after your own sacrifice;
+# the exiled card of a dig named later (The Key to the Vault; Make Your Own Luck is in t43-cards.txt, The Last Agni Kai in fast5x-e16/e19-cards.txt)
+Thought-Stalker Warlock
+The Key to the Vault
+The Gitrog, Ravenous Ride

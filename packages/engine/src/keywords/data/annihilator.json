@@ -1,0 +1,45 @@
+{
+  "name": "annihilator",
+  "rule": "702.86",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks, defending player sacrifices {n} permanents of their choice.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, defending player sacrifices {n} permanents of their choice.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "sacrificeChoice",
+            "who": {
+              "ref": "defending"
+            },
+            "filter": {},
+            "count": "$amount"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+[
+  {
+    "id": "eff.attach",
+    "kind": "effect",
+    "cr": ["CR 701.3a", "CR 701.3b"],
+    "pattern": "attach {o:Obj} to {to:Obj}",
+    "build": { "op": "attach", "what": "$o", "to": "$to" },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw a card, then attach ~ to target nonwhite creature you control." },
+      { "text": "Draw two cards, then attach ~ to target Knight you control." }
+    ],
+    "counterExamples": ["Attach ~ to target creature at random.", "Attach ~ to each creature you control."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.unattach",
+    "kind": "effect",
+    "cr": ["CR 701.3d"],
+    "pattern": "unattach {o:Obj}",
+    "build": { "op": "attach", "what": "$o", "to": null },
+    "subject": "none",
+    "examples": [
+      { "text": "Draw a card, then unattach ~." },
+      { "text": "Draw three cards, then unattach ~." }
+    ],
+    "counterExamples": ["Unattach ~ unless you pay {5}.", "Unattach all Equipment you control."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.attached.pump",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 301.5a", "CR 303.4a"],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT}",
+    "build": { "s": "continuous", "affects": { "ref": "attachedTo" }, "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] },
+    "examples": [
+      {
+        "text": "Equipped creature gets +4/+3.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "Equipped creature gets +4/+3.",
+            "effects": [{ "s": "continuous", "affects": { "ref": "attachedTo" }, "mods": [{ "layer": "7c", "power": 4, "toughness": 3 }] }]
+          }
+        ]
+      },
+      { "text": "Enchanted creature gets -2/-5." }
+    ],
+    "counterExamples": ["Equipped creature gets +4/+3 until end of turn.", "Equipped creature gets +4/+3 as long as you control a Mountain."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.attached.pump.has",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f", "CR 613.4c", "CR 613.6", "CR 301.5a", "CR 303.4a"],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "attachedTo" },
+      "mods": [{ "layer": 6, "add": "$a" }, { "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }]
+    },
+    "examples": [
+      { "text": "Enchanted creature gets +3/+0 and has flying." },
+      { "text": "Equipped creature gets +1/+4 and has vigilance and lifelink." }
+    ],
+    "counterExamples": ["Enchanted creature gets +3/+0 and has flying until end of turn.", "Enchanted creature gets +3/+0 and loses flying."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sta.attached.has",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.1f", "CR 301.5a", "CR 303.4a"],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities}",
+    "build": { "s": "continuous", "affects": { "ref": "attachedTo" }, "mods": [{ "layer": 6, "add": "$a" }] },
+    "examples": [
+      { "text": "Enchanted creature has first strike and deathtouch." },
+      { "text": "Equipped creature has menace and reach." }
+    ],
+    "counterExamples": ["Enchanted creature has flying as long as you control an Island.", "Enchanted creature loses flying."],
+    "status": "stable",
+    "since": 1
+  }
+]

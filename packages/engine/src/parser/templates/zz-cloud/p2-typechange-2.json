@@ -1,0 +1,467 @@
+[
+  {
+    "id": "sta.p2tc2.attached.pump.addcolortype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4c",
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and is (a | an) {c:Color} {st:Subtypes} in addition to its other colors and types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "add": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature gets -2/-0 and is a green Elk in addition to its other colors and types."
+      },
+      {
+        "text": "Equipped creature gets +1/+3 and is a red Dwarf in addition to its other colors and types.\nEquip {2}"
+      }
+    ],
+    "counterExamples": [
+      "Enchant creature\nEnchanted creature gets -2/-0 and is a green Elk in addition to its other types.",
+      "Enchant creature\nEnchanted creature gets -2/-0 and is a green Elk.",
+      "Equipped creature gets +1/+3 and is a red Dwarf in addition to its other colors and types until end of turn.\nEquip {2}"
+    ]
+  },
+  {
+    "id": "sta.p2tc2.attached.pump.grant.addcolortype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , has {a:Abilities} , and is (a | an) {c:Color} {st:Subtypes} in addition to its other colors and types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "add": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+1, has reach, and is a green Spider in addition to its other colors and types.\nEquip {3}"
+      },
+      {
+        "text": "Enchant creature\nEnchanted creature gets +2/+0, has haste and trample, and is a red Berserker in addition to its other colors and types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+1, has reach, and is a green Spider in addition to its other types.\nEquip {3}",
+      "Equipped creature gets +1/+1, loses reach, and is a green Spider in addition to its other colors and types.\nEquip {3}",
+      "Equipped creature gets +1/+1, has reach, and is a green Spider.\nEquip {3}"
+    ]
+  },
+  {
+    "id": "eff.p2tc2.dur.becomes.color.artifact.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 205.1b",
+      "CR 105.3"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {c:Color} artifact in addition to its other colors and types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact"
+                ]
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "add": [
+                  "$c"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{1}: Until end of turn, target creature you control becomes a black artifact in addition to its other colors and types."
+      },
+      {
+        "text": "Until end of turn, target creature becomes a green artifact in addition to its other colors and types. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Until end of turn, target creature you control becomes a black artifact.",
+      "{1}: Until end of turn, target creature you control becomes a black artifact in addition to its other types.",
+      "{1}: Target creature you control becomes a black artifact in addition to its other colors and types."
+    ]
+  },
+  {
+    "id": "eff.p2tc2.self.becomes.enchantment",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.3d",
+      "CR 611.2a",
+      "CR 613.1d"
+    ],
+    "pattern": "~ becomes an enchantment",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Enchantment"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}{W}: This permanent becomes an enchantment. Activate only as a sorcery."
+      },
+      {
+        "text": "{2}: This permanent becomes an enchantment. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "{1}{W}: This permanent becomes an enchantment until end of turn. Activate only as a sorcery.",
+      "{1}{W}: This permanent becomes an enchantment in addition to its other types. Activate only as a sorcery.",
+      "{1}{W}: Target permanent becomes an enchantment. Activate only as a sorcery."
+    ]
+  },
+  {
+    "id": "eff.p2tc2.dur.loseall.basept",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} loses all abilities and has base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature loses all abilities and has base power and toughness 2/3."
+      },
+      {
+        "text": "{2}: Until end of turn, target creature an opponent controls loses all abilities and has base power and toughness 1/4."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature loses all abilities and has base power and toughness 2/3 and flying.",
+      "Until end of turn, target creature loses flying and has base power and toughness 2/3.",
+      "Target creature loses all abilities and has base power and toughness 2/3."
+    ]
+  },
+  {
+    "id": "eff.p2tc2.dur.group.loseall.basept",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} lose all abilities and have base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, creatures target opponent controls lose all abilities and have base power and toughness 1/3."
+      },
+      {
+        "text": "Until end of turn, all creatures lose all abilities and have base power and toughness 2/1."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, creatures target opponent controls lose flying and have base power and toughness 1/3.",
+      "Creatures target opponent controls lose all abilities and have base power and toughness 1/3.",
+      "Until end of turn, creatures target opponent controls lose all abilities and get +1/+3."
+    ]
+  },
+  {
+    "id": "sta.p2tc2.group.are.subtype.lands.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 305.6",
+      "CR 305.7",
+      "CR 613.1d",
+      "CR 604.1"
+    ],
+    "pattern": "{o:Objs} are {st:Subtypes} lands in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Land"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Nontoken creatures you control are Island lands in addition to their other types."
+      },
+      {
+        "text": "Creatures you control are Swamp lands in addition to their other types.\n{1}: You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Nontoken creatures you control are Island lands.",
+      "Nontoken creatures you control are Island creatures in addition to their other types.",
+      "Nontoken creatures you control are Island lands in addition to their other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.p2tc2.aslong.typeadd.manavalue",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 611.3b",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 202.3"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Objs} is a creature in addition to its other types and has base power and base toughness each equal to its mana value",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "subject"
+                }
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "subject"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "in addition",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control four or more artifacts, each other noncreature artifact you control is a creature in addition to its other types and has base power and base toughness each equal to its mana value."
+      },
+      {
+        "text": "As long as you have 10 or less life, each other non-Aura enchantment you control is a creature in addition to its other types and has base power and base toughness each equal to its mana value."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control four or more artifacts, each other noncreature artifact you control is a creature in addition to its other types and has base power and base toughness each equal to its toughness.",
+      "As long as you control four or more artifacts, each other noncreature artifact you control is a creature and has base power and base toughness each equal to its mana value.",
+      "As long as you control four or more artifacts, each other noncreature artifact you control is a creature in addition to its other types."
+    ]
+  }
+]

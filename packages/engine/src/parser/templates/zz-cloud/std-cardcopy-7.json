@@ -1,0 +1,111 @@
+[
+  {
+    "id": "rid.stdcardcopy7.mayCastUpToNCopies.free",
+    "kind": "rider",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2d",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast up to {n:Count} of the copies without paying their mana costs",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "free": true,
+        "select": {
+          "max": "$n"
+        },
+        "@require": {
+          "what.ref": {
+            "@oneOf": [
+              "bound",
+              "costExiled"
+            ]
+          },
+          "result": "spell",
+          "count": null,
+          "newTargets": null,
+          "except": null,
+          "as": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Exile any number of target instant cards from your graveyard. Copy them. You may cast up to two of the copies without paying their mana costs."
+      },
+      {
+        "text": "Exile up to four target sorcery cards from your graveyard. Copy them. You may cast up to three of the copies without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile any number of target instant cards from your graveyard. Copy them. You may cast up to two of the copies.",
+      "Exile any number of target instant cards from your graveyard. Copy them. You may cast two of the copies without paying their mana costs.",
+      "Exile any number of target instant cards from your graveyard. Copy them. You may cast up to two of the copies without paying their mana costs this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.stdcardcopy7.mayCastTotalMVFromCopies.free",
+    "kind": "rider",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2d",
+      "CR 608.2g",
+      "CR 202.3",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast any number of spells with total mana value {n:Count} or less from among the copies without paying their mana costs",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "free": true,
+        "select": {
+          "totalManaValue": "$n"
+        },
+        "@require": {
+          "what.ref": "bound",
+          "result": "spell",
+          "count": null,
+          "newTargets": null,
+          "except": null,
+          "as": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Exile any number of target instant cards from your graveyard. Copy them. You may cast any number of spells with total mana value 5 or less from among the copies without paying their mana costs."
+      },
+      {
+        "text": "Exile up to three target sorcery cards from your graveyard. Copy them. You may cast any number of spells with total mana value 4 or less from among the copies without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile any number of target instant cards from your graveyard. Copy them. You may cast any number of spells with total mana value 5 or greater from among the copies without paying their mana costs.",
+      "Exile any number of target instant cards from your graveyard. Copy them. You may cast any number of spells with total mana value 5 or less from among the copies.",
+      "Exile any number of target instant cards from your graveyard. Copy them. You may cast any number of spells with total power 5 or less from among the copies without paying their mana costs."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

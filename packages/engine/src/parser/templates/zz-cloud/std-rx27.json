@@ -1,0 +1,882 @@
+[
+  {
+    "id": "sta.rx27.linked.turn.castFlash.anyType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 609.4b",
+      "CR 611.3a"
+    ],
+    "pattern": "( during your turn | during each of your turns ) , you may cast cards exiled with ~ and you may cast them as though they had flash . mana of any type can be spent to cast those spells",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "anyManaType": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "{3}{U}, {T}: Exile target card from a graveyard.\nDuring each of your turns, you may cast cards exiled with ~ and you may cast them as though they had flash. Mana of any type can be spent to cast those spells."
+      },
+      {
+        "text": "{2}{B}, {T}: Exile the top card of target player's library.\nDuring your turn, you may cast cards exiled with ~ and you may cast them as though they had flash. Mana of any type can be spent to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "{3}{U}, {T}: Exile target card from a graveyard.\nDuring your turn, you may cast cards exiled with ~ and you may cast them as though they had haste. Mana of any type can be spent to cast those spells.",
+      "{3}{U}, {T}: Exile target card from a graveyard.\nDuring your turn, you may cast cards in exile and you may cast them as though they had flash. Mana of any type can be spent to cast those spells.",
+      "{3}{U}, {T}: Exile target card from a graveyard.\nDuring your turn, you may cast cards exiled with ~ and you may cast them as though they had flash. Mana of any color can be spent to cast those spells."
+    ]
+  },
+  {
+    "id": "sta.rx27.linked.cast.owned.entersWith",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 614.1c",
+      "CR 611.3a"
+    ],
+    "pattern": "you may cast {f:Filter} from among cards you own exiled with ~ . if you cast a spell this way , that ( artifact | creature | permanent ) enters with {r:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "owner": "you",
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": "$r"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "this way",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{3}: Exile target card from a graveyard.\nYou may cast Elf creature spells from among cards you own exiled with ~. If you cast a spell this way, that creature enters with a shield counter on it."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library.\nYou may cast artifact spells from among cards you own exiled with ~. If you cast a spell this way, that artifact enters with a stun counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{3}: Exile target card from a graveyard.\nYou may cast Elf creature spells from among cards you own in exile. If you cast a spell this way, that creature enters with a shield counter on it.",
+      "{3}: Exile target card from a graveyard.\nYou may cast Elf creature spells from among cards you own exiled with ~. If you cast a spell this way, that creature enters tapped.",
+      "{3}: Exile target card from a graveyard.\nYou may cast Elf creature spells from among cards you own exiled with ~. If you cast a spell this way, you gain 2 life."
+    ]
+  },
+  {
+    "id": "sta.rx27.linked.once.thisTurn.free",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 118.9",
+      "CR 400.7",
+      "CR 611.3a"
+    ],
+    "pattern": "once each turn , you may cast a spell with mana value less than or equal to {n:Qty} from among cards exiled with ~ this turn without paying its mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "putThereThisTurn": true
+          },
+          "oncePerTurn": true,
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "each",
+      "may",
+      "this turn",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile the top card of defending player's library.\nOnce each turn, you may cast a spell with mana value less than or equal to the number of Goblins you control from among cards exiled with ~ this turn without paying its mana cost."
+      },
+      {
+        "text": "At the beginning of your upkeep, exile the top two cards of target opponent's library.\nOnce each turn, you may cast a spell with mana value less than or equal to the number of cards in your hand from among cards exiled with ~ this turn without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top card of defending player's library.\nOnce each turn, you may cast a spell with mana value less than or equal to the number of Goblins you control from among cards in exile without paying its mana cost.",
+      "Whenever ~ attacks, exile the top card of defending player's library.\nOnce each turn, you may cast a spell with mana value greater than the number of Goblins you control from among cards exiled with ~ this turn without paying its mana cost.",
+      "Whenever ~ attacks, exile the top card of defending player's library.\nTwice each turn, you may cast a spell with mana value less than or equal to the number of Goblins you control from among cards exiled with ~ this turn without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.rx27.eot.play.oneLinked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7"
+    ],
+    "pattern": "until end of turn , you may play a card exiled with ~",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "single": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Exile the top card of your library.\nWhenever ~ attacks, until end of turn, you may play a card exiled with ~."
+      },
+      {
+        "text": "Whenever you gain life, exile the top card of your library.\n{2}: Until end of turn, you may play a card exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Exile the top card of your library.\nWhenever ~ attacks, until end of turn, you may play a card from exile.",
+      "{1}, {T}: Exile the top card of your library.\nWhenever ~ attacks, until your next turn, you may play a card exiled with ~.",
+      "{1}, {T}: Exile the top card of your library.\nWhenever ~ attacks, until end of turn, you may play two cards exiled with ~."
+    ]
+  },
+  {
+    "id": "sta.rx27.top.lands.cast.entersWith",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 401.5",
+      "CR 614.1c",
+      "CR 611.3a"
+    ],
+    "pattern": "you may play lands and cast {f:Filter} from the top of your library . if you cast a creature spell this way , that creature enters with ( an additional | a ) {k:CounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "types": [
+              "Land"
+            ]
+          },
+          "fromTop": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "fromTop": true,
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": 1
+            }
+          ],
+          "entersWithIf": {
+            "types": [
+              "Creature"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "this way",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "You may play lands and cast Elf spells from the top of your library. If you cast a creature spell this way, that creature enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "{5}{G}{G}: ~ gets +3/+1 until end of turn.\nYou may play lands and cast Goblin or Orc spells from the top of your library. If you cast a creature spell this way, that creature enters with a shield counter on it."
+      }
+    ],
+    "counterExamples": [
+      "You may play lands and cast Elf spells from your graveyard. If you cast a creature spell this way, that creature enters with an additional +1/+1 counter on it.",
+      "You may play lands and cast Elf spells from the top of your library. If you cast a creature spell this way, that creature enters tapped.",
+      "You may play lands and cast Elf spells from the top of your library. If you cast a creature spell this way, you gain 2 life."
+    ]
+  },
+  {
+    "id": "sta.rx27.gy.land.eachPermanentType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 305.2",
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 110.4a",
+      "CR 404.1",
+      "CR 611.3a"
+    ],
+    "pattern": "( during each of your turns | during your turn ) , you may play a land and cast a permanent spell of each permanent type from your graveyard",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "types": [
+              "Land"
+            ]
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "types": [
+              "Artifact"
+            ],
+            "stackKind": "spell",
+            "zone": "stack"
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "types": [
+              "Battle"
+            ],
+            "stackKind": "spell",
+            "zone": "stack"
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "types": [
+              "Creature"
+            ],
+            "stackKind": "spell",
+            "zone": "stack"
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "types": [
+              "Enchantment"
+            ],
+            "stackKind": "spell",
+            "zone": "stack"
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "types": [
+              "Planeswalker"
+            ],
+            "stackKind": "spell",
+            "zone": "stack"
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, you may play a land and cast a permanent spell of each permanent type from your graveyard."
+      },
+      {
+        "text": "{6}{B}: ~ gets +2/+0 until end of turn.\nDuring your turn, you may play a land and cast a permanent spell of each permanent type from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, you may play a land and cast a permanent spell of each permanent type from your hand.",
+      "During your turn, you may play a land and cast a permanent spell of each color from your graveyard.",
+      "During your turn, you may play a land and cast an instant spell from your graveyard."
+    ]
+  },
+  {
+    "id": "sta.rx27.turn.notActivated.activateAsUnactivated",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.5b",
+      "CR 702.177a",
+      "CR 611.3a",
+      "CR 500.1"
+    ],
+    "pattern": "( during your turn | during each of your turns ) , as long as you haven't activated an exhaust ability this turn , you may activate exhaust abilities as though they haven't been activated",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "turnOf",
+            "whose": "you"
+          },
+          {
+            "cond": "not",
+            "of": {
+              "cond": "happened",
+              "event": {
+                "ev": "activate",
+                "player": "you",
+                "ability": "exhaust"
+              },
+              "scope": "turn"
+            }
+          }
+        ]
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "activateAsUnactivated",
+          "keyword": "exhaust"
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "as long as",
+      "may",
+      "as though",
+      "this turn",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "During each of your turns, as long as you haven't activated an exhaust ability this turn, you may activate exhaust abilities as though they haven't been activated.\nExhaust -- {2}{G}: Draw a card."
+      },
+      {
+        "text": "{3}{G}{G}: ~ gets +2/+1 until end of turn.\nDuring each of your turns, as long as you haven't activated an exhaust ability this turn, you may activate exhaust abilities as though they haven't been activated."
+      }
+    ],
+    "counterExamples": [
+      "During each of your turns, as long as you haven't activated an exhaust ability this turn, you may activate exhaust abilities as though they had haste.",
+      "During each of your turns, as long as you haven't cast a spell this turn, you may activate exhaust abilities as though they haven't been activated.",
+      "During each of your turns, you may activate exhaust abilities as though they haven't been activated."
+    ]
+  },
+  {
+    "id": "sta.rx27.story.firstEquip.free",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.2b",
+      "CR 601.2f",
+      "CR 118.9",
+      "CR 702.6a",
+      "CR 702.195a",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as you have an enduring story , you may pay ( {0} | nothing ) rather than pay the equip cost of the first equip ability you activate each turn",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "designation",
+        "who": {
+          "ref": "you"
+        },
+        "what": "enduringStory"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "kind": "activated",
+              "keyword": "equip"
+            },
+            "caster": "you",
+            "firstEachTurn": true
+          },
+          "change": {
+            "kind": "set",
+            "mana": []
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "may",
+      "rather than",
+      "first",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{4}{W}{W}{W}: ~ gets +3/+0 until end of turn.\nAs long as you have an enduring story, you may pay nothing rather than pay the equip cost of the first equip ability you activate each turn."
+      },
+      {
+        "text": "{1}{W}{W}{W}: ~ gains vigilance and lifelink until end of turn.\nAs long as you have an enduring story, you may pay nothing rather than pay the equip cost of the first equip ability you activate each turn."
+      }
+    ],
+    "counterExamples": [
+      "As long as you have an enduring story, you may pay {1} rather than pay the equip cost of the first equip ability you activate each turn.",
+      "As long as you have an enduring story, you may pay {0} rather than pay the equip cost of each equip ability you activate.",
+      "As long as you control an artifact, you may pay {0} rather than pay the equip cost of the first equip ability you activate each turn."
+    ]
+  },
+  {
+    "id": "eff.rx27.cast.fromLinked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 607.2a",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from among cards exiled with ( it | ~ )",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Collect evidence 4: ~ gets +2/+0 until end of turn.\nWhenever ~ attacks, you may cast an instant spell from among cards exiled with it."
+      },
+      {
+        "text": "{3}{R}, {T}: Exile target card from a graveyard.\nWhenever ~ blocks, you may cast a sorcery spell from among cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "Collect evidence 4: ~ gets +2/+0 until end of turn.\nWhenever ~ attacks, you may cast an instant spell from among cards in exile.",
+      "Collect evidence 4: ~ gets +2/+0 until end of turn.\nWhenever ~ attacks, you may cast an instant spell from among cards exiled with it without paying its mana cost.",
+      "Collect evidence 4: ~ gets +2/+0 until end of turn.\nWhenever ~ attacks, you may cast two instant spells from among cards exiled with it."
+    ]
+  },
+  {
+    "id": "eff.rx27.cast.eachOpponentGraveyard.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9",
+      "CR 101.4"
+    ],
+    "pattern": "you may cast a spell from each opponent 's graveyard without paying its mana cost",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "opp",
+        "do": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "notTypes": [
+                  "Land"
+                ],
+                "zone": "graveyard",
+                "owner": {
+                  "ref": "bound",
+                  "name": "opp"
+                },
+                "isCard": true
+              }
+            },
+            "min": 0,
+            "max": 1,
+            "as": "cast"
+          },
+          {
+            "op": "cast",
+            "who": {
+              "ref": "you"
+            },
+            "what": {
+              "ref": "bound",
+              "name": "cast"
+            },
+            "free": true
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent mills four cards. You may cast a spell from each opponent's graveyard without paying its mana cost."
+      },
+      {
+        "text": "Draw a card, then you may cast a spell from each opponent's graveyard without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent mills four cards. You may cast a spell from your graveyard without paying its mana cost.",
+      "Each opponent mills four cards. You may cast a spell from each opponent's hand without paying its mana cost.",
+      "Each opponent mills four cards. You may cast two spells from each opponent's graveyard without paying their mana costs."
+    ]
+  },
+  {
+    "id": "rid.rx27.forEachCast.exileInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "if a spell cast this way would be put into a graveyard , exile it instead",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "over.ref": "each",
+          "over.who": "opponent",
+          "do.1.op": "cast",
+          "do.1.free": true
+        },
+        "do": [
+          {},
+          {
+            "graveyardInstead": {
+              "@new": {
+                "to": {
+                  "zone": "exile"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "attachTo": "forEach",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent mills four cards. You may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "Draw a card, then you may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent mills four cards. You may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it.",
+      "Each opponent mills four cards. You may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, return it to its owner's hand instead.",
+      "Each opponent mills four cards. Destroy target artifact. If a spell cast this way would be put into a graveyard, exile it instead."
+    ]
+  },
+  {
+    "id": "eff.rx27.exile.fromTheirGraveyard.withCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 701.13a",
+      "CR 404.1",
+      "CR 122.1"
+    ],
+    "pattern": "exile {o:Obj} from their graveyard with a {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": "$o",
+          "zone": "graveyard"
+        }
+      },
+      "to": {
+        "zone": "exile",
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Whenever an opponent discards a card, exile it from their graveyard with a bounty counter on it."
+      },
+      {
+        "text": "Whenever an opponent discards a card, exile it from their graveyard with a hoard counter on it. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent discards a card, exile it from their graveyard.",
+      "Whenever an opponent discards a card, exile it from their hand with a bounty counter on it."
+    ]
+  },
+  {
+    "id": "sta.rx27.turn.play.exile.filter.anyType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 305.1",
+      "CR 609.4b",
+      "CR 611.3a",
+      "CR 122.1",
+      "CR 400.7"
+    ],
+    "pattern": "during your turn , you may play {f:Filter} from exile , and mana of any type can be spent to cast those spells",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "from": "exile",
+          "of": "$f",
+          "anyManaType": true
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent discards a card, exile it from their graveyard with a bounty counter on it.\nDuring your turn, you may play cards you don't own with bounty counters on them from exile, and mana of any type can be spent to cast those spells."
+      },
+      {
+        "text": "During your turn, you may play cards with hoard counters on them from exile, and mana of any type can be spent to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, you may play cards you don't own with bounty counters on them from your graveyard, and mana of any type can be spent to cast those spells.",
+      "During your turn, you may play cards with hoard counters on them from exile."
+    ]
+  }
+]

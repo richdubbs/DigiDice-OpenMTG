@@ -1,0 +1,1322 @@
+[
+  {
+    "id": "eff.c10.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast {f:Filter} from your graveyard",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "cast",
+      "of": "$f",
+      "from": "graveyard"
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast artifact spells from your graveyard."
+      },
+      {
+        "text": "Flying\nYou may cast creature spells from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You may cast artifact spells from your hand.",
+      "You may cast artifact spells from an opponent's graveyard.",
+      "Each player may cast artifact spells from their graveyard."
+    ]
+  },
+  {
+    "id": "eff.c10.cast.life",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 119.4"
+    ],
+    "pattern": "you may cast {f:Filter} from your graveyard by paying {n:Qty} life in addition to ( paying their | their ) other costs",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "cast",
+      "of": "$f",
+      "from": "graveyard",
+      "addCost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast artifact spells from your graveyard by paying 3 life in addition to paying their other costs."
+      },
+      {
+        "text": "You may cast instant spells from your graveyard by paying 2 life in addition to their other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast artifact spells from your graveyard by paying 3 life rather than paying their mana costs.",
+      "You may cast artifact spells from your hand by paying 3 life in addition to paying their other costs."
+    ]
+  },
+  {
+    "id": "eff.c10.cast.rider",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 614.1c",
+      "CR 122.1h"
+    ],
+    "pattern": "you may cast {f:Filter} from your graveyard . if you cast a spell this way , that ( artifact | creature | permanent | spell ) enters with {r:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": "$r"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "this way",
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast creature spells from your graveyard. If you cast a spell this way, that creature enters with a finality counter on it."
+      }
+    ],
+    "counterExamples": [
+      "You may cast creature spells from your graveyard. If you cast a spell this way, it gains haste.",
+      "You may cast creature spells from your hand. If you cast a spell this way, that creature enters with a finality counter on it."
+    ]
+  },
+  {
+    "id": "eff.c10.cast.life.rider",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 119.4",
+      "CR 614.1c",
+      "CR 122.1h"
+    ],
+    "pattern": "you may cast {f:Filter} from your graveyard by paying {n:Qty} life in addition to ( paying their | their ) other costs . if you cast a spell this way , that ( artifact | creature | permanent | spell ) enters with {r:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              }
+            ]
+          },
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": "$r"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "this way",
+      "other",
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast artifact spells from your graveyard by paying 3 life in addition to paying their other costs. If you cast a spell this way, that artifact enters with a finality counter on it."
+      }
+    ],
+    "counterExamples": [
+      "You may cast artifact spells from your graveyard by paying 3 life in addition to paying their other costs. If you cast a spell this way, that artifact gains haste.",
+      "You may cast artifact spells from your hand by paying 3 life in addition to paying their other costs. If you cast a spell this way, that artifact enters with a finality counter on it."
+    ]
+  },
+  {
+    "id": "eff.c10.turn.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.3a"
+    ],
+    "pattern": "during your turn , you may cast {f:Filter} from your graveyard",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, you may cast creature spells from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, you may cast creature spells from your hand.",
+      "During your turn, you may cast creature spells from an opponent's graveyard."
+    ]
+  },
+  {
+    "id": "eff.c10.turn.cast.life",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.3a",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 119.4"
+    ],
+    "pattern": "during your turn , you may cast {f:Filter} from your graveyard by paying {n:Qty} life in addition to ( paying their | their ) other costs",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "in addition",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, you may cast instant and sorcery spells from your graveyard by paying 1 life in addition to their other costs."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, you may cast instant and sorcery spells from your hand by paying 1 life in addition to their other costs.",
+      "During your turn, you may cast instant and sorcery spells from your graveyard by paying 1 life rather than their mana costs."
+    ]
+  },
+  {
+    "id": "eff.c10.once.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.3a",
+      "CR 400.7"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from your graveyard",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from your graveyard."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a Dragon creature spell from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast a creature spell from your hand.",
+      "Once during each of your turns, you may cast a creature spell from an opponent's graveyard."
+    ]
+  },
+  {
+    "id": "eff.c10.once.cast.exile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.3a",
+      "CR 400.7",
+      "CR 601.2f",
+      "CR 118.8"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from your graveyard by exiling {n:Qty} other cards from your graveyard in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "oncePerTurn": true,
+          "addCost": {
+            "other": [
+              {
+                "kind": "exileFrom",
+                "zone": "graveyard",
+                "count": "$n",
+                "filter": {
+                  "other": true
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "in addition",
+      "each",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from your graveyard by exiling two other cards from your graveyard in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast a creature spell from your graveyard by exiling two other cards from your hand in addition to paying its other costs.",
+      "Once during each of your turns, you may cast a creature spell from your hand by exiling two other cards from your graveyard in addition to paying its other costs."
+    ]
+  },
+  {
+    "id": "eff.c10.play.cards",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 305.1",
+      "CR 305.2",
+      "CR 305.9"
+    ],
+    "pattern": "you may play cards from your graveyard",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "play",
+      "from": "graveyard"
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may play cards from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You may play cards from your hand.",
+      "You may play cards from exile."
+    ]
+  },
+  {
+    "id": "eff.c10.turn.play.cards",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 305.1",
+      "CR 305.2",
+      "CR 305.9",
+      "CR 611.3a"
+    ],
+    "pattern": "during your turn , you may play cards from your graveyard",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, you may play cards from your graveyard."
+      },
+      {
+        "text": "Vigilance\nDuring your turn, you may play cards from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, you may play cards from your hand.",
+      "During your turn, you may play cards from exile."
+    ]
+  },
+  {
+    "id": "eff.c10.play.lands.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 305.1",
+      "CR 305.2",
+      "CR 305.9"
+    ],
+    "pattern": "you may play lands and cast {f:Filter} from your graveyard",
+    "build": [
+      {
+        "s": "permit",
+        "who": {
+          "ref": "you"
+        },
+        "action": "play",
+        "of": {
+          "types": [
+            "Land"
+          ]
+        },
+        "from": "graveyard"
+      },
+      {
+        "s": "permit",
+        "who": {
+          "ref": "you"
+        },
+        "action": "cast",
+        "of": "$f",
+        "from": "graveyard"
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may play lands and cast creature spells from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You may play lands and cast creature spells from your hand.",
+      "You may play lands and cast creature spells from exile."
+    ]
+  },
+  {
+    "id": "eff.c10.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 113.6"
+    ],
+    "pattern": "you may cast ~ from your graveyard",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard."
+      },
+      {
+        "text": "Flying\nYou may cast ~ from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand.",
+      "You may cast ~ from exile."
+    ]
+  },
+  {
+    "id": "eff.c10.self.rider",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 113.6",
+      "CR 614.1c",
+      "CR 122.1h"
+    ],
+    "pattern": "you may cast ~ from your graveyard . if you do , ( it | ~ ) enters with {r:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": "$r"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard. If you do, it enters with a finality counter on it."
+      },
+      {
+        "text": "You may cast ~ from your graveyard. If you do, ~ enters with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your graveyard. If you do, it gains haste.",
+      "You may cast ~ from your hand. If you do, it enters with a finality counter on it."
+    ]
+  },
+  {
+    "id": "eff.c10.self.aslongas",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 113.6",
+      "CR 611.3a"
+    ],
+    "pattern": "you may cast ~ from your graveyard as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard as long as you control a black or green permanent."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand as long as you control a black or green permanent.",
+      "You may cast ~ from exile as long as you control a black or green permanent."
+    ]
+  },
+  {
+    "id": "eff.c10.self.if",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 113.6",
+      "CR 611.3a"
+    ],
+    "pattern": "you may cast ~ from your graveyard if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard if you control a Zombie."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand if you control a Zombie.",
+      "You may cast ~ from exile if you control a Zombie."
+    ]
+  },
+  {
+    "id": "eff.c10.self.if.rider",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 113.6",
+      "CR 611.3a",
+      "CR 614.1c",
+      "CR 122.1h"
+    ],
+    "pattern": "you may cast ~ from your graveyard if {c:Cond} . if you do , ( it | ~ ) enters with {r:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": "$r"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard if a creature died this turn. If you do, ~ enters with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand if a creature died this turn. If you do, ~ enters with a +1/+1 counter on it.",
+      "You may cast ~ from your graveyard if a creature died this turn. If you do, ~ gains haste."
+    ]
+  },
+  {
+    "id": "eff.c10.eot.cast",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "until end of turn , you may cast {f:Filter} from your graveyard",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, you may cast creature spells from your graveyard."
+      },
+      {
+        "text": "Draw a card. Until end of turn, you may cast instant spells from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, you may cast creature spells from your hand.",
+      "Until end of turn, you may cast creature spells from an opponent's graveyard."
+    ]
+  },
+  {
+    "id": "eff.c10.thisturn.cast",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "you may cast {f:Filter} from your graveyard this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast Zombie spells from your graveyard this turn."
+      },
+      {
+        "text": "Draw a card. You may cast creature spells from your graveyard this turn."
+      }
+    ],
+    "counterExamples": [
+      "You may cast Zombie spells from your hand this turn.",
+      "You may cast Zombie spells from an opponent's graveyard this turn."
+    ]
+  },
+  {
+    "id": "eff.c10.eot.cast.forage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.2a",
+      "CR 514.2",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 701.61a"
+    ],
+    "pattern": "until end of turn , you may cast {f:Filter} from your graveyard by foraging in addition to paying their other costs",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "action",
+                "action": "forage"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "until",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, you may cast creature spells from your graveyard by foraging in addition to paying their other costs."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, you may cast creature spells from your hand by foraging in addition to paying their other costs.",
+      "Until end of turn, you may cast creature spells from your graveyard by foraging rather than paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.c10.eot.play.lands.cast",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 305.1",
+      "CR 305.2",
+      "CR 305.9",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "until end of turn , you may play lands and cast {f:Filter} from your graveyard",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "types": [
+              "Land"
+            ]
+          },
+          "from": "graveyard"
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, you may play lands and cast spells from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, you may play lands and cast spells from your hand.",
+      "Until end of turn, you may play lands and cast spells from exile."
+    ]
+  },
+  {
+    "id": "eff.c10.rider.thisway.enters",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 122.1h"
+    ],
+    "pattern": "if you cast a spell this way , that ( artifact | creature | permanent | spell ) enters with {r:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "$patchPrevious": {
+        "effects": [
+          {
+            "entersWith": {
+              "@new": [
+                {
+                  "kind": "$k",
+                  "count": "$r"
+                }
+              ]
+            }
+          }
+        ],
+        "@require": {
+          "effects.0.s": "permit",
+          "effects.0.action": "cast",
+          "effects.0.from": "graveyard",
+          "effects.1": null
+        }
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "this way",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, you may cast creature spells from your graveyard. If you cast a spell this way, that creature enters with a finality counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If you cast a spell this way, that creature enters with a finality counter on it.",
+      "Until end of turn, you may cast creature spells from your graveyard. If you cast a spell this way, that creature gains haste."
+    ]
+  },
+  {
+    "id": "eff.c10.eot.gy.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 611.2a",
+      "CR 514.2",
+      "CR 400.3"
+    ],
+    "pattern": "if a card would be put into your graveyard from anywhere this turn , exile ( that card | it ) instead",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "isCard": true,
+              "owner": "you"
+            },
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "would",
+      "instead",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "If a card would be put into your graveyard from anywhere this turn, exile that card instead."
+      },
+      {
+        "text": "Until end of turn, you may play lands and cast spells from your graveyard. If a card would be put into your graveyard from anywhere this turn, exile that card instead."
+      }
+    ],
+    "counterExamples": [
+      "If a card would be put into your graveyard from anywhere this turn, put it on the bottom of your library instead.",
+      "If a card would be put into an opponent's graveyard from anywhere this turn, exile that card instead."
+    ]
+  },
+  {
+    "id": "eff.c10.once.cast.sac",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.3a",
+      "CR 400.7",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 701.21a"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from your graveyard by sacrificing {g:Filter} in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "oncePerTurn": true,
+          "addCost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$g",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "in addition",
+      "each",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from your graveyard by sacrificing a land in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast a permanent spell from your graveyard by sacrificing a land rather than paying its mana cost.",
+      "Once during each of your turns, you may cast a permanent spell from your hand by sacrificing a land in addition to paying its other costs."
+    ]
+  },
+  {
+    "id": "eff.c10.self.life.discard",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 113.6",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 119.4",
+      "CR 701.9a"
+    ],
+    "pattern": "you may cast ~ from your graveyard by paying {n:Qty} life and discarding a card in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              },
+              {
+                "kind": "discard",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by paying 3 life and discarding a card in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by paying 3 life and discarding a card in addition to paying its other costs.",
+      "You may cast ~ from your graveyard by paying 3 life and discarding a card rather than paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.c10.self.life",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 113.6",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 119.4"
+    ],
+    "pattern": "you may cast ~ from your graveyard by paying {n:Qty} life in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by paying 2 life in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by paying 2 life in addition to paying its other costs.",
+      "You may cast ~ from your graveyard by paying 2 life rather than paying its mana cost."
+    ]
+  }
+]

@@ -1,0 +1,79 @@
+{
+  "name": "squad",
+  "rule": "702.157",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "As an additional cost to cast this spell, you may pay {cost} any number of times. When this creature enters, create that many tokens that are copies of it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Squad {cost}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$cost",
+          "optional": true,
+          "name": {
+            "$ordinal": "squad"
+          },
+          "repeatable": true
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When this permanent enters, if its squad cost was paid, create a token that's a copy of it for each time its squad cost was paid.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "wasCast",
+        "kicked": {
+          "$ordinal": "squad"
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "copy",
+            "what": {
+              "ref": "self"
+            },
+            "result": "token",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "kickCount",
+              "name": {
+                "$ordinal": "squad"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

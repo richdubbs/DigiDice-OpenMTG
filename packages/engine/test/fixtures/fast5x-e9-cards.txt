@@ -1,0 +1,40 @@
+# FAST5X E9: mobilize (CR 702.181), job select (CR 702.182), increment (CR 702.191), blight (CR 701.68) and static abilities that read the turn's history
+# (CR 611.3a). After editing: npm run cards -- fixtures
+
+# ---- Mobilize (CR 702.181a, 508.4)
+Bone-Cairn Butcher
+Dragonback Lancer
+Voice of Victory
+
+# ---- Job select (CR 702.182a, 301.5c)
+Monk's Fist
+Paladin's Arms
+Bard's Bow
+
+# ---- Increment (CR 702.191a, 601.2h, 603.4)
+Pensive Professor
+Cuboid Colony
+Topiary Lecturer
+
+# ---- Blight (CR 701.68a-b) as an effect, a cost, an additional cost
+Dream Seizer
+Sourbread Auntie
+Boggart Mischief
+Gutsplitter Gang
+High Perfect Morcant
+Champion of the Weird
+Sting-Slinger
+Wild Unraveling
+Bogslither's Embrace
+Requiting Hex
+Cinder Strike
+Dose of Dawnglow
+
+# ---- History statics (CR 611.3a, 603.4)
+Grand Ball Guest
+Armory Mice
+Whiplash Wordsmith // Vicious Verse
+Surveillance Phantasm
+Shardmage's Rescue
+Tenured Concocter
+Shipwreck Sentry

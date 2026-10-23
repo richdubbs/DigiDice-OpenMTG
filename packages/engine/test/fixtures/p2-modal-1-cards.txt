@@ -1,0 +1,11 @@
+# p2-modal-1 (lane p2-modal): the round's golden cards (test/m5/golden/cards/p2-modal-1-review.json)
+Inscription of Ruin
+Disciple of Perdition
+Fury Charm
+Timebender
+Shivan Sand-Mage
+Timecrafting
+Dust of Moments
+Sigarda's Vanguard
+Splinter & Leo, Father & Son
+Venser's Diffusion

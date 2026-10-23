@@ -1,0 +1,468 @@
+[
+ {
+  "card": "Spry and Mighty",
+  "expect": "full",
+  "verified": "std-rx29 review, by hand against the Oracle text of the local index (archive data/scryfall-index, bulk 2026-10-11) and the rules cited (eff.stdrx29.choose.exactlyN.youControl, eff.stdrx29.youDrawX.and.pumpGrant.whereX): you choose exactly two creatures you control as the spell resolves, no targets (CR 608.2c, 700.2a; with fewer, all of them); X is the greater power of the chosen creatures less the lesser (CR 107.1b), read as the instructions run (CR 608.2h); you draw X cards and the chosen creatures get +X/+X and gain trample until end of turn (CR 121.1, 611.2a, 613.4c, 702.19). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "as": "chosen",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "controller": "you"
+          }
+         },
+         "max": 2,
+         "min": 2,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "draw",
+         "count": {
+          "op": "-",
+          "q": "math",
+          "args": [
+           {
+            "q": "stat",
+            "agg": "max",
+            "of": {
+             "ref": "bound",
+             "name": "chosen"
+            },
+            "stat": "power"
+           },
+           {
+            "q": "stat",
+            "agg": "min",
+            "of": {
+             "ref": "bound",
+             "name": "chosen"
+            },
+            "stat": "power"
+           }
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "bound",
+            "name": "chosen"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": {
+              "op": "-",
+              "q": "math",
+              "args": [
+               {
+                "q": "stat",
+                "agg": "max",
+                "of": {
+                 "ref": "bound",
+                 "name": "chosen"
+                },
+                "stat": "power"
+               },
+               {
+                "q": "stat",
+                "agg": "min",
+                "of": {
+                 "ref": "bound",
+                 "name": "chosen"
+                },
+                "stat": "power"
+               }
+              ]
+             },
+             "toughness": {
+              "op": "-",
+              "q": "math",
+              "args": [
+               {
+                "q": "stat",
+                "agg": "max",
+                "of": {
+                 "ref": "bound",
+                 "name": "chosen"
+                },
+                "stat": "power"
+               },
+               {
+                "q": "stat",
+                "agg": "min",
+                "of": {
+                 "ref": "bound",
+                 "name": "chosen"
+                },
+                "stat": "power"
+               }
+              ]
+             }
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "trample"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sovereign Okinec Ahau",
+  "expect": "full",
+  "verified": "std-rx29 review, by hand against the Oracle text of the local index and the rules cited (eff.stdrx29.forEach.powerAboveBase.counters.difference): ward {2} is keyword data (CR 702.21a); when it attacks, each creature you control whose power is greater than its base power (its power after layer 7b, CR 613.4, 208.1) gets, one at a time (CR 608.2f), as many +1/+1 counters as its power exceeds its base power (CR 122.1). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "keyword": "ward"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "forEach",
+         "as": "each",
+         "do": [
+          {
+           "kind": "+1/+1",
+           "op": "putCounters",
+           "count": {
+            "op": "-",
+            "q": "math",
+            "args": [
+             {
+              "q": "stat",
+              "of": {
+               "ref": "bound",
+               "name": "each"
+              },
+              "stat": "power"
+             },
+             {
+              "q": "basePower",
+              "of": {
+               "ref": "bound",
+               "name": "each"
+              }
+             }
+            ]
+           },
+           "on": {
+            "ref": "bound",
+            "name": "each"
+           }
+          }
+         ],
+         "over": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "controller": "you",
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "powerGreaterThanBase": true
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tangled Colony",
+  "expect": "full",
+  "verified": "std-rx29 review, by hand against the Oracle text of the local index and the rules cited (the Qty reading \"the amount of damage dealt to it this turn\", parser/holes/qty.ts; eff.token.*): it can't block (CR 509.1a); when it dies, X is all damage dealt to it this turn, read from the history by either id of the object (CR 120.3, 400.7, 603.10a), and you create that many 1/1 black Rat tokens that can't block (CR 111.1). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "action": "block",
+        "mode": "cant",
+        "subject": {
+         "ref": "self"
+        }
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": {
+          "q": "happenedCount",
+          "event": {
+           "ev": "damage",
+           "recipient": {
+            "object": {
+             "is": {
+              "ref": "self"
+             }
+            }
+           }
+          },
+          "scope": "turn",
+          "sum": "amount"
+         },
+         "token": {
+          "abilities": [
+           {
+            "kind": "static",
+            "effects": [
+             {
+              "s": "restrict",
+              "action": "block",
+              "mode": "cant",
+              "subject": {
+               "ref": "self"
+              }
+             }
+            ]
+           }
+          ],
+          "colors": [
+           "B"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Rat"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "self": true
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kylox, Visionary Inventor",
+  "expect": "full",
+  "verified": "std-rx29 review, by hand against the Oracle text of the local index and the rules cited (eff.c7.sacrifice.anyNumber, eff.r4dig.exile.whereX, the Qty reading \"their total power\" of parser/holes/qty.ts, eff.stdrx29.cast.anyNumber.instantSorcery.free.fromAmong): menace, ward {2} and haste are keyword data (CR 702.111, 702.21, 702.10); when it attacks you sacrifice any number of other creatures (CR 701.21a), then exile the top X cards of your library where X is the total power of the sacrificed creatures as they last existed (CR 608.2h); you may cast any number of the instant and sorcery cards among those exiled cards without paying their mana costs during the resolution (CR 608.2g, 601.2, 118.9). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "menace"
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "keyword": "ward"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "haste"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "as": "toSacrifice",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "other": true,
+             "types": [
+              "Creature"
+             ]
+            }
+           ],
+           "controller": "you"
+          }
+         },
+         "max": "any",
+         "min": 0,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "sacrifice",
+         "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+         }
+        },
+        {
+         "op": "move",
+         "as": "them",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "topCards",
+          "count": {
+           "q": "stat",
+           "of": {
+            "ref": "bound",
+            "name": "toSacrifice"
+           },
+           "stat": "power",
+           "sum": true
+          },
+          "player": {
+           "ref": "you"
+          }
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "as": "cast",
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "types": [
+            "Instant",
+            "Sorcery"
+           ],
+           "zone": "exile"
+          }
+         },
+         "max": "any",
+         "min": 0,
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "cast",
+         "free": true,
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

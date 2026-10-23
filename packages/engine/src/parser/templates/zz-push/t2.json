@@ -1,0 +1,93 @@
+[
+  {
+    "id": "eff.prevent.next.obj",
+    "kind": "effect",
+    "cr": ["CR 615.1a", "CR 615.7", "CR 611.2c"],
+    "pattern": "prevent the next {n:Qty} damage that would be dealt to {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "replace", "replaces": { "ev": "damage", "recipient": { "object": { "is": "$o" } } }, "body": { "b": "prevent", "amount": "$n" }, "shield": { "uses": "all" } }]
+    },
+    "subject": "none",
+    "consumes": ["would"],
+    "examples": [
+      { "text": "Prevent the next 7 damage that would be dealt to target creature this turn." },
+      { "text": "{4}, {T}: Prevent the next 9 damage that would be dealt to target artifact creature this turn." }
+    ],
+    "counterExamples": [
+      "Prevent the next 7 damage that would be dealt to target creature.",
+      "Prevent the next 7 damage that would be dealt to each creature this turn.",
+      "Prevent the next 7 damage that would be dealt by target creature this turn."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.prevent.next.player",
+    "kind": "effect",
+    "cr": ["CR 615.1a", "CR 615.7", "CR 611.2c"],
+    "pattern": "prevent the next {n:Qty} damage that would be dealt to {p:Player} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "replace", "replaces": { "ev": "damage", "recipient": { "player": "$p" } }, "body": { "b": "prevent", "amount": "$n" }, "shield": { "uses": "all" } }]
+    },
+    "subject": "none",
+    "consumes": ["would"],
+    "examples": [
+      { "text": "Prevent the next 8 damage that would be dealt to you this turn." },
+      { "text": "Prevent the next 11 damage that would be dealt to target player this turn." }
+    ],
+    "counterExamples": [
+      "Prevent the next 8 damage that would be dealt to you.",
+      "Prevent the next 8 damage that would be dealt to each player this turn.",
+      "Prevent the next 8 damage that would be dealt by you this turn."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.prevent.next.any",
+    "kind": "effect",
+    "cr": ["CR 615.1a", "CR 615.7", "CR 611.2c", "CR 115.4"],
+    "pattern": "prevent the next {n:Qty} damage that would be dealt to {r:AnyTarget} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "replace", "replaces": { "ev": "damage", "recipient": { "object": { "is": "$r" }, "player": "$r" } }, "body": { "b": "prevent", "amount": "$n" }, "shield": { "uses": "all" } }]
+    },
+    "subject": "none",
+    "consumes": ["would"],
+    "examples": [
+      { "text": "Prevent the next 13 damage that would be dealt to any target this turn." },
+      { "text": "{3}, {T}: Prevent the next 9 damage that would be dealt to any target this turn." }
+    ],
+    "counterExamples": [
+      "Prevent the next 13 damage that would be dealt to any target.",
+      "Prevent the next 13 damage that would be dealt to one or two targets this turn.",
+      "Prevent the next 13 damage that would be dealt by any target this turn."
+    ],
+    "status": "stable",
+    "since": 2
+  },
+  {
+    "id": "eff.gainlife.imp",
+    "kind": "effect",
+    "cr": ["CR 119.1", "CR 119.3", "CR 109.5"],
+    "pattern": "gain {n:Qty} life",
+    "build": { "op": "gainLife", "who": { "ref": "you" }, "amount": "$n" },
+    "subject": "none",
+    "examples": [
+      { "text": "You may gain 7 life." },
+      { "text": "Whenever a player casts a green spell, you may gain 9 life." }
+    ],
+    "counterExamples": [
+      "You may gain 7 life for each creature you control.",
+      "Target player may gain 7 life.",
+      "You may gain life."
+    ],
+    "status": "stable",
+    "since": 2
+  }
+]

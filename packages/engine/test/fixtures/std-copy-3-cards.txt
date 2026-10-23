@@ -1,0 +1,2 @@
+# std-copy-3 (lane std-copy): the round's golden cards (golden/cards/std-copy-3-review.json)
+Pyromancer's Goggles

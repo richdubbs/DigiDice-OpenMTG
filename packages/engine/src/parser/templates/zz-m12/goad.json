@@ -1,0 +1,46 @@
+[
+  {
+    "id": "eff.m12.goad",
+    "kind": "effect",
+    "cr": [
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 701.15c",
+      "CR 701.15d"
+    ],
+    "pattern": "goad {o:Objs}",
+    "build": {
+      "op": "action",
+      "action": "goad",
+      "who": {
+        "ref": "you"
+      },
+      "subject": "$o"
+    },
+    "subject": "none",
+    "needs": [
+      "action:goad"
+    ],
+    "examples": [
+      {
+        "text": "Goad target creature."
+      },
+      {
+        "text": "Goad all creatures you don't control."
+      },
+      {
+        "text": "When ~ enters, goad target creature an opponent controls."
+      },
+      {
+        "text": "Whenever ~ attacks, goad up to one target creature defending player controls."
+      }
+    ],
+    "counterExamples": [
+      "Goad target player.",
+      "Goad target creature until end of turn.",
+      "Goad each creature unless its controller pays {2}."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

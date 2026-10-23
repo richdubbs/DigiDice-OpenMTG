@@ -1,0 +1,19 @@
+# p2-player-rules-1 (Phase 2 lane p2-player-rules; test/cloud/p2-player-rules-1, golden p2-player-rules-1-review.json)
+# lose K and can't have or gain K; detain; untap limits; draw limits; cast limits of a kind; life total can't change
+Archetype of Courage
+Archetype of Endurance
+Archetype of Finality
+Archetype of Imagination
+Azorius Justiciar
+Lyev Decree
+Tax Collector
+Winter Moon
+Smoke
+Stoic Angel
+Damping Field
+Static Orb
+Mungha Wurm
+Spirit of the Labyrinth
+Platinum Emperion
+Deafening Silence
+Phyrexian Censor

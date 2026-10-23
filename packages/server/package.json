@@ -1,0 +1,29 @@
+{
+  "name": "@openmtg/server",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "DigiDice LLC",
+  "description": "OpenMTG local server: serves the built client and a local JSON API over the card cache on 127.0.0.1 (unofficial fan project).",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./api": "./src/api.ts",
+    "./online": "./src/online/api.ts"
+  },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@openmtg/cards": "*",
+    "@openmtg/engine": "*",
+    "@openmtg/net": "*",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.2"
+  }
+}

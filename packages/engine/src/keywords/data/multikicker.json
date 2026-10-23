@@ -1,0 +1,37 @@
+{
+  "name": "multikicker",
+  "rule": "702.33",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may pay an additional {cost} any number of times as you cast this spell.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Multikicker {cost}",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$cost",
+          "optional": true,
+          "name": {
+            "$ordinal": "kicker"
+          },
+          "repeatable": true
+        }
+      ]
+    }
+  ],
+  "family": "kicker"
+}

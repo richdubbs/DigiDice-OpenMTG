@@ -1,0 +1,43 @@
+{
+  "name": "openmtg",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "DigiDice LLC",
+  "description": "OpenMTG: an unofficial, open-source fan implementation of Magic: The Gathering rules.",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "play": "node scripts/play.mjs",
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build -w @openmtg/client",
+    "start": "tsx packages/server/src/main.ts",
+    "test": "vitest run",
+    "test:all": "node scripts/test-all.mjs",
+    "test:watch": "vitest",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "notices": "node scripts/third-party-notices.mjs",
+    "cards": "tsx packages/cards/src/cli.ts",
+    "net": "tsx packages/net/src/cli.ts",
+    "hosted": "tsx packages/hosted/src/main.ts",
+    "bug": "tsx scripts/bug.ts",
+    "gen:schema": "tsx scripts/gen-ability-schema.ts",
+    "exe": "node scripts/build-exe.mjs",
+    "installer": "node scripts/build-installer.mjs",
+    "desktop": "node scripts/update-desktop.mjs",
+    "stats:coverage": "tsx scripts/coverage-stats.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "postject": "^1.0.0-alpha.6",
+    "ts-json-schema-generator": "^2.9.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "hidden agenda",
+  "rule": "702.106",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "Start the game with this conspiracy face down in the command zone and secretly choose a card name. You may turn this conspiracy face up any time and reveal that name.",
+  "multiple": "independent",
+  "status": "planned"
+}

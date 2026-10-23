@@ -1,0 +1,157 @@
+[
+  {
+    "id": "trg.e3.entersAndAttacksSaddled",
+    "kind": "trigger",
+    "cr": ["CR 603.1", "CR 603.2", "CR 603.6a", "CR 508.1", "CR 702.171b"],
+    "pattern": "when ~ enters and whenever it attacks while saddled",
+    "build": {
+      "on": [
+        { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+        { "ev": "attacks", "attacker": { "self": true, "saddled": true } }
+      ]
+    },
+    "consumes": ["when", "whenever"],
+    "needs": ["filter:saddled"],
+    "examples": [
+      {
+        "text": "When ~ enters and whenever it attacks while saddled, draw a card.",
+        "expect": {
+          "on": [
+            { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+            { "ev": "attacks", "attacker": { "self": true, "saddled": true } }
+          ]
+        }
+      },
+      { "text": "When ~ enters and whenever it attacks while saddled, create a 2/2 green Bear creature token." }
+    ],
+    "counterExamples": [
+      "When ~ enters and whenever it blocks while saddled, draw a card.",
+      "When ~ dies and whenever it attacks while saddled, draw a card.",
+      "When ~ enters or attacks, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.e3.becomesSaddled.firstEachTurn",
+    "kind": "trigger",
+    "cr": ["CR 603.1", "CR 603.2", "CR 603.2e", "CR 702.171a", "CR 702.171b"],
+    "pattern": "whenever ~ becomes saddled for the first time each turn",
+    "build": {
+      "on": [{ "ev": "becomes", "what": "saddled", "object": { "self": true } }],
+      "first": "turn"
+    },
+    "consumes": ["whenever", "first", "each"],
+    "needs": ["feature:trigger.first", "feature:ev.becomes.saddled"],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes saddled for the first time each turn, draw a card.",
+        "expect": {
+          "on": [{ "ev": "becomes", "what": "saddled", "object": { "self": true } }],
+          "first": "turn"
+        }
+      },
+      { "text": "Whenever ~ becomes saddled for the first time each turn, you gain 3 life." }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes saddled for the second time each turn, draw a card.",
+      "Whenever ~ becomes tapped for the first time each turn, draw a card.",
+      "Whenever ~ becomes saddled, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e3.becomeSaddled",
+    "kind": "effect",
+    "cr": ["CR 702.171a", "CR 702.171b", "CR 514.2"],
+    "pattern": "{o:Obj} becomes saddled until end of turn",
+    "build": { "op": "designateObject", "what": "$o", "designation": "saddled" },
+    "subject": "object",
+    "consumes": ["until"],
+    "needs": ["op:designateObject.saddled"],
+    "examples": [
+      {
+        "text": "{3}, {T}: Target Mount you control becomes saddled until end of turn.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{3}, {T}: Target Mount you control becomes saddled until end of turn.",
+            "cost": { "mana": [{ "kind": "generic", "amount": 3 }], "tap": true },
+            "effect": {
+              "targets": [{ "id": "t0", "kind": "object", "min": 1, "max": 1, "text": "target Mount you control", "filter": { "subtypes": ["Mount"], "controller": "you" } }],
+              "steps": [{ "op": "designateObject", "what": { "ref": "target", "id": "t0" }, "designation": "saddled" }]
+            }
+          }
+        ]
+      },
+      { "text": "Whenever a Mount you control enters, it becomes saddled until end of turn." },
+      { "text": "When ~ enters, target Mount you control becomes saddled until end of turn." }
+    ],
+    "counterExamples": [
+      "Target Mount you control becomes saddled.",
+      "Target Mount you control becomes tapped until end of turn.",
+      "Target Mount you control becomes prepared until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e3.crewSaddlePowerBonus",
+    "kind": "static",
+    "cr": ["CR 702.122a", "CR 702.171a", "CR 604.1"],
+    "pattern": "~ saddles mounts and crews vehicles as though its power were {n:Qty} greater",
+    "build": { "s": "rule", "rule": "crewSaddlePowerBonus", "value": "$n" },
+    "consumes": ["as though"],
+    "needs": ["rulemod:crewSaddlePowerBonus"],
+    "examples": [
+      {
+        "text": "~ saddles Mounts and crews Vehicles as though its power were 3 greater.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "~ saddles Mounts and crews Vehicles as though its power were 3 greater.",
+            "effects": [{ "s": "rule", "rule": "crewSaddlePowerBonus", "value": 3 }]
+          }
+        ]
+      },
+      { "text": "Flying\n~ saddles Mounts and crews Vehicles as though its power were 1 greater." }
+    ],
+    "counterExamples": [
+      "~ crews Vehicles as though its power were 3 greater.",
+      "~ saddles Mounts and crews Vehicles as though its power were 3 less.",
+      "Creatures you control saddle Mounts and crew Vehicles as though their power were 3 greater."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e3.crewSaddleUsesToughness",
+    "kind": "static",
+    "cr": ["CR 702.122a", "CR 702.171a", "CR 604.1"],
+    "pattern": "~ saddles mounts and crews vehicles using its toughness rather than its power",
+    "build": { "s": "rule", "rule": "crewSaddleUsesToughness" },
+    "consumes": ["rather than"],
+    "needs": ["rulemod:crewSaddleUsesToughness"],
+    "examples": [
+      {
+        "text": "~ saddles Mounts and crews Vehicles using its toughness rather than its power.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "~ saddles Mounts and crews Vehicles using its toughness rather than its power.",
+            "effects": [{ "s": "rule", "rule": "crewSaddleUsesToughness" }]
+          }
+        ]
+      },
+      { "text": "Defender\n~ saddles Mounts and crews Vehicles using its toughness rather than its power." }
+    ],
+    "counterExamples": [
+      "~ crews Vehicles using its toughness rather than its power.",
+      "~ saddles Mounts and crews Vehicles using its power rather than its toughness.",
+      "~ assigns combat damage equal to its toughness rather than its power."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

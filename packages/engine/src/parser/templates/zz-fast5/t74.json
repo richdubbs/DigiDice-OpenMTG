@@ -1,0 +1,313 @@
+[
+  {
+    "id": "eff.t74.player.may.search.it.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2h",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} may search their library for ( a | an ) {f:Filter} card , put it onto the battlefield tapped , then shuffle",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "search",
+          "who": "$p",
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": "$p",
+            "tapped": true
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature. Its controller may search their library for a basic Forest card, put it onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Destroy target land. That land's controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature. Its controller may search their library for a basic Forest card, put it into their hand, then shuffle.",
+      "Exile target creature. Its controller may search their library for a basic Forest card, put it onto the battlefield, then shuffle.",
+      "Exile target creature. Its controller searches their library for a basic Forest card, puts it onto the battlefield tapped, then shuffles.",
+      "Exile target creature. Its controller may search your library for a basic Forest card, put it onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t74.player.may.search.it.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2h",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} may search their library for ( a | an ) {f:Filter} card , put it onto the battlefield , then shuffle",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "search",
+          "who": "$p",
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": "$p"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target land. That land's controller may search their library for a basic land card, put it onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Destroy target artifact. Its controller may search their library for a basic Island card, put it onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target land. That land's controller may search their library for a basic land card, put it onto the battlefield tapped, then shuffle.",
+      "Destroy target land. That land's controller may search their library for a basic land card, put it into their hand, then shuffle.",
+      "Destroy target land. That land's controller searches their library for a basic land card, puts it onto the battlefield, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.t74.you.may.search.it.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card , put it onto the battlefield , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            }
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target land. You may search your library for a basic Swamp card, put it onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Destroy target artifact. You may search your library for a basic land card, put it onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target land. You may search your library for a basic Swamp card, put it onto the battlefield tapped, then shuffle.",
+      "Destroy target land. You may search your library for a basic Swamp card, put it into your hand, then shuffle.",
+      "Destroy target land. You search your library for a basic Swamp card, put it onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t74.player.may.search.many.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2h",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} may search their library for {n:Qty} {f:Filter} cards , put those cards onto the battlefield tapped , then shuffle",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "search",
+          "who": "$p",
+          "zone": "library",
+          "filter": "$f",
+          "min": 0,
+          "max": "$n",
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": "$p",
+            "tapped": true
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile all creatures target player controls. That player may search their library for that many basic Forest cards, put those cards onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Exile all tapped creatures target player controls. That player may search their library for that many basic Swamp cards, put those cards onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Exile all creatures target player controls. That player may search their library for that many basic Forest cards, put those cards onto the battlefield, then shuffle.",
+      "Exile all creatures target player controls. That player may search their library for that many basic Forest cards, put those cards into their hand, then shuffle.",
+      "Exile all creatures target player controls. That player searches their library for that many basic Forest cards, puts those cards onto the battlefield tapped, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.t74.player.gains.life.then.searches.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.1",
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} gain[s] {n:Qty} life , then searches their library for ( a | an ) {f:Filter} card , puts it onto the battlefield tapped , then shuffles",
+    "build": [
+      {
+        "op": "gainLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "search",
+        "who": "$p",
+        "zone": "library",
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "$p",
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player gains 4 life, then searches their library for a basic Forest card, puts it onto the battlefield tapped, then shuffles."
+      },
+      {
+        "text": "Target opponent gains 3 life, then searches their library for a basic land card, puts it onto the battlefield tapped, then shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Target player gains 4 life, then searches their library for a basic Forest card, puts it onto the battlefield, then shuffles.",
+      "Target player gains 4 life, then searches their library for a basic Forest card, puts it into their hand, then shuffles.",
+      "Target player gains 4 life, then may search their library for a basic Forest card, puts it onto the battlefield tapped, then shuffles."
+    ]
+  }
+]

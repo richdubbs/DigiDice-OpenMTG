@@ -1,0 +1,170 @@
+[
+  {
+    "id": "rid.e2.instead.if",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 616.1a"
+    ],
+    "pattern": "{e:Effects} instead if {c:Cond}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": "$e",
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "consumes": [
+      "instead",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets -1/-1 until end of turn. That creature gets -5/-5 until end of turn instead if you control a Wizard."
+      },
+      {
+        "text": "Target creature gets +2/+0 until end of turn. That creature gets +4/+0 until end of turn instead if it's your turn."
+      },
+      {
+        "text": "Draw a card. Draw two cards instead if you control an Elf."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets -1/-1 until end of turn. That creature gets -5/-5 until end of turn if you control a Wizard.",
+      "That creature gets -5/-5 until end of turn instead if you control a Wizard.",
+      "Target creature gets -1/-1 until end of turn. Target player draws a card instead if you control a Wizard."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.e2.instead.damage.if",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c"
+    ],
+    "pattern": "( it | ~ ) deals {n:Qty} damage instead if {c:Cond}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": "$n"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "instead",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 1 damage to any target. ~ deals 4 damage instead if you control a Wizard."
+      },
+      {
+        "text": "~ deals 2 damage to target creature. ~ deals 5 damage instead if it's your turn."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 1 damage to any target. ~ deals 4 damage if you control a Wizard.",
+      "~ deals 4 damage instead if you control a Wizard.",
+      "~ deals 1 damage to any target. ~ deals 4 damage to you instead if you control a Wizard."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e2.draw.another",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 121.2",
+      "CR 608.2c"
+    ],
+    "pattern": "draw another card",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. If you control a Wizard, draw another card."
+      },
+      {
+        "text": "You draw a card and you lose 1 life. If it's your turn, draw another card."
+      }
+    ],
+    "counterExamples": [
+      "Draw another card.",
+      "Target player draws a card. If you control a Wizard, draw another card.",
+      "Draw a card. If you control a Wizard, draw another two cards."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e2.castWith.graveyard.warp",
+    "kind": "static",
+    "cr": [
+      "CR 702.185a",
+      "CR 601.3",
+      "CR 113.6f",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast ~ from your graveyard using its warp ability",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "castWith",
+          "method": "warp",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard using its warp ability.\nWarp {1}{B}"
+      },
+      {
+        "text": "Flying\nYou may cast ~ from your graveyard using its warp ability.\nWarp {2}{U}"
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand using its warp ability.\nWarp {1}{B}",
+      "You may cast ~ from your graveyard using its flashback ability.\nFlashback {1}{B}",
+      "You may cast ~ from exile using its warp ability.\nWarp {1}{B}"
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -1,0 +1,765 @@
+[
+  {
+    "id": "eff.t75.dig.reveal.hand.or",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may reveal ( a | an ) {f:Filter} card or ( a | an ) {h:Filter} card from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$h"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal a Wizard creature card or a Swamp card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. You may reveal a legendary artifact card or a Swamp card from among them and put that card into your hand. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a Wizard creature card and a Swamp card from among them and put them into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a Wizard creature card or a Swamp card from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You must reveal a Wizard creature card or a Swamp card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.t75.dig.reveal.hand.orX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 107.3",
+      "CR 202.1",
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may reveal ( a | an ) {f:Filter} card or a card with {x} in its mana cost from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f",
+              {
+                "manaCostHasX": true
+              }
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may reveal a land card or a card with {X} in its mana cost from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal an artifact card or a card with {X} in its mana cost from among them and put that card into your hand. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may reveal a land card or a card with {Y} in its mana cost from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may reveal a land card or a card with {X} in its mana cost from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may reveal a land card and a card with {X} in its mana cost from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.t75.dig.reveal.hand.noncreatureNonland",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 205.4b",
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "you may reveal a noncreature , nonland card from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "notTypes": [
+                  "Creature",
+                  "Land"
+                ]
+              }
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal a noncreature, nonland card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal a noncreature, nonland card from among them and put that card into your hand. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a noncreature, nonland card from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a noncreature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a noncreature, nonartifact card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.t75.dig.put.battlefield.random",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "put a random {f:Filter} card from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top ten cards of your library. Put a random creature card from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal the top six cards of your library. Put a random artifact card from among them onto the battlefield. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top ten cards of your library. Put a creature card from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Reveal the top ten cards of your library. Put a random creature card from among them into your hand. Put the rest on the bottom of your library in a random order.",
+      "Reveal the top ten cards of your library. Put a random creature card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.t75.dig.reveal.battlefield.mvAtMost",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 202.3",
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "you may reveal ( a | an ) {f:Filter} card with mana value less than or equal to {n:Qty} from among {g:Seen} and put ( it | that card ) onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal a creature card with mana value less than or equal to the number of lands you control from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. You may reveal an artifact card with mana value less than or equal to the number of creatures you control from among them and put that card onto the battlefield. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a creature card with mana value less than the number of lands you control from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a creature card with mana value less than or equal to the number of lands you control from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a creature card with power less than or equal to the number of lands you control from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.t75.search.or.reveal.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card or ( a | an ) {g:Filter} card , reveal it , put it into your hand , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "anyOf": [
+            "$f",
+            "$g"
+          ]
+        },
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for a basic Island card or a Wizard card, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for a basic Forest card or a Cave card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a basic Island card or a Wizard card, put it into your hand, then shuffle.",
+      "Search your library for a basic Island card and a Wizard card, reveal them, put them into your hand, then shuffle.",
+      "Search your library for a basic Island card or a Wizard card, reveal it, put it onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t75.search.may.or.reveal.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "priority": 1,
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card or ( a | an ) {g:Filter} card , reveal it , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ]
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for a basic Island card or a Wizard card, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "You may search your library for a basic Forest card or a Cave card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "You may search your library for a basic Island card or a Wizard card, put it into your hand, then shuffle.",
+      "You may search your library for a basic Island card and a Wizard card, reveal them, put them into your hand, then shuffle.",
+      "You may search your library for a basic Island card or a Wizard card, reveal it, put it onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t75.milled.may.put.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill four cards. You may put a land card from among them into your hand."
+      },
+      {
+        "text": "Mill three cards. You may put an artifact or creature card from among them into your hand."
+      },
+      {
+        "text": "Mill three cards. You may put an artifact, creature, or land card from among the milled cards into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. You may put a land card from among them onto the battlefield.",
+      "Mill four cards. You may put a land card from among them into your graveyard.",
+      "Look at the top four cards of your library. You may put a land card from among them into your hand.",
+      "Mill four cards. You must put a land card from among them into your hand.",
+      "Mill four cards. You may put two land cards from among them into your hand.",
+      "Mill three cards. You may put an artifact, creature, or land card from among the exiled cards into your hand."
+    ]
+  },
+  {
+    "id": "eff.t75.milled.may.put.hand.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "priority": 1,
+    "cr": [
+      "CR 110.4",
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "you may put a permanent card from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": [
+                  "Artifact",
+                  "Battle",
+                  "Creature",
+                  "Enchantment",
+                  "Land",
+                  "Planeswalker"
+                ]
+              }
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill four cards. You may put a permanent card from among them into your hand."
+      },
+      {
+        "text": "Mill two cards. You may put a permanent card from among them into your hand."
+      },
+      {
+        "text": "Mill two cards. You may put a permanent card from among the milled cards into your hand. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. You may put a nonland card from among them into your hand.",
+      "Mill four cards. You may put a permanent card from among them onto the battlefield.",
+      "Look at the top four cards of your library. You may put a permanent card from among them into your hand."
+    ]
+  },
+  {
+    "id": "eff.t75.search.upTo.andReveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards and reveal them",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "min": 0,
+      "max": "$n",
+      "reveal": true,
+      "as": "search"
+    },
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two Forest cards and reveal them. Put one of them onto the battlefield tapped and the other into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for up to three Island cards and reveal them. Put two of them onto the battlefield tapped and the other into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for two Forest cards and reveal them. Put one of them onto the battlefield tapped and the other into your hand, then shuffle.",
+      "Search your library for up to two Forest cards and reveal it. Put one of them onto the battlefield tapped and the other into your hand, then shuffle.",
+      "Search your library for up to two Forest cards and put them into your hand. Put one of them onto the battlefield tapped and the other into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t75.found.putBattlefieldTapped.restHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "put {n:Qty} of {g:Found} onto the battlefield tapped and {r:Rest} into your hand , then shuffle",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two Forest cards and reveal them. Put one of them onto the battlefield tapped and the other into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for up to three Island cards and reveal them. Put two of them onto the battlefield tapped and the rest into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two Forest cards and reveal them. Put one of them onto the battlefield and the other into your hand, then shuffle.",
+      "Search your library for up to two Forest cards and reveal them. Put one of them onto the battlefield tapped and the other into your graveyard, then shuffle.",
+      "Search your library for up to two Forest cards and reveal them. Put one of them onto the battlefield tapped and the other into your hand."
+    ]
+  }
+]

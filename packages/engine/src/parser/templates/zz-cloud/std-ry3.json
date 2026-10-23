@@ -1,0 +1,173 @@
+[
+  {
+    "id": "eff.stdry3.skip.nextCombatPhase",
+    "kind": "effect",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 614.10a",
+      "CR 500.11",
+      "CR 506.1"
+    ],
+    "pattern": "{p:Player} skips their next combat phase",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "phase",
+            "phase": "combat",
+            "whose": "$p"
+          },
+          "body": {
+            "b": "skip"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "skip"
+    ],
+    "needs": [
+      "feature:shield.skip"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent skips their next combat phase."
+      },
+      {
+        "text": "Draw a card. Target player skips their next combat phase."
+      }
+    ],
+    "counterExamples": [
+      "Target player skips their combat phase.",
+      "Target player skips their next two combat phases.",
+      "Target opponent skips their next combat phase this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdry3.maxhand.your.increased",
+    "kind": "static",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1"
+    ],
+    "pattern": "your maximum hand size is increased by {n:Qty}",
+    "build": {
+      "s": "rule",
+      "rule": "maxHandSize",
+      "player": {
+        "ref": "you"
+      },
+      "value": "$n",
+      "delta": "increase"
+    },
+    "consumes": [
+      "increased"
+    ],
+    "examples": [
+      {
+        "text": "Your maximum hand size is increased by five."
+      },
+      {
+        "text": "Flying\nYour maximum hand size is increased by six."
+      }
+    ],
+    "counterExamples": [
+      "Your maximum hand size is increased to five.",
+      "Your minimum hand size is increased by two.",
+      "Your maximum library size is increased by two."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdry3.maxhand.your.reduced",
+    "kind": "static",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1"
+    ],
+    "pattern": "your maximum hand size is reduced by {n:Qty}",
+    "build": {
+      "s": "rule",
+      "rule": "maxHandSize",
+      "player": {
+        "ref": "you"
+      },
+      "value": "$n",
+      "delta": "reduce"
+    },
+    "consumes": [
+      "reduced"
+    ],
+    "examples": [
+      {
+        "text": "Your maximum hand size is reduced by one."
+      },
+      {
+        "text": "Flying\nYour maximum hand size is reduced by five."
+      }
+    ],
+    "counterExamples": [
+      "Your maximum hand size is reduced to five.",
+      "Your minimum hand size is reduced by two.",
+      "Your maximum library size is reduced by two."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rst.stdry3.cant.beblocked.except.andor",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked except by {a:Filter} and/or {b:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beBlockedBy",
+      "other": {
+        "not": {
+          "anyOf": [
+            "$a",
+            "$b"
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked except by Golems and/or creatures with reach."
+      },
+      {
+        "text": "~ can't be blocked except by black creatures and/or artifact creatures."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be blocked except by Golems and/or two or more creatures.",
+      "~ can't be blocked except by Golems and/or creatures with reach this turn.",
+      "~ can block only Golems and/or creatures with reach."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -1,0 +1,119 @@
+[
+ {
+  "card": "Meletis Charlatan",
+  "expect": "full",
+  "verified": "p2-copy-spell-3 review, by hand against the Oracle text and the rules cited (eff.p2copyspell3.controllerOfCopiesIt, rid.p2copyspell3.thatPlayer.newTargets): {2}{U}, {T}: the controller of target instant or sorcery spell puts a copy of it onto the stack; the copy is theirs (not the activating player's) and they may choose new targets for it (CR 707.10, 707.10c, 115.7); the copy is not cast",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 2,
+         "kind": "generic"
+        },
+        {
+         "color": "U",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "newTargets": "may",
+         "op": "copy",
+         "result": "spell",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "who": {
+          "object": {
+           "id": "t0",
+           "ref": "target"
+          },
+          "ref": "controllerOf"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         },
+         "id": "t0",
+         "kind": "spell",
+         "max": 1,
+         "min": 1,
+         "text": "target instant or sorcery spell"
+        }
+       ]
+      },
+      "kind": "activated",
+      "text": "{2}{U}, {T}: The controller of target instant or sorcery spell copies it. That player may choose new targets for the copy."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bonus Round",
+  "expect": "full",
+  "verified": "p2-copy-spell-3 review, by hand against the Oracle text and the rules cited (eff.p2copyspell3.playerCopies.andNewTargets): until end of turn, whenever a player casts an instant or sorcery spell, that player copies it and may choose new targets for the copy (CR 603.7, 707.10, 707.10c); a copy is not cast, so copies trigger nothing more",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "event",
+            "role": "player"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "op": "delay",
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "cast",
+           "player": "any",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ]
+           }
+          }
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell",
+      "text": "Until end of turn, whenever a player casts an instant or sorcery spell, that player copies it and may choose new targets for the copy."
+     }
+    ]
+   }
+  ]
+ }
+]

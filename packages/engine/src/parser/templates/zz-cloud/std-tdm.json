@@ -1,0 +1,534 @@
+[
+  {
+    "id": "eff.stdtdm.counters.put.threeKinds",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter , ( a | an ) {j:CounterKind} counter , and ( a | an ) {l:CounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": 1
+      },
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$j",
+        "count": 1
+      },
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$l",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}{G}: Put a +1/+1 counter, a trample counter, and a vigilance counter on target creature."
+      },
+      {
+        "text": "When ~ enters, put a menace counter, a lifelink counter, and a +1/+1 counter on target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{3}{G}: Put a +1/+1 counter, a trample counter, or a vigilance counter on target creature.",
+      "{3}{G}: Put a +1/+1 counter, a trample counter, and a vigilance counter on each creature you control.",
+      "{3}{G}: Put two +1/+1 counters, a trample counter, and a vigilance counter on target creature."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.return.bf.counters.twoKinds",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 122.6",
+      "CR 400.7",
+      "CR 614.1c"
+    ],
+    "pattern": "return {o:Objs} to the battlefield with ( a | an ) {k:CounterKind} counter and ( a | an ) {j:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          },
+          {
+            "kind": "$j",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield with a +1/+1 counter and a menace counter on it."
+      },
+      {
+        "text": "Return target artifact card from your graveyard to the battlefield with a shield counter and a hexproof counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to the battlefield with a +1/+1 counter or a menace counter on it.",
+      "Return target creature card from your graveyard to your hand with a +1/+1 counter and a menace counter on it.",
+      "Return target creature card from your graveyard to the battlefield with two +1/+1 counters and a menace counter on it."
+    ]
+  },
+  {
+    "id": "trg.stdtdm.cast.spellOrSpell",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 603.6a"
+    ],
+    "pattern": "whenever you cast ( a | an ) {f:CastSpell} or ( a | an ) {g:CastSpell}",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Whenever you cast an instant spell or a Goblin spell, ~ gets +1/+1 until end of turn."
+      },
+      {
+        "text": "Whenever you cast a noncreature spell or an Elf spell, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell and a Goblin spell, ~ gets +1/+1 until end of turn.",
+      "Whenever an opponent casts an instant spell or a Goblin spell, ~ gets +1/+1 until end of turn.",
+      "Whenever you cast an instant spell or a Goblin spell, ~ gets +2/+1 until end of turn."
+    ],
+    "consumes": [
+      "whenever",
+      "or"
+    ]
+  },
+  {
+    "id": "eff.stdtdm.instead.putBattlefieldTapped",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "if {c:Cond} , put that card onto the battlefield tapped instead",
+    "build": {
+      "$patchPrevious": {
+        "@into": true,
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "move",
+            "what": "@previous.what",
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              },
+              "tapped": true
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for a basic land card, reveal it, then shuffle and put that card on top. If you control a Wizard, put that card onto the battlefield tapped instead."
+      },
+      {
+        "text": "When ~ dies, you may search your library for a basic land card, reveal it, then shuffle and put that card on top. If you control four or more lands, put that card onto the battlefield tapped instead."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for a basic land card, reveal it, then shuffle and put that card on top. If you control a Wizard, put that card onto the battlefield tapped.",
+      "When ~ enters, you may search your library for a basic land card, reveal it, then shuffle and put that card on top. If you control a Wizard, put that card onto the battlefield instead.",
+      "If you control a Wizard, put that card onto the battlefield tapped instead."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.draw.forEach.destroyed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "draw a card for each {n:Qty}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all artifacts. Draw a card for each permanent destroyed this way."
+      },
+      {
+        "text": "Destroy all creatures with power 2 or less. Draw a card for each creature destroyed this way."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all artifacts. Draw a card for each creature destroyed this way.",
+      "Destroy all artifacts. Draw two cards for each permanent destroyed this way.",
+      "Exile all artifacts. Draw a card for each permanent destroyed this way."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.gainLife.forEach.destroyed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] 1 life for each {n:Qty}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all enchantments. You gain 1 life for each permanent destroyed this way."
+      },
+      {
+        "text": "Destroy all tapped creatures. You gain 1 life for each creature destroyed this way."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all enchantments. You gain 1 life for each creature destroyed this way.",
+      "Destroy all enchantments. You lose 1 life for each permanent destroyed this way.",
+      "Destroy all enchantments. You gain 1 life for each permanent exiled this way."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.gainLife2.forEach.destroyed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] 2 life for each {n:Qty}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          "$n"
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all artifacts. You gain 2 life for each permanent destroyed this way."
+      },
+      {
+        "text": "Destroy all creatures with flying. You gain 2 life for each creature destroyed this way."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all artifacts. You gain 3 life for each permanent destroyed this way.",
+      "Destroy all artifacts. You gain 2 life for each enchantment destroyed this way.",
+      "Destroy all artifacts. You gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.loseLife2.forEach.destroyed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] 2 life for each {n:Qty}",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          "$n"
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all creatures with flying. You lose 2 life for each creature destroyed this way."
+      },
+      {
+        "text": "Destroy all artifacts. You lose 2 life for each permanent destroyed this way."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all artifacts. You lose 2 life for each creature destroyed this way.",
+      "Destroy all artifacts. You lose 3 life for each permanent destroyed this way.",
+      "Destroy all artifacts. You lose 2 life for each permanent sacrificed this way."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.counters.forEach.destroyed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {o:Obj} for each {n:Qty}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, destroy all artifacts. Put a +1/+1 counter on ~ for each permanent destroyed this way."
+      },
+      {
+        "text": "When ~ enters, destroy all creatures with power 1 or less. Put a +1/+1 counter on ~ for each creature destroyed this way."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, destroy all artifacts. Put a +1/+1 counter on ~ for each creature destroyed this way.",
+      "When ~ enters, destroy all artifacts. Put two +1/+1 counters on ~ for each permanent destroyed this way.",
+      "When ~ enters, sacrifice all artifacts. Put a +1/+1 counter on ~ for each permanent destroyed this way."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.damage.divided.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2d",
+      "CR 603.3d",
+      "CR 120.3",
+      "CR 107.3"
+    ],
+    "pattern": "{src:Obj} deal[s] x damage divided as you choose among {to:Recipient} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": {
+            "q": "X"
+          },
+          "divided": "announced"
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ enters, it deals X damage divided as you choose among any number of target creatures your opponents control, where X is the number of Elves you control."
+      },
+      {
+        "text": "Whenever ~ attacks, it deals X damage divided as you choose among one or two targets, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals X damage divided as you choose among any number of target creatures your opponents control.",
+      "When ~ enters, it deals X damage to any number of target creatures your opponents control, where X is the number of Elves you control.",
+      "When ~ enters, it deals X damage divided evenly, rounded down, among any number of target creatures your opponents control, where X is the number of Elves you control."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.graveyard.putTop.anyOrder",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 608.2d",
+      "CR 404.1"
+    ],
+    "pattern": "put {n:Qty} cards from your graveyard on top of your library in any order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your end step, put three cards from your graveyard on top of your library in any order."
+      },
+      {
+        "text": "When ~ dies, put two cards from your graveyard on top of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, put three cards from your graveyard on the bottom of your library in any order.",
+      "At the beginning of your end step, put three cards from your graveyard on top of your library.",
+      "At the beginning of your end step, put three target cards from your graveyard on top of your library in any order."
+    ]
+  },
+  {
+    "id": "eff.stdtdm.if.exileSelf.and",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 406.1"
+    ],
+    "pattern": "[ then ] if {c:Cond} , exile ~ and {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": {
+        "$concat": [
+          [
+            {
+              "op": "move",
+              "what": {
+                "ref": "self"
+              },
+              "to": {
+                "zone": "exile"
+              }
+            }
+          ],
+          "$e"
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "then"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{2}, {T}: Mill a card. If you control no artifacts, exile ~ and draw two cards."
+      },
+      {
+        "text": "At the beginning of your upkeep, mill two cards. Then if there are no cards in your library, exile ~ and you gain 5 life."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Mill a card. If you control no artifacts, exile ~ or draw two cards.",
+      "{2}, {T}: Mill a card. If you control no artifacts, sacrifice ~ and draw two cards.",
+      "{2}, {T}: Mill a card. If you control no artifacts, exile target creature and draw two cards."
+    ]
+  }
+]

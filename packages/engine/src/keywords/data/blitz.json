@@ -1,0 +1,109 @@
+{
+  "name": "blitz",
+  "rule": "702.152",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "If you cast this spell for its blitz cost, it gains haste and \"When this creature dies, draw a card.\" Sacrifice it at the beginning of the next end step.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Blitz {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "blitz",
+          "delay": {
+            "when": {
+              "at": "step",
+              "step": "end",
+              "next": true
+            },
+            "do": [
+              {
+                "op": "sacrifice",
+                "what": {
+                  "ref": "bound",
+                  "name": "permanent"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "static",
+      "text": "As long as ~'s blitz cost was paid, it has haste and \"When this creature dies, draw a card.\"",
+      "condition": {
+        "cond": "wasCast",
+        "via": "blitz"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "haste",
+                  "text": "haste"
+                },
+                {
+                  "kind": "triggered",
+                  "text": "When this creature dies, draw a card.",
+                  "trigger": {
+                    "on": [
+                      {
+                        "ev": "zoneChange",
+                        "subject": {
+                          "self": true
+                        },
+                        "from": "battlefield",
+                        "to": "graveyard"
+                      }
+                    ]
+                  },
+                  "effect": {
+                    "targets": [],
+                    "steps": [
+                      {
+                        "op": "draw",
+                        "who": {
+                          "ref": "you"
+                        },
+                        "count": 1
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

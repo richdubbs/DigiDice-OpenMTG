@@ -1,0 +1,126 @@
+[
+  {
+    "id": "eff.t48.mana.any4",
+    "kind": "effect",
+    "cr": ["CR 106.1", "CR 106.4", "CR 605.1a"],
+    "pattern": "add four mana in any combination of colors",
+    "build": { "op": "addMana", "who": { "ref": "you" }, "units": [["W", "U", "B", "R", "G"], ["W", "U", "B", "R", "G"], ["W", "U", "B", "R", "G"], ["W", "U", "B", "R", "G"]] },
+    "subject": "none",
+    "examples": [
+      { "text": "{2}, {T}: Add four mana in any combination of colors." },
+      { "text": "{T}, Sacrifice ~: Add four mana in any combination of colors." }
+    ],
+    "counterExamples": [
+      "{T}: Add four mana of any one color.",
+      "{T}: Add five mana in any combination of colors.",
+      "{T}: Add four mana in any combination of {R} and/or {G}."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t48.token.heartwood",
+    "kind": "effect",
+    "cr": ["CR 111.1", "CR 111.4", "CR 111.10x", "CR 701.7a", "CR 605.1a"],
+    "pattern": "create a heartwood token",
+    "build": {
+      "op": "createToken",
+      "who": { "ref": "you" },
+      "count": 1,
+      "token": { "predefined": "Heartwood" }
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "At the beginning of your upkeep, create a Heartwood token." },
+      { "text": "Whenever ~ attacks, create a Heartwood token." }
+    ],
+    "counterExamples": [
+      "Create two Heartwood tokens.",
+      "Create a tapped Heartwood token.",
+      "Create a Heartwood token that's tapped."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t48.token.heartwood.tapped",
+    "kind": "effect",
+    "cr": ["CR 111.1", "CR 111.4", "CR 111.10x", "CR 701.7a", "CR 614.1c", "CR 605.1a"],
+    "pattern": "create {n:Qty} tapped heartwood tokens",
+    "build": {
+      "op": "createToken",
+      "who": { "ref": "you" },
+      "count": "$n",
+      "token": { "predefined": "Heartwood" },
+      "tapped": true
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "Create two tapped Heartwood tokens." },
+      { "text": "You may sacrifice a land. If you do, create three tapped Heartwood tokens." }
+    ],
+    "counterExamples": [
+      "Create two Heartwood tokens.",
+      "Create two tapped Heartwood tokens attached to target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t48.mana.eachColorAmong",
+    "kind": "effect",
+    "cr": ["CR 105.1", "CR 105.4", "CR 106.4", "CR 605.1a"],
+    "pattern": "for each color among {o:Objs} , add one mana of that color",
+    "build": { "op": "addMana", "who": { "ref": "you" }, "dynamic": { "kind": "eachColorAmong", "among": "$o" } },
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "{2}, {T}: For each color among permanents you control, add one mana of that color." },
+      { "text": "{T}: For each color among creatures you control, add one mana of that color." }
+    ],
+    "counterExamples": [
+      "{T}: For each color among permanents you control, add two mana of that color.",
+      "{T}: For each color among permanents you control, add one mana of any color.",
+      "{T}: Add one mana of that color for each color among permanents you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t48.mana.anyOneOfTwo.whereX",
+    "kind": "effect",
+    "cr": ["CR 106.1b", "CR 106.4", "CR 107.3"],
+    "pattern": "add x {a:ManaSym} or x {b:ManaSym} , where x is {q:Qty}",
+    "build": { "op": "addMana", "who": { "ref": "you" }, "dynamic": { "kind": "anyOneColor", "count": "$q", "from": ["$a", "$b"] } },
+    "subject": "none",
+    "examples": [
+      { "text": "{T}: Add X {U} or X {R}, where X is the number of Wizards you control." },
+      { "text": "{T}: Add X {B} or X {G}, where X is ~'s power." }
+    ],
+    "counterExamples": [
+      "{T}: Add X {U} or X {R}.",
+      "{T}: Add X {U} and X {R}, where X is the number of Wizards you control.",
+      "{T}: Add X {U} or Y {R}, where X is the number of Wizards you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t48.mana.exiledColors",
+    "kind": "effect",
+    "cr": ["CR 106.5", "CR 607.2a"],
+    "pattern": "add {n:Qty} mana of any of the exiled cards' colors",
+    "build": { "op": "addMana", "who": { "ref": "you" }, "dynamic": { "kind": "colorsOf", "of": { "ref": "linked", "link": "exiled" }, "count": "$n" } },
+    "subject": "none",
+    "examples": [
+      { "text": "When ~ enters, exile target card from a graveyard.\n{2}, {T}: Add one mana of any of the exiled cards' colors." },
+      { "text": "When ~ enters, exile up to two target cards from graveyards.\n{T}: Add two mana of any of the exiled cards' colors." }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Add one mana of any of the exiled cards' colors.",
+      "When ~ enters, exile target card from a graveyard.\n{2}, {T}: Add one mana of any of the exiled cards' types."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

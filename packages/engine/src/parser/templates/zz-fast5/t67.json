@@ -1,0 +1,183 @@
+[
+  {
+    "id": "eff.t67.token.forEach.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 111.1", "CR 111.2", "CR 701.7a", "CR 107.3", "CR 608.2h"],
+    "pattern": "for each {f:Filter} , create ( a | an ) {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": { "ref": "you" },
+      "count": { "q": "count", "of": { "ref": "each", "filter": "$f" } },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "For each Forest you control, create a 1/1 green Squirrel creature token." },
+      { "text": "For each artifact you control, create a Clue token." },
+      { "text": "For each Wizard you control, create a 1/1 blue Bird creature token with flying." }
+    ],
+    "counterExamples": [
+      "For each Forest you control, create two 1/1 green Squirrel creature tokens.",
+      "For each Forest you control, target opponent creates a 1/1 green Squirrel creature token.",
+      "For each Forest you control, create a 1/1 green Squirrel creature token unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t67.token.tapped.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 111.1", "CR 111.2", "CR 701.7a", "CR 110.5b", "CR 107.3", "CR 608.2h"],
+    "pattern": "create ( a | an ) tapped {t:TokenDesc} for each {f:Filter}",
+    "build": {
+      "op": "createToken",
+      "who": { "ref": "you" },
+      "count": { "q": "count", "of": { "ref": "each", "filter": "$f" } },
+      "token": "$t",
+      "tapped": true
+    },
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Create a tapped 2/2 colorless Golem artifact creature token for each multicolored permanent you control." },
+      { "text": "Create a tapped Treasure token for each artifact you control." }
+    ],
+    "counterExamples": [
+      "Create a tapped and attacking 2/2 colorless Golem artifact creature token for each multicolored permanent you control.",
+      "Create two tapped Treasure tokens for each artifact you control.",
+      "Create a tapped Treasure token for each time you attacked this turn."
+    ]
+  },
+  {
+    "id": "eff.t67.token.forEach.counterOnSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 111.1", "CR 111.2", "CR 701.7a", "CR 122.1", "CR 107.3", "CR 608.2h"],
+    "pattern": "create ( a | an ) {t:TokenDesc} for each counter on ~",
+    "build": {
+      "op": "createToken",
+      "who": { "ref": "you" },
+      "count": { "q": "counters", "on": { "ref": "self" }, "kind": "any" },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Create a 1/1 black Rat creature token for each counter on ~." },
+      { "text": "Create a Food token for each counter on ~." }
+    ],
+    "counterExamples": [
+      "Create a 1/1 black Rat creature token for each +1/+1 counter on ~.",
+      "Create two Food tokens for each counter on ~.",
+      "Create a Food token for each counter on target creature."
+    ]
+  },
+  {
+    "id": "eff.t67.choose.creatureType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 608.2d", "CR 205.3m", "CR 607.2d"],
+    "pattern": "choose a creature type",
+    "build": {
+      "op": "chooseValue",
+      "who": { "ref": "you" },
+      "what": "creatureType",
+      "as": "chosenCreatureType",
+      "link": "chosenCreatureType"
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "Choose a creature type. Draw a card for each creature you control of that type." },
+      { "text": "Choose a creature type. Create a Clue token for each creature you control of that type." }
+    ],
+    "counterExamples": [
+      "Choose a creature type other than Wall.",
+      "Target opponent chooses a creature type.",
+      "Choose a card type."
+    ]
+  },
+  {
+    "id": "eff.t67.pump.eachSingular",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 613.4c"],
+    "pattern": "each {f:Filter} gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "subject": "none",
+    "consumes": ["each"],
+    "examples": [
+      { "text": "Each Goblin you control gets +2/+0 until end of turn." },
+      { "text": "Each creature you control gets +1/+1 until end of turn." }
+    ],
+    "counterExamples": [
+      "Each Goblin you control gets +2/+0.",
+      "Each Goblin you control gets +2/+0 until end of turn unless it is blue.",
+      "Target Goblin you control gets +2/+0 until end of turn and each other Goblin gets +1/+0 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.t67.thenIf.pump.each",
+    "kind": "effect",
+    "priority": 1,
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 608.2c", "CR 611.2a", "CR 611.2c", "CR 613.4c"],
+    "pattern": "then if {c:Cond} , each {f:Filter} gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [{ "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["then", "if", "each"],
+    "examples": [
+      { "text": "Draw a card. Then if you control four or more Goblins, each Goblin you control gets +1/+0 until end of turn." },
+      { "text": "Create a 1/1 red Goblin creature token. Then if you control three or more artifacts, each creature you control gets +1/+1 until end of turn." }
+    ],
+    "counterExamples": [
+      "Draw a card. Then if you control four or more Goblins, each Goblin you control gets +1/+0.",
+      "Draw a card. Then unless you control four or more Goblins, each Goblin you control gets +1/+0 until end of turn.",
+      "Draw a card. Then if you control four or more Goblins, each Goblin you control gets +1/+0 until end of turn instead."
+    ]
+  },
+  {
+    "id": "eff.t67.emblem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 114.1", "CR 114.2", "CR 114.3", "CR 114.4", "CR 113.1c"],
+    "pattern": "you get an emblem with {a:Abilities}",
+    "build": {
+      "op": "createEmblem",
+      "who": { "ref": "you" },
+      "abilities": "$a"
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "You get an emblem with \"Creatures you control get +1/+1.\"" },
+      { "text": "You get an emblem with \"Whenever you cast a creature spell, draw a card.\"" },
+      { "text": "You get an emblem with \"Sorcery spells you cast have storm.\"" }
+    ],
+    "counterExamples": [
+      "Target opponent gets an emblem with \"Creatures you control get +1/+1.\"",
+      "You get an emblem with \"Whenever you cast a creature spell, draw a card unless it is blue.\"",
+      "You get an emblem with \"Creatures you control get +1/+1.\" unless an opponent pays {2}."
+    ]
+  }
+]

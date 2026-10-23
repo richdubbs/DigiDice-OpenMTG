@@ -1,0 +1,126 @@
+[
+  {
+    "id": "rid.e23.mana.spendOnly",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 608.2c", "CR 601.2g", "CR 601.2h", "CR 602.1", "CR 602.2b", "CR 205.3", "CR 607.2d", "CR 116.2b", "CR 702.6a", "CR 107.3"],
+    "pattern": "spend this mana only to {r:ManaSpend}",
+    "build": {"$patchPrevious": {"restriction": "$r"}},
+    "attachTo": "addMana",
+    "consumes": ["only"],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any color. Spend this mana only to cast a Goblin spell or activate an ability of a Goblin source.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{T}: Add one mana of any color. Spend this mana only to cast a Goblin spell or activate an ability of a Goblin source.",
+            "cost": {"tap": true},
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "addMana",
+                  "who": {"ref": "you"},
+                  "units": [["W", "U", "B", "R", "G"]],
+                  "restriction": {"spells": {"subtypes": ["Goblin"]}, "abilities": {"subtypes": ["Goblin"]}}
+                }
+              ]
+            },
+            "isMana": true
+          }
+        ]
+      },
+      {"text": "{T}: Add {C}{C}. Spend this mana only to cast Wizard spells or activate abilities of Wizard sources."},
+      {"text": "{T}: Add {R}. Spend this mana only to cast Giant or Ogre spells."},
+      {"text": "{T}: Add {G}. Spend this mana only to cast a Bird spell or a Bat spell."},
+      {"text": "{2}, {T}: Add {U}{U}. Spend this mana only to cast an enchantment spell or activate an ability."},
+      {"text": "{T}: Add {C}. Spend this mana only to activate abilities."},
+      {"text": "{T}: Add {C}{C}. Spend this mana only to activate abilities of artifact sources."},
+      {"text": "{T}: Add {B}. Spend this mana only to cast spells with mana value 3 or greater or spells with {X} in their mana costs."},
+      {"text": "{T}: Add {G}. Spend this mana only to cast creature spells with mana value 6 or greater or creature spells with {X} in their mana costs."},
+      {"text": "{T}: Add {U}. Spend this mana only to cast spells from exile."},
+      {"text": "{T}: Add {W}. Spend this mana only to cast face-down spells or to turn creatures face up."},
+      {"text": "{T}: Add {G}. Spend this mana only to turn permanents face up."},
+      {"text": "{T}: Add {R}. Spend this mana only to cast an artifact spell, unlock a door, or turn a permanent face up."},
+      {"text": "{T}: Add {W}. Spend this mana only to cast an Aura spell or activate an equip ability."},
+      {"text": "{T}: Add {B}. Spend this mana only to cast sorcery spells."},
+      {"text": "{T}: Add {C}{C}. Spend this mana only to cast a planeswalker spell."},
+      {
+        "text": "As ~ enters, choose a creature type.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature source of the chosen type."
+      },
+      {"text": "{T}: Add {R}{R}. Spend this mana only to activate abilities."},
+      {"text": "{1}, {T}: Add {G}. Spend this mana only to activate abilities."},
+      {"text": "{T}: Add two mana of any one color. Spend this mana only to cast Wizard or Cleric spells."},
+      {"text": "{T}: Add {R}{R}. Spend this mana only to cast Goblin or Elf spells."},
+      {"text": "{T}: Add one mana of any color. Spend this mana only to cast a Wizard or Cleric spell."},
+      {"text": "{T}: Add {C}. Spend this mana only to cast an Elf or Goblin spell."},
+      {"text": "{T}: Add two mana in any combination of colors. Spend this mana only to cast Wizard spells or activate abilities of Wizard sources."},
+      {"text": "{T}: Add {G}{G}. Spend this mana only to cast Elf spells or activate abilities of Elf sources."},
+      {"text": "{T}: Add one mana of any color. Spend this mana only to cast a Wizard spell or activate an ability of a Wizard source."},
+      {"text": "{T}: Add {R}. Spend this mana only to cast an Elf spell or activate an ability of an Elf source."},
+      {"text": "{T}: Add {B}. Spend this mana only to cast an artifact spell or activate an ability of an artifact source."},
+      {"text": "{T}: Add {C}{C}. Spend this mana only to cast an artifact spell or activate an ability of an artifact source."},
+      {"text": "{T}: Add {B}. Spend this mana only to cast an artifact spell or activate an ability."},
+      {"text": "{T}: Add {C}{C}. Spend this mana only to cast an artifact spell or activate an ability."},
+      {"text": "As ~ enters, choose a creature type.\n{1}, {T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature source of the chosen type."},
+      {"text": "As ~ enters, choose a creature type.\n{T}: Add {C}{C}. Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature source of the chosen type."},
+      {"text": "{T}: Add {G}{G}. Spend this mana only to cast instant and sorcery spells."},
+      {"text": "{1}, {T}: Add two mana of any one color. Spend this mana only to cast instant and sorcery spells."},
+      {"text": "{T}: Add two mana of any one color. Spend this mana only to cast Wizard and Cleric spells."},
+      {"text": "{T}: Add two mana in any combination of colors. Spend this mana only to cast Wizard spells and activate abilities of Wizard sources."}
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color. Spend this mana only to cast a Goblin spell or activate an ability of a Goblin source this turn.",
+      "{T}: Add one mana of any color. Spend this mana only to cast a Goblin card or activate an ability of a Goblin source.",
+      "{T}: Add one mana of any color. Spend this mana only to cast a Goblin spell or activate an ability of target Goblin.",
+      "{T}: Add one mana of any color. Spend this mana only to cast a Goblin spell or sacrifice a Goblin source.",
+      "{T}: Add one mana of any color. Spend this mana only to cast an instant and sorcery spell.",
+      "{T}: Add {R}{R}. Spend this mana only to activate loyalty abilities.",
+      "{T}: Add one mana of any color. Spend this mana only to cast a Wizard and Cleric spell.",
+      "{T}: Add one mana of any color. Spend this mana only to cast a Wizard spell and activate an ability of a Wizard source.",
+      "{T}: Add {B}. Spend this mana only to cast an artifact spell and activate an ability.",
+      "{T}: Add {W}. Spend this mana only to cast an artifact spell or activate abilities of artifact sources.",
+      "{T}: Add {G}{G}. Spend this mana only to cast instant and sorcery spells this turn."
+    ],
+    "priority": -1,
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.e23.mana.cantBeSpent",
+    "kind": "rider",
+    "cr": ["CR 106.6", "CR 608.2c", "CR 601.2a", "CR 601.2g"],
+    "pattern": "this mana can't be spent to cast {f:SpellsCast}",
+    "build": {"$patchPrevious": {"restriction": {"notSpells": "$f"}}},
+    "attachTo": "addMana",
+    "consumes": ["can't"],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any color. This mana can't be spent to cast a noncreature spell.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{T}: Add one mana of any color. This mana can't be spent to cast a noncreature spell.",
+            "cost": {"tap": true},
+            "effect": {
+              "targets": [],
+              "steps": [{"op": "addMana", "who": {"ref": "you"}, "units": [["W", "U", "B", "R", "G"]], "restriction": {"notSpells": {"notTypes": ["Creature"]}}}]
+            },
+            "isMana": true
+          }
+        ]
+      },
+      {"text": "{T}: Add {C}{C}. This mana can't be spent to cast nonartifact spells."},
+      {"text": "{T}: Add {R}{R}. This mana can't be spent to cast spells from your hand."}
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color. This mana can't be spent to cast a noncreature card.",
+      "{T}: Add one mana of any color. This mana can't be spent to activate abilities.",
+      "{T}: Add one mana of any color. This mana can be spent to cast a noncreature spell.",
+      "{T}: Add one mana of any color. This mana can't be spent to cast a noncreature spell this turn."
+    ],
+    "priority": -1,
+    "status": "stable",
+    "since": 8
+  }
+]

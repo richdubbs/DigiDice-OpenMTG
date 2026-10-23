@@ -1,0 +1,977 @@
+[
+  {
+    "id": "eff.r3cost.costmod.abilities.less.floorOne",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7",
+      "CR 605.1a"
+    ],
+    "pattern": "activated abilities of {f:Filter} cost {m:ManaCost} less to activate . this effect can't reduce the mana in that cost to less than one mana",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": "$f"
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "one"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Activated abilities of artifacts you control cost {2} less to activate. This effect can't reduce the mana in that cost to less than one mana."
+      },
+      {
+        "text": "Activated abilities of Elves cost {1} less to activate. This effect can't reduce the mana in that cost to less than one mana."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities of artifacts you control cost {2} less to activate.",
+      "Activated abilities of artifacts you control cost {2} more to activate. This effect can't reduce the mana in that cost to less than one mana.",
+      "Activated abilities of artifacts you control cost {2} less to activate. This effect can't reduce the mana in that cost to less than two mana."
+    ]
+  },
+  {
+    "id": "eff.r3cost.costmod.abilities.lessX.floorOne",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7",
+      "CR 107.3",
+      "CR 605.1a"
+    ],
+    "pattern": "activated abilities of {f:Filter} cost {x} less to activate , where x is {q:Qty} . this effect can't reduce the mana in that cost to less than one mana",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": "$f"
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$q",
+            "floor": "one"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Activated abilities of creatures you control cost {X} less to activate, where X is ~'s power. This effect can't reduce the mana in that cost to less than one mana."
+      },
+      {
+        "text": "Activated abilities of artifacts you control cost {X} less to activate, where X is the greatest power among creatures you control. This effect can't reduce the mana in that cost to less than one mana."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities of creatures you control cost {X} less to activate, where X is ~'s power.",
+      "Activated abilities of creatures you control cost {X} more to activate, where X is ~'s power. This effect can't reduce the mana in that cost to less than one mana."
+    ]
+  },
+  {
+    "id": "eff.r3cost.permit.alt.mana",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 604.1"
+    ],
+    "pattern": "you may pay {m:ManaCost} rather than pay the mana cost for {f:Filter} you cast",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "costChange": {
+            "kind": "set",
+            "cost": {
+              "mana": "$m"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You may pay {2}{U}{U} rather than pay the mana cost for spells you cast."
+      },
+      {
+        "text": "You may pay {G}{G} rather than pay the mana cost for creature spells you cast."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {2}{U}{U} rather than pay the mana cost for spells your opponents cast.",
+      "You may pay {2}{U}{U} in addition to paying the mana cost for spells you cast.",
+      "Pay {2}{U}{U} rather than pay the mana cost for spells you cast."
+    ]
+  },
+  {
+    "id": "eff.r3cost.permit.alt.mana.once.exile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2a",
+      "CR 604.1",
+      "CR 400.7"
+    ],
+    "pattern": "once each turn , you may pay {m:ManaCost} rather than pay the mana cost for ( a | an ) {f:Filter} you cast from exile",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "castFrom": "exile"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {
+              "mana": "$m"
+            }
+          },
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Once each turn, you may pay {1} rather than pay the mana cost for a spell you cast from exile."
+      },
+      {
+        "text": "Once each turn, you may pay {R} rather than pay the mana cost for an instant spell you cast from exile."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {1} rather than pay the mana cost for a spell you cast from exile.",
+      "Once each turn, you may pay {1} rather than pay the mana cost for a spell you cast from your graveyard.",
+      "Once each turn, you may pay {1} rather than pay the mana cost for a spell your opponents cast from exile."
+    ]
+  },
+  {
+    "id": "eff.r3cost.permit.alt.mana.once.hand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2a",
+      "CR 604.1",
+      "CR 400.7"
+    ],
+    "pattern": "once each turn , you may pay {m:ManaCost} rather than pay the mana cost for ( a | an ) {f:Filter} you cast from your hand",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "castFrom": "hand"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {
+              "mana": "$m"
+            }
+          },
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Once each turn, you may pay {1} rather than pay the mana cost for an artifact spell you cast from your hand."
+      },
+      {
+        "text": "Once each turn, you may pay {0} rather than pay the mana cost for a creature spell you cast from your hand."
+      }
+    ],
+    "counterExamples": [
+      "Once each turn, you may pay {1} rather than pay the mana cost for an artifact spell you cast from exile.",
+      "You may pay {1} rather than pay the mana cost for an artifact spell you cast from your hand.",
+      "Once each turn, you may pay {1} rather than pay the mana cost for an artifact spell your opponents cast from your hand."
+    ]
+  },
+  {
+    "id": "eff.r3cost.permit.free.fromHand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2a",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast {f:Filter} from your hand without paying their mana costs",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "castFrom": "hand"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast creature spells from your hand without paying their mana costs."
+      },
+      {
+        "text": "You may cast artifact spells from your hand without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast creature spells from your graveyard without paying their mana costs.",
+      "You may cast creature spells from your hand.",
+      "Each player may cast creature spells from their hand without paying their mana costs."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.r3cost.permit.free",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast {f:Filter} without paying their mana costs",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast Elf spells without paying their mana costs."
+      },
+      {
+        "text": "You may cast instant spells without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast Elf spells.",
+      "You may cast Elf spells from your graveyard without paying their mana costs.",
+      "You may cast Elf spells by paying {1} rather than paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.r3cost.permit.self.graveyard.removeAmong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2a",
+      "CR 113.6",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 118.3",
+      "CR 122.1"
+    ],
+    "pattern": "you may cast ~ from your graveyard by removing {n:Qty} counters from among {f:Filter} in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "removeCounters",
+                "counter": "any",
+                "count": "$n",
+                "filter": "$f",
+                "among": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by removing four counters from among creatures you control in addition to paying its other costs."
+      },
+      {
+        "text": "You may cast ~ from your graveyard by removing two counters from among artifacts you control in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by removing four counters from among creatures you control in addition to paying its other costs.",
+      "You may cast ~ from your graveyard by removing four counters from among creatures you control rather than paying its mana cost.",
+      "You may cast ~ from your graveyard by removing four counters from a creature you control in addition to paying its other costs."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number",
+      "without"
+    ],
+    "id": "eff.r3cost.cast.anyNumber.free.fromAmong",
+    "pattern": "you may cast any number of spells from among {g:Them} without paying their mana costs",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9"
+    ],
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "examples": [
+      {
+        "text": "Exile the top four cards of your library. You may cast any number of spells from among them without paying their mana costs."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of target opponent's library. You may cast any number of spells from among them without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top four cards of your library. You may cast a spell from among them without paying their mana costs.",
+      "Exile the top four cards of your library. You may cast any number of spells from among them.",
+      "Exile the top four cards of your library. You may play any number of cards from among them without paying their mana costs."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number",
+      "without"
+    ],
+    "id": "eff.r3cost.cast.anyNumber.free.mvOrLess.fromAmong",
+    "pattern": "you may cast any number of spells with mana value {n:Qty} or less from among {g:Them} without paying their mana costs",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 305.9"
+    ],
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "exile",
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "examples": [
+      {
+        "text": "Exile the top five cards of your library. You may cast any number of spells with mana value 2 or less from among them without paying their mana costs."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top four cards of your library. You may cast any number of spells with mana value 3 or less from among them without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top five cards of your library. You may cast any number of spells with mana value 2 or greater from among them without paying their mana costs.",
+      "Exile the top five cards of your library. You may cast a spell with mana value 2 or less from among them without paying its mana cost.",
+      "Exile the top five cards of your library. You may cast any number of spells with mana value 2 or less from among them."
+    ]
+  },
+  {
+    "id": "eff.r3cost.exile.topX.their.damageDealt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 401.2",
+      "CR 406.1",
+      "CR 603.2",
+      "CR 608.2h",
+      "CR 107.3"
+    ],
+    "pattern": "exile the top x cards of their library , where x is the amount of damage dealt",
+    "build": {
+      "lower": "whereX",
+      "value": {
+        "q": "eventAmount"
+      },
+      "steps": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "topCards",
+            "player": {
+              "ref": "event",
+              "role": "recipient"
+            },
+            "count": {
+              "q": "X"
+            }
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, exile the top X cards of their library, where X is the amount of damage dealt."
+      },
+      {
+        "text": "Whenever ~ deals damage to an opponent, exile the top X cards of their library, where X is the amount of damage dealt."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, exile the top X cards of your library, where X is the amount of damage dealt.",
+      "Whenever ~ deals combat damage to a player, exile the top X cards of their graveyard, where X is the amount of damage dealt."
+    ]
+  },
+  {
+    "id": "eff.r3cost.mana.eitherType.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4"
+    ],
+    "pattern": "add {a:ManaSym} or {b:ManaSym} for each {f:Filter}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyColor",
+        "from": [
+          "$a",
+          "$b"
+        ],
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        }
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, add {W} or {U} for each Bird you control."
+      },
+      {
+        "text": "When ~ enters, add {B} or {R} for each creature card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, add {W} for each Bird you control.",
+      "At the beginning of your upkeep, add {W}{U} for each Bird you control.",
+      "At the beginning of your upkeep, add {W} or {U} for each opponent."
+    ]
+  },
+  {
+    "id": "eff.r3cost.additional.blightX.max",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 107.3",
+      "CR 701.68a"
+    ],
+    "pattern": "as an additional cost to cast ~ , blight x . x can't be greater than {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "action",
+                "action": "blight",
+                "arg": {
+                  "q": "X"
+                }
+              }
+            ]
+          },
+          "xMax": "$q"
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, blight X. X can't be greater than the greatest power among creatures you control.\nWhen ~ enters, target player mills three cards and you gain 1 life."
+      },
+      {
+        "text": "As an additional cost to cast ~, blight X. X can't be greater than the number of cards in your hand.\nWhen ~ enters, you gain 1 life and scry 2."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, blight X.\nWhen ~ enters, target player mills three cards and you gain 1 life.",
+      "As an additional cost to cast ~, you may blight X. X can't be greater than the greatest power among creatures you control.\nWhen ~ enters, target player mills three cards and you gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.r3cost.additional.behold.spelledOut",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 701.4a"
+    ],
+    "pattern": "as an additional cost to cast ~ , choose ( a | an ) {f:Filter} you control or reveal ( a | an ) {g:Filter} card from your hand",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "behold",
+                "filter": "$f",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, choose an Elf you control or reveal an Elf card from your hand.\nWhen ~ enters, target player mills three cards and you gain 1 life."
+      },
+      {
+        "text": "As an additional cost to cast ~, choose an artifact you control or reveal an artifact card from your hand.\nWhen ~ enters, you gain 1 life and scry 2."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, choose an Elf you control or reveal a Goblin card from your hand.\nWhen ~ enters, you gain 1 life and scry 2.",
+      "As an additional cost to cast ~, you may choose an Elf you control or reveal an Elf card from your hand.\nWhen ~ enters, you gain 1 life and scry 2."
+    ]
+  },
+  {
+    "id": "eff.r3cost.costmod.spells.more.opp.fromGraveyardsOrExile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 601.2f",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} your opponents cast from graveyards or from exile cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    "$f"
+                  ],
+                  "castFrom": "graveyard"
+                },
+                {
+                  "anyOf": [
+                    "$f"
+                  ],
+                  "castFrom": "exile"
+                }
+              ]
+            },
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creature spells your opponents cast from graveyards or from exile cost {1} more to cast."
+      },
+      {
+        "text": "Noncreature spells your opponents cast from graveyards or from exile cost {3} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells your opponents cast from graveyards or from exile cost {2} less to cast.",
+      "Spells you cast from graveyards or from exile cost {2} more to cast.",
+      "Spells your opponents cast from graveyards or from your hand cost {2} more to cast."
+    ]
+  },
+  {
+    "id": "eff.r3cost.costmod.spells.less.fromGraveyardOrExile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 601.2f",
+      "CR 400.3",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} you cast from your graveyard or from exile cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    "$f"
+                  ],
+                  "castFrom": "graveyard",
+                  "owner": "you"
+                },
+                {
+                  "anyOf": [
+                    "$f"
+                  ],
+                  "castFrom": "exile"
+                }
+              ]
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creature spells you cast from your graveyard or from exile cost {1} less to cast."
+      },
+      {
+        "text": "Instant and sorcery spells you cast from your graveyard or from exile cost {3} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast from your graveyard or from exile cost {2} more to cast.",
+      "Spells your opponents cast from your graveyard or from exile cost {2} less to cast.",
+      "Spells you cast from your graveyard or from your hand cost {2} less to cast."
+    ]
+  },
+  {
+    "id": "eff.r3cost.costmod.spells.less.notFromHand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 601.2f",
+      "CR 400.3",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} you cast from anywhere other than your hand cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                "$f"
+              ],
+              "not": {
+                "castFrom": "hand",
+                "owner": "you"
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Creature spells you cast from anywhere other than your hand cost {1} less to cast."
+      },
+      {
+        "text": "Artifact spells you cast from anywhere other than your hand cost {3} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast from anywhere other than your hand cost {2} more to cast.",
+      "Spells your opponents cast from anywhere other than your hand cost {2} less to cast.",
+      "Spells you cast from your hand cost {2} less to cast."
+    ]
+  },
+  {
+    "id": "eff.r3cost.kw.crew.once",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.122a",
+      "CR 602.5b"
+    ],
+    "pattern": "crew {n:Qty} . activate only once each turn",
+    "build": {
+      "kind": "keyword",
+      "keyword": "crew",
+      "amount": "$n",
+      "limit": {
+        "per": "turn",
+        "max": 1
+      }
+    },
+    "needs": [
+      "keyword:crew"
+    ],
+    "consumes": [
+      "only",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Crew 3. Activate only once each turn."
+      },
+      {
+        "text": "Crew 2. Activate only once each turn."
+      }
+    ],
+    "counterExamples": [
+      "Crew 3. Activate only twice each turn.",
+      "Crew 3. Activate only as a sorcery.",
+      "Crew 3. Activate only once each combat."
+    ]
+  }
+]

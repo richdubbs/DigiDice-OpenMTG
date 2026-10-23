@@ -1,0 +1,616 @@
+[
+  {
+    "id": "eff.stdblb.then.return.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2c",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 403.1"
+    ],
+    "pattern": "then return {o:Objs} to the battlefield [under your control]",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Mill two cards. Then return target creature card from your graveyard to the battlefield under your control."
+      },
+      {
+        "text": "Mill three cards. Then return all artifact cards from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Mill three cards. Then return all artifact cards from your graveyard to the battlefield tapped.",
+      "Mill three cards. Then return all artifact cards from your graveyard to the battlefield under their owners' control.",
+      "Mill three cards. Then return all artifact cards from your graveyard to your hand."
+    ]
+  },
+  {
+    "id": "eff.stdblb.then.return.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 403.1",
+      "CR 614.1c"
+    ],
+    "pattern": "then return {o:Objs} to the battlefield tapped [under your control]",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, mill three cards. Then return all land cards from your graveyard to the battlefield tapped."
+      },
+      {
+        "text": "Mill two cards. Then return target creature card from your graveyard to the battlefield tapped under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, mill three cards. Then return all land cards from your graveyard to the battlefield.",
+      "When ~ enters, mill three cards. Then return all land cards from your graveyard to the battlefield tapped and attacking.",
+      "When ~ enters, mill three cards. Then return all land cards from your graveyard to your hand."
+    ]
+  },
+  {
+    "id": "eff.stdblb.then.return.bf.owner",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2c",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 403.1"
+    ],
+    "pattern": "then return {o:Objs} to the battlefield under ( its owner 's | their owners' | their owner 's ) control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature you control. Then return that card to the battlefield under its owner's control."
+      },
+      {
+        "text": "Exile up to two target artifacts you control. Then return those cards to the battlefield under their owners' control."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature you control. Then return that card to the battlefield under your control.",
+      "Exile target creature you control. Then return that card to the battlefield tapped under its owner's control.",
+      "Exile target creature you control. Then return that card to its owner's hand."
+    ]
+  },
+  {
+    "id": "eff.stdblb.then.return.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.3",
+      "CR 400.7",
+      "CR 402.1"
+    ],
+    "pattern": "then return {o:Objs} to ( its owner 's hand | their owners' hands | their owner 's hand | your hand )",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Mill two cards. Then return up to two target creature cards from your graveyard to your hand."
+      },
+      {
+        "text": "Mill four cards. Then return target land card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. Then return target land card from your graveyard to the battlefield.",
+      "Mill four cards. Then return target land card from your graveyard to your hand unless an opponent pays {2}.",
+      "Mill four cards. Then return target land card from your graveyard to an opponent's hand."
+    ]
+  },
+  {
+    "id": "eff.stdblb.lead.grant.pump.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 107.3"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} gain[s] {a:Abilities} and get[s] {pt:PT} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control gains reach and gets +X/+X, where X is the number of Elves you control."
+      },
+      {
+        "text": "Until end of turn, creatures you control gain menace and get +X/+0, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control gains reach and gets +X/+X.",
+      "Until end of turn, target creature you control loses reach and gets +X/+X, where X is the number of Elves you control.",
+      "Until your next turn, target creature you control gains reach and gets +X/+X, where X is the number of Elves you control."
+    ]
+  },
+  {
+    "id": "eff.stdblb.also.gets.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} also get[s] {pt:PT} {d:Dur} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ],
+      "duration": "$d",
+      "guard": "$c"
+    },
+    "subject": "object",
+    "consumes": [
+      "also",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gains first strike until end of turn. It also gets +2/+0 until end of turn if you control a Goblin."
+      },
+      {
+        "text": "Target creature gains reach until end of turn. It also gets +0/+3 until end of turn if you control an Elf."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gains first strike until end of turn. It also gets +2/+0 until end of turn unless you control a Goblin.",
+      "Target creature gains first strike until end of turn. It also gets +2/+0 if you control a Goblin.",
+      "Target creature gains first strike until end of turn. It also gains flying until end of turn if you control a Goblin."
+    ]
+  },
+  {
+    "id": "eff.stdblb.if.delay.nextEnd",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 513.1"
+    ],
+    "pattern": "if {c:Cond} , {e:Effects} at the beginning of the next end step",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "delay",
+          "when": {
+            "at": "step",
+            "step": "end",
+            "next": true
+          },
+          "do": "$e"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "priority": 0.5,
+    "examples": [
+      {
+        "text": "Exile target creature you control. If you control an Elf, return that card to the battlefield under its owner's control with a +1/+1 counter on it at the beginning of the next end step."
+      },
+      {
+        "text": "Target creature gets +2/+0 until end of turn. If you control a Goblin, you lose 2 life at the beginning of the next end step."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature you control. If you control an Elf, return that card to the battlefield under its owner's control with a +1/+1 counter on it at the beginning of your next upkeep.",
+      "Exile target creature you control. Unless you control an Elf, return that card to the battlefield under its owner's control with a +1/+1 counter on it at the beginning of the next end step.",
+      "Exile target artifact you control. Return that card to the battlefield under its owner's control with a +1/+1 counter on it at the beginning of the next end step."
+    ]
+  },
+  {
+    "id": "sta.stdblb.graveyard.yours.exile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.1",
+      "CR 111.7",
+      "CR 400.3"
+    ],
+    "pattern": "if a card or token would be put into your graveyard from anywhere , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {
+          "owner": "you"
+        },
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Each player mills two cards.\nIf a card or token would be put into your graveyard from anywhere, exile it instead."
+      },
+      {
+        "text": "If a card or token would be put into your graveyard from anywhere, exile it instead.\n{6}: Each player draws a card."
+      }
+    ],
+    "counterExamples": [
+      "If a card or token would be put into your graveyard from your hand, exile it instead.",
+      "If a token would be put into your graveyard from anywhere, exile it instead.",
+      "If a card or token would be put into your graveyard from anywhere, put it on the bottom of your library instead."
+    ]
+  },
+  {
+    "id": "sta.stdblb.graveyard.yours.card.exile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.1",
+      "CR 400.3"
+    ],
+    "pattern": "if a card would be put into your graveyard from anywhere , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {
+          "isCard": true,
+          "owner": "you"
+        },
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{4}{U}, {T}: Each player mills three cards.\nIf a card would be put into your graveyard from anywhere, exile it instead."
+      },
+      {
+        "text": "If a card would be put into your graveyard from anywhere, exile it instead.\n{5}: Each player draws a card."
+      }
+    ],
+    "counterExamples": [
+      "If a card would be put into your graveyard from your library, exile it instead.",
+      "If a card would be put into your graveyard from anywhere, shuffle it into your library instead.",
+      "If a creature card would be put into your graveyard from anywhere, exile it instead."
+    ]
+  },
+  {
+    "id": "sta.stdblb.damage.plus.toOpponents.colored",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 609.7",
+      "CR 105.2"
+    ],
+    "pattern": "if a {c:Color} source you control would deal damage to an opponent or a permanent an opponent controls , it deals that much damage plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "colors": [
+            "$c"
+          ],
+          "controller": "you"
+        },
+        "recipient": {
+          "player": "opponent",
+          "object": {
+            "controller": "opponent"
+          }
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a green source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 3 instead."
+      },
+      {
+        "text": "If a blue source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 1 instead."
+      }
+    ],
+    "counterExamples": [
+      "If a green source you control would deal damage to an opponent or a permanent an opponent controls, it deals triple that damage instead.",
+      "If a green source you control would deal damage to a permanent or player, it deals that much damage plus 3 instead.",
+      "If a green source an opponent controls would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 3 instead."
+    ]
+  },
+  {
+    "id": "eff.stdblb.choose.permanent.youControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 700.2a",
+      "CR 115.10"
+    ],
+    "pattern": "choose ( a | an ) {f:Filter} you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose a creature you control. Create a token that's a copy of it."
+      },
+      {
+        "text": "Choose an artifact or enchantment you control. Create a token that's a copy of it."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature you control. Create a token that's a copy of it.",
+      "Choose a creature an opponent controls. Create a token that's a copy of it.",
+      "Choose a creature you control. Create two tokens that are copies of it."
+    ]
+  },
+  {
+    "id": "eff.stdblb.look.nFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.1",
+      "CR 701.20b",
+      "CR 107.3",
+      "CR 701.20e",
+      "CR 608.2h"
+    ],
+    "pattern": "look at {n:Qty} cards from the top of your library",
+    "build": {
+      "op": "look",
+      "who": {
+        "ref": "you"
+      },
+      "at": {
+        "ref": "topCards",
+        "player": {
+          "ref": "you"
+        },
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at twice X cards from the top of your library. Put X cards from among them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Look at seven cards from the top of your library. Put two cards from among them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, look at that many cards from the top of your library. Put one of them into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to an opponent, look at that many cards from the top of your library. Put one of them into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at twice X cards from the bottom of your library. Put X cards from among them into your hand and the rest into your graveyard.",
+      "Look at seven cards from the top of target player's library. Put two cards from among them into your hand and the rest into your graveyard.",
+      "Reveal seven cards from the top of your library. Put two cards from among them into your hand and the rest into your graveyard.",
+      "Whenever ~ deals combat damage to a player, look at that many cards from the bottom of your library. Put one of them into your hand and the rest into your graveyard.",
+      "Whenever ~ deals combat damage to a player, look at that many cards from the top of target player's library. Put one of them into your hand and the rest into your graveyard.",
+      "Whenever ~ deals combat damage to a player, reveal that many cards from the top of your library. Put one of them into your hand and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.stdblb.dig.nCardsFromAmong.putHand.rest.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20b",
+      "CR 400.7"
+    ],
+    "pattern": "put {n:Qty} card[s] from among {g:Seen} into your hand and {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. Put three cards from among them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top four cards of your library. Put a card from among them into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put three cards from among them into your hand and the rest on the bottom of your library.",
+      "Look at the top six cards of your library. Put three cards from among them into your graveyard and the rest into your hand.",
+      "Look at the top six cards of your library. Put up to three cards from among them into your hand and the rest into your graveyard."
+    ]
+  }
+]

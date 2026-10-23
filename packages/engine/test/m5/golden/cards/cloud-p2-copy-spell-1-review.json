@@ -1,0 +1,511 @@
+[
+ {
+  "card": "Chain of Smog",
+  "expect": "full",
+  "verified": "p2-copy-spell-1 review, by hand against the Oracle text and the rules cited (eff.p2copyspell1.playerMayCopySelf.newTargets): target player discards two cards (CR 701.9a); then that player may copy this spell: the copy is theirs, put onto the stack by them, and they may choose a new target for it (CR 707.10, 707.10c, 608.2d, 115.7); a copy can itself be copied the same way, the chain ending when a player declines",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "op": "discard",
+         "who": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "do": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "self"
+           },
+           "who": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         },
+         "text": "target player"
+        }
+       ]
+      },
+      "kind": "spell",
+      "text": "Target player discards two cards. That player may copy ~ and may choose a new target for that copy."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Chain of Vapor",
+  "expect": "full",
+  "verified": "p2-copy-spell-1 review, by hand against the Oracle text and the rules cited (eff.p2copyspell1.playerMayCopySelf.newTargets): return target nonland permanent to its owner's hand; then that permanent's controller (as it last existed, CR 608.2h) may sacrifice a land of their choice (CR 701.21a); if the player does, they may copy this spell, the copy being theirs with a new target they may choose (CR 707.10c, 608.2c, 608.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "as": "did",
+         "do": [
+          {
+           "count": 1,
+           "filter": {
+            "types": [
+             "Land"
+            ]
+           },
+           "op": "sacrificeChoice",
+           "who": {
+            "object": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "ref": "controllerOf"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "object": {
+           "id": "t0",
+           "ref": "target"
+          },
+          "ref": "controllerOf"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "op": "if",
+         "then": [
+          {
+           "do": [
+            {
+             "newTargets": "may",
+             "op": "copy",
+             "result": "spell",
+             "what": {
+              "ref": "self"
+             },
+             "who": {
+              "object": {
+               "id": "t0",
+               "ref": "target"
+              },
+              "ref": "controllerOf"
+             }
+            }
+           ],
+           "op": "may",
+           "who": {
+            "object": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "ref": "controllerOf"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "notTypes": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1,
+         "text": "target nonland permanent"
+        }
+       ]
+      },
+      "kind": "spell",
+      "text": "Return target nonland permanent to its owner's hand. Then that permanent's controller may sacrifice a land of their choice. If the player does, they may copy ~ and may choose a new target for that copy."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Chain of Silence",
+  "expect": "full",
+  "verified": "p2-copy-spell-1 review, by hand against the Oracle text and the rules cited (eff.p2copyspell1.playerMayCopySelf.newTargets): prevent all damage target creature would deal this turn (CR 615.1); that creature's controller may sacrifice a land of their choice; if the player does, they may copy this spell and may choose a new target for that copy (CR 707.10c, 608.2c, 608.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "body": {
+            "amount": "all",
+            "b": "prevent"
+           },
+           "replaces": {
+            "ev": "damage",
+            "source": {
+             "is": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           },
+           "s": "replace"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "as": "did",
+         "do": [
+          {
+           "count": 1,
+           "filter": {
+            "types": [
+             "Land"
+            ]
+           },
+           "op": "sacrificeChoice",
+           "who": {
+            "object": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "ref": "controllerOf"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "object": {
+           "id": "t0",
+           "ref": "target"
+          },
+          "ref": "controllerOf"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "op": "if",
+         "then": [
+          {
+           "do": [
+            {
+             "newTargets": "may",
+             "op": "copy",
+             "result": "spell",
+             "what": {
+              "ref": "self"
+             },
+             "who": {
+              "object": {
+               "id": "t0",
+               "ref": "target"
+              },
+              "ref": "controllerOf"
+             }
+            }
+           ],
+           "op": "may",
+           "who": {
+            "object": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "ref": "controllerOf"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1,
+         "text": "target creature"
+        }
+       ]
+      },
+      "kind": "spell",
+      "text": "Prevent all damage target creature would deal this turn. That creature's controller may sacrifice a land of their choice. If the player does, they may copy ~ and may choose a new target for that copy."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Chain Stasis",
+  "expect": "full",
+  "verified": "p2-copy-spell-1 review, by hand against the Oracle text and the rules cited (eff.p2copyspell1.playerMayCopySelf.newTargets): you may tap or untap target creature; then that creature's controller may pay {2}{U} (CR 118.12); if the player does, they may copy this spell and may choose a new target for that copy (CR 707.10c, 608.2c, 608.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "op": "tap",
+           "what": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "may",
+         "otherwise": [
+          {
+           "do": [
+            {
+             "op": "untap",
+             "what": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "op": "may",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cost": {
+          "mana": [
+           {
+            "amount": 2,
+            "kind": "generic"
+           },
+           {
+            "color": "U",
+            "kind": "colored"
+           }
+          ]
+         },
+         "op": "pay",
+         "then": [
+          {
+           "do": [
+            {
+             "newTargets": "may",
+             "op": "copy",
+             "result": "spell",
+             "what": {
+              "ref": "self"
+             },
+             "who": {
+              "object": {
+               "id": "t0",
+               "ref": "target"
+              },
+              "ref": "controllerOf"
+             }
+            }
+           ],
+           "op": "may",
+           "who": {
+            "object": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "ref": "controllerOf"
+           }
+          }
+         ],
+         "who": {
+          "object": {
+           "id": "t0",
+           "ref": "target"
+          },
+          "ref": "controllerOf"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1,
+         "text": "target creature"
+        }
+       ]
+      },
+      "kind": "spell",
+      "text": "You may tap or untap target creature. Then that creature's controller may pay {2}{U}. If the player does, they may copy ~ and may choose a new target for that copy."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sevinne's Reclamation",
+  "expect": "full",
+  "verified": "p2-copy-spell-1 review, by hand against the Oracle text and the rules cited (eff.p2copyspell1.playerMayCopySelf.newTargets): return target permanent card with mana value 3 or less from your graveyard to the battlefield; if this spell was cast from a graveyard (flashback, CR 702.34a), you may copy it and may choose a new target for the copy (CR 707.10c, 608.2c); a copy is not cast (CR 707.10), so the copy does not copy itself again; flashback {4}{W}",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "controller": {
+           "ref": "you"
+          },
+          "zone": "battlefield"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "cond": {
+          "cond": "wasCast",
+          "from": "graveyard"
+         },
+         "op": "if",
+         "then": [
+          {
+           "do": [
+            {
+             "newTargets": "may",
+             "op": "copy",
+             "result": "spell",
+             "what": {
+              "ref": "self"
+             },
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "op": "may",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "isCard": true,
+          "manaValue": {
+           "op": "<=",
+           "value": 3
+          },
+          "owner": "you",
+          "types": [
+           "Artifact",
+           "Battle",
+           "Creature",
+           "Enchantment",
+           "Land",
+           "Planeswalker"
+          ],
+          "zone": "graveyard"
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1,
+         "text": "target permanent card with mana value 3 or less from your graveyard"
+        }
+       ]
+      },
+      "kind": "spell",
+      "text": "Return target permanent card with mana value 3 or less from your graveyard to the battlefield. If ~ was cast from a graveyard, you may copy ~ and may choose a new target for the copy."
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 4,
+         "kind": "generic"
+        },
+        {
+         "color": "W",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "flashback",
+      "kind": "keyword",
+      "text": "Flashback {4}{W}"
+     }
+    ]
+   }
+  ]
+ }
+]

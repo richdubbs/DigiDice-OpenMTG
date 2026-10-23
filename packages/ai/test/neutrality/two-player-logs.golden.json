@@ -1,0 +1,58 @@
+[
+  {
+    "seed": "m12-neutral-ai-0",
+    "actions": 190,
+    "sha256": "2500f44c6ab630d38bf87a7ae44bf812b44093ba34ee9e06e517077cdf083512",
+    "turns": 27,
+    "winner": "p1"
+  },
+  {
+    "seed": "m12-neutral-ai-1",
+    "actions": 94,
+    "sha256": "2e4d35aef38361943d08769c9bc13116ad95b57a0dcaf805a99c0f1fc54a2d81",
+    "turns": 25,
+    "winner": "p1"
+  },
+  {
+    "seed": "m12-neutral-ai-2",
+    "actions": 121,
+    "sha256": "223c370749b63336883b5f687008044b7ab1a74f72b2ee56e1bd9a6d9f8da638",
+    "turns": 16,
+    "winner": "p1"
+  },
+  {
+    "seed": "m12-neutral-ai-3",
+    "actions": 106,
+    "sha256": "7692ed56661d3e7f4b3c04b5bbf4056dce90ddb2596ab2a66b4762dbfae4e3d2",
+    "turns": 15,
+    "winner": "p2"
+  },
+  {
+    "seed": "m12-neutral-ai-4",
+    "actions": 76,
+    "sha256": "aeb618106d919c29ce1a9185e6bc260c527962b4ce45bbd0ca8da2b82ef1896d",
+    "turns": 10,
+    "winner": "p1"
+  },
+  {
+    "seed": "m12-neutral-ai-5",
+    "actions": 146,
+    "sha256": "e5d19be35b8c848ae2a3ecb807cf1f2dc672689e9504d1cfcc761bf623c48299",
+    "turns": 18,
+    "winner": "p1"
+  },
+  {
+    "seed": "m12-neutral-ai-commander-0",
+    "actions": 457,
+    "sha256": "e6c75ac4de6192831a440f08bf0255794f339e581e9a9d9ac0a3334bc9ac3ae3",
+    "turns": 59,
+    "winner": "p2"
+  },
+  {
+    "seed": "m12-neutral-ai-commander-1",
+    "actions": 245,
+    "sha256": "5657b68cbb1b99a45f8e1fee2aa099db23f643dadc006719c75813d71fde3098",
+    "turns": 33,
+    "winner": "p1"
+  }
+]

@@ -1,0 +1,327 @@
+[
+  {
+    "id": "eff.e19.token.forEach.manaFrom",
+    "kind": "effect",
+    "cr": [
+      "CR 111.1",
+      "CR 701.7a",
+      "CR 106.3",
+      "CR 601.2h"
+    ],
+    "pattern": "create ( a | an ) {t:TokenDesc} for each mana from ( a | an ) {f:Filter} spent to cast {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "spellManaSpent",
+        "of": "$o",
+        "from": "$f"
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, create a 1/1 white Spirit creature token with flying for each mana from a Treasure spent to cast it."
+      },
+      {
+        "text": "When ~ enters, create a 2/2 green Wolf creature token for each mana from a Forest spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, create a 2/2 green Wolf creature token for each mana spent to cast it.",
+      "When ~ enters, create two 2/2 green Wolf creature tokens for each mana from a Forest spent to cast it.",
+      "When ~ enters, create a 2/2 green Wolf creature token for each mana from a Forest you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e19.then.unless",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c",
+      "CR 601.2h"
+    ],
+    "pattern": "then {e:Effects} unless {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "not",
+        "of": "$c"
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast an instant or sorcery spell, draw a card. Then discard a card unless six or more mana was spent to cast that spell."
+      },
+      {
+        "text": "Whenever you cast a noncreature spell, draw a card. Then discard a card unless at least three mana was spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant or sorcery spell, draw a card. Then discard a card unless you pay {2}.",
+      "Whenever you cast an instant or sorcery spell, draw a card. Then discard a card if six or more mana was spent to cast that spell.",
+      "Whenever you cast an instant or sorcery spell, draw a card. Then discard a card unless six mana was spent to cast that spell."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e19.mana.keep.color",
+    "kind": "static",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5"
+    ],
+    "pattern": "you don't lose unspent {c:Color} mana as steps and phases end",
+    "build": {
+      "s": "rule",
+      "rule": "manaDoesNotEmpty",
+      "player": {
+        "ref": "you"
+      },
+      "manaType": "$c"
+    },
+    "examples": [
+      {
+        "text": "You don't lose unspent blue mana as steps and phases end."
+      },
+      {
+        "text": "Flying\nYou don't lose unspent white mana as steps and phases end."
+      }
+    ],
+    "counterExamples": [
+      "You don't lose unspent blue mana as steps end.",
+      "Each opponent doesn't lose unspent blue mana as steps and phases end.",
+      "You don't lose unspent blue or white mana as steps and phases end."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e19.mana.keep.color.untilEndOfTurn",
+    "kind": "effect",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "until end of turn , you don't lose unspent {c:Color} mana as steps and phases end",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "manaDoesNotEmpty",
+          "player": {
+            "ref": "you"
+          },
+          "manaType": "$c"
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Add {G}{G}. Until end of turn, you don't lose unspent green mana as steps and phases end."
+      },
+      {
+        "text": "Draw a card. Until end of turn, you don't lose unspent black mana as steps and phases end."
+      }
+    ],
+    "counterExamples": [
+      "Add {G}{G}. Until your next turn, you don't lose unspent green mana as steps and phases end.",
+      "Add {G}{G}. Until end of turn, each opponent doesn't lose unspent green mana as steps and phases end.",
+      "Add {G}{G}. Until end of turn, you don't lose unspent green mana as steps end."
+    ],
+    "status": "stable",
+    "since": 8,
+    "consumes": [
+      "until"
+    ]
+  },
+  {
+    "id": "sta.e19.mana.becomes.color",
+    "kind": "static",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5",
+      "CR 614.1a"
+    ],
+    "pattern": "if you would lose unspent mana , that mana becomes {c:Color} instead",
+    "build": {
+      "s": "rule",
+      "rule": "unspentManaBecomes",
+      "player": {
+        "ref": "you"
+      },
+      "manaType": "$c"
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would lose unspent mana, that mana becomes green instead."
+      },
+      {
+        "text": "Trample\nIf you would lose unspent mana, that mana becomes blue instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would lose unspent mana, that mana becomes green.",
+      "If an opponent would lose unspent mana, that mana becomes green instead.",
+      "If you would lose unspent mana, you gain 1 life instead."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e19.mana.becomes.colorless",
+    "kind": "static",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5",
+      "CR 614.1a"
+    ],
+    "pattern": "if you would lose unspent mana , that mana becomes colorless instead",
+    "build": {
+      "s": "rule",
+      "rule": "unspentManaBecomes",
+      "player": {
+        "ref": "you"
+      },
+      "manaType": "C"
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would lose unspent mana, that mana becomes colorless instead."
+      },
+      {
+        "text": "Reach\nIf you would lose unspent mana, that mana becomes colorless instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would lose unspent mana, that mana becomes colorless.",
+      "If each player would lose unspent mana, that mana becomes colorless instead."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e19.pump.unspentMana.color",
+    "kind": "static",
+    "cr": [
+      "CR 106.4",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "~ gets +1/+1 for each unspent {c:Color} mana you have",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "unspentMana",
+            "type": "$c"
+          },
+          "toughness": {
+            "q": "unspentMana",
+            "type": "$c"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+1 for each unspent blue mana you have."
+      },
+      {
+        "text": "Flying\n~ gets +1/+1 for each unspent white mana you have."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each unspent blue mana an opponent has.",
+      "~ gets +2/+2 for each unspent blue mana you have.",
+      "~ gets +1/+1 for each blue mana you have."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e19.pump.unspentMana",
+    "kind": "static",
+    "cr": [
+      "CR 106.4",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "~ gets +1/+1 for each unspent mana you have",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "unspentMana"
+          },
+          "toughness": {
+            "q": "unspentMana"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+1 for each unspent mana you have."
+      },
+      {
+        "text": "Reach\n~ gets +1/+1 for each unspent mana you have."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each unspent mana an opponent has.",
+      "~ gets +1/+0 for each unspent mana you have."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

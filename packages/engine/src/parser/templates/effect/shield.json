@@ -1,0 +1,52 @@
+[
+  {
+    "id": "sh.dies.exile",
+    "kind": "effect",
+    "cr": ["CR 614.1a", "CR 614.6", "CR 615.8", "CR 611.2c", "CR 700.4"],
+    "pattern": "if {o:Obj} would die this turn , exile it instead",
+    "build": {
+      "op": "effect",
+      "duration": { "d": "endOfTurn" },
+      "effects": [{ "s": "replace", "replaces": { "ev": "zoneChange", "subject": { "is": "$o" }, "from": "battlefield", "to": "graveyard" }, "body": { "b": "modify", "destination": { "zone": "exile" } }, "shield": { "uses": 1 } }]
+    },
+    "subject": "none",
+    "consumes": ["if", "would", "instead"],
+    "needs": ["feature:shield.modify"],
+    "examples": [
+      { "text": "~ deals 3 damage to target creature. If that creature would die this turn, exile it instead." },
+      { "text": "~ deals 1 damage to target creature. If that creature would die this turn, exile it instead." }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to target creature. If that creature would die, exile it instead.",
+      "~ deals 3 damage to target creature. If that creature would die this turn, return it to its owner's hand instead.",
+      "~ deals 3 damage to target creature. If that creature would die this turn, exile it."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "sh.anyDies.exile",
+    "kind": "effect",
+    "cr": ["CR 614.1a", "CR 614.6", "CR 611.2a", "CR 700.4"],
+    "pattern": "if ( a | an ) {f:Filter} would die this turn , exile it instead",
+    "build": {
+      "op": "effect",
+      "duration": { "d": "endOfTurn" },
+      "effects": [{ "s": "replace", "replaces": { "ev": "zoneChange", "subject": "$f", "from": "battlefield", "to": "graveyard" }, "body": { "b": "modify", "destination": { "zone": "exile" } } }]
+    },
+    "subject": "none",
+    "consumes": ["if", "would", "instead"],
+    "needs": ["feature:replace.foreign"],
+    "examples": [
+      { "text": "Draw a card. If a creature would die this turn, exile it instead." },
+      { "text": "Draw two cards. If a creature an opponent controls would die this turn, exile it instead." }
+    ],
+    "counterExamples": [
+      "Draw a card. If a creature would die, exile it instead.",
+      "Draw a card. If a creature would die this turn, draw a card instead.",
+      "Draw a card. If two creatures would die this turn, exile them instead."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

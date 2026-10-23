@@ -1,0 +1,7 @@
+# Standard round 6 (test/cloud/std-r6, golden cloud-std-r6-review.json and cloud-r4-fxb-review.json): single-sentence gaps of Standard cards
+# "an opponent has more life than you" (eff.e17.gainlife.if) and the promoted eff.fxb.tokens.ifCond
+Beza, the Bounding Spring
+# "enchanted creature's owner shuffles it into their library" (the owner named through the enchanted creature is an antecedent)
+Watery Grasp
+# "players can't draw cards or gain life" (rst.stdr6.players.cant.draw.gainlife)
+Mornsong Aria

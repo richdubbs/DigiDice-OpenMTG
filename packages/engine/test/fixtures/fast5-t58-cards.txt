@@ -1,0 +1,7 @@
+# FAST5 T58: short names that are subtypes (CR 201.5c, 205.3j), "draw a card for each color among", counters on a target "if it's a <type>"
+Kiora of Fire and Ashes
+Gideon the Oathless
+Rhino, Barreling Brute
+Karn, Gilded Guardian
+Teyo, Lightshield Expert
+Teyo, Diamondblade Mage

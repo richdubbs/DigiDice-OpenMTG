@@ -1,0 +1,132 @@
+[
+  {
+    "id": "trg.r5trig.duringYourMainPhase",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 505.1"
+    ],
+    "pattern": "( when | whenever ) {e:Event} during your main phase",
+    "build": {
+      "on": "$e",
+      "while": {
+        "cond": "turnOf",
+        "whose": "you",
+        "step": [
+          "main1",
+          "main2"
+        ]
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ crews a Vehicle during your main phase, draw a card."
+      },
+      {
+        "text": "Whenever you cast a creature spell during your main phase, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell during an opponent's main phase, you gain 1 life.",
+      "Whenever you cast a creature spell during your second main phase, you gain 1 life."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.r5trig.attachToChosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 701.3b",
+      "CR 608.2d",
+      "CR 301.5"
+    ],
+    "pattern": "attach {o:Obj} to ( a | an ) {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "attachHost"
+      },
+      {
+        "op": "attach",
+        "what": "$o",
+        "to": {
+          "ref": "bound",
+          "name": "attachHost"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, attach it to a creature you control."
+      },
+      {
+        "text": "At the beginning of combat on your turn, attach ~ to a creature you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, attach ~ to target creature you control.",
+      "When ~ enters, attach it to each creature you control."
+    ]
+  },
+  {
+    "id": "trg.r5trig.cast.notFirstDuringYourTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 603.2",
+      "CR 500.1"
+    ],
+    "pattern": "whenever you cast a spell during your turn other than your first spell that turn",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "nthMin": 2
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell during your turn other than your first spell that turn, you gain 1 life."
+      },
+      {
+        "text": "Whenever you cast a spell during your turn other than your first spell that turn, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell during your turn other than your second spell that turn, you gain 1 life.",
+      "Whenever an opponent casts a spell during your turn other than their first spell that turn, you gain 1 life."
+    ]
+  }
+]

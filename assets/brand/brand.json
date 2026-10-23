@@ -1,0 +1,20 @@
+{
+  "name": "DigiDice",
+  "owner": "DigiDice LLC",
+  "colors": {
+    "blue": "#1FB8FF",
+    "blueDeep": "#0098F0",
+    "magenta": "#F500F5",
+    "white": "#E8E8F0",
+    "black": "#000000",
+    "navy": "#050B18"
+  },
+  "assets": {
+    "logoSquare": "digidice-logo.png",
+    "logoSquareTransparent": "digidice-mark-transparent.png",
+    "wordmark": "digidice-wordmark.png",
+    "cardBack": "card-back.svg",
+    "cardBackPng": "card-back.png"
+  },
+  "donationUrl": null
+}

@@ -1,0 +1,99 @@
+{
+  "name": "fading",
+  "rule": "702.32",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands",
+    "replacement"
+  ],
+  "reminder": "This permanent enters with {n} fade counters on it. At the beginning of your upkeep, remove a fade counter from it. If you can't, sacrifice it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "~ enters with {n} fade counters on it.",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "fade",
+                "count": "$amount"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "At the beginning of your upkeep, remove a fade counter from ~. If you can't, sacrifice ~.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "step",
+            "step": "upkeep",
+            "whose": "you"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "if",
+            "cond": {
+              "cond": "compare",
+              "left": {
+                "q": "counters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "fade"
+              },
+              "op": ">=",
+              "right": 1
+            },
+            "then": [
+              {
+                "op": "removeCounters",
+                "from": {
+                  "ref": "self"
+                },
+                "kind": "fade",
+                "count": 1
+              }
+            ],
+            "else": [
+              {
+                "op": "sacrifice",
+                "what": {
+                  "ref": "self"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

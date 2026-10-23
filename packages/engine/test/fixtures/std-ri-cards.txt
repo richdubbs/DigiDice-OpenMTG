@@ -1,0 +1,13 @@
+# Standard round I (slot I of the parallel rounds F-J; test/cloud/std-ri, golden cloud-std-ri-review.json and the promotion evidence in cloud-r4-dig-review.json, fast5-t77-review.json)
+# "Domain" power (sta.cda.power with Standard round 6's domain quantity); the search stays experimental (eff.r4dig.search.differentNames.reveal), so the card is partial
+Fblthp, Knows the Way
+# sta.t77.attached.pump.addtype.quoted (experimental, the owner's call: Ninja's Blades stays partial)
+Ninja's Blades
+# "You may spend mana as though it were mana of any color to cast <spells>" (sta.stri.spendAnyColor.toCast)
+Case File Auditor
+# "an opponent was dealt noncombat damage last turn"
+Command the Stage
+# "each other <group> you control deals damage equal to its power to <recipient>" (eff.stri.eachYouControl.deals.damage.power)
+Bartz and Boko
+# "mill cards equal to <qty>" and "return ~ to its owner's hand and up to one <cards> milled this way to the battlefield under your control"
+Avatar Destiny

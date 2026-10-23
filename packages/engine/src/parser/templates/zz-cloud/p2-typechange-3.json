@@ -1,0 +1,407 @@
+[
+  {
+    "id": "eff.p2tc3.dur.group.has.basept",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} ( has | have ) base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, each tapped creature you control has base power and toughness 4/2."
+      },
+      {
+        "text": "{2}: Until end of turn, creatures you control have base power and toughness 3/1."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, each tapped creature you control has base power 4.",
+      "Until end of turn, each tapped creature you control gets +4/+2.",
+      "Each tapped creature you control has base power and toughness 4/2."
+    ]
+  },
+  {
+    "id": "eff.p2tc3.lead.becomes.twoColor.subtype.creature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b"
+    ],
+    "pattern": "[ {d:Dur} , ] {o:Obj} becomes ( a | an ) {pt:BasePT} {c1:Color} and {c2:Color} {st:Subtypes} creature",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, target creature becomes a 1/4 white and blue Wall creature."
+      },
+      {
+        "text": "Target creature becomes a 2/5 red and green Treefolk creature."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, target creature becomes a 1/4 white and blue Wall creature with defender.",
+      "{2}: Until end of turn, target creature becomes a 1/4 white and blue Wall.",
+      "{2}: Until end of turn, target creature becomes a white and blue Wall creature."
+    ]
+  },
+  {
+    "id": "eff.p2tc3.lead.becomes.color.subtype.creature.with",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b",
+      "CR 613.1f"
+    ],
+    "pattern": "[ {d:Dur} , ] {o:Obj} becomes ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, target creature becomes a 1/4 white Wall creature with defender."
+      },
+      {
+        "text": "Target creature becomes a 2/5 green Treefolk creature with reach."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, target creature becomes a 1/4 white Wall creature without defender.",
+      "{2}: Until end of turn, target creature becomes a 1/4 white Wall with defender.",
+      "{2}: Until end of turn, target creature becomes a white Wall creature with defender."
+    ]
+  },
+  {
+    "id": "eff.p2tc3.lead.becomes.twoColor.subtype.artifactCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b"
+    ],
+    "pattern": "[ {d:Dur} , ] {o:Obj} becomes ( a | an ) {pt:BasePT} {c1:Color} and {c2:Color} {st:Subtypes} artifact creature",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, target artifact becomes a 3/3 white and black Golem artifact creature."
+      },
+      {
+        "text": "Target artifact becomes a 1/2 blue and green Construct artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, target artifact becomes a 3/3 white and black Golem creature with flying.",
+      "{2}: Until end of turn, target artifact becomes a white and black Golem artifact creature.",
+      "{2}: Until end of turn, target artifact becomes a 3/3 white and black Golem artifact."
+    ]
+  },
+  {
+    "id": "eff.p2tc3.becomes.color.creature.thatsStillLand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b",
+      "CR 205.1b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c:Color} creature that's still a land",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "{1}{G}: Target land you control becomes a 3/1 red creature that's still a land."
+      },
+      {
+        "text": "{T}: Target land becomes a 1/1 white creature that's still a land."
+      }
+    ],
+    "counterExamples": [
+      "{1}{G}: Target land you control becomes a 3/1 red creature that's a land.",
+      "{1}{G}: Target land you control becomes a 3/1 red creature.",
+      "{1}{G}: Target land you control becomes a 3/1 red creature that's still a land until end of turn."
+    ]
+  },
+  {
+    "id": "eff.p2tc3.becomes.creature.thatsStillLand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b",
+      "CR 205.1b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} creature that's still a land",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "{1}{G}: Target land you control becomes a 3/1 creature that's still a land."
+      },
+      {
+        "text": "{T}: Target land becomes a 5/5 creature that's still a land."
+      }
+    ],
+    "counterExamples": [
+      "{1}{G}: Target land you control becomes a 3/1 creature that's a land.",
+      "{1}{G}: Target land you control becomes a 3/1 creature.",
+      "{1}{G}: Target land you control becomes a 3/1 creature that's still a land until end of turn."
+    ]
+  }
+]

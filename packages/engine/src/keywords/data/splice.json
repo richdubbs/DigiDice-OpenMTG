@@ -1,0 +1,20 @@
+{
+  "name": "splice",
+  "rule": "702.47",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    },
+    {
+      "name": "filter",
+      "type": "filter"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "As you cast a {quality} spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.",
+  "multiple": "independent",
+  "status": "planned"
+}

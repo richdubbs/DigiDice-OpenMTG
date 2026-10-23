@@ -1,0 +1,90 @@
+{
+  "name": "conspire",
+  "rule": "702.78",
+  "params": [],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "As you cast this spell, you may tap two untapped creatures you control that share a color with it. When you do, copy it and you may choose a new target for the copy.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Conspire",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "tapUntapped",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "sharesWith": {
+                    "with": {
+                      "ref": "self"
+                    },
+                    "quality": "color"
+                  }
+                },
+                "count": 2
+              }
+            ]
+          },
+          "optional": true,
+          "name": {
+            "$ordinal": "conspire"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, if its conspire cost was paid, copy it. If the spell has any targets, you may choose new targets for the copy.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "wasCast",
+        "kicked": {
+          "$ordinal": "conspire"
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "copy",
+            "what": {
+              "ref": "self"
+            },
+            "result": "spell",
+            "who": {
+              "ref": "you"
+            },
+            "newTargets": "may"
+          }
+        ]
+      }
+    }
+  ]
+}

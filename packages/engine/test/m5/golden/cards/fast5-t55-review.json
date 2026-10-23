@@ -1,0 +1,1121 @@
+[
+ {
+  "card": "Jiang Yanggu, Never Alone",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: the enters trigger creates one token named Mowu, a legendary green 3/3 Dog creature (CR 111.1-111.4: the name is a characteristic of the token, never a reference to the card; CR 205.4a) (eff.t55.token.named); the end step trigger untaps all tokens its controller controls (CR 502.3 irrelevant: an effect untaps them, CR 701.26a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "G"
+          ],
+          "name": "Mowu",
+          "power": 3,
+          "subtypes": [
+           "Dog"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "toughness": 3,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "filter": {
+           "controller": "you",
+           "token": true
+          },
+          "ref": "each"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rinoa Heartilly",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: the enters trigger creates one token named Angelo, a legendary green and white 1/1 Dog creature (CR 111.4, 205.4a; the colors are a set, CR 105.2) (eff.t55.token.named); the attack trigger gives another target creature its controller controls +1/+1 until end of turn for each creature they control (CR 611.2a, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W",
+           "G"
+          ],
+          "name": "Angelo",
+          "power": 1,
+          "subtypes": [
+           "Dog"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": {
+              "of": {
+               "filter": {
+                "controller": "you",
+                "types": [
+                 "Creature"
+                ]
+               },
+               "ref": "each"
+              },
+              "q": "count"
+             },
+             "toughness": {
+              "of": {
+               "filter": {
+                "controller": "you",
+                "types": [
+                 "Creature"
+                ]
+               },
+               "ref": "each"
+              },
+              "q": "count"
+             }
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Falcon, Winged Wonder",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: flying; the enters trigger creates Redwing, a legendary blue 1/1 Bird Scout creature token with flying and its own triggered ability 'whenever Redwing attacks, surveil 1' (CR 111.4, 113.1c; the name inside the quotes is the token itself, CR 201.5a: the trigger is on the token, `attacker: self`) (eff.t55.token.named)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "effect": {
+             "steps": [
+              {
+               "count": 1,
+               "op": "surveil",
+               "who": {
+                "ref": "you"
+               }
+              }
+             ],
+             "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+             "on": [
+              {
+               "attacker": {
+                "self": true
+               },
+               "ev": "attacks"
+              }
+             ]
+            }
+           }
+          ],
+          "colors": [
+           "U"
+          ],
+          "keywords": [
+           "flying"
+          ],
+          "name": "Redwing",
+          "power": 1,
+          "subtypes": [
+           "Bird",
+           "Scout"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mabel, Heir to Cragflame",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: other Mice you control get +1/+1 (CR 613.4c); the enters trigger creates Cragflame, a legendary colorless Equipment artifact token (CR 111.4, 205.4a, 301.5) with the static ability 'equipped creature gets +1/+1 and has vigilance, trample, and haste' (CR 613.1f, 613.4c) and equip {2} (CR 702.6a) (eff.t55.token.named)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "other": true,
+          "subtypes": [
+           "Mouse"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "effects": [
+             {
+              "affects": {
+               "ref": "attachedTo"
+              },
+              "mods": [
+               {
+                "add": [
+                 {
+                  "keyword": "vigilance",
+                  "kind": "keyword"
+                 },
+                 {
+                  "keyword": "trample",
+                  "kind": "keyword"
+                 },
+                 {
+                  "keyword": "haste",
+                  "kind": "keyword"
+                 }
+                ],
+                "layer": 6
+               },
+               {
+                "layer": "7c",
+                "power": 1,
+                "toughness": 1
+               }
+              ],
+              "s": "continuous"
+             }
+            ],
+            "kind": "static"
+           },
+           {
+            "cost": {
+             "mana": [
+              {
+               "amount": 2,
+               "kind": "generic"
+              }
+             ]
+            },
+            "keyword": "equip",
+            "kind": "keyword"
+           }
+          ],
+          "colors": [],
+          "name": "Cragflame",
+          "subtypes": [
+           "Equipment"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "types": [
+           "Artifact"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rufus Shinra",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: whenever he attacks, if its controller controls no creature named Darkstar (an intervening if, checked when it triggers and as it resolves, CR 603.4; the name is a characteristic, CR 201.2), create Darkstar, a legendary white and black 2/2 Dog creature token (CR 111.4, 205.4a) (eff.t55.token.named)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W",
+           "B"
+          ],
+          "name": "Darkstar",
+          "power": 2,
+          "subtypes": [
+           "Dog"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "not",
+       "of": {
+        "cond": "exists",
+        "of": {
+         "filter": {
+          "controller": "you",
+          "name": "Darkstar",
+          "types": [
+           "Creature"
+          ]
+         },
+         "ref": "each"
+        }
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Coming of Galactus",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: chapter I destroys up to one target nonland permanent (CR 714.2, 115.1b), chapters II and III make each opponent lose 2 life, chapter IV creates Galactus, a legendary black 16/16 Elder Alien creature token with flying, trample and its own triggered ability 'whenever Galactus attacks, destroy target land' (CR 111.4, 205.4a; the name inside the quotes is the token, CR 201.5a; the land is chosen when the ability is put on the stack, CR 603.3d) (eff.t55.token.named)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "notTypes": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       2,
+       3
+      ],
+      "effect": {
+       "steps": [
+        {
+         "amount": 2,
+         "op": "loseLife",
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     },
+     {
+      "chapters": [
+       4
+      ],
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "effect": {
+             "steps": [
+              {
+               "op": "destroy",
+               "what": {
+                "id": "t0",
+                "ref": "target"
+               }
+              }
+             ],
+             "targets": [
+              {
+               "filter": {
+                "types": [
+                 "Land"
+                ]
+               },
+               "id": "t0",
+               "kind": "object",
+               "max": 1,
+               "min": 1
+              }
+             ]
+            },
+            "kind": "triggered",
+            "trigger": {
+             "on": [
+              {
+               "attacker": {
+                "self": true
+               },
+               "ev": "attacks"
+              }
+             ]
+            }
+           }
+          ],
+          "colors": [
+           "B"
+          ],
+          "keywords": [
+           "flying",
+           "trample"
+          ],
+          "name": "Galactus",
+          "power": 16,
+          "subtypes": [
+           "Alien",
+           "Elder"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "toughness": 16,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "chapter"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Foggy Swamp Spirit Keeper",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: lifelink; whenever its controller draws their second card each turn, create a colorless 1/1 Spirit creature token with the static ability 'this token can't block or be blocked by non-Spirit creatures': a ban on blocking creatures that are not Spirits and a ban on being blocked by them (CR 509.1b, 604.1) (rst.t55.cant.block.beblockedby)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "lifelink",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "effects": [
+             {
+              "action": "block",
+              "mode": "cant",
+              "other": {
+               "notSubtypes": [
+                "Spirit"
+               ],
+               "types": [
+                "Creature"
+               ]
+              },
+              "s": "restrict",
+              "subject": {
+               "ref": "self"
+              }
+             },
+             {
+              "action": "beBlockedBy",
+              "mode": "cant",
+              "other": {
+               "notSubtypes": [
+                "Spirit"
+               ],
+               "types": [
+                "Creature"
+               ]
+              },
+              "s": "restrict",
+              "subject": {
+               "ref": "self"
+              }
+             }
+            ],
+            "kind": "static"
+           }
+          ],
+          "colors": [],
+          "power": 1,
+          "subtypes": [
+           "Spirit"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "draw",
+         "nth": 2,
+         "player": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Realm of Koh",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: enters tapped unless its controller controls a basic land (CR 614.1c); {T}: Add {B} (CR 605.1a); {3}{B},{T}: create a colorless 1/1 Spirit creature token that can't block or be blocked by non-Spirit creatures (CR 509.1b) (rst.t55.cant.block.beblockedby)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "tapped": true,
+         "tappedUnless": {
+          "cond": "exists",
+          "of": {
+           "filter": {
+            "controller": "you",
+            "supertypes": [
+             "Basic"
+            ],
+            "types": [
+             "Land"
+            ]
+           },
+           "ref": "each"
+          }
+         }
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "addMana",
+         "units": [
+          [
+           "B"
+          ]
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "isMana": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 3,
+         "kind": "generic"
+        },
+        {
+         "color": "B",
+         "kind": "colored"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "effects": [
+             {
+              "action": "block",
+              "mode": "cant",
+              "other": {
+               "notSubtypes": [
+                "Spirit"
+               ],
+               "types": [
+                "Creature"
+               ]
+              },
+              "s": "restrict",
+              "subject": {
+               "ref": "self"
+              }
+             },
+             {
+              "action": "beBlockedBy",
+              "mode": "cant",
+              "other": {
+               "notSubtypes": [
+                "Spirit"
+               ],
+               "types": [
+                "Creature"
+               ]
+              },
+              "s": "restrict",
+              "subject": {
+               "ref": "self"
+              }
+             }
+            ],
+            "kind": "static"
+           }
+          ],
+          "colors": [],
+          "power": 1,
+          "subtypes": [
+           "Spirit"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lost in the Spirit World",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: return up to one target creature to its owner's hand (CR 400.3, 115.1b: up to one target); then create the colorless 1/1 Spirit creature token that can't block or be blocked by non-Spirit creatures (CR 509.1b) (rst.t55.cant.block.beblockedby)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "effects": [
+             {
+              "action": "block",
+              "mode": "cant",
+              "other": {
+               "notSubtypes": [
+                "Spirit"
+               ],
+               "types": [
+                "Creature"
+               ]
+              },
+              "s": "restrict",
+              "subject": {
+               "ref": "self"
+              }
+             },
+             {
+              "action": "beBlockedBy",
+              "mode": "cant",
+              "other": {
+               "notSubtypes": [
+                "Spirit"
+               ],
+               "types": [
+                "Creature"
+               ]
+              },
+              "s": "restrict",
+              "subject": {
+               "ref": "self"
+              }
+             }
+            ],
+            "kind": "static"
+           }
+          ],
+          "colors": [],
+          "power": 1,
+          "subtypes": [
+           "Spirit"
+          ],
+          "toughness": 1,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sneaky Homunculus",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: it can't block creatures with power 2 or greater and can't be blocked by creatures with power 2 or greater (CR 509.1b; power is read when blockers are declared, CR 208.1) (rst.t55.cant.block.beblockedby)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "action": "block",
+        "mode": "cant",
+        "other": {
+         "power": {
+          "op": ">=",
+          "value": 2
+         },
+         "types": [
+          "Creature"
+         ]
+        },
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        }
+       },
+       {
+        "action": "beBlockedBy",
+        "mode": "cant",
+        "other": {
+         "power": {
+          "op": ">=",
+          "value": 2
+         },
+         "types": [
+          "Creature"
+         ]
+        },
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Sentry, Golden Guardian",
+  "expect": "full",
+  "verified": "FAST5 T55 review, by hand against the Oracle text and the rules cited: flying, vigilance, indestructible; the enters trigger makes target opponent (the player who creates a token owns and controls it, CR 111.2) create The Void, a legendary black 5/5 Horror Villain creature token with flying, indestructible and its own static ability 'The Void attacks each combat if able' (CR 111.4, 205.4a, 508.1d; the name inside the quotes is the token, CR 201.5a) (eff.t55.token.named)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "vigilance",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "indestructible",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "abilities": [
+           {
+            "effects": [
+             {
+              "action": "attack",
+              "mode": "mustIfAble",
+              "s": "restrict",
+              "subject": {
+               "ref": "self"
+              }
+             }
+            ],
+            "kind": "static"
+           }
+          ],
+          "colors": [
+           "B"
+          ],
+          "keywords": [
+           "flying",
+           "indestructible"
+          ],
+          "name": "The Void",
+          "power": 5,
+          "subtypes": [
+           "Horror",
+           "Villain"
+          ],
+          "supertypes": [
+           "Legendary"
+          ],
+          "toughness": 5,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

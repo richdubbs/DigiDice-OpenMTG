@@ -1,0 +1,3684 @@
+[
+ {
+  "card": "Stalactite Dagger",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.attached.pump.allTypes): the enters trigger creates a 1/1 colorless Shapeshifter token with changeling (CR 702.73a); equipped creature gets +1/+1 (layer 7c) and has every creature type (layer 4, CR 205.3m, 613.1d); equip {2} (CR 702.6a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, create a 1/1 colorless Shapeshifter creature token with changeling.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "colors": [],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Shapeshifter"
+          ],
+          "power": 1,
+          "toughness": 1,
+          "keywords": [
+           "changeling"
+          ]
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "Equipped creature gets +1/+1 and is all creature types.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "all": true
+          }
+         },
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "text": "Equip {2}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Undercover Skrull",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.aslong.pump.allTypes): as long as two or more creature cards are in your graveyard, ~ gets +2/+2 and has every creature type (CR 611.3a, 613.1d, 205.3m); {T}: add one mana of any color (CR 605.1a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "As long as there are two or more creature cards in your graveyard, ~ gets +2/+2 and is all creature types.",
+      "condition": {
+       "cond": "exists",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "types": [
+          "Creature"
+         ],
+         "zone": "graveyard",
+         "owner": "you",
+         "isCard": true
+        }
+       },
+       "atLeast": 2
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "all": true
+          }
+         },
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 2
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{T}: Add one mana of any color.",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "units": [
+          [
+           "W",
+           "U",
+           "B",
+           "R",
+           "G"
+          ]
+         ]
+        }
+       ]
+      },
+      "isMana": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Skyknight Squire",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.aslong.grant.addType): a +1/+1 counter on ~ whenever another creature you control enters (CR 603.2); as long as it has three or more +1/+1 counters on it, it has flying (layer 6) and is a Knight in addition to its other types (layer 4, CR 205.1b, 611.3a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever another creature you control enters, put a +1/+1 counter on ~.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "As long as ~ has three or more +1/+1 counters on it, it has flying and is a Knight in addition to its other types.",
+      "condition": {
+       "cond": "matches",
+       "object": {
+        "ref": "self"
+       },
+       "filter": {
+        "counters": {
+         "kind": "+1/+1",
+         "cmp": {
+          "op": ">=",
+          "value": 3
+         }
+        }
+       }
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "add": [
+            "Knight"
+           ]
+          }
+         },
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "flying",
+            "text": "flying"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Coerced to Kill",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.attached.base.grant.addType): enchant creature; you control enchanted creature (layer 2); it has base power and toughness 1/1 (layer 7b, CR 613.4b), deathtouch (layer 6) and is an Assassin in addition to its other types (layer 4, CR 205.1b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "enchant",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      },
+      "text": "Enchant creature"
+     },
+     {
+      "kind": "static",
+      "text": "You control enchanted creature.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 2,
+          "controller": {
+           "ref": "you"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "Enchanted creature has base power and toughness 1/1, has deathtouch, and is an Assassin in addition to its other types.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "add": [
+            "Assassin"
+           ]
+          }
+         },
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "deathtouch",
+            "text": "deathtouch"
+           }
+          ]
+         },
+         {
+          "layer": "7b",
+          "power": 1,
+          "toughness": 1
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Machinist's Arsenal",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.attached.pump.foreach.addType): job select (CR 702.182a); equipped creature gets +2/+2 for each artifact you control, counted continuously (layer 7c, CR 613.4c, 611.3a), and is an Artificer in addition to its other types (layer 4, CR 205.1b); equip {4} with its flavor word (CR 207.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "job select",
+      "text": "Job select"
+     },
+     {
+      "kind": "static",
+      "text": "Equipped creature gets +2/+2 for each artifact you control and is an Artificer in addition to its other types.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "add": [
+            "Artificer"
+           ]
+          }
+         },
+         {
+          "layer": "7c",
+          "power": {
+           "q": "math",
+           "op": "*",
+           "args": [
+            2,
+            {
+             "q": "count",
+             "of": {
+              "ref": "each",
+              "filter": {
+               "types": [
+                "Artifact"
+               ],
+               "controller": "you"
+              }
+             }
+            }
+           ]
+          },
+          "toughness": {
+           "q": "math",
+           "op": "*",
+           "args": [
+            2,
+            {
+             "q": "count",
+             "of": {
+              "ref": "each",
+              "filter": {
+               "types": [
+                "Artifact"
+               ],
+               "controller": "you"
+              }
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 4
+        }
+       ]
+      },
+      "text": "Equip {4}",
+      "label": "Machina"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Wall Crawl",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.group.pump.cantBeBlockedBy): the enters trigger creates a 2/1 green Spider with reach, then you gain 1 life for each Spider you control; Spiders you control get +1/+1 (layer 7c) and can't be blocked by creatures with defender (CR 509.1b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, create a 2/1 green Spider creature token with reach, then you gain 1 life for each Spider you control.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "colors": [
+           "G"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Spider"
+          ],
+          "power": 2,
+          "toughness": 1,
+          "keywords": [
+           "reach"
+          ]
+         }
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "subtypes": [
+             "Spider"
+            ],
+            "controller": "you"
+           }
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "Spiders you control get +1/+1 and can't be blocked by creatures with defender.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Spider"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ]
+       },
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Spider"
+          ],
+          "controller": "you"
+         }
+        },
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+         "types": [
+          "Creature"
+         ],
+         "keyword": "defender"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fear of Falling",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.r4static.pump.loseKeyword): flying; whenever ~ attacks, target creature defending player controls gets -2/-0 and loses flying until your next turn, one resolved effect (CR 611.2a, 611.2c, 613.1f, 613.4c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, target creature defending player controls gets -2/-0 and loses flying until your next turn.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature defending player controls",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": {
+           "ref": "defending"
+          }
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "untilNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": -2,
+             "toughness": 0
+            },
+            {
+             "layer": 6,
+             "remove": [
+              "flying"
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thranduil's Company",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.aslong.extraLand): as long as you control another Elf, you may play an additional land on each of your turns (CR 305.2, 611.3a); landfall: two +1/+1 counters on target creature you control, which gains vigilance until end of turn (CR 603.2, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "As long as you control another Elf, you may play an additional land on each of your turns.",
+      "condition": {
+       "cond": "exists",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "subtypes": [
+          "Elf"
+         ],
+         "controller": "you",
+         "other": true
+        }
+       }
+      },
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "playLand"
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever a land you control enters, put two +1/+1 counters on target creature you control. It gains vigilance until end of turn.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Land"
+          ],
+          "controller": "you"
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature you control",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "kind": "+1/+1",
+         "count": 2
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "vigilance",
+               "text": "vigilance"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "label": "Landfall"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Phoenix Fleet Airship",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.aslong.is.artifactCreature): flying; at the beginning of your end step, if you sacrificed a permanent this turn, a token copy of ~ (CR 603.4, 707.2); as long as you control eight or more permanents named Phoenix Fleet Airship (the copies have that name, CR 707.2), ~ is an artifact creature (layer 4, CR 301.7, 613.1d), as std-dft's Vehicle form; crew 1 (CR 702.122a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "triggered",
+      "text": "At the beginning of your end step, if you sacrificed a permanent this turn, create a token that's a copy of ~.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "action",
+        "verb": "sacrifice",
+        "actor": "you"
+       },
+       "scope": "turn"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "copy",
+         "what": {
+          "ref": "self"
+         },
+         "result": "token",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "As long as you control eight or more permanents named Phoenix Fleet Airship, ~ is an artifact creature.",
+      "condition": {
+       "cond": "exists",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "name": "Phoenix Fleet Airship",
+         "controller": "you"
+        }
+       },
+       "atLeast": 8
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "types": {
+           "set": [
+            "Artifact",
+            "Creature"
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "crew",
+      "amount": 1,
+      "text": "Crew 1"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Earthshaker Dreadmaw",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.r4static.draw.forEachOther): trample; when ~ enters, draw a card for each Dinosaur you control other than ~ (CR 109.2, 121.1, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "trample",
+      "text": "Trample"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, draw a card for each other Dinosaur you control.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "other": true,
+            "subtypes": [
+             "Dinosaur"
+            ],
+            "controller": "you"
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Poisoner's Apprentice",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.r4static.pump.ifCond): infusion is an ability word (CR 207.2c); when ~ enters, target creature an opponent controls gets -4/-4 until end of turn only if you gained life this turn, checked as the ability resolves (CR 608.2c, 611.2a); the target is chosen either way (CR 601.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, target creature an opponent controls gets -4/-4 until end of turn if you gained life this turn.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature an opponent controls",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": -4,
+             "toughness": -4
+            }
+           ]
+          }
+         ],
+         "guard": {
+          "cond": "happened",
+          "event": {
+           "ev": "life",
+           "change": "gain",
+           "player": "you"
+          },
+          "scope": "turn"
+         }
+        }
+       ]
+      },
+      "label": "Infusion"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Joraga Invocation",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.t33.pump.mustbeblocked, widened to a group at the wave-7 merge): each creature you control as the spell resolves gets +3/+3 until end of turn and must be blocked this turn if able, the set locked in (CR 611.2c, 509.1c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Each creature you control gets +3/+3 until end of turn and must be blocked this turn if able.",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ],
+             "controller": "you"
+            }
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 3,
+             "toughness": 3
+            }
+           ]
+          },
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ],
+             "controller": "you"
+            }
+           },
+           "mode": "mustIfAble",
+           "action": "beBlocked"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "The Last Ride",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.self.shrink.whereX): ~ gets -X/-X where X is your life total, read continuously (layer 7c, CR 107.3, 611.3a, 613.4c); {2}{B}, pay 2 life: draw a card; crew 2",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ gets -X/-X, where X is your life total.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "q": "math",
+           "op": "*",
+           "args": [
+            -1,
+            {
+             "q": "life",
+             "of": {
+              "ref": "you"
+             }
+            }
+           ]
+          },
+          "toughness": {
+           "q": "math",
+           "op": "*",
+           "args": [
+            -1,
+            {
+             "q": "life",
+             "of": {
+              "ref": "you"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{2}{B}, Pay 2 life: Draw a card.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ],
+       "other": [
+        {
+         "kind": "payLife",
+         "amount": 2
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "crew",
+      "amount": 2,
+      "text": "Crew 2"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dark Matter Manipulator",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.self.pump.forEvery): when ~ enters, mill three cards (CR 701.17a); ~ gets +2/+0 for every seven cards in your graveyard: twice the count divided by seven, rounded down (layer 7c, CR 613.4c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, mill three cards.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "mill",
+         "who": {
+          "ref": "you"
+         },
+         "count": 3
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "~ gets +2/+0 for every seven cards in your graveyard.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "q": "math",
+           "op": "*",
+           "args": [
+            2,
+            {
+             "q": "math",
+             "op": "floorDiv",
+             "args": [
+              {
+               "q": "count",
+               "of": {
+                "ref": "each",
+                "filter": {
+                 "zone": "graveyard",
+                 "owner": "you",
+                 "isCard": true
+                }
+               }
+              },
+              7
+             ]
+            }
+           ]
+          },
+          "toughness": {
+           "q": "math",
+           "op": "*",
+           "args": [
+            0,
+            {
+             "q": "math",
+             "op": "floorDiv",
+             "args": [
+              {
+               "q": "count",
+               "of": {
+                "ref": "each",
+                "filter": {
+                 "zone": "graveyard",
+                 "owner": "you",
+                 "isCard": true
+                }
+               }
+              },
+              7
+             ]
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Delney, Streetwise Lookout",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (rst.cant.beblockedby, widened to a group at the wave-7 merge): creatures you control with power 2 or less can't be blocked by creatures with power 3 or greater (CR 509.1b); a triggered ability of a creature you control with power 2 or less triggers an additional time (CR 603.2d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Creatures you control with power 2 or less can't be blocked by creatures with power 3 or greater.",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "power": {
+           "op": "<=",
+           "value": 2
+          }
+         }
+        },
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+         "types": [
+          "Creature"
+         ],
+         "power": {
+          "op": ">=",
+          "value": 3
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "If a triggered ability of a creature you control with power 2 or less triggers, that ability triggers an additional time.",
+      "effects": [
+       {
+        "s": "triggerMod",
+        "abilitiesOf": {
+         "types": [
+          "Creature"
+         ],
+         "controller": "you",
+         "power": {
+          "op": "<=",
+          "value": 2
+         }
+        },
+        "additional": 1
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Season of Loss",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.r4static.draw.forEachDiedUnderYourControl): up to five {P} worth of modes, the same mode more than once (CR 700.2); each player sacrifices a creature; draw a card for each creature that died under your control this turn, the controller as it last existed (CR 700.4, 603.10a); each opponent loses X life, X the creature cards in your graveyard",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Choose up to five {P} worth of modes. You may choose the same mode more than once.\n{P} -- Each player sacrifices a creature of their choice.\n{P}{P} -- Draw a card for each creature that died under your control this turn.\n{P}{P}{P} -- Each opponent loses X life, where X is the number of creature cards in your graveyard.",
+      "effect": {
+       "targets": [],
+       "steps": [],
+       "modes": {
+        "min": 0,
+        "max": 5,
+        "options": [
+         {
+          "text": "Each player sacrifices a creature of their choice.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "sacrificeChoice",
+             "who": {
+              "ref": "each",
+              "who": "player"
+             },
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "count": 1
+            }
+           ]
+          },
+          "pawprints": 1
+         },
+         {
+          "text": "Draw a card for each creature that died under your control this turn.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "draw",
+             "who": {
+              "ref": "you"
+             },
+             "count": {
+              "q": "happenedCount",
+              "event": {
+               "ev": "zoneChange",
+               "subject": {
+                "controller": "you",
+                "types": [
+                 "Creature"
+                ]
+               },
+               "from": "battlefield",
+               "to": "graveyard"
+              },
+              "scope": "turn"
+             }
+            }
+           ]
+          },
+          "pawprints": 2
+         },
+         {
+          "text": "Each opponent loses X life, where X is the number of creature cards in your graveyard.",
+          "program": {
+           "targets": [],
+           "steps": [
+            {
+             "op": "loseLife",
+             "who": {
+              "ref": "each",
+              "who": "opponent"
+             },
+             "amount": {
+              "q": "count",
+              "of": {
+               "ref": "each",
+               "filter": {
+                "types": [
+                 "Creature"
+                ],
+                "zone": "graveyard",
+                "owner": "you",
+                "isCard": true
+               }
+              }
+             }
+            }
+           ]
+          },
+          "pawprints": 3
+         }
+        ],
+        "allowRepeat": true,
+        "pawprints": 5
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ygra, Eater of All",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.group.are.artifactSubtype.have): ward--sacrifice a Food (CR 702.21a); every other creature is a Food artifact in addition to its other types (layer 4, CR 205.1b) and has \"{2}, {T}, Sacrifice this permanent: You gain 3 life.\" (layer 6, CR 613.1f); two +1/+1 counters on ~ whenever a Food is put into a graveyard from the battlefield",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "ward",
+      "cost": {
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "subtypes": [
+           "Food"
+          ]
+         },
+         "count": 1
+        }
+       ]
+      },
+      "text": "Ward--Sacrifice a Food."
+     },
+     {
+      "kind": "static",
+      "text": "Other creatures are Food artifacts in addition to their other types and have \"{2}, {T}, Sacrifice ~: You gain 3 life.\"",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         }
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "types": {
+           "add": [
+            "Artifact"
+           ]
+          },
+          "subtypes": {
+           "add": [
+            "Food"
+           ]
+          }
+         },
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "activated",
+            "text": "{2}, {T}, Sacrifice this permanent: You gain 3 life.",
+            "cost": {
+             "mana": [
+              {
+               "kind": "generic",
+               "amount": 2
+              }
+             ],
+             "tap": true,
+             "other": [
+              {
+               "kind": "sacrifice",
+               "filter": {
+                "self": true
+               },
+               "count": 1,
+               "self": true
+              }
+             ]
+            },
+            "effect": {
+             "targets": [],
+             "steps": [
+              {
+               "op": "gainLife",
+               "who": {
+                "ref": "you"
+               },
+               "amount": 3
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever a Food is put into a graveyard from the battlefield, put two +1/+1 counters on ~.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "subtypes": [
+           "Food"
+          ]
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 2
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tannuk, Steadfast Second",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.grant.cardsInHand.two): other creatures you control have haste; artifact cards and red creature cards in your hand have warp {2}{R}, both kinds in your hand (CR 113.6, 613.1f, 702.185a; the cast path reads granted costs, actions/cast.ts#withGrantedCosts)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Other creatures you control have haste.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "other": true,
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "haste",
+            "text": "haste"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "Artifact cards and red creature cards in your hand have warp {2}{R}.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "anyOf": [
+           {
+            "types": [
+             "Artifact"
+            ]
+           },
+           {
+            "colors": [
+             "R"
+            ],
+            "types": [
+             "Creature"
+            ]
+           }
+          ],
+          "zone": "hand",
+          "owner": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "warp",
+            "cost": {
+             "mana": [
+              {
+               "kind": "generic",
+               "amount": 2
+              },
+              {
+               "kind": "colored",
+               "color": "R"
+              }
+             ]
+            },
+            "text": "warp {2}{R}"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Affectionate Indrik",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.r4static.mayHave.fight): when ~ enters, you may have it fight target creature you don't control; the target is chosen when the trigger is put on the stack, the choice to fight as it resolves (CR 701.14a, 608.2d, 603.3d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, you may have it fight target creature you don't control.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature you don't control",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "not": {
+           "controller": "you"
+          }
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "fight",
+           "a": {
+            "ref": "self"
+           },
+           "b": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bloodghast",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta: abl.grant.aslong with the r4-static condition \"an opponent has 10 or less life\", countPlayers lifeIs): ~ can't block (CR 509.1b); ~ has haste as long as at least one opponent's life total is 10 or less (CR 119.1, 611.3a); landfall: you may return it from your graveyard to the battlefield",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ can't block.",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "block"
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "~ has haste as long as an opponent has 10 or less life.",
+      "condition": {
+       "cond": "compare",
+       "left": {
+        "q": "countPlayers",
+        "of": {
+         "ref": "each",
+         "who": "opponent"
+        },
+        "lifeIs": {
+         "op": "<=",
+         "n": 10
+        }
+       },
+       "op": ">=",
+       "right": 1
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "haste",
+            "text": "haste"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever a land you control enters, you may return ~ from your graveyard to the battlefield.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Land"
+          ],
+          "controller": "you"
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "self"
+           },
+           "to": {
+            "zone": "battlefield",
+            "controller": {
+             "ref": "you"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ],
+      "label": "Landfall"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Warden of the Inner Sky",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (abl.aslong.grant with the r4-static filter \"three or more counters on it\", counters of any kind together, CR 122.1): flying and vigilance as long as ~ has three or more counters on it (CR 611.3a); tap three untapped artifacts and/or creatures you control: a +1/+1 counter on ~, scry 1, as a sorcery",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "As long as ~ has three or more counters on it, it has flying and vigilance.",
+      "condition": {
+       "cond": "matches",
+       "object": {
+        "ref": "self"
+       },
+       "filter": {
+        "counters": {
+         "kind": "any",
+         "cmp": {
+          "op": ">=",
+          "value": 3
+         }
+        }
+       }
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "flying",
+            "text": "flying"
+           },
+           {
+            "kind": "keyword",
+            "keyword": "vigilance",
+            "text": "vigilance"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "Tap three untapped artifacts and/or creatures you control: Put a +1/+1 counter on ~. Scry 1. Activate only as a sorcery.",
+      "cost": {
+       "other": [
+        {
+         "kind": "tapUntapped",
+         "filter": {
+          "types": [
+           "Artifact",
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "count": 3
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        },
+        {
+         "op": "scry",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      },
+      "sorcerySpeed": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hundred-Battle Veteran",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (r4-static condition \"three or more different kinds of counters among creatures you control\", q distinct counterKinds, CR 122.1): ~ gets +2/+4 while three or more kinds of counter are on creatures you control (CR 611.3a); it may be cast from your graveyard and then enters with a finality counter (CR 601.2, 702.180a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "As long as there are three or more different kinds of counters among creatures you control, ~ gets +2/+4.",
+      "condition": {
+       "cond": "compare",
+       "left": {
+        "q": "distinct",
+        "what": "counterKinds",
+        "among": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       },
+       "op": ">=",
+       "right": 3
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 4
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "You may cast ~ from your graveyard. If you do, it enters with a finality counter on it.",
+      "zone": [
+       "graveyard"
+      ],
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "cast",
+        "of": {
+         "self": true
+        },
+        "from": "graveyard",
+        "entersWith": [
+         {
+          "kind": "finality",
+          "count": 1
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rampaging Soulrager",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (abl.pump.aslong with the r4-static condition \"two or more unlocked doors among Rooms you control\", std-dsk's unlockedDoors read by statics/match.ts, CR 709.5c, 709.5j): ~ gets +3/+0 while that many doors are unlocked (CR 611.3a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ gets +3/+0 as long as there are two or more unlocked doors among Rooms you control.",
+      "condition": {
+       "cond": "compare",
+       "left": {
+        "q": "unlockedDoors",
+        "among": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Room"
+          ],
+          "controller": "you"
+         }
+        }
+       },
+       "op": ">=",
+       "right": 2
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 3,
+          "toughness": 0
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Duel Tactics",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.damage, eff.rst.cant.block): ~ deals 1 damage to target creature; that creature (\"it\": a sorcery is never a permanent, CR 110.4, so the spell is no antecedent of a continuous effect's pronoun, render/steps-lasting.ts) can't block this turn (CR 611.2c, 509.1b); flashback {1}{R} (CR 702.34a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "~ deals 1 damage to target creature. It can't block this turn.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": 1
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "block"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flashback",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      },
+      "text": "Flashback {1}{R}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Burrog Barrage",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.r4static.pump.ifCond with the r4-static condition \"you've cast another instant or sorcery spell this turn\", a spell other than this one, CR 601.2i, 109.2): target creature you control gets +1/+0 until end of turn only if that holds as the spell resolves; then it deals damage equal to its power to up to one target creature an opponent controls (CR 608.2c, 120.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Target creature you control gets +1/+0 until end of turn if you've cast another instant or sorcery spell this turn. Then it deals damage equal to its power to up to one target creature an opponent controls.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature you control",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        },
+        {
+         "id": "t1",
+         "kind": "object",
+         "min": 0,
+         "max": 1,
+         "text": "up to one target creature an opponent controls",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 0
+            }
+           ]
+          }
+         ],
+         "guard": {
+          "cond": "happened",
+          "event": {
+           "ev": "cast",
+           "player": "you",
+           "spell": {
+            "types": [
+             "Instant",
+             "Sorcery"
+            ],
+            "other": true
+           }
+          },
+          "scope": "turn",
+          "times": {
+           "op": ">=",
+           "value": 1
+          }
+         }
+        },
+        {
+         "op": "damage",
+         "source": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t1"
+         },
+         "amount": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Triceraton Commander",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.cont.pumpgrant.each; the renderer says \"Dinosaurs you control other than ~\", CR 109.2): flying; when ~ enters, X 2/2 white Dinosaur Soldier tokens; whenever ~ attacks, Dinosaurs you control other than ~ get +1/+1 and gain flying until end of turn (CR 611.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, create X 2/2 white Dinosaur Soldier creature tokens.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "X"
+         },
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Dinosaur",
+           "Soldier"
+          ],
+          "power": 2,
+          "toughness": 2
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, Dinosaurs you control other than ~ get +1/+1 and gain flying until end of turn.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "subtypes": [
+              "Dinosaur"
+             ],
+             "controller": "you",
+             "other": true
+            }
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 1,
+             "toughness": 1
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "flying",
+               "text": "flying"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Oviya, Automech Artisan",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.each.grant with the r4-static filter \"that's attacking one of your opponents\", attacking a player who is an opponent, CR 508.1b, 102.3): such creatures have trample; {G}, {T}: you may put a creature or Vehicle card from your hand onto the battlefield, two +1/+1 counters on it if it is an artifact (CR 608.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Each creature that's attacking one of your opponents has trample.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "attacking": {
+           "defender": "opponent"
+          }
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "trample",
+            "text": "trample"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{G}, {T}: You may put a creature or Vehicle card from your hand onto the battlefield. If you put an artifact onto the battlefield this way, put two +1/+1 counters on it.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "colored",
+         "color": "G"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ]
+            },
+            {
+             "subtypes": [
+              "Vehicle"
+             ]
+            }
+           ],
+           "zone": "hand",
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "put"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "put"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         },
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did",
+          "which": {
+           "types": [
+            "Artifact"
+           ]
+          },
+          "to": "battlefield"
+         },
+         "then": [
+          {
+           "op": "putCounters",
+           "on": {
+            "ref": "bound",
+            "name": "put"
+           },
+           "kind": "+1/+1",
+           "count": 2
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Edgewall Inn",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.return.hand with the r4-static filter \"that has an Adventure\", FAST5 T49's adventurer card, CR 715.1): enters tapped; choose a color as it enters (CR 614.12); {T}: one mana of the chosen color; {3}, {T}, sacrifice ~: return target card that has an Adventure from your graveyard to your hand",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ enters tapped.",
+      "zone": [
+       "stack",
+       "battlefield"
+      ],
+      "effects": [
+       {
+        "s": "replace",
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "body": {
+         "b": "enters",
+         "tapped": true
+        }
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "As ~ enters, choose a color.",
+      "zone": [
+       "stack",
+       "battlefield"
+      ],
+      "effects": [
+       {
+        "s": "replace",
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "body": {
+         "b": "enters",
+         "choose": [
+          {
+           "what": "color",
+           "link": "color"
+          }
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{T}: Add one mana of the chosen color.",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "dynamic": {
+          "kind": "chosen",
+          "link": "color",
+          "count": 1
+         }
+        }
+       ]
+      },
+      "isMana": true
+     },
+     {
+      "kind": "activated",
+      "text": "{3}, {T}, Sacrifice ~: Return target card that has an Adventure from your graveyard to your hand.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        }
+       ],
+       "tap": true,
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "self": true
+         },
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target card that has an Adventure from your graveyard",
+         "filter": {
+          "adventure": true,
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sentinel of Lost Lore",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (\"target card you own / don't own in exile that has an Adventure\", CR 715.1): choose one or more modes: return such a card you own from exile to your hand; put such a card you don't own on the bottom of its owner's library; exile target player's graveyard (CR 700.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, choose one or more --\n• Return target card you own in exile that has an Adventure to your hand.\n• Put target card you don't own in exile that has an Adventure on the bottom of its owner's library.\n• Exile target player's graveyard.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [],
+       "modes": {
+        "min": 1,
+        "max": 3,
+        "options": [
+         {
+          "text": "Return target card you own in exile that has an Adventure to your hand.",
+          "program": {
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "object",
+             "min": 1,
+             "max": 1,
+             "text": "target card you own in exile that has an Adventure",
+             "filter": {
+              "owner": "you",
+              "zone": "exile",
+              "adventure": true,
+              "isCard": true
+             }
+            }
+           ],
+           "steps": [
+            {
+             "op": "move",
+             "what": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "to": {
+              "zone": "hand"
+             }
+            }
+           ]
+          }
+         },
+         {
+          "text": "Put target card you don't own in exile that has an Adventure on the bottom of its owner's library.",
+          "program": {
+           "targets": [
+            {
+             "id": "t1",
+             "kind": "object",
+             "min": 1,
+             "max": 1,
+             "text": "target card you don't own in exile that has an Adventure",
+             "filter": {
+              "not": {
+               "owner": "you"
+              },
+              "zone": "exile",
+              "adventure": true,
+              "isCard": true
+             }
+            }
+           ],
+           "steps": [
+            {
+             "op": "move",
+             "what": {
+              "ref": "target",
+              "id": "t1"
+             },
+             "to": {
+              "zone": "library",
+              "position": "bottom"
+             }
+            }
+           ]
+          }
+         },
+         {
+          "text": "Exile target player's graveyard.",
+          "program": {
+           "targets": [
+            {
+             "id": "t2",
+             "kind": "player",
+             "min": 1,
+             "max": 1,
+             "text": "target player",
+             "players": {
+              "who": "any"
+             }
+            }
+           ],
+           "steps": [
+            {
+             "op": "move",
+             "what": {
+              "ref": "each",
+              "filter": {
+               "zone": "graveyard",
+               "owner": {
+                "ref": "target",
+                "id": "t2"
+               }
+              }
+             },
+             "to": {
+              "zone": "exile"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fishing Pole",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (the r4-static granting object, {ref:'grantor'}, CR 201.5a, 613.1f): equipped creature has \"{1}, {T}, Tap Fishing Pole: Put a bait counter on Fishing Pole.\": the cost taps the Equipment and the counter goes on it (statics/mods.ts#withGrantor); whenever equipped creature becomes untapped, remove a bait counter from ~, if you do a 1/1 blue Fish token",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Equipped creature has \"{1}, {T}, Tap ¤: Put a bait counter on ¤.\"",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "activated",
+            "text": "{1}, {T}, Tap            ¤: Put a bait counter on            ¤.",
+            "cost": {
+             "mana": [
+              {
+               "kind": "generic",
+               "amount": 1
+              }
+             ],
+             "tap": true,
+             "other": [
+              {
+               "kind": "tapUntapped",
+               "filter": {
+                "is": {
+                 "ref": "grantor"
+                }
+               },
+               "count": 1
+              }
+             ]
+            },
+            "effect": {
+             "targets": [],
+             "steps": [
+              {
+               "op": "putCounters",
+               "on": {
+                "ref": "grantor"
+               },
+               "kind": "bait",
+               "count": 1
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever equipped creature becomes untapped, remove a bait counter from ~. If you do, create a 1/1 blue Fish creature token.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "what": "untapped",
+         "object": {
+          "types": [
+           "Creature"
+          ],
+          "attachedToSource": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "removeCounters",
+         "from": {
+          "ref": "self"
+         },
+         "kind": "bait",
+         "count": 1,
+         "as": "did"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "step": "did"
+         },
+         "then": [
+          {
+           "op": "createToken",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1,
+           "token": {
+            "colors": [
+             "U"
+            ],
+            "types": [
+             "Creature"
+            ],
+            "subtypes": [
+             "Fish"
+            ],
+            "power": 1,
+            "toughness": 1
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "text": "Equip {2}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Trusty Boomerang",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (the r4-static granting object, CR 201.5a, 613.1f): equipped creature has \"{1}, {T}: Tap target creature. Return Trusty Boomerang to its owner's hand.\": the Equipment returns to its owner's hand (CR 400.7)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Equipped creature has \"{1}, {T}: Tap target creature. Return ¤ to its owner's hand.\"",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "activated",
+            "text": "{1}, {T}: Tap target creature. Return                ¤ to its owner's hand.",
+            "cost": {
+             "mana": [
+              {
+               "kind": "generic",
+               "amount": 1
+              }
+             ],
+             "tap": true
+            },
+            "effect": {
+             "targets": [
+              {
+               "id": "t0",
+               "kind": "object",
+               "min": 1,
+               "max": 1,
+               "text": "target creature",
+               "filter": {
+                "types": [
+                 "Creature"
+                ]
+               }
+              }
+             ],
+             "steps": [
+              {
+               "op": "tap",
+               "what": {
+                "ref": "target",
+                "id": "t0"
+               }
+              },
+              {
+               "op": "move",
+               "what": {
+                "ref": "grantor"
+               },
+               "to": {
+                "zone": "hand"
+               }
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      },
+      "text": "Equip {1}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Deconstruction Hammer",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (the r4-static granting object, CR 201.5a, 701.21a, 613.1f): equipped creature gets +1/+1 and has \"{3}, {T}, Sacrifice Deconstruction Hammer: Destroy target artifact or enchantment.\": the cost sacrifices the Equipment",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Equipped creature gets +1/+1 and has \"{3}, {T}, Sacrifice ¤: Destroy target artifact or enchantment.\"",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "activated",
+            "text": "{3}, {T}, Sacrifice                     ¤: Destroy target artifact or enchantment.",
+            "cost": {
+             "mana": [
+              {
+               "kind": "generic",
+               "amount": 3
+              }
+             ],
+             "tap": true,
+             "other": [
+              {
+               "kind": "sacrifice",
+               "filter": {
+                "is": {
+                 "ref": "grantor"
+                }
+               },
+               "count": 1
+              }
+             ]
+            },
+            "effect": {
+             "targets": [
+              {
+               "id": "t0",
+               "kind": "object",
+               "min": 1,
+               "max": 1,
+               "text": "target artifact or enchantment",
+               "filter": {
+                "types": [
+                 "Artifact",
+                 "Enchantment"
+                ]
+               }
+              }
+             ],
+             "steps": [
+              {
+               "op": "destroy",
+               "what": {
+                "ref": "target",
+                "id": "t0"
+               }
+              }
+             ]
+            }
+           }
+          ]
+         },
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      },
+      "text": "Equip {1}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sunfire Torch",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (the r4-static granting object, CR 201.5a, 603.12, 613.1f): equipped creature gets +1/+0 and has \"Whenever this creature attacks, you may sacrifice Sunfire Torch. When you do, this creature deals 2 damage to any target.\": the Equipment is sacrificed and the reflexive trigger's creature deals the damage",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Equipped creature gets +1/+0 and has \"Whenever ~ attacks, you may sacrifice ¤. When you do, ~ deals 2 damage to any target.\"",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "triggered",
+            "text": "Whenever this creature attacks, you may sacrifice             ¤. When you do, this creature deals 2 damage to any target.",
+            "trigger": {
+             "on": [
+              {
+               "ev": "attacks",
+               "attacker": {
+                "self": true
+               }
+              }
+             ]
+            },
+            "effect": {
+             "targets": [],
+             "steps": [
+              {
+               "op": "may",
+               "who": {
+                "ref": "you"
+               },
+               "do": [
+                {
+                 "op": "sacrifice",
+                 "what": {
+                  "ref": "grantor"
+                 }
+                }
+               ],
+               "as": "did"
+              },
+              {
+               "op": "reflexive",
+               "when": {
+                "did": "did"
+               },
+               "targets": [
+                {
+                 "id": "t0",
+                 "kind": "anyTarget",
+                 "min": 1,
+                 "max": 1,
+                 "text": "any target"
+                }
+               ],
+               "do": [
+                {
+                 "op": "damage",
+                 "source": {
+                  "ref": "self"
+                 },
+                 "to": {
+                  "ref": "target",
+                  "id": "t0"
+                 },
+                 "amount": 2
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         },
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 0
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      },
+      "text": "Equip {1}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dire Flail // Dire Blunderbuss",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (the r4-static granting object in a filter, \"an artifact other than Dire Blunderbuss\", CR 201.5a, 109.2): front: +2/+0, equip {1}, craft with artifact (CR 702.167a); back: +3/+0 and \"Whenever this creature attacks, you may sacrifice an artifact other than Dire Blunderbuss. When you do, this creature deals damage equal to its power to target creature.\" (CR 603.12)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Equipped creature gets +2/+0.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 0
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      },
+      "text": "Equip {1}"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "craft",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 3
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      },
+      "filter": {
+       "types": [
+        "Artifact"
+       ]
+      },
+      "text": "Craft with artifact {3}{R}{R}"
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Equipped creature gets +3/+0 and has \"Whenever ~ attacks, you may sacrifice an artifact other than ¤. When you do, ~ deals damage equal to its power to target creature.\"",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "triggered",
+            "text": "Whenever this creature attacks, you may sacrifice an artifact other than                ¤. When you do, this creature deals damage equal to its power to target creature.",
+            "trigger": {
+             "on": [
+              {
+               "ev": "attacks",
+               "attacker": {
+                "self": true
+               }
+              }
+             ]
+            },
+            "effect": {
+             "targets": [],
+             "steps": [
+              {
+               "op": "may",
+               "who": {
+                "ref": "you"
+               },
+               "do": [
+                {
+                 "op": "sacrificeChoice",
+                 "who": {
+                  "ref": "you"
+                 },
+                 "filter": {
+                  "types": [
+                   "Artifact"
+                  ],
+                  "not": {
+                   "is": {
+                    "ref": "grantor"
+                   }
+                  }
+                 },
+                 "count": 1
+                }
+               ],
+               "as": "did"
+              },
+              {
+               "op": "reflexive",
+               "when": {
+                "did": "did"
+               },
+               "targets": [
+                {
+                 "id": "t0",
+                 "kind": "object",
+                 "min": 1,
+                 "max": 1,
+                 "text": "target creature",
+                 "filter": {
+                  "types": [
+                   "Creature"
+                  ]
+                 }
+                }
+               ],
+               "do": [
+                {
+                 "op": "damage",
+                 "source": {
+                  "ref": "self"
+                 },
+                 "to": {
+                  "ref": "target",
+                  "id": "t0"
+                 },
+                 "amount": {
+                  "q": "stat",
+                  "stat": "power",
+                  "of": {
+                   "ref": "event",
+                   "role": "attacker"
+                  }
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           }
+          ]
+         },
+         {
+          "layer": "7c",
+          "power": 3,
+          "toughness": 0
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      },
+      "text": "Equip {1}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Xu-Ifit, Osteoharmonist",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.r4static.itIs.addType.noAbilities): {T}: return target creature card from your graveyard to the battlefield; that permanent (\"it\", the card the instruction returned, CR 400.7, 608.2c) is a Skeleton in addition to its other types and has no abilities, for good (CR 611.2a, 613.1d, 613.1f); activate only as a sorcery (CR 602.5d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "text": "{T}: Return target creature card from your graveyard to the battlefield. It's a Skeleton in addition to its other types and has no abilities. Activate only as a sorcery.",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature card from your graveyard",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         },
+         "as": "moved"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "bound",
+            "name": "moved"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "add": [
+               "Skeleton"
+              ]
+             }
+            },
+            {
+             "layer": 6,
+             "removeAll": true
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      "sorcerySpeed": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dazzling Theater // Prop Room",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.untap.othersUntapStep.group): a Room (CR 709.5); Dazzling Theater: creature spells you cast have convoke (CR 702.51a); Prop Room: untap each creature you control during each other player's untap step, together with the active player's permanents (CR 502.3; statics/hooks.ts#untapsDuringOthersUntapStep with `of`), unless an effect says it can't untap",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Creature spells you cast have convoke.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "anyOf": [
+           {
+            "types": [
+             "Creature"
+            ],
+            "stackKind": "spell",
+            "zone": "stack"
+           }
+          ],
+          "controller": "you",
+          "not": {
+           "stackKind": "copy",
+           "zone": "stack"
+          },
+          "zone": "stack"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "convoke",
+            "text": "convoke"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Untap each creature you control during each other player's untap step.",
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "untapDuringOtherUntapSteps",
+        "of": {
+         "types": [
+          "Creature"
+         ],
+         "controller": "you"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Seedborn Muse",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.untap.othersUntapStep.group): untap all permanents you control during each other player's untap step (CR 502.3)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Untap all permanents you control during each other player's untap step.",
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "untapDuringOtherUntapSteps",
+        "of": {
+         "controller": "you"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Belligerent Yearling",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (eff.r4static.mayHave.basePower.equal): trample; whenever another Dinosaur you control enters, you may have ~'s base power (only the power, layer 7b, CR 613.4b) become equal to that creature's power until end of turn, the value read as the effect begins (CR 608.2h, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "trample",
+      "text": "Trample"
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever another Dinosaur you control enters, you may have ~'s base power become equal to that creature's power until end of turn.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "subtypes": [
+           "Dinosaur"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "self"
+             },
+             "mods": [
+              {
+               "layer": "7b",
+               "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                 "ref": "event",
+                 "role": "subject"
+                }
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Diligent Zookeeper",
+  "expect": "full",
+  "verified": "cloud r4-static review, by hand against the Oracle text and the rules cited (sta.r4static.each.pump.perOwnCreatureType.max): each non-Human creature you control gets +1/+1 for each of its own creature types, at most +10/+10 (layer 7c, CR 613.4c; `subject` is each modified object); a changeling is every creature type, so it is a Human and not affected (CR 702.73a, 205.3m)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Each non-Human creature you control gets +1/+1 for each of its creature types, to a maximum of 10.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "notSubtypes": [
+           "Human"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": {
+           "q": "math",
+           "op": "min",
+           "args": [
+            10,
+            {
+             "q": "distinct",
+             "what": "creatureTypes",
+             "among": {
+              "ref": "subject"
+             }
+            }
+           ]
+          },
+          "toughness": {
+           "q": "math",
+           "op": "min",
+           "args": [
+            10,
+            {
+             "q": "distinct",
+             "what": "creatureTypes",
+             "among": {
+              "ref": "subject"
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+{"card":"Living Conundrum","expect":"full","verified":"Standard round 9 review (std-r9), by hand against the Oracle text and the rules cited (sta.r4static.aslong.base.grant; one golden card, a 6.9 deviation named in the round record): hexproof (CR 702.11); a draw with an empty library is skipped instead (CR 614.1a, 121.1, 704.5b); as long as your library has no cards it has base power and toughness 10/10 (layer 7b) and flying and vigilance (layer 6) (CR 604.1, 611.3a, 613.4b, 613.1f).","faces":[{"abilities":[{"kind":"keyword","keyword":"hexproof","text":"Hexproof"},{"kind":"static","text":"If you would draw a card while your library has no cards in it, skip that draw instead.","effects":[{"s":"replace","replaces":{"ev":"draw","player":"you"},"condition":{"cond":"not","of":{"cond":"exists","of":{"ref":"each","filter":{"zone":"library","owner":"you","isCard":true}}}},"body":{"b":"skip"}}]},{"kind":"static","text":"As long as there are no cards in your library, ~ has base power and toughness 10/10 and has flying and vigilance.","condition":{"cond":"not","of":{"cond":"exists","of":{"ref":"each","filter":{"zone":"library","owner":"you","isCard":true}}}},"effects":[{"s":"continuous","affects":{"ref":"self"},"mods":[{"layer":6,"add":[{"kind":"keyword","keyword":"flying","text":"flying"},{"kind":"keyword","keyword":"vigilance","text":"vigilance"}]},{"layer":"7b","power":10,"toughness":10}]}]}]}]}
+]

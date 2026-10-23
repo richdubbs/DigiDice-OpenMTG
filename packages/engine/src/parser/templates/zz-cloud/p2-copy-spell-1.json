@@ -1,0 +1,47 @@
+[
+  {
+    "id": "eff.p2copyspell1.playerMayCopySelf.newTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 608.2d",
+      "CR 115.7"
+    ],
+    "pattern": "{p:Player} may copy ~ and may choose ( a new target | new targets ) for ( that copy | the copy )",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "self"
+          },
+          "result": "spell",
+          "who": "$p",
+          "newTargets": "may"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent loses 2 life. That player may copy this spell and may choose a new target for that copy."
+      },
+      {
+        "text": "Tap target creature. Its controller may copy this spell and may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 2 life. That player may copy this spell.",
+      "Target opponent loses 2 life. That player copies this spell and may choose a new target for that copy.",
+      "Target opponent loses 2 life. That player may copy this spell twice and may choose new targets for the copies."
+    ]
+  }
+]

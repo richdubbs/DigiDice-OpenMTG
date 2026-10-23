@@ -1,0 +1,142 @@
+[
+  {
+    "id": "eff.sxp22.castSpell.exileWithCounterAsItResolves",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2n",
+      "CR 611.2c",
+      "CR 122.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile that card with a {k:CounterKind} counter on it instead of putting it into your graveyard as it resolves",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": {
+                "ref": "event",
+                "role": "spell"
+              }
+            },
+            "from": "stack",
+            "to": "graveyard",
+            "cause": "resolve"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            },
+            "then": {
+              "as": "exiledCard",
+              "do": [
+                {
+                  "op": "putCounters",
+                  "on": {
+                    "ref": "bound",
+                    "name": "exiledCard"
+                  },
+                  "kind": "$k",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a sorcery spell from your hand, exile that card with a moon counter on it instead of putting it into your graveyard as it resolves."
+      },
+      {
+        "text": "Whenever you cast a green instant spell, exile that card with a seed counter on it instead of putting it into your graveyard as it resolves."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a sorcery spell from your hand, exile that card with two moon counters on it instead of putting it into your graveyard as it resolves.",
+      "Whenever you cast a sorcery spell from your hand, exile that card instead of putting it into your graveyard as it resolves.",
+      "Whenever you cast a sorcery spell from your hand, put that card on top of your library with a moon counter on it instead of putting it into your graveyard as it resolves."
+    ]
+  },
+  {
+    "id": "eff.sxp22.cast.fromExile.ownedWithCounters.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 601.3",
+      "CR 118.9",
+      "CR 122.1",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast a spell from among cards you own in exile with {k:CounterKind} counters on them without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "owner": "you",
+            "counters": {
+              "kind": "$k"
+            },
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may cast a spell from among cards you own in exile with moon counters on them without paying its mana cost."
+      },
+      {
+        "text": "At the beginning of your end step, you may cast a spell from among cards you own in exile with seed counters on them without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may cast a spell from among cards you own in your graveyard with moon counters on them without paying its mana cost.",
+      "Whenever ~ attacks, you may cast a spell from among cards in exile with moon counters on them without paying its mana cost.",
+      "Whenever ~ attacks, you may cast a spell from among cards you own in exile with moon counters on them."
+    ]
+  }
+]

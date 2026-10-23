@@ -1,0 +1,27 @@
+# std-ry10 (wave 2, Commander lane ry10; test/cloud/std-ry10, golden cloud-std-ry10-review.json): the size of your party and the creatures that died this turn as
+# quantities; combat damage prevented to and by one object; "If ~ would die, exile it instead"; hand choices with a mana value or after a look
+Acquisitions Expert
+Appetite for Brains
+Can't Stay Away
+Canopy Stalker
+Cascade Seer
+Drana's Silencer
+Ebony Horse
+Emeria Captain
+Gloomshrieker
+Grotag Bug-Catcher
+Inquisition of Kozilek
+Kabira Outrider
+Khabál Ghoul
+Mahadi, Emporium Master
+Malakir Blood-Priest
+Maze of Ith
+Maze of Shadows
+Moonlight Geist
+Possessed Skaab
+Practiced Tactics
+Scavenging Ghoul
+Synchronized Spellcraft
+Thrull Surgeon
+Thundering Sparkmage
+Wildwood Escort

@@ -1,0 +1,1773 @@
+[
+ {
+  "card": "Bumi, King of Three Trials",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.player.scries): the enters trigger chooses up to X modes, X the number of Lesson cards in your graveyard as the trigger is put on the stack (CR 700.2, 603.3c, 107.3a); three +1/+1 counters on ~ (CR 122.1); target player scries 3 (CR 701.22a, 115.1); earthbend 3 with its own target land you control (CR 701.66a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": {
+         "of": {
+          "filter": {
+           "isCard": true,
+           "owner": "you",
+           "subtypes": [
+            "Lesson"
+           ],
+           "zone": "graveyard"
+          },
+          "ref": "each"
+         },
+         "q": "count"
+        },
+        "min": 0,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 3,
+             "kind": "+1/+1",
+             "on": {
+              "ref": "self"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 3,
+             "op": "scry",
+             "who": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "player",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "action": "earthbend",
+             "n": 3,
+             "op": "action",
+             "subject": {
+              "id": "t1",
+              "ref": "target"
+             },
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "controller": "you",
+              "types": [
+               "Land"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fatal Fissure",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.you.earthbend): target creature is announced by the \"choose\" sentence (CR 115.1, 601.2c); a delayed trigger until end of turn, when that creature dies (CR 603.7c, 700.4), you earthbend 4: its target land you control is chosen when the delayed trigger is put on the stack (CR 701.66a, 603.3d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "do": [
+          {
+           "action": "earthbend",
+           "n": 4,
+           "op": "action",
+           "subject": {
+            "id": "t1",
+            "ref": "target"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "op": "delay",
+         "targets": [
+          {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Land"
+            ]
+           },
+           "id": "t1",
+           "kind": "object",
+           "max": 1,
+           "min": 1
+          }
+         ],
+         "when": {
+          "at": "event",
+          "event": {
+           "ev": "zoneChange",
+           "from": "battlefield",
+           "subject": {
+            "is": {
+             "id": "t0",
+             "ref": "target"
+            }
+           },
+           "to": "graveyard"
+          }
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Haunt the Network",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.choose.targetOpponent): target opponent is announced by the \"choose\" sentence (CR 115.1, 601.2c) and named as \"the chosen player\"; create two 1/1 colorless Thopter artifact creature tokens with flying (CR 111.1); then that player loses X life and you gain X life, X the number of artifacts you control, the new Thopters included (CR 608.2c, 608.2h, 107.3a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 2,
+         "op": "createToken",
+         "token": {
+          "colors": [],
+          "keywords": [
+           "flying"
+          ],
+          "power": 1,
+          "subtypes": [
+           "Thopter"
+          ],
+          "toughness": 1,
+          "types": [
+           "Artifact",
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "amount": {
+          "of": {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Artifact"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "op": "loseLife",
+         "who": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "amount": {
+          "of": {
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Artifact"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Officious Interrogation",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.choose.anyNumberTargetPlayers, eff.r3choose.investigate.xTimes.whereX): {W}{U} more for each target beyond the first (CR 601.2f); any number of target players (CR 115.1, 601.2c); investigate X times, X the total number of creatures those players control as the spell resolves (CR 701.16a, 107.3a, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "applies": {
+         "caster": "you",
+         "self": true
+        },
+        "change": {
+         "kind": "increase",
+         "mana": [
+          {
+           "color": "W",
+           "kind": "colored"
+          },
+          {
+           "color": "U",
+           "kind": "colored"
+          }
+         ],
+         "times": {
+          "args": [
+           0,
+           {
+            "args": [
+             {
+              "q": "spellTargetCount"
+             },
+             1
+            ],
+            "op": "-",
+            "q": "math"
+           }
+          ],
+          "op": "max",
+          "q": "math"
+         }
+        },
+        "s": "costMod"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "action": "investigate",
+         "n": {
+          "of": {
+           "filter": {
+            "controller": {
+             "id": "t0",
+             "ref": "target"
+            },
+            "types": [
+             "Creature"
+            ]
+           },
+           "ref": "each"
+          },
+          "q": "count"
+         },
+         "op": "action",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": "any",
+         "min": 0
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rakdos, Patron of Chaos",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.player.maySacrifice.theirChoice): flying, trample; at the beginning of your end step (CR 513.1a), target opponent chooses whether to sacrifice two nonland, nontoken permanents they choose (CR 608.2d, 701.21a); if they don't, you draw two cards (CR 608.2c, 121.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flying",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "count": 2,
+           "filter": {
+            "notTypes": [
+             "Land"
+            ],
+            "token": false
+           },
+           "op": "sacrificeChoice",
+           "who": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "not": true,
+          "step": "b0"
+         },
+         "op": "if",
+         "then": [
+          {
+           "count": 2,
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Steal the Show",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.player.discardAnyNumber.drawThatMany): one or both modes (CR 700.2); target player chooses any number of cards in their hand and discards them, then draws as many as were discarded (CR 701.9a, 701.9b, 121.1, 608.2c); ~ deals damage equal to the number of instant and sorcery cards in your graveyard to target creature or planeswalker (CR 120.3, 608.2h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 2,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "as": "b0",
+             "from": {
+              "filter": {
+               "owner": {
+                "id": "t0",
+                "ref": "target"
+               },
+               "zone": "hand"
+              },
+              "ref": "each"
+             },
+             "max": "any",
+             "min": 0,
+             "op": "chooseObjects",
+             "who": {
+              "id": "t0",
+              "ref": "target"
+             }
+            },
+            {
+             "as": "b1",
+             "count": {
+              "of": {
+               "name": "b0",
+               "ref": "bound"
+              },
+              "q": "count"
+             },
+             "filter": {
+              "is": {
+               "name": "b0",
+               "ref": "bound"
+              }
+             },
+             "op": "discard",
+             "who": {
+              "id": "t0",
+              "ref": "target"
+             }
+            },
+            {
+             "count": {
+              "q": "resultCount",
+              "step": "b1"
+             },
+             "op": "draw",
+             "who": {
+              "id": "t0",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "player",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "amount": {
+              "of": {
+               "filter": {
+                "isCard": true,
+                "owner": "you",
+                "types": [
+                 "Instant",
+                 "Sorcery"
+                ],
+                "zone": "graveyard"
+               },
+               "ref": "each"
+              },
+              "q": "count"
+             },
+             "op": "damage",
+             "source": {
+              "ref": "self"
+             },
+             "to": {
+              "id": "t1",
+              "ref": "target"
+             }
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Creature",
+               "Planeswalker"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Terrapact Intimidator",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.player.mayHave.youCreate): when ~ enters, target opponent chooses whether you create two Lander tokens (CR 608.2d, 111.1, 111.10); if they don't, two +1/+1 counters on ~ (CR 122.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "count": 2,
+           "op": "createToken",
+           "token": {
+            "predefined": "Lander"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "not": true,
+          "step": "b0"
+         },
+         "op": "if",
+         "then": [
+          {
+           "count": 2,
+           "kind": "+1/+1",
+           "on": {
+            "ref": "self"
+           },
+           "op": "putCounters"
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tifa's Limit Break",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.triple.pt): tiered, one mode with its additional cost {0}, {2} or {6}{G} (CR 702.183a, 700.2h); +2/+2 until end of turn; double: +X/+X with X its power and toughness (CR 701.10a-b); triple: +X/+X with X twice its power and toughness, read as the effect begins (CR 701.11a-b, 611.2c, 613.4c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "tiered",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "cost": {
+           "mana": [
+            {
+             "amount": 0,
+             "kind": "generic"
+            }
+           ]
+          },
+          "program": {
+           "steps": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "id": "t0",
+                "ref": "target"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": 2,
+                 "toughness": 2
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t0",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "cost": {
+           "mana": [
+            {
+             "amount": 2,
+             "kind": "generic"
+            }
+           ]
+          },
+          "program": {
+           "steps": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "id": "t1",
+                "ref": "target"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": {
+                  "of": {
+                   "id": "t1",
+                   "ref": "target"
+                  },
+                  "q": "stat",
+                  "stat": "power"
+                 },
+                 "toughness": {
+                  "of": {
+                   "id": "t1",
+                   "ref": "target"
+                  },
+                  "q": "stat",
+                  "stat": "toughness"
+                 }
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t1",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         },
+         {
+          "cost": {
+           "mana": [
+            {
+             "amount": 6,
+             "kind": "generic"
+            },
+            {
+             "color": "G",
+             "kind": "colored"
+            }
+           ]
+          },
+          "program": {
+           "steps": [
+            {
+             "duration": {
+              "d": "endOfTurn"
+             },
+             "effects": [
+              {
+               "affects": {
+                "id": "t2",
+                "ref": "target"
+               },
+               "mods": [
+                {
+                 "layer": "7c",
+                 "power": {
+                  "args": [
+                   2,
+                   {
+                    "of": {
+                     "id": "t2",
+                     "ref": "target"
+                    },
+                    "q": "stat",
+                    "stat": "power"
+                   }
+                  ],
+                  "op": "*",
+                  "q": "math"
+                 },
+                 "toughness": {
+                  "args": [
+                   2,
+                   {
+                    "of": {
+                     "id": "t2",
+                     "ref": "target"
+                    },
+                    "q": "stat",
+                    "stat": "toughness"
+                   }
+                  ],
+                  "op": "*",
+                  "q": "math"
+                 }
+                }
+               ],
+               "s": "continuous"
+              }
+             ],
+             "op": "effect"
+            }
+           ],
+           "targets": [
+            {
+             "filter": {
+              "types": [
+               "Creature"
+              ]
+             },
+             "id": "t2",
+             "kind": "object",
+             "max": 1,
+             "min": 1
+            }
+           ]
+          }
+         }
+        ]
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Zuko, Conflicted",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.r3choose.exile.self.thenReturn.opponent): at the beginning of your first main phase (CR 505.1a), choose one mode this object has not chosen before (CR 700.2, 603.3c: an object that changed zones is new, CR 400.7) and you lose 2 life, followed first as written (CR 608.2c); draw a card; a +1/+1 counter on ~; add {R}; exile ~, then return it to the battlefield under an opponent's control (CR 406.3, 400.7, 110.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "op": "draw",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "kind": "+1/+1",
+             "on": {
+              "ref": "self"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "op": "addMana",
+             "units": [
+              [
+               "R"
+              ]
+             ],
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "as": "b0",
+             "op": "move",
+             "to": {
+              "zone": "exile"
+             },
+             "what": {
+              "ref": "self"
+             }
+            },
+            {
+             "op": "move",
+             "to": {
+              "controller": {
+               "ref": "anOpponent"
+              },
+              "zone": "battlefield"
+             },
+             "what": {
+              "name": "b0",
+              "ref": "bound"
+             }
+            }
+           ],
+           "targets": []
+          }
+         }
+        ],
+        "unchosen": "object"
+       },
+       "steps": [
+        {
+         "amount": 2,
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "main1",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gollum, Riddle Master",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (rep.r3choose.enters.choose.oddEven): as ~ enters, odd or even is chosen (CR 614.12, 607.2d); whenever an opponent casts a spell with mana value of the chosen quality (zero is even, CR 202.3), choose one mode this object has not chosen before (CR 700.2, 603.3c, 400.7): a +1/+1 counter on ~; each opponent loses 2 life and you gain 2 life; draw a card",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "body": {
+         "b": "enters",
+         "choose": [
+          {
+           "link": "oddEven",
+           "what": "oddEven"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        "s": "replace"
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "kind": "+1/+1",
+             "on": {
+              "ref": "self"
+             },
+             "op": "putCounters"
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "amount": 2,
+             "op": "loseLife",
+             "who": {
+              "ref": "each",
+              "who": "opponent"
+             }
+            },
+            {
+             "amount": 2,
+             "op": "gainLife",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "op": "draw",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         }
+        ],
+        "unchosen": "object"
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "opponent",
+         "spell": {
+          "chosen": {
+           "link": "oddEven",
+           "quality": "oddEven"
+          },
+          "stackKind": "spell"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Daretti, Rocketeer Engineer",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.stdeoe.choose.targets with a later sentence naming the target, parser/lower/choose.ts): power equal to the greatest mana value among artifacts you control (CR 604.3, 613.4a); whenever ~ enters or attacks, target artifact card in your graveyard (CR 115.1, 601.2c); you may sacrifice an artifact; if you do, the chosen card returns to the battlefield under your control (CR 608.2c, 701.21a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "affects": {
+         "ref": "self"
+        },
+        "cda": true,
+        "mods": [
+         {
+          "layer": "7a",
+          "power": {
+           "agg": "max",
+           "of": {
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Artifact"
+             ]
+            },
+            "ref": "each"
+           },
+           "q": "stat",
+           "stat": "manaValue"
+          }
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "count": 1,
+           "filter": {
+            "types": [
+             "Artifact"
+            ]
+           },
+           "op": "sacrificeChoice",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "b0"
+         },
+         "op": "if",
+         "then": [
+          {
+           "op": "move",
+           "to": {
+            "controller": {
+             "ref": "you"
+            },
+            "zone": "battlefield"
+           },
+           "what": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "isCard": true,
+          "owner": "you",
+          "types": [
+           "Artifact"
+          ],
+          "zone": "graveyard"
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "attacker": {
+          "self": true
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Heroic Feast",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (eff.stdeoe.choose.targets with \"up to that many target creatures\", parser/holes/target.ts): when ~ enters, create a Food token (CR 111.10b); whenever you gain life, up to that many target creatures you control, the amount of life gained (CR 603.3d, 601.2c, 115.1); a +1/+1 counter on each of them (CR 122.1)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "predefined": "Food"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "+1/+1",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": {
+          "q": "eventAmount"
+         },
+         "min": 0
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "change": "gain",
+         "ev": "life",
+         "player": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Monument to Endurance",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (parser/lower/ability.ts#modalHeader, ModeSpec.unchosen): whenever you discard a card, choose one mode that has not been chosen this turn for this ability (CR 700.2, 603.3c): draw a card; create a Treasure token (CR 111.10a); each opponent loses 3 life",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "modes": {
+        "max": 1,
+        "min": 1,
+        "options": [
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "op": "draw",
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "count": 1,
+             "op": "createToken",
+             "token": {
+              "predefined": "Treasure"
+             },
+             "who": {
+              "ref": "you"
+             }
+            }
+           ],
+           "targets": []
+          }
+         },
+         {
+          "program": {
+           "steps": [
+            {
+             "amount": 3,
+             "op": "loseLife",
+             "who": {
+              "ref": "each",
+              "who": "opponent"
+             }
+            }
+           ],
+           "targets": []
+          }
+         }
+        ],
+        "unchosen": "turn"
+       },
+       "steps": [],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "actor": "you",
+         "ev": "action",
+         "verb": "discard"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sygg, Wanderwine Wisdom // Sygg, Wanderbrine Shield",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (render: \"protection from each color\", \"<quoted ability> until end of turn\"): ~ can't be blocked (CR 509.1b); whenever this creature enters or transforms into its front face, target creature gains the quoted combat damage trigger until end of turn (CR 613.1f, 611.2a, 603.6); at the beginning of your first main phase, you may pay {W} / {U}; if you do, transform ~ (CR 701.27a, 712); back face: target creature you control gains protection from each color until your next turn (CR 702.16a, 611.2b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "action": "beBlocked",
+        "mode": "cant",
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        }
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "effect": {
+                "steps": [
+                 {
+                  "count": 1,
+                  "op": "draw",
+                  "who": {
+                   "ref": "you"
+                  }
+                 }
+                ],
+                "targets": []
+               },
+               "kind": "triggered",
+               "trigger": {
+                "on": [
+                 {
+                  "combat": true,
+                  "ev": "damage",
+                  "recipient": {
+                   "object": {
+                    "types": [
+                     "Planeswalker"
+                    ]
+                   },
+                   "player": "any"
+                  },
+                  "source": {
+                   "self": true
+                  }
+                 }
+                ]
+               }
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "transformed"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "cost": {
+          "mana": [
+           {
+            "color": "W",
+            "kind": "colored"
+           }
+          ]
+         },
+         "op": "pay",
+         "then": [
+          {
+           "op": "changeFace",
+           "to": "transform",
+           "what": {
+            "ref": "self"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "main1",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "action": "beBlocked",
+        "mode": "cant",
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        }
+       }
+      ],
+      "kind": "static"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "untilNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "protection",
+               "kind": "keyword",
+               "quality": "color:any"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "object": {
+          "self": true
+         },
+         "what": "transformed"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "cost": {
+          "mana": [
+           {
+            "color": "U",
+            "kind": "colored"
+           }
+          ]
+         },
+         "op": "pay",
+         "then": [
+          {
+           "op": "changeFace",
+           "to": "transform",
+           "what": {
+            "ref": "self"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "main1",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Night Nurse, Healer of Heroes",
+  "expect": "full",
+  "verified": "r3-choose review, by hand against the Oracle text and the rules cited (ObjectFilter.putThereThisTurn, parser/holes/filter.ts): flash, lifelink; when ~ enters, target permanent card in your graveyard that was put there from anywhere this turn: the card object a zone change put there this turn (CR 400.7, 115.1, 601.2c); return it to your hand",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "flash",
+      "kind": "keyword"
+     },
+     {
+      "keyword": "lifelink",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "isCard": true,
+          "owner": "you",
+          "putThereThisTurn": true,
+          "types": [
+           "Artifact",
+           "Battle",
+           "Creature",
+           "Enchantment",
+           "Land",
+           "Planeswalker"
+          ],
+          "zone": "graveyard"
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+{"card":"The Neutrinos","expect":"full","verified":"Standard round 9 review (std-r9), by hand against the Oracle text and the rules cited (eff.r3choose.exile.thenReturn.yours.tappedAttacking; one golden card, a 6.9 deviation named in the round record): flying; alliance, whenever another creature you control enters it gets +1/+0 until end of turn (CR 207.2c, 611.2a); whenever it attacks, exile up to one target creature you own, then return that card (a new object, CR 400.7) to the battlefield under your control tapped and attacking (CR 508.4, 506.3, 115.1).","faces":[{"abilities":[{"kind":"keyword","keyword":"flying","text":"Flying"},{"kind":"triggered","text":"Whenever another creature you control enters, ~ get +1/+0 until end of turn.","trigger":{"on":[{"ev":"zoneChange","subject":{"types":["Creature"],"controller":"you","other":true},"to":"battlefield"}]},"effect":{"targets":[],"steps":[{"op":"effect","duration":{"d":"endOfTurn"},"effects":[{"s":"continuous","affects":{"ref":"self"},"mods":[{"layer":"7c","power":1,"toughness":0}]}]}]},"label":"Alliance"},{"kind":"triggered","text":"Whenever ~ attack, exile up to one target creature you own, then return it to the battlefield under your control tapped and attacking.","trigger":{"on":[{"ev":"attacks","attacker":{"self":true}}]},"effect":{"targets":[{"id":"t0","kind":"object","min":0,"max":1,"text":"up to one target creature you own","filter":{"types":["Creature"],"owner":"you"}}],"steps":[{"op":"move","what":{"ref":"target","id":"t0"},"to":{"zone":"exile"},"as":"moved"},{"op":"move","what":{"ref":"bound","name":"moved"},"to":{"zone":"battlefield","controller":{"ref":"you"},"tapped":true,"attacking":true}}]}}]}]},
+{"card":"Dire Undercurrents","expect":"full","verified":"std-rx30 review, by hand against the Oracle text and the rules cited (eff.r3choose.youMayHave.playerDraw, eff.t30.may.haveDiscard, trg.when) whenever a blue creature you control enters you may have target player draw a card; a black one, you may have target player discard a card (CR 603.2, 121.1, 701.9a); CR cites from memory, unverified.","faces":[{"abilities":[{"kind":"triggered","text":"Whenever a blue creature you control enters, you may have target player draw a card.","trigger":{"on":[{"ev":"zoneChange","subject":{"colors":["U"],"types":["Creature"],"controller":"you"},"to":"battlefield"}]},"effect":{"targets":[{"id":"t0","kind":"player","min":1,"max":1,"text":"target player","players":{"who":"any"}}],"steps":[{"op":"may","who":{"ref":"you"},"do":[{"op":"draw","who":{"ref":"target","id":"t0"},"count":1}]}]}},{"kind":"triggered","text":"Whenever a black creature you control enters, you may have target player discard a card.","trigger":{"on":[{"ev":"zoneChange","subject":{"colors":["B"],"types":["Creature"],"controller":"you"},"to":"battlefield"}]},"effect":{"targets":[{"id":"t0","kind":"player","min":1,"max":1,"text":"target player","players":{"who":"any"}}],"steps":[{"op":"may","who":{"ref":"you"},"do":[{"op":"discard","who":{"ref":"target","id":"t0"},"count":1}]}]}}]}]},
+{"card":"World War Hulk","expect":"full","verified":"std-freecast-1 review, by hand against the Oracle text and the rules cited (eff.stdfreecast1.nextSpell.free, eff.r3choose.dur.double.its.pt.gains): chapter I waits for the next red or green (any of the two colors) creature spell you cast this turn, which may be cast for the alternative cost of nothing (CR 118.9, 601.2b); the next such spell uses it up, paid for that way or not, and it ends with the turn (CR 611.2); chapter II puts three +1/+1 counters on target creature you control (CR 122.1); chapter III chooses target creature you control, and until end of turn it gets +X/+Y, X and Y its power and toughness as the effect begins (CR 701.10, 608.2h, 613.4c), and gains trample (CR 613.1f); the Saga's chapters and sacrifice are the Saga rules' (CR 714)","faces":[{"abilities":[{"chapters":[1],"effect":{"steps":[{"filter":{"colors":["R","G"],"types":["Creature"],"zone":"stack"},"op":"nextSpell","rider":"free","who":{"ref":"you"}}],"targets":[]},"kind":"chapter"},{"chapters":[2],"effect":{"steps":[{"count":3,"kind":"+1/+1","on":{"id":"t0","ref":"target"},"op":"putCounters"}],"targets":[{"filter":{"controller":"you","types":["Creature"]},"id":"t0","kind":"object","max":1,"min":1}]},"kind":"chapter"},{"chapters":[3],"effect":{"steps":[{"duration":{"d":"endOfTurn"},"effects":[{"affects":{"id":"t0","ref":"target"},"mods":[{"layer":"7c","power":{"of":{"id":"t0","ref":"target"},"q":"stat","stat":"power"},"toughness":{"of":{"id":"t0","ref":"target"},"q":"stat","stat":"toughness"}}],"s":"continuous"},{"affects":{"id":"t0","ref":"target"},"mods":[{"add":[{"keyword":"trample","kind":"keyword"}],"layer":6}],"s":"continuous"}],"op":"effect"}],"targets":[{"filter":{"controller":"you","types":["Creature"]},"id":"t0","kind":"object","max":1,"min":1}]},"kind":"chapter"}]}]}
+]

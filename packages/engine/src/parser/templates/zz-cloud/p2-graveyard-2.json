@@ -1,0 +1,276 @@
+[
+  {
+    "id": "rst.p2gy2.cards.inGraveyards.cantEnter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.17d",
+      "CR 101.2",
+      "CR 400.1",
+      "CR 404.1"
+    ],
+    "pattern": "{f:Filter} cards in graveyards can't enter the battlefield",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": "graveyard",
+          "isCard": true
+        }
+      },
+      "mode": "cant",
+      "action": "enter"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Artifact cards in graveyards can't enter the battlefield."
+      },
+      {
+        "text": "Flying\nEnchantment cards in graveyards can't enter the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Artifact cards in libraries can't enter the battlefield.",
+      "Artifact cards in graveyards can't leave the battlefield.",
+      "Artifact cards in graveyards can enter the battlefield."
+    ]
+  },
+  {
+    "id": "rst.p2gy2.cards.inGraveyardsAndLibraries.cantEnter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.17d",
+      "CR 101.2",
+      "CR 400.1",
+      "CR 404.1"
+    ],
+    "pattern": "{f:Filter} cards in graveyards and libraries can't enter the battlefield",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": [
+            "graveyard",
+            "library"
+          ],
+          "isCard": true
+        }
+      },
+      "mode": "cant",
+      "action": "enter"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Artifact cards in graveyards and libraries can't enter the battlefield."
+      },
+      {
+        "text": "Vigilance\nNoncreature artifact cards in graveyards and libraries can't enter the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Artifact cards in graveyards can't enter the battlefield.",
+      "Artifact cards in graveyards and hands can't enter the battlefield.",
+      "Artifact cards in graveyards and libraries can enter the battlefield."
+    ]
+  },
+  {
+    "id": "rst.p2gy2.players.cantCast.fromGraveyards",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2a",
+      "CR 101.2"
+    ],
+    "pattern": "players can't cast spells from graveyards",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "castFromZone"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't cast spells from graveyards."
+      },
+      {
+        "text": "Trample\nPlayers can't cast spells from graveyards."
+      }
+    ],
+    "counterExamples": [
+      "Players can't cast spells from libraries.",
+      "Your opponents can't cast spells from graveyards.",
+      "Players can't cast creature spells from graveyards."
+    ]
+  },
+  {
+    "id": "rst.p2gy2.players.cantCast.fromGraveyardsOrLibraries",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2a",
+      "CR 101.2"
+    ],
+    "pattern": "players can't cast spells from graveyards or libraries",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "castFromZone",
+      "fromZones": [
+        "graveyard",
+        "library"
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't cast spells from graveyards or libraries."
+      },
+      {
+        "text": "Menace\nPlayers can't cast spells from graveyards or libraries."
+      }
+    ],
+    "counterExamples": [
+      "Players can't cast spells from graveyards or exile.",
+      "Players can't cast spells from hands or libraries.",
+      "Your opponents can't cast spells from graveyards or libraries."
+    ]
+  },
+  {
+    "id": "rst.p2gy2.players.cantCast.kind.fromGraveyardsOrExile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2a",
+      "CR 101.2"
+    ],
+    "pattern": "players can't cast {f:Filter} from graveyards or exile",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "castFromZone",
+      "other": "$f",
+      "fromZones": [
+        "graveyard",
+        "exile"
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't cast artifact spells from graveyards or exile."
+      },
+      {
+        "text": "Players can't cast nonland spells from graveyards or exile."
+      }
+    ],
+    "counterExamples": [
+      "Players can't cast artifact spells from graveyards or libraries.",
+      "Players can't cast artifact spells from graveyards.",
+      "Players can't cast spells from graveyards or exile."
+    ]
+  },
+  {
+    "id": "sta.p2gy2.once.cast.graveyard.exileInstead",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 404.1",
+      "CR 611.3a",
+      "CR 614.1a",
+      "CR 400.7"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from your graveyard . if a spell cast this way would be put into your graveyard , exile it instead",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "oncePerTurn": true,
+          "graveyardInstead": {
+            "to": {
+              "zone": "exile"
+            },
+            "yours": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may",
+      "if",
+      "would",
+      "instead",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an artifact spell from your graveyard. If a spell cast this way would be put into your graveyard, exile it instead."
+      },
+      {
+        "text": "Flying\nOnce during each of your turns, you may cast a sorcery spell from your graveyard. If a spell cast this way would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast an artifact spell from your graveyard. If a spell cast this way would be put into your graveyard, return it to your hand instead.",
+      "Once during each of your turns, you may cast an artifact spell from your graveyard.",
+      "Once during each of your turns, you may cast an artifact spell from your hand. If a spell cast this way would be put into your graveyard, exile it instead."
+    ]
+  }
+]

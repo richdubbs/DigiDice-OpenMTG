@@ -1,0 +1,228 @@
+[
+  {
+    "id": "eff.t61.then.draw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 121.1", "CR 608.2c"],
+    "pattern": "then draw {n:Qty} card[s]",
+    "build": { "op": "draw", "who": { "ref": "you" }, "count": "$n" },
+    "subject": "none",
+    "consumes": ["then"],
+    "examples": [
+      { "text": "Surveil 2. Then draw three cards." },
+      { "text": "Discard a card. Then draw two cards." }
+    ],
+    "counterExamples": [
+      "Surveil 2. Then draw three lands.",
+      "Surveil 2. Then target player draws three cards.",
+      "Surveil 2. Then draw three cards instead."
+    ]
+  },
+  {
+    "id": "eff.t61.ifControlThat.draw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 608.2c", "CR 608.2h", "CR 121.1"],
+    "pattern": "if you control {o:Obj} , draw {n:Qty} card[s]",
+    "build": {
+      "op": "if",
+      "cond": { "cond": "exists", "of": { "ref": "each", "filter": { "is": "$o", "controller": "you" } } },
+      "then": [{ "op": "draw", "who": { "ref": "you" }, "count": "$n" }]
+    },
+    "subject": "none",
+    "consumes": ["if"],
+    "examples": [
+      { "text": "Tap up to one target creature and put three stun counters on it. If you control that creature, draw two cards." },
+      { "text": "Gain control of target creature until end of turn. If you control that creature, draw a card." }
+    ],
+    "counterExamples": [
+      "Tap target creature. If you control that creature, draw two cards instead.",
+      "Tap target creature. If you don't control that creature, draw two cards.",
+      "Tap target creature. If you control that creature, target player draws two cards."
+    ]
+  },
+  {
+    "id": "eff.t61.then.if.untap",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 608.2c", "CR 701.26b", "CR 701.23a"],
+    "pattern": "then if {c:Cond} , untap {o:Obj}",
+    "build": { "op": "if", "cond": "$c", "then": [{ "op": "untap", "what": "$o" }] },
+    "subject": "none",
+    "consumes": ["then", "if"],
+    "examples": [
+      { "text": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then if you control five or more lands, untap that land." },
+      { "text": "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then if you control two or more artifacts, untap that land." }
+    ],
+    "counterExamples": [
+      "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then if you control five or more lands, tap that land.",
+      "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then unless you control five or more lands, untap that land.",
+      "Search your library for a basic land card, put it onto the battlefield tapped, then shuffle. Then if you control five or more lands, untap that land instead."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.t61.then.drawLoseLife.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 121.1", "CR 119.3", "CR 107.3", "CR 608.2h", "CR 608.2c"],
+    "pattern": "then you draw x cards and lose x life , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        { "op": "draw", "who": { "ref": "you" }, "count": { "q": "X" } },
+        { "op": "loseLife", "who": { "ref": "you" }, "amount": { "q": "X" } }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["then"],
+    "examples": [
+      { "text": "Put a +1/+1 counter on ~. Then you draw X cards and lose X life, where X is the number of counters on ~." },
+      { "text": "Surveil 1. Then you draw X cards and lose X life, where X is the number of creatures you control." }
+    ],
+    "counterExamples": [
+      "Surveil 1. Then you draw X cards and gain X life, where X is the number of creatures you control.",
+      "Surveil 1. Then you draw X cards and lose X life.",
+      "Surveil 1. Then you draw X cards and lose Y life, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.t61.then.draw.forEachDiscarded",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 121.1", "CR 701.9a", "CR 608.2h", "CR 608.2c"],
+    "pattern": "then draw a card for each card you've discarded this turn",
+    "build": {
+      "op": "draw",
+      "who": { "ref": "you" },
+      "count": { "q": "happenedCount", "event": { "ev": "action", "verb": "discard", "actor": "you" }, "scope": "turn" }
+    },
+    "subject": "none",
+    "consumes": ["then", "each"],
+    "examples": [
+      { "text": "Discard a card. Then draw a card for each card you've discarded this turn." },
+      { "text": "Discard two cards. Then draw a card for each card you've discarded this turn." }
+    ],
+    "counterExamples": [
+      "Discard a card. Then draw a card for each card you've discarded.",
+      "Discard a card. Then draw two cards for each card you've discarded this turn.",
+      "Discard a card. Then draw a card for each card an opponent has discarded this turn."
+    ]
+  },
+  {
+    "id": "eff.t61.reveal.putHand.shuffle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.20a", "CR 701.24a", "CR 608.2c", "CR 400.7j"],
+    "pattern": "reveal {o:Objs} , put them into your hand , then shuffle",
+    "build": [
+      { "op": "reveal", "who": { "ref": "you" }, "what": "$o" },
+      { "op": "move", "what": "$o", "to": { "zone": "hand" } },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "consumes": ["then"],
+    "examples": [
+      { "text": "Search your library for up to three basic land cards. Reveal those cards, put them into your hand, then shuffle." },
+      { "text": "Search your library for up to two Forest cards. Reveal those cards, put them into your hand, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for up to three basic land cards. Reveal those cards, put them onto the battlefield, then shuffle.",
+      "Search your library for up to three basic land cards. Reveal those cards, put them into your hand.",
+      "Search your library for up to three basic land cards. Reveal those cards, put them into their owner's hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t61.mill.putAll.fromAmong",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.17a", "CR 701.17c", "CR 608.2c", "CR 400.7j"],
+    "pattern": "mill {n:Qty} cards , then put all {f:Filter} card[s] from among them into your hand",
+    "build": [
+      { "op": "mill", "who": { "ref": "you" }, "count": "$n", "as": "milled" },
+      {
+        "op": "move",
+        "what": { "ref": "each", "filter": { "anyOf": ["$f"], "is": { "ref": "bound", "name": "milled" }, "zone": "any" } },
+        "to": { "zone": "hand" }
+      }
+    ],
+    "subject": "none",
+    "consumes": ["then", "all"],
+    "examples": [
+      { "text": "Mill four cards, then put all creature and land cards from among them into your hand." },
+      { "text": "Mill five cards, then put all artifact cards from among them into your hand." }
+    ],
+    "counterExamples": [
+      "Mill four cards, then put all creature cards from among them onto the battlefield.",
+      "Mill four cards, then put up to two creature cards from among them into your hand and the rest into your graveyard.",
+      "Mill four cards, then put all creature cards from your graveyard into your hand."
+    ]
+  },
+  {
+    "id": "eff.t61.if.counterAndDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 608.2c", "CR 118.12", "CR 122.1", "CR 121.1"],
+    "pattern": "if {c:Cond} , put {n:Qty} {k:CounterKind} counter[s] on ~ and draw a card",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        { "op": "putCounters", "on": { "ref": "self" }, "kind": "$k", "count": "$n" },
+        { "op": "draw", "who": { "ref": "you" }, "count": 1 }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["if"],
+    "examples": [
+      { "text": "You may pay {1}. If you do, put a +1/+1 counter on ~ and draw a card." },
+      { "text": "You may discard a card. If you do, put two +1/+1 counters on ~ and draw a card." }
+    ],
+    "counterExamples": [
+      "You may pay {1}. If you do, put a +1/+1 counter on ~ and draw two cards.",
+      "You may pay {1}. If you do, put a +1/+1 counter on target creature and draw a card.",
+      "You may pay {1}. If you don't, put a +1/+1 counter on ~ and draw a card."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.t61.if.returnNextEnd.owner",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 603.7", "CR 608.2c", "CR 118.12", "CR 400.7"],
+    "pattern": "if {c:Cond} , return {o:Obj} to the battlefield under its owner 's control at the beginning of the next end step",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "delay",
+          "when": { "at": "step", "step": "end", "next": true },
+          "do": [{ "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": "owner" } }]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": ["if"],
+    "examples": [
+      { "text": "Exile up to one target creature you control. If you do, return it to the battlefield under its owner's control at the beginning of the next end step." },
+      { "text": "Exile up to one target artifact you control. If you do, return it to the battlefield under its owner's control at the beginning of the next end step." }
+    ],
+    "counterExamples": [
+      "Exile up to one target creature you control. If you do, return it to the battlefield under its owner's control at the beginning of your next end step.",
+      "Exile up to one target creature you control. If you do, return it to the battlefield under your control at the beginning of the next end step.",
+      "Exile up to one target creature you control. If you don't, return it to the battlefield under its owner's control at the beginning of the next end step."
+    ],
+    "priority": 1
+  }
+]

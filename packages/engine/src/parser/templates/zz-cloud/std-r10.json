@@ -1,0 +1,41 @@
+[
+  {
+    "id": "eff.stdr10.nextSpell.cantBeCountered",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 601.2i",
+      "CR 611.2"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn can't be countered",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "cantBeCountered"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: The next spell you cast this turn can't be countered."
+      },
+      {
+        "text": "Draw a card. The next instant or sorcery spell you cast this turn can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: The next spell you cast can't be countered.",
+      "{2}, {T}: The next spell an opponent casts this turn can't be countered.",
+      "{2}, {T}: The next spell you cast this turn can be countered.",
+      "{2}, {T}: The first spell you cast this turn can't be countered."
+    ]
+  }
+]

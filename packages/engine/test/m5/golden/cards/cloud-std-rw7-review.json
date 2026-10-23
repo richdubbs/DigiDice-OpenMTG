@@ -1,0 +1,423 @@
+[
+ {
+  "card": "Bilbo, Thief in the Night",
+  "expect": "full",
+  "verified": "std-rw7 review (card wave 2 slice s7, Standard, held-out half: Standard cards are open in both halves), by hand against the Oracle text and the rules cited (eff.r3cost.costmod.spells.less.notFromHand, trg.when, eff.stdrw7.cast.fromGraveyard, rid.stdrw7.cast.typed.exileInstead; render/fold.ts#castFromOwnZone, render/steps-zones.ts#graveyardInsteadText): spells you cast from anywhere but your hand cost {1} less (CR 601.2f); whenever it attacks you may choose one artifact, instant or sorcery card in your graveyard and cast it during the resolution, paying its costs (CR 608.2g, 601.2; a land is never cast, CR 305.9); if an instant or sorcery spell cast this way would be put into your graveyard (resolved or countered) it is exiled instead, an artifact spell is not affected (CR 614.1a, 205.2a). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "zone": [
+       "battlefield"
+      ],
+      "effects": [
+       {
+        "s": "costMod",
+        "applies": {
+         "spells": {
+          "anyOf": [
+           {
+            "stackKind": "spell",
+            "zone": "stack"
+           }
+          ],
+          "not": {
+           "castFrom": "hand",
+           "owner": "you"
+          }
+         },
+         "caster": "you"
+        },
+        "change": {
+         "kind": "reduce",
+         "generic": 1,
+         "floor": "zero"
+        }
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "types": [
+              "Artifact",
+              "Instant",
+              "Sorcery"
+             ]
+            }
+           ],
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "graveyard",
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "cast"
+        },
+        {
+         "op": "cast",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "graveyardInstead": {
+          "to": {
+           "zone": "exile"
+          },
+          "yours": true,
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sram's Expertise",
+  "expect": "full",
+  "verified": "std-rw7 review (tuning half), by hand against the Oracle text and the rules cited (eff.token.you, eff.stdrw7.cast.fromHand.free; render/fold.ts#castFromOwnZone): you create three 1/1 colorless Servo artifact creature tokens (CR 111.1), then you may choose one nonland card with mana value 3 or less in your hand and cast it during the resolution without paying its mana cost (CR 608.2g, 118.9, 202.3; a land is never cast, CR 305.9). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 3,
+         "token": {
+          "colors": [],
+          "types": [
+           "Artifact",
+           "Creature"
+          ],
+          "subtypes": [
+           "Servo"
+          ],
+          "power": 1,
+          "toughness": 1
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "manaValue": {
+              "op": "<=",
+              "value": 3
+             }
+            }
+           ],
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "hand",
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "cast"
+        },
+        {
+         "op": "cast",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "free": true
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Yahenni's Expertise",
+  "expect": "full",
+  "verified": "std-rw7 review (tuning half), by hand against the Oracle text and the rules cited (eff.cont.pump.each, eff.stdrw7.cast.fromHand.free; render/fold.ts#castFromOwnZone): all creatures get -3/-3 until end of turn (CR 611.2a, 613.4c), then you may choose one nonland card with mana value 3 or less in your hand and cast it during the resolution without paying its mana cost (CR 608.2g, 118.9, 305.9); a creature cast this way enters after the -3/-3 was locked in and is not affected (CR 611.2c). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": -3,
+             "toughness": -3
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "manaValue": {
+              "op": "<=",
+              "value": 3
+             }
+            }
+           ],
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "hand",
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "cast"
+        },
+        {
+         "op": "cast",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "free": true
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rishkar's Expertise",
+  "expect": "full",
+  "verified": "std-rw7 review (tuning half), by hand against the Oracle text and the rules cited (eff.draw.equal.you, eff.stdrw7.cast.fromHand.free; render/fold.ts#castFromOwnZone): you draw cards equal to the greatest power among creatures you control (CR 121.1, 208.1), then you may choose one nonland card with mana value 5 or less in your hand (the cards just drawn included) and cast it during the resolution without paying its mana cost (CR 608.2g, 118.9, 305.9). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "controller": "you"
+           }
+          },
+          "agg": "max"
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "anyOf": [
+            {
+             "manaValue": {
+              "op": "<=",
+              "value": 5
+             }
+            }
+           ],
+           "notTypes": [
+            "Land"
+           ],
+           "zone": "hand",
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "min": 0,
+         "max": 1,
+         "as": "cast"
+        },
+        {
+         "op": "cast",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "bound",
+          "name": "cast"
+         },
+         "free": true
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Scholar of the Lost Trove",
+  "expect": "full",
+  "verified": "std-rw7 review (tuning half), by hand against the Oracle text and the rules cited (kw.line, trg.enters, eff.cost.cast.target.free, rid.stdrw7.cast.typed.exileInstead; render/steps-zones.ts#graveyardInsteadText): flying (CR 702.9); when it enters you may cast the targeted instant, sorcery or artifact card from your graveyard without paying its mana cost (CR 608.2g, 118.9, 115.1); if an instant or sorcery spell cast this way would be put into your graveyard it is exiled instead, an artifact spell is not affected (CR 614.1a, 205.2a). CR cites from memory, unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Instant",
+           "Sorcery",
+           "Artifact"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "cast",
+         "who": {
+          "ref": "you"
+         },
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "free": true,
+         "optional": true,
+         "graveyardInstead": {
+          "to": {
+           "zone": "exile"
+          },
+          "yours": true,
+          "types": [
+           "Instant",
+           "Sorcery"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

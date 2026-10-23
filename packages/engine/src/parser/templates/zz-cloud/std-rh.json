@@ -1,0 +1,144 @@
+[
+  {
+    "id": "sta.rh.additionalPump.aslong",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 700.11", "CR 207.2c"],
+    "pattern": "{o:Obj} get[s] an additional {pt:PT} as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "consumes": ["as long as", "additional"],
+    "examples": [
+      {
+        "text": "~ gets an additional +2/+2 as long as there are eight or more permanent cards in your graveyard." },
+      { "text": "~ gets an additional +1/+0 as long as you control five or more lands." }
+    ],
+    "counterExamples": [
+      "~ gets an additional +2/+2 as long as there are eight or more permanent cards in your graveyard until end of turn.",
+      "~ gets additional +2/+2 as long as there are eight or more permanent cards in your graveyard.",
+      "~ gets an additional +2/+2 unless there are eight or more permanent cards in your graveyard."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.rh.dig.anyNumber.permanent.mvAtMost.bf",
+    "kind": "effect",
+    "cr": ["CR 701.20e", "CR 608.2d", "CR 110.4", "CR 202.3"],
+    "pattern": "put any number of permanent cards with mana value {n:Qty} or less from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": { "ref": "you" },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": ["Artifact", "Battle", "Creature", "Enchantment", "Land", "Planeswalker"],
+            "manaValue": { "op": "<=", "value": "$n" },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      { "op": "move", "what": { "ref": "bound", "name": "chosen" }, "to": { "zone": "battlefield", "controller": { "ref": "you" } } }
+    ],
+    "subject": "none",
+    "consumes": ["any number"],
+    "examples": [
+      { "text": "Look at the top ten cards of your library. You may put any number of permanent cards with mana value 3 or less from among them onto the battlefield. Then shuffle." },
+      { "text": "Reveal the top five cards of your library. You may put any number of permanent cards with mana value 2 or less from among them onto the battlefield. Put the rest into your graveyard." }
+    ],
+    "counterExamples": [
+      "Look at the top ten cards of your library. Put any number of permanent cards with mana value 2 or greater from among them onto the battlefield. Then shuffle.",
+      "Look at the top ten cards of your library. Put any number of nonland cards with mana value 2 or less from among them onto the battlefield. Then shuffle.",
+      "Look at the top ten cards of your library. Put any number of permanent cards with mana value 2 or less from among them into your hand. Then shuffle."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.rh.permit.cast.spellsFromGroup.durFirst.anyType",
+    "kind": "effect",
+    "cr": ["CR 611.2a", "CR 611.2c", "CR 601.2a", "CR 601.3", "CR 400.7", "CR 609.4b", "CR 611.2b"],
+    "pattern": "{d:Dur} , you may cast spells from among {o:Group} , and mana of any type can be spent to cast those spells",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "permit", "who": { "ref": "you" }, "action": "cast", "of": { "is": "$o" }, "anyManaType": true }]
+    },
+    "subject": "none",
+    "consumes": ["may"],
+    "examples": [
+      { "text": "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards, and mana of any type can be spent to cast those spells." },
+      { "text": "Exile the top three cards of target opponent's library. Until your next end step, you may cast spells from among those cards, and mana of any type can be spent to cast those spells." }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards.",
+      "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards, and you may spend mana as though it were mana of any color to cast those spells."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "cm.rh.unlock.less.you",
+    "kind": "static",
+    "cr": ["CR 116.2m", "CR 709.5e", "CR 601.2f", "CR 118.7", "CR 604.1"],
+    "pattern": "unlock costs you pay cost {m:ManaCost} less",
+    "build": {
+      "kind": "static",
+      "zone": ["battlefield"],
+      "effects": [{ "s": "costMod", "applies": { "unlock": true, "caster": "you" }, "change": { "kind": "reduce", "generic": "$m.0.amount", "floor": "zero" } }]
+    },
+    "needs": ["feature:costMod.unlock"],
+    "examples": [
+      { "text": "Unlock costs you pay cost {2} less." },
+      { "text": "Unlock costs you pay cost {3} less." }
+    ],
+    "counterExamples": [
+      "Unlock costs you pay cost {1} more.",
+      "Unlock costs your opponents pay cost {1} less.",
+      "Unlock costs you pay cost {1} less this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.rh.becomes.subtype.creature.with.stillLand",
+    "kind": "effect",
+    "cr": ["CR 205.1b", "CR 611.2a", "CR 611.2c", "CR 613.1d", "CR 613.1f", "CR 613.4b"],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} that's still ( a | an ) land",
+    "build": {
+      "op": "effect",
+      "duration": { "d": "permanent" },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            { "layer": 4, "types": { "add": ["Creature"] }, "subtypes": { "add": "$st" } },
+            { "layer": 6, "add": "$a" },
+            { "layer": "7b", "power": "$pt.p", "toughness": "$pt.t" }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["still"],
+    "examples": [
+      { "text": "Target land you control becomes a 4/4 Golem creature with trample that's still a land." },
+      { "text": "{2}{G}: Target land you control becomes a 2/2 Elemental creature with vigilance and reach that's still a land." }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 4/4 Golem creature with trample that's still a land until end of turn.",
+      "Target land you control becomes a 4/4 Golem creature with trample that's still an artifact.",
+      "Target land you control becomes a 4/4 Golem creature that's still a land."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

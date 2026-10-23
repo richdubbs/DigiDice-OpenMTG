@@ -1,0 +1,111 @@
+[
+ {
+  "card": "Alania, Divergent Storm",
+  "expect": "full",
+  "verified": "std-copy-4 review (lane std-copy; Standard), by hand against the Oracle text and the rules cited: whenever its controller casts a spell that is the first instant spell, the first sorcery spell, or the first Otter spell other than Alania (the spell it was itself is not counted) that player has cast this turn, it triggers once (one cast pattern per kind, nth 1 with nthMatching, counted from the turn's cast history; the intervening 'if' holds again as it resolves, the history being fixed); they may have target opponent draw a card, and if they do, copy that spell, choosing new targets for the copy (trg.stdcopy4.cast.ifFirstOfEach; eff.r3choose.youMayHave.playerDraw, cond.if, eff.copy.spell, rid.copy.newTargets). (CR 603.2, 603.4, 601.2i, 400.7, 201.5, 608.2d, 707.10, 707.10c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "do": [
+          {
+           "count": 1,
+           "op": "draw",
+           "who": {
+            "id": "t0",
+            "ref": "target"
+           }
+          }
+         ],
+         "op": "may",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "did",
+          "step": "b0"
+         },
+         "op": "if",
+         "then": [
+          {
+           "newTargets": "may",
+           "op": "copy",
+           "result": "spell",
+           "what": {
+            "ref": "event",
+            "role": "spell"
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ]
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "nth": 1,
+         "nthMatching": true,
+         "player": "you",
+         "spell": {
+          "types": [
+           "Instant"
+          ]
+         }
+        },
+        {
+         "ev": "cast",
+         "nth": 1,
+         "nthMatching": true,
+         "player": "you",
+         "spell": {
+          "types": [
+           "Sorcery"
+          ]
+         }
+        },
+        {
+         "ev": "cast",
+         "nth": 1,
+         "nthMatching": true,
+         "player": "you",
+         "spell": {
+          "anyOf": [
+           {
+            "subtypes": [
+             "Otter"
+            ]
+           }
+          ],
+          "other": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

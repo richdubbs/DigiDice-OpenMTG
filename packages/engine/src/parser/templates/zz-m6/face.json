@@ -1,0 +1,344 @@
+[
+  {
+    "id": "eff.m6.manifest.top",
+    "kind": "effect",
+    "cr": [
+      "CR 701.40a"
+    ],
+    "pattern": "manifest the top card of your library",
+    "build": {
+      "op": "action",
+      "action": "manifest",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:manifest"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, manifest the top card of your library.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "At the beginning of your upkeep, manifest the top card of your library.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "step",
+                  "step": "upkeep",
+                  "whose": "you"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "manifest",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{4}, {T}: Manifest the top card of your library."
+      }
+    ],
+    "counterExamples": [
+      "Manifest the top two cards of your library.",
+      "Manifest the top card of target player's library.",
+      "Manifest the top card of your library face up."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.m6.cloak.top",
+    "kind": "effect",
+    "cr": [
+      "CR 701.58a"
+    ],
+    "pattern": "cloak the top card of your library",
+    "build": {
+      "op": "action",
+      "action": "cloak",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:cloak"
+    ],
+    "examples": [
+      {
+        "text": "When this creature dies, cloak the top card of your library.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ dies, cloak the top card of your library.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "cloak",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{3}, Sacrifice an artifact: Cloak the top card of your library."
+      }
+    ],
+    "counterExamples": [
+      "Cloak the top two cards of your library.",
+      "Cloak the top card of target opponent's library.",
+      "Cloak the top card of your library tapped."
+    ],
+    "status": "experimental",
+    "since": 3
+  },
+  {
+    "id": "eff.m6.manifestDread",
+    "kind": "effect",
+    "cr": [
+      "CR 701.62a"
+    ],
+    "pattern": "manifest dread",
+    "build": {
+      "op": "action",
+      "action": "manifestDread",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, manifest dread.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, manifest dread.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "manifestDread",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{5}, {T}: Manifest dread."
+      }
+    ],
+    "counterExamples": [
+      "Manifest dread twice.",
+      "Target player manifests dread.",
+      "Manifest dread, then put a +1/+1 counter on target creature you don't control."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.m6.turnFaceDown",
+    "kind": "effect",
+    "cr": [
+      "CR 708.2a",
+      "CR 708.2b"
+    ],
+    "pattern": "turn {o:Objs} face down",
+    "build": {
+      "op": "changeFace",
+      "what": "$o",
+      "to": "faceDown"
+    },
+    "subject": "none",
+    "needs": [
+      "op:changeFace.faceDown"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: Turn target creature face down."
+      },
+      {
+        "text": "{1}: Turn this creature face down."
+      }
+    ],
+    "counterExamples": [
+      "Turn target creature face up.",
+      "Turn target creature face down. It's a 3/3 creature with flying.",
+      "Turn target creature you control face down and exile it."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.m6.turnFaceUp",
+    "kind": "effect",
+    "cr": [
+      "CR 708.7",
+      "CR 708.8"
+    ],
+    "pattern": "turn {o:Objs} face up",
+    "build": {
+      "op": "changeFace",
+      "what": "$o",
+      "to": "faceUp"
+    },
+    "subject": "none",
+    "needs": [
+      "op:changeFace.faceUp"
+    ],
+    "examples": [
+      {
+        "text": "{3}: Turn target face-down creature face up."
+      },
+      {
+        "text": "When this creature enters, turn target face-down creature you control face up."
+      }
+    ],
+    "counterExamples": [
+      "Turn target creature face down.",
+      "Turn target face-down creature face up. It gains haste until end of turn and attacks this turn if able.",
+      "You may turn target face-down creature face up any time you could cast a sorcery."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "static.m6.turnedFaceUp.counters",
+    "kind": "static",
+    "cr": [
+      "CR 614.1e",
+      "CR 708.11",
+      "CR 122.6"
+    ],
+    "pattern": "as ~ is turned face up , put {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "becomes",
+            "what": "turnedFaceUp",
+            "object": {
+              "self": true
+            }
+          },
+          "body": {
+            "b": "during",
+            "do": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "needs": [
+      "body:during",
+      "feature:replace.on.turnFaceUp"
+    ],
+    "examples": [
+      {
+        "text": "As this permanent is turned face up, put three +1/+1 counters on it.",
+        "expect": [
+          {
+            "kind": "static",
+            "text": "As ~ is turned face up, put three +1/+1 counters on it.",
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "becomes",
+                  "what": "turnedFaceUp",
+                  "object": {
+                    "self": true
+                  }
+                },
+                "body": {
+                  "b": "during",
+                  "do": [
+                    {
+                      "op": "putCounters",
+                      "on": {
+                        "ref": "self"
+                      },
+                      "kind": "+1/+1",
+                      "count": 3
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "As this creature is turned face up, put two -1/-1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "As this creature is turned face up, put three +1/+1 counters on target creature.",
+      "When this creature is turned face up, put three +1/+1 counters on it.",
+      "As this creature enters, put three +1/+1 counters on it."
+    ],
+    "status": "stable",
+    "since": 3
+  }
+]

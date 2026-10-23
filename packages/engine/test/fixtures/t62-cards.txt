@@ -1,0 +1,14 @@
+# ---- FAST5 T62: trigger clauses and intervening-if conditions (CR 603.2, 603.4, 603.10a)
+# (FAST5 batch 7 merge: Mine Raider and Vial Smasher are listed in fast5x-e20-cards.txt, Bristlebane Battler in fast5x-e21-cards.txt)
+Sunstar Expansionist
+Krang, Master Mind
+Roiling Canopy
+Emergent Haunting
+Lord Skitter's Blessing
+Eshki Dragonclaw
+Carrot Cake
+Heaped Harvest
+Perimeter Enforcer
+Cryptid Inspector
+Rangers' Aetherhive
+Master of Barbs

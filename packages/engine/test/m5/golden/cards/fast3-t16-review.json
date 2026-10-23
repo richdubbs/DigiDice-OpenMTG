@@ -1,0 +1,1308 @@
+[
+ {
+  "card": "Sea Monster",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 506.2, 508.1c: an onlyIf attack whose condition reads the defending player of each possible attack (rst.t16.cantattack.unless.defending.controls)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "attack",
+        "when": {
+         "cond": "exists",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "controller": {
+            "ref": "defending"
+           },
+           "anyOf": [
+            {
+             "subtypes": [
+              "Island"
+             ]
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Whimwader",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 506.2, 508.1c, 105.2: a blue permanent the defending player controls (rst.t16.cantattack.unless.defending.controls)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "attack",
+        "when": {
+         "cond": "exists",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "controller": {
+            "ref": "defending"
+           },
+           "anyOf": [
+            {
+             "colors": [
+              "U"
+             ]
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lurking Green Dragon",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 506.2, 508.1c, 702.9a: flying, and a creature with flying the defending player controls (rst.t16.cantattack.unless.defending.controls)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "attack",
+        "when": {
+         "cond": "exists",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "controller": {
+            "ref": "defending"
+           },
+           "anyOf": [
+            {
+             "types": [
+              "Creature"
+             ],
+             "keyword": "flying"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Blind-Spot Giant",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 508.1c, 509.1b: attack and block only while you control another Giant (rst.t16.cantattackblock.unless)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "attack",
+        "when": {
+         "cond": "exists",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "subtypes": [
+            "Giant"
+           ],
+           "controller": "you",
+           "other": true
+          }
+         }
+        }
+       },
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "block",
+        "when": {
+         "cond": "exists",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "subtypes": [
+            "Giant"
+           ],
+           "controller": "you",
+           "other": true
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Technodrome",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 508.1c, 509.1b, 208.1: attack and block only while its own power is 6 or greater (rst.t16.cantattackblock.unless)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "reach"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "trample"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "attack",
+        "when": {
+         "cond": "compare",
+         "left": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "self"
+          }
+         },
+         "op": ">=",
+         "right": 6
+        }
+       },
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "block",
+        "when": {
+         "cond": "compare",
+         "left": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "self"
+          }
+         },
+         "op": ">=",
+         "right": 6
+        }
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true,
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "types": [
+           "Artifact"
+          ],
+          "other": true
+         },
+         "count": 1
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rhonas the Indomitable",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 508.1c, 509.1b: attack and block only while you control another creature with power 4 or greater (rst.t16.cantattackblock.unless)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "deathtouch"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "indestructible"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "attack",
+        "when": {
+         "cond": "exists",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "power": {
+            "op": ">=",
+            "value": 4
+           },
+           "controller": "you",
+           "other": true
+          }
+         }
+        }
+       },
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "onlyIf",
+        "action": "block",
+        "when": {
+         "cond": "exists",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "power": {
+            "op": ">=",
+            "value": 4
+           },
+           "controller": "you",
+           "other": true
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "G"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "other": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 2,
+             "toughness": 0
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "trample"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gravebind",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 701.19c, 611.2a: the target can't be regenerated until end of turn (eff.t16.cantberegenerated)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "beRegenerated"
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "when": {
+          "at": "step",
+          "step": "upkeep",
+          "next": true,
+          "turn": "next"
+         },
+         "do": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lim-Dûl's Cohort",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 701.19c, 611.2a: the creature it blocks or is blocked by can't be regenerated this turn (eff.t16.cantberegenerated)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "blocks",
+         "blocker": {
+          "self": true
+         },
+         "attacker": {
+          "types": [
+           "Creature"
+          ]
+         }
+        },
+        {
+         "ev": "becomesBlocked",
+         "attacker": {
+          "self": true
+         },
+         "by": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "event",
+            "role": "object"
+           },
+           "mode": "cant",
+           "action": "beRegenerated"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Furnace Brood",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 701.19c, 611.2a, 602.1: an activated ability whose effect forbids regeneration until end of turn (eff.t16.cantberegenerated)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "beRegenerated"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Off Balance",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 508.1c, 509.1b, 611.2a: the target can't attack or block until end of turn (eff.t16.cantattackblock)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "attack"
+          },
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "block"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thundersong Trumpeter",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 508.1c, 509.1b, 611.2a, 602.1: a tap ability, the target can't attack or block this turn (eff.t16.cantattackblock)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "attack"
+          },
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "block"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Alchemist's Vial",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 508.1c, 509.1b, 611.2a: the sacrifice ability, the target can't attack or block this turn (eff.t16.cantattackblock)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ],
+       "tap": true,
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "self": true
+         },
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "attack"
+          },
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mode": "cant",
+           "action": "block"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gingerbrute",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 509.1b, 611.2a: can't be blocked this turn except by creatures with haste (eff.t16.cantbeblocked.except.dur)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "haste"
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "self"
+           },
+           "mode": "cant",
+           "action": "beBlockedBy",
+           "other": {
+            "not": {
+             "types": [
+              "Creature"
+             ],
+             "keyword": "haste"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "tap": true,
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "self": true
+         },
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 3
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Speed, Young Avenger",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 509.1b, 611.2a, 603.12: the reflexive trigger's target can't be blocked this turn except by creatures with haste (eff.t16.cantbeblocked.except.dur)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "haste"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "notTypes": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "you"
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           }
+          ]
+         },
+         "as": "paid"
+        },
+        {
+         "op": "reflexive",
+         "when": {
+          "did": "paid"
+         },
+         "targets": [
+          {
+           "id": "t0",
+           "kind": "object",
+           "min": 1,
+           "max": 1,
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "keyword": "haste"
+           }
+          }
+         ],
+         "do": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "s": "restrict",
+             "subject": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "mode": "cant",
+             "action": "beBlockedBy",
+             "other": {
+              "not": {
+               "types": [
+                "Creature"
+               ],
+               "keyword": "haste"
+              }
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Varchild's Crusader",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 509.1b, 611.2a, 603.7: can't be blocked this turn except by Walls, then the delayed sacrifice (eff.t16.cantbeblocked.except.dur)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 0
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "self"
+           },
+           "mode": "cant",
+           "action": "beBlockedBy",
+           "other": {
+            "not": {
+             "subtypes": [
+              "Wall"
+             ]
+            }
+           }
+          }
+         ]
+        },
+        {
+         "op": "delay",
+         "when": {
+          "at": "step",
+          "step": "end",
+          "next": true
+         },
+         "do": [
+          {
+           "op": "sacrifice",
+           "what": {
+            "ref": "self"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Prehistoric Pet",
+  "expect": "full",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 509.1b, 208.1: blockers with power greater than its own power can't block it (rst.t16.cantbeblocked.greaterpower)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+         "types": [
+          "Creature"
+         ],
+         "power": {
+          "op": ">",
+          "value": {
+           "q": "stat",
+           "stat": "power",
+           "of": {
+            "ref": "self"
+           }
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "W"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "other": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        }
+       ]
+      },
+      "onlyIf": {
+       "cond": "turnOf",
+       "whose": "you"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ant-Man, Elusive Avenger",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 509.1b, 208.1: blockers with power greater than its own power can't block it (rst.t16.cantbeblocked.greaterpower); FAST3 T17 merge: \"create that many Treasure tokens\" is the amount of combat damage dealt by the triggering event (CR 603.2, 608.2h, 111.10a), checked by hand against the Oracle text",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+         "types": [
+          "Creature"
+         ],
+         "power": {
+          "op": ">",
+          "value": {
+           "q": "stat",
+           "stat": "power",
+           "of": {
+            "ref": "self"
+           }
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "source": {
+          "self": true
+         },
+         "combat": true,
+         "recipient": {
+          "player": "any"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "eventAmount"
+         },
+         "token": {
+          "predefined": "Treasure"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Locke, Treasure Hunter",
+  "verified": "FAST3 T16 review, by hand against the Oracle text and CR 509.1b, 208.1: blockers with power greater than its own power can't block it; the rest of the card is manual (rst.t16.cantbeblocked.greaterpower)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+         "types": [
+          "Creature"
+         ],
+         "power": {
+          "op": ">",
+          "value": {
+           "q": "stat",
+           "stat": "power",
+           "of": {
+            "ref": "self"
+           }
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "manual",
+         "reason": "contagion: \"this way\" in a sentence that is not understood (design 6.7 T2)"
+        }
+       ]
+      },
+      "label": "Mug"
+     }
+    ]
+   }
+  ]
+ }
+]

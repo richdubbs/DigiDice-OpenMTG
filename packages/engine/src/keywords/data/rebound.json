@@ -1,0 +1,80 @@
+{
+  "name": "rebound",
+  "rule": "702.88",
+  "params": [],
+  "mechanisms": [
+    "replacement",
+    "expands"
+  ],
+  "reminder": "If you cast this spell from your hand, exile it as it resolves. At the beginning of your next upkeep, you may cast this card from exile without paying its mana cost.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "If you cast this spell from your hand, exile it as it resolves. At the beginning of your next upkeep, you may cast this card from exile without paying its mana cost.",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "stack",
+            "to": "graveyard",
+            "cause": "resolve"
+          },
+          "condition": {
+            "cond": "wasCast",
+            "from": "hand"
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "self"
+                },
+                "to": {
+                  "zone": "exile"
+                },
+                "as": "rebounded"
+              },
+              {
+                "op": "delay",
+                "when": {
+                  "at": "step",
+                  "step": "upkeep",
+                  "whose": "you",
+                  "next": true
+                },
+                "capture": [
+                  "rebounded"
+                ],
+                "do": [
+                  {
+                    "op": "cast",
+                    "who": {
+                      "ref": "you"
+                    },
+                    "what": {
+                      "ref": "bound",
+                      "name": "rebounded"
+                    },
+                    "free": true,
+                    "optional": true
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,535 @@
+# Test cards for the engine test suite. One exact Scryfall card name per line.
+# Blank lines and lines starting with # are ignored. Multi-faced cards use the full "A // B" name.
+#
+# After editing: npm run cards -- fixtures
+# That rewrites cards.json (Oracle rules fields only, sorted by name). The generator fails on
+# any name that is not an exact Scryfall card name. Any other *.txt list in this folder is read too.
+
+# ---- Basic lands and Wastes (CR 305, 205.4a, 106.1b)
+Plains
+Island
+Swamp
+Mountain
+Forest
+Wastes
+
+# ---- Vanilla creatures (CR 302, 208, 510)
+Grizzly Bears
+Hill Giant
+Craw Wurm
+
+# ---- Burn: damage to any target (CR 120, 119, 608.2b targets)
+Lightning Bolt
+Shock
+Lava Axe
+
+# ---- Counterspells (CR 701.6, 608.2b, 115)
+Counterspell
+Mana Leak
+Essence Scatter
+
+# ---- Pump and instant-speed tricks (CR 117, 611)
+Giant Growth
+
+# ---- Removal: destroy, exile, counter-and-exile (CR 701.8, 701.13)
+Doom Blade
+Swords to Plowshares
+Murder
+Naturalize
+Disenchant
+
+# ---- Sweepers (CR 608.2, 701.8)
+Wrath of God
+Day of Judgment
+Pyroclasm
+
+# ---- Mana creatures and mana abilities (CR 605, 106)
+Llanowar Elves
+Birds of Paradise
+
+# ---- Evasion and combat keywords (CR 702, 506-511)
+Serra Angel
+Typhoid Rats
+Vampire Nighthawk
+Fencing Ace
+Colossal Dreadmaw
+Giant Spider
+Ornithopter
+Wall of Stone
+Raging Goblin
+Boros Swiftblade
+White Knight
+Black Knight
+Gladecover Scout
+Darksteel Myr
+Drudge Skeletons
+# menace (CR 702.111)
+Goblin Glory Chaser
+Elephant-Rat
+# ward (CR 702.21)
+Hexbane Tortoise
+# vigilance (CR 702.20)
+Alpine Watchdog
+# flash (CR 702.8)
+Ambush Viper
+# persist (CR 702.79)
+Kitchen Finks
+
+# ---- Auras and equipment (CR 303, 301.5, 702.5, 702.6)
+Rancor
+Bonesplitter
+Pacifism
+Holy Strength
+
+# ---- Planeswalkers (CR 306, 209, 606, 704.5i)
+Jace Beleren
+Garruk Wildspeaker
+Liliana of the Veil
+Chandra, Torch of Defiance
+
+# ---- Token makers (CR 111)
+Raise the Alarm
+Dragon Fodder
+Doomed Traveler
+
+# ---- ETB / dies / leaves-the-battlefield triggers (CR 603)
+Elvish Visionary
+Mulldrifter
+Blood Artist
+Gravedigger
+Flametongue Kavu
+Fiend Hunter
+Soul Warden
+Ajani's Pridemate
+
+# ---- Anthems and static abilities (CR 604, 611.3, 613)
+Glorious Anthem
+
+# ---- Activated abilities: pingers (CR 602)
+Prodigal Pyromancer
+
+# ---- Modal spells (CR 700.2)
+Abzan Charm
+Kolaghan's Command
+Cryptic Command
+
+# ---- X spells (CR 107.3, 601.2b)
+Fireball
+Blaze
+Stroke of Genius
+Endless One
+
+# ---- Kicker (CR 702.33)
+Burst Lightning
+Kavu Titan
+Gatekeeper of Malakir
+
+# ---- Flashback (CR 702.34)
+Think Twice
+Faithless Looting
+Firebolt
+Deep Analysis
+
+# ---- Hybrid and Phyrexian mana (CR 107.4e, 107.4f)
+Dismember
+Gitaxian Probe
+
+# ---- Split cards (CR 709)
+Fire // Ice
+Wear // Tear
+Dead // Gone
+
+# ---- Double-faced cards: transform and modal (CR 712)
+Delver of Secrets // Insectile Aberration
+Huntmaster of the Fells // Ravager of the Fells
+Shatterskull Smashing // Shatterskull, the Hammer Pass
+Agadeem's Awakening // Agadeem, the Undercrypt
+
+# ---- Adventure (CR 715)
+Bonecrusher Giant // Stomp
+Murderous Rider // Swift End
+
+# ---- Flip cards (CR 710)
+Akki Lavarunner // Tok-Tok, Volcano Born
+Bushi Tenderfoot // Kenzo the Hardhearted
+
+# ---- Meld (CR 701.42, 712.4). Each front half and the result are separate single-face cards.
+Bruna, the Fading Light
+Gisela, the Broken Blade
+Brisela, Voice of Nightmares
+
+# ---- Hard interactions: layers, replacement, copy effects, legend rule (CR 613, 614, 707, 704.5j)
+Humility
+Opalescence
+Doubling Season
+Dryad Arbor
+Isamaru, Hound of Konda
+Thalia, Guardian of Thraben
+Clone
+Phantasmal Image
+Leyline of the Void
+Rest in Peace
+
+# ---- Split second (CR 702.61)
+Sudden Shock
+Krosan Grip
+
+# ---- Prevention / fog (CR 615)
+Fog
+
+# ---- Copy spells (CR 707.10)
+Fork
+Twincast
+
+# ---- Face-down permanents: morph, disguise, manifest (CR 701.40, 708, 702.37)
+Exalted Angel
+Willbender
+Alley Assailant
+Whisperwood Elemental
+
+# ---- Other layouts the engine must tolerate (CR 702.87 level up, 714 saga, 716 class, 719 case, 702.140 mutate, 702.160 prototype, 310 battle)
+Student of Warfare
+History of Benalia
+Bard Class
+Case of the Locked Hothouse
+Gemrazer
+Phyrexian Fleshgorger
+Invasion of Ergamon // Truga Cliffcharger
+# Scryfall layout "prepare" (new in 2026): the engine's multi-face compiler treats it like adventure.
+Strife Scholar // Awaken the Ages
+
+# ---- Tokens made by the cards above (Treasure etc.) are added to the fixture automatically from all_parts.
+
+# ---- Milestone 3: casting, mana and costs (CR 601, 605, 107.4)
+# Phyrexian (CR 107.4f) and monohybrid (CR 107.4e) costs
+Porcelain Legionnaire
+Reaper King
+# Mana artifacts: multi-unit mana ability, sacrifice-as-cost mana ability, plain {T}: Add {C}
+Sol Ring
+Lotus Petal
+Mind Stone
+# Dual land (two basic land types, CR 305.6)
+Taiga
+# Land with a replacement effect the engine does not run yet: playing it logs a visible warning
+Watery Grave
+# Snow (CR 107.4h) and {C} (CR 107.4c)
+Snow-Covered Forest
+Snow-Covered Island
+Icehide Golem
+Thought-Knot Seer
+
+# ---- Milestone 3 review fixes: Omen (CR 720), Aftermath (CR 702.127), cast restrictions, mixed keyword lines, painland, ritual
+Cunning Azurescale // Divining Dive
+Commit // Memory
+Angelic Favor
+Akoum Firebird
+Glorybringer
+Ash Zealot
+Karplusan Forest
+Dark Ritual
+
+# ---- Comprehensive Rules worked examples (test/m3/cr-examples.test.ts)
+# Hybrid cost {G/W}{G/W} (CR 107.4e), {1}{W/U}{W/U} and {2/B}{2/B}{2/B} (CR 202.3f), {3}{U}{U} (CR 202.3)
+Gallant Citizen
+Vassal Soul
+Beseech the Queen
+Air Elemental
+# Mana ability that counts creatures (CR 605.2) and an artifact land (CR 601.2c)
+Gaea's Cradle
+Ancient Den
+# A targeted instant that also gains life (CR 608.2b) and a white-black creature (CR 608.2j)
+Sorin's Thirst
+Obzedat, Ghost Council
+# A mode that reads "Tap two target creatures." (CR 601.2c)
+Blinding Beam
+
+# ---- Milestone 4: combat, keywords, state-based actions (test/m4)
+# infect (CR 702.90), wither (CR 702.80), toxic (CR 702.164)
+Glistener Elf
+Phyrexian Digester
+Scuzzback Scrapper
+Smoldering Butcher
+Branchblight Stalker
+# evasion: skulk (CR 702.118), shadow (CR 702.28), horsemanship (CR 702.31), fear (CR 702.36), intimidate (CR 702.13), flying and reach
+Furtive Homunculus
+Soltari Foot Soldier
+Thalakos Sentry
+Shu Cavalry
+Wei Scout
+Prickly Boggart
+Dross Prowler
+Highborn Ghoul
+Spectral Rider
+Canopy Spider
+Battlefield Raptor
+# landwalk (CR 702.14)
+Bog Raiders
+Grayscaled Gharial
+Jukai Messenger
+Dryad Sophisticate
+Zombie Musher
+Ayumi, the Last Visitor
+Snow-Covered Swamp
+# lifelink, protection, shroud, hexproof, indestructible, trample, double strike
+Aardvark Sloth
+Death Speakers
+Beloved Chaplain
+Galina's Knight
+Mirran Crusader
+Elvish Lookout
+Blor the Impervious
+Charging Badger
+Argothian Swine
+Shrike Force
+Raging Redcap
+Hearthfire Hobgoblin
+# world rule (CR 704.5k)
+Arboria
+
+# ---- CR worked examples for milestone 4 (test/m4/cr-examples.test.ts)
+# CR 302.3 (Goblin Wizard), 510.1c (Elvish Regrower, Vampire Spawn, Helpful Hunter), 702.14d (snow forestwalk), 704.8 (Young Wolf)
+Goblin Wizard
+Elvish Regrower
+Vampire Spawn
+Helpful Hunter
+Rime Dryad
+Young Wolf
+
+# ---- CR worked examples for milestone 5 (test/m5/cr-examples)
+# CR 603: one trigger per land (603.2c), "becomes tapped" (603.2e), prevented damage (603.2g), intervening "if" (603.4), look-back (603.10a), delayed (603.7c)
+Akki Raider
+Armageddon
+Chrome Companion
+Gravewaker
+Giant's Skewer
+Felidar Sovereign
+Akroma's Vengeance
+Moonlit Wake
+Pyric Salamander
+Unsummon
+Heart-Piercer Manticore
+Living Lands
+# CR 608.2b (Plague Spores, Singe), 608.2j (Virtue's Ruin, Mass Calcify, Chief of the Scale), 608.2k (Wall of Tears)
+Plague Spores
+Singe
+Virtue's Ruin
+Mass Calcify
+Chief of the Scale
+Wall of Tears
+# CR 613.4d (Twisted Image), 613.5 (Honor of the Pure, Gray Ogre), 613.6 (Mutavault, Act of Treason), 613.9 (Flight, Grounded, Crusade)
+Twisted Image
+Maritime Guard
+Armorer Guildmage
+Screaming Fury
+Blessed Orator
+Honor of the Pure
+Niveous Wisps
+Gray Ogre
+Titanic Growth
+Castle
+Diminish
+Mutavault
+Act of Treason
+Crusade
+Flight
+Grounded
+# CR 614.5, 614.12, 615, 616 (milestone 6 where a replacement effect of another object is needed)
+Gratuitous Violence
+Scarwood Treefolk
+Zombify
+Yixlid Jailer
+Orb of Dreams
+Daunting Defender
+Wojek Apothecary
+Healing Salve
+Darksteel Colossus
+Voice of All
+# CR 118.12 (Mystery Key for Standstill, Pact of the Titan), 118.12a (Rhystic Study), 607 (Journey to Nowhere, Oblivion Ring, Paradise Plume, Stormscape Battlemage)
+Mystery Key
+Pact of the Titan
+Rhystic Study
+Journey to Nowhere
+Oblivion Ring
+Paradise Plume
+Stormscape Battlemage
+# M6-5a (push package K1): additional and alternative costs as data (CR 118.8-118.9, 601.2b, 702.27, 702.33, 702.42, 702.74)
+Capsize
+Village Rites
+Barbed Lightning
+Everflowing Chalice
+Archangel of Wrath
+Force of Will
+Gush
+
+# ---- M6-0 (m6 design 6): the acceptance cards of the milestone 6 gate and the cards the tests of m6 design 5 name (replacement, copy, face-down,
+# double-faced, layout, text-change and requirement mechanics; CR 614-616, 707, 708, 712, 714-722, 612, 508-509)
+Magma Spray
+Furnace of Rath
+Thought Reflection
+Hardened Scales
+Pariah
+Circle of Protection: Red
+Laboratory Maniac
+Fatigue
+Golgari Thug
+Fiery Temper
+Ephemerate
+Dregscape Zombie
+Spark Double
+Altered Ego
+Moritte of the Frost
+Quicksilver Gargantuan
+Tarmogoyf
+Vesuvan Doppelganger
+Runeclaw Bear
+Primal Clay
+Cytoshape
+Jushi Apprentice // Tomoya the Revealer
+Nezumi Shortfang // Stabwhisker the Odious
+Essence of the Wild
+Rusted Sentinel
+Sacred Cat
+Den Protector
+Hooded Hydra
+Grinning Demon
+Branchsnap Lorian
+Wandering Ones
+Cryptic Coat
+Abhorrent Oculus
+Lure
+Goblin Brigand
+Prized Unicorn
+Hunt Down
+Instigator Gang // Wildblood Pack
+Kruin Outlaw // Terror of Kruin Pass
+Elite Vanguard
+Brutal Cathar // Moonrage Brute
+Beloved Beggar // Generous Soul
+Graf Rats
+Midnight Scavengers
+Wheel of Sun and Moon
+The Elder Dragon War
+Encouraging Aviator // Jump
+Croaking Counterpart
+Sleight of Mind
+Magical Hack
+Artificial Evolution
+Blood Moon
+Urborg, Tomb of Yawgmoth
+Panharmonicon
+Oko, Thief of Crowns
+Chittering Host
+
+# ---- M6-12: the copy keywords as keyword data (CR 702.56, 702.78, 702.116, 702.128-129, 702.141, 702.157, 702.175)
+Proven Combatant
+Fin-Clade Fugitives
+Goldlust Triad
+Ultramarines Honour Guard
+Rust-Shield Rampager
+Pyromatics
+Burn Trail
+
+# ---- FAST4 MX1: "exile ... until ~ leaves the battlefield" (CR 610.3) and opening-hand actions (CR 103.6)
+Banishing Light
+Banisher Priest
+Temporary Lockdown
+Grasping Giant
+Leyline of Sanctity
+
+# ---- M11-4: Commander cards (CR 903, 702.49d commander ninjutsu, 702.124 partner; docs/design/m11-commander.md section 3)
+Command Tower
+Arcane Signet
+Commander's Sphere
+Kraum, Ludevic's Opus
+Tymna the Weaver
+Pir, Imaginative Rascal
+Toothy, Imaginary Friend
+Yuriko, the Tiger's Shadow
+Stormsurge Kraken
+Edgar Markov
+The Ur-Dragon
+Commander's Insignia
+Bastion Protector
+Command Beacon
+Opal Palace
+Path of Ancestry
+Titania, Protector of Argoth
+Loyal Drake
+Fierce Guardianship
+Guardian Augmenter
+Bloodsworn Steward
+Vanguard of the Restless
+Arahbo, Roar of the World
+
+# ---- M12-1: the acceptance cards of milestone 12 (docs/design/m12-multiplayer.md section 3) that were not fixtures yet (Blood Artist, Rhystic Study
+# and Act of Treason already are). Multiplayer: CR 800-806; their 4-player scenario tests belong to M12-2 and M12-3.
+Zulaport Cutthroat
+Gray Merchant of Asphodel
+Kokusho, the Evening Star
+Exsanguinate
+Smothering Tithe
+Grave Pact
+Dictate of Erebos
+Mind Control
+Captivating Crew
+Bribery
+Kazuul, Tyrant of the Cliffs
+Mangara, the Diplomat
+Propaganda
+Ghostly Prison
+Disrupt Decorum
+Vengeful Ancestor
+Palace Jailer
+Queen Marchesa
+Seasoned Dungeoneer
+Council's Judgment
+Coercive Portal
+Expropriate
+Pramikon, Sky Rampart
+Order of Succession
+Inniaz, the Gale Force
+Curse of Opulence
+Edric, Spymaster of Trest
+Blade of Selves
+Adriana, Captain of the Guard
+Hellrider
+Invasion of Tarkir // Defiant Thundermaw
+
+# ---- M12-3: real cards of the multiplayer card shapes (docs/design/m12-multiplayer.md 9, M12-3): votes for words and objects and additional votes (CR 701.38),
+# "attacks you or a planeswalker you control" (CR 506.3, 508.1b), "whenever a player loses the game" (CR 603.9), "the player to your left / right" (CR 101.4),
+# "the life lost this way" (CR 119.3).
+Plea for Power
+Tyrant's Choice
+Bite of the Black Rose
+Brago's Representative
+Ballot Broker
+Custodi Squire
+Revenge of Ravens
+Isperia, Supreme Judge
+Blood Tyrant
+Elusen, the Giving
+Hithlain Rope
+Agent of Masks
+
+# ---- CMDF: Commander follow-ups (CR 903.3a, 903.3d, 903.8; 113.6n)
+Flamekin Herald
+Jirina Kudro
+Font of Magic
+The Swarmlord
+Captain Vargus Wrath
+Jyoti, Moag Ancient
+Freyalise, Llanowar's Fury
+Ashaya's Enduring Bond
+Skyfire Phoenix
+
+# ---- CMP1: companion (CR 702.139a-c, 116.2g): the ten companions of Ikoria
+Gyruda, Doom of Depths
+Jegantha, the Wellspring
+Kaheera, the Orphanguard
+Keruga, the Macrosage
+Lurrus of the Dream-Den
+Lutri, the Spellchaser
+Obosh, the Preypiercer
+Umori, the Collector
+Yorion, Sky Nomad
+Zirda, the Dawnwaker

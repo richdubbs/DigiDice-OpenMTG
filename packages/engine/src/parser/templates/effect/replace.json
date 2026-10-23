@@ -1,0 +1,439 @@
+[
+  {
+    "id": "rep.enters.tapped",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.1d", "CR 614.12"],
+    "pattern": "~ enters tapped",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "tapped": true }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "~ enters tapped." },
+      { "text": "This land enters tapped." }
+    ],
+    "counterExamples": [
+      "~ enters untapped.",
+      "~ enters tapped and doesn't untap.",
+      "Each creature enters tapped."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.tappedunless",
+    "kind": "static",
+    "cr": ["CR 614.1d", "CR 614.12"],
+    "pattern": "~ enters tapped unless {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "tapped": true, "tappedUnless": "$c" }
+        }
+      ]
+    },
+    "consumes": ["unless"],
+    "examples": [
+      { "text": "~ enters tapped unless you control a Golem." },
+      { "text": "~ enters tapped unless you control three or more artifacts." }
+    ],
+    "counterExamples": [
+      "~ enters tapped if you control a Swamp.",
+      "~ enters untapped unless you control a Swamp."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.tappedunless.either",
+    "kind": "static",
+    "cr": ["CR 614.1d", "CR 614.12", "CR 205.3i"],
+    "pattern": "~ enters tapped unless you control (a | an) {a:Subtypes} or (a | an) {b:Subtypes}",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "tappedUnless": { "cond": "exists", "of": { "ref": "each", "filter": { "subtypes": ["$a.0", "$b.0"], "controller": "you" } } }
+          }
+        }
+      ]
+    },
+    "consumes": ["unless"],
+    "examples": [
+      { "text": "~ enters tapped unless you control a Desert or a Cave.", "expect": [{ "kind": "static", "text": "~ enters tapped unless you control a Desert or a Cave.", "zone": ["stack", "battlefield"], "effects": [{ "s": "replace", "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" }, "body": { "b": "enters", "tapped": true, "tappedUnless": { "cond": "exists", "of": { "ref": "each", "filter": { "subtypes": ["Desert", "Cave"], "controller": "you" } } } } }] }] },
+      { "text": "~ enters tapped unless you control an Elf or a Goblin." }
+    ],
+    "counterExamples": [
+      "~ enters tapped unless you control a Swamp and a Forest.",
+      "~ enters tapped unless an opponent controls a Swamp or a Forest.",
+      "~ enters tapped unless you control a Swamp or a Human Soldier."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.tappedunlesspay",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 614.12a", "CR 118.12"],
+    "pattern": "as ~ enters , you may {c:Cost} . if you don't , it enters tapped",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "tappedUnlessPay": "$c" }
+        }
+      ]
+    },
+    "consumes": ["may", "if"],
+    "examples": [
+      { "text": "As ~ enters, you may pay 4 life. If you don't, it enters tapped." },
+      { "text": "As ~ enters, you may discard a card. If you don't, it enters tapped." }
+    ],
+    "counterExamples": [
+      "As ~ enters, you may pay 3 life. If you do, it enters tapped.",
+      "As ~ enters, pay 3 life. If you don't, it enters tapped."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.counters",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 122.6"],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "counters": [{ "kind": "$k", "count": "$n" }] }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "~ enters with nine +1/+1 counters on it." },
+      { "text": "~ enters with four charge counters on it." },
+      { "text": "~ enters with X time counters on it." }
+    ],
+    "counterExamples": [
+      "~ enters with four +1/+1 counters on target creature.",
+      "Target creature enters with four +1/+1 counters on it.",
+      "~ enters with four +1/+1 counters on it for each Elf you control."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.choose.creaturetype",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 614.12a", "CR 607.2a"],
+    "pattern": "as ~ enters , choose a creature type",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "choose": [{ "what": "creatureType", "link": "type" }] }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "As ~ enters, choose a creature type." },
+      { "text": "As this artifact enters, choose a creature type." }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose two creature types.",
+      "As ~ attacks, choose a creature type.",
+      "As ~ enters, choose a color."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.choose.color",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 614.12a", "CR 607.2a"],
+    "pattern": "as ~ enters , choose a color",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "choose": [{ "what": "color", "link": "color" }] }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "As ~ enters, choose a color." },
+      { "text": "As this artifact enters, choose a color." }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose two colors.",
+      "As ~ enters, choose a creature type."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.choose.opponent",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 614.12a", "CR 607.2a"],
+    "pattern": "as ~ enters , choose an opponent",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "choose": [{ "what": "opponent", "link": "opponent" }] }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "As ~ enters, choose an opponent." },
+      { "text": "As this artifact enters, choose an opponent." }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a player.",
+      "As ~ enters, choose two opponents."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.choose.cardtype",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 614.12a", "CR 607.2a"],
+    "pattern": "as ~ enters , choose a card type",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "choose": [{ "what": "cardType", "link": "cardType" }] }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "As ~ enters, choose a card type." },
+      { "text": "As this artifact enters, choose a card type." }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a card name.",
+      "As ~ enters, choose two card types."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.choose.landtype",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 614.12a", "CR 607.2a"],
+    "pattern": "as ~ enters , choose a basic land type",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "choose": [{ "what": "landType", "link": "landType", "options": ["Plains", "Island", "Swamp", "Mountain", "Forest"] }] }
+        }
+      ]
+    },
+    "examples": [
+      { "text": "As ~ enters, choose a basic land type.", "expect": [{ "kind": "static", "text": "As ~ enters, choose a basic land type.", "zone": ["stack", "battlefield"], "effects": [{ "s": "replace", "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" }, "body": { "b": "enters", "choose": [{ "what": "landType", "link": "landType", "options": ["Plains", "Island", "Swamp", "Mountain", "Forest"] }] } }] }] },
+      { "text": "As this artifact enters, choose a basic land type." }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a land.",
+      "As ~ enters, choose two basic land types."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.enters.copy",
+    "kind": "static",
+    "cr": ["CR 614.1c", "CR 614.12", "CR 707.5", "CR 613.2a"],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield",
+    "build": {
+      "kind": "static",
+      "zone": ["stack", "battlefield"],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": { "ev": "zoneChange", "subject": { "self": true }, "to": "battlefield" },
+          "body": { "b": "enters", "copy": { "of": "$f", "optional": true } }
+        }
+      ]
+    },
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may have ~ enter as a copy of any land on the battlefield." },
+      { "text": "You may have ~ enter as a copy of any Golem on the battlefield." }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any artifact in a graveyard.",
+      "You may have ~ enter as a copy of target artifact.",
+      "~ enters as a copy of any artifact on the battlefield."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.double.tokens",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 111.1", "CR 616.1"],
+    "pattern": "if an effect would create one or more tokens under your control , it creates twice that many of those tokens instead",
+    "build": { "s": "replace", "replaces": { "ev": "createToken", "player": "you", "byEffect": true }, "body": { "b": "modify", "count": { "mul": 2 } } },
+    "consumes": ["if", "would", "twice", "that many", "instead"],
+    "examples": [
+      { "text": "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead." }
+    ],
+    "counterExamples": [
+      "If an effect would create one or more tokens under an opponent's control, it creates twice that many of those tokens instead.",
+      "If an effect would create one or more tokens under your control, it creates three times that many of those tokens instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.double.counters",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 122.6", "CR 616.1"],
+    "pattern": "if an effect would put one or more counters on a permanent you control , it puts twice that many of those counters on that permanent instead",
+    "build": {
+      "s": "replace",
+      "replaces": { "ev": "counters", "change": "put", "byEffect": true, "on": { "controller": "you" } },
+      "body": { "b": "modify", "count": { "mul": 2 } }
+    },
+    "consumes": ["if", "would", "twice", "that many", "instead"],
+    "examples": [
+      { "text": "If an effect would put one or more counters on a permanent you control, it puts twice that many of those counters on that permanent instead." }
+    ],
+    "counterExamples": [
+      "If an effect would put one or more counters on a permanent an opponent controls, it puts twice that many of those counters on that permanent instead.",
+      "If an effect would remove one or more counters from a permanent you control, it removes twice that many of those counters from that permanent instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.graveyard.exile.opponent",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 111.1", "CR 400.3"],
+    "pattern": "if a card would be put into an opponent 's graveyard from anywhere , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": { "ev": "zoneChange", "subject": { "isCard": true, "owner": "opponent" }, "to": "graveyard" },
+      "body": { "b": "modify", "destination": { "zone": "exile" } }
+    },
+    "consumes": ["if", "would", "instead"],
+    "examples": [
+      { "text": "If a card would be put into an opponent's graveyard from anywhere, exile it instead." }
+    ],
+    "counterExamples": [
+      "If a card would be put into your graveyard from anywhere, exile it instead.",
+      "If a card would be put into an opponent's graveyard from anywhere, put it on the bottom of its owner's library instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.graveyard.exile.any",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 111.1", "CR 400.3"],
+    "pattern": "if a card or token would be put into a graveyard from anywhere , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": { "ev": "zoneChange", "subject": {}, "to": "graveyard" },
+      "body": { "b": "modify", "destination": { "zone": "exile" } }
+    },
+    "consumes": ["if", "would", "instead"],
+    "examples": [
+      { "text": "If a card or token would be put into a graveyard from anywhere, exile it instead." }
+    ],
+    "counterExamples": [
+      "If a card would be put into a graveyard from anywhere, exile it instead.",
+      "If a card or token would be put into a graveyard from the battlefield, exile it instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.dies.exile",
+    "kind": "static",
+    "cr": ["CR 614.1a", "CR 700.4"],
+    "pattern": "if {f:Filter} would die , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": { "ev": "zoneChange", "subject": "$f", "from": "battlefield", "to": "graveyard" },
+      "body": { "b": "modify", "destination": { "zone": "exile" } }
+    },
+    "consumes": ["if", "would", "instead"],
+    "examples": [
+      { "text": "If a white creature would die, exile it instead." },
+      { "text": "If a nontoken creature would die, exile it instead." }
+    ],
+    "counterExamples": [
+      "If a creature an opponent controls would die, return it to its owner's hand instead.",
+      "If a creature an opponent controls would die this turn, exile it instead."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.rep.fog",
+    "kind": "effect",
+    "cr": ["CR 615.1a", "CR 611.2a", "CR 510.1"],
+    "pattern": "prevent all combat damage that would be dealt {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "replace", "replaces": { "ev": "damage", "combat": true }, "body": { "b": "prevent", "amount": "all" } }]
+    },
+    "subject": "none",
+    "consumes": ["all", "would"],
+    "examples": [
+      { "text": "Prevent all combat damage that would be dealt until your next turn." },
+      { "text": "{4}: Prevent all combat damage that would be dealt this turn." }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt this turn.",
+      "Prevent all combat damage that would be dealt to you this turn.",
+      "Prevent all combat damage."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

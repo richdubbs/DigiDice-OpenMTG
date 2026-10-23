@@ -1,0 +1,213 @@
+[
+  {
+    "id": "sta.stdrf.spells.cast.fromHand.cascade",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.85a",
+      "CR 601.2i"
+    ],
+    "pattern": "{f:Filter} you cast from your hand have cascade",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "castFrom": "hand",
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "cascade",
+              "text": "cascade"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Goblin spells you cast from your hand have cascade."
+      },
+      {
+        "text": "Artifact and instant spells you cast from your hand have cascade."
+      }
+    ],
+    "counterExamples": [
+      "Goblin spells you cast from your graveyard have cascade.",
+      "Goblin spells you cast from your hand have convoke.",
+      "Goblin spells your opponents cast from their hands have cascade."
+    ]
+  },
+  {
+    "id": "sta.stdrf.enchanted.permanent.colorless.land.with.losesOthers",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 303.4",
+      "CR 305.7",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f"
+    ],
+    "pattern": "enchanted permanent is a colorless land with {a:Abilities} and loses all other card types and abilities",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Land"
+            ]
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": []
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchant artifact, creature, or land\nEnchanted permanent is a colorless land with \"{T}: Add {C}{C}\" and loses all other card types and abilities."
+      },
+      {
+        "text": "Enchant artifact, land, or planeswalker\nEnchanted permanent is a colorless land with \"{T}, Sacrifice this land: Add one mana of any color\" and loses all other card types and abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchant artifact, creature, or land\nEnchanted permanent is a colorless land with \"{T}: Add {C}{C}\" and loses all other abilities.",
+      "Enchant artifact, creature, or land\nEnchanted permanent is a land with \"{T}: Add {C}{C}\" and loses all other card types and abilities.",
+      "Enchant artifact, creature, or land\nEnchanted permanent is a colorless Forest land with \"{T}: Add {C}{C}\" and loses all other card types and abilities."
+    ]
+  },
+  {
+    "id": "sta.stdrf.has.allActivatedOf.exiledCard",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 607.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} has all activated abilities of the exiled ( card | permanent )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": {
+                "ref": "linked",
+                "link": "exiled"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target artifact you control.\n~ has all activated abilities of the exiled permanent."
+      },
+      {
+        "text": "When ~ enters, if you cast it, exile target land.\nThis artifact has all activated abilities of the exiled permanent."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target artifact you control.\n~ has all triggered abilities of the exiled permanent.",
+      "When ~ enters, exile target artifact you control.\n~ has all activated abilities of target artifact.",
+      "~ has all activated abilities of the exiled permanent."
+    ]
+  },
+  {
+    "id": "trg.stdrf.self.transformsIntoAndAt",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.27e",
+      "CR 603.2",
+      "CR 503.1"
+    ],
+    "pattern": "( when | whenever ) ~ transform[s] into ~ and at {e:Event}",
+    "build": {
+      "on": {
+        "$concat": [
+          [
+            {
+              "ev": "becomes",
+              "what": "transformed",
+              "object": {
+                "self": true
+              }
+            }
+          ],
+          "$e"
+        ]
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "into"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ transforms into ~ and at the beginning of your upkeep, you gain 1 life."
+      },
+      {
+        "text": "When ~ transforms into ~ and at the beginning of your first main phase, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ transforms into a creature and at the beginning of your upkeep, you gain 1 life.",
+      "Whenever ~ transforms into ~ or at the beginning of your upkeep, you gain 1 life.",
+      "Whenever ~ becomes tapped into ~ and at the beginning of your upkeep, you gain 1 life."
+    ]
+  }
+]

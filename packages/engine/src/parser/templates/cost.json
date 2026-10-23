@@ -1,0 +1,13 @@
+[
+  {
+    "id": "cost.exert",
+    "kind": "cost",
+    "cr": ["CR 701.43a", "CR 118.3"],
+    "pattern": "exert ~",
+    "build": { "kind": "action", "action": "exert" },
+    "examples": [{ "text": "Exert ~", "expect": { "other": [{ "kind": "action", "action": "exert" }] } }, { "text": "{1}{R}, Exert ~: Draw a card." }],
+    "counterExamples": ["Exert a creature", "Exert", "Exert ~ and another creature"],
+    "status": "stable",
+    "since": 1
+  }
+]

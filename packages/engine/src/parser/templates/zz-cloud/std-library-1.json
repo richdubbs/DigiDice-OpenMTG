@@ -1,0 +1,105 @@
+[
+  {
+    "id": "eff.stdlib1.dig.anyNumber.differentPowers.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 208.1"
+    ],
+    "pattern": "put any number of {f:Filter} cards with different powers from among {g:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen",
+        "distinct": "power"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top six cards of your library. Put any number of creature cards with different powers from among them into your hand. Put the rest into your graveyard."
+      },
+      {
+        "text": "When this creature enters, reveal the top four cards of your library. Put any number of Elf and/or Warrior cards with different powers from among them into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top six cards of your library. Put any number of creature cards with different names from among them into your hand. Put the rest into your graveyard.",
+      "Reveal the top six cards of your library. Put any number of creature cards with different powers from among them onto the battlefield. Put the rest into your graveyard.",
+      "Reveal the top six cards of your library. Put up to two creature cards with different powers from among them into your hand. Put the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "dl.stdlib1.nextCombat.thisTurn.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 506.1",
+      "CR 507.1"
+    ],
+    "pattern": "at the beginning of the next combat phase this turn , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "beginCombat",
+        "next": true
+      },
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true,
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. At the beginning of the next combat phase this turn, target creature you control gets +2/+0 until end of turn."
+      },
+      {
+        "text": "Untap all lands you control. At the beginning of the next combat phase this turn, creatures you control gain haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. At the beginning of the next combat phase, target creature you control gets +2/+0 until end of turn.",
+      "Draw a card. At the beginning of each combat phase this turn, target creature you control gets +2/+0 until end of turn.",
+      "Draw a card. At the beginning of the next end step this turn, target creature you control gets +2/+0 until end of turn."
+    ]
+  }
+]

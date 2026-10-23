@@ -1,0 +1,559 @@
+[
+  {
+    "id": "eff.stdeoe.surveil.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.25a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "surveil x , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "surveil",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Surveil X, where X is the number of enchantments you control. Then draw two cards."
+      },
+      {
+        "text": "When ~ enters, surveil X, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Surveil X. Then draw two cards.",
+      "Scry X, where X is the number of enchantments you control. Then draw two cards.",
+      "Surveil X, where Y is the number of enchantments you control. Then draw two cards."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.lead.pump.pair.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3c",
+      "CR 608.2h",
+      "CR 115.1"
+    ],
+    "pattern": "{d:Dur} , {a:Objs} get[s] {pa:PT} and {b:Objs} get[s] {pb:PT} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$a",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pa.p",
+                  "toughness": "$pa.t"
+                }
+              ]
+            },
+            {
+              "s": "continuous",
+              "affects": "$b",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pb.p",
+                  "toughness": "$pb.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, until end of turn, target creature you control gets +X/+0 and target creature an opponent controls gets -X/-0, where X is the number of Elves you control."
+      },
+      {
+        "text": "Until end of turn, target creature gets +0/+X and up to one target creature you don't control gets -X/-X, where X is the number of enchantments you control."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature gets +0/+X and up to one target creature you don't control gets -X/-X.",
+      "Until end of turn, target creature gets +0/+X or up to one target creature you don't control gets -X/-X, where X is the number of enchantments you control.",
+      "Until end of turn, target creature gets +0/+X and up to one target creature you don't control gains flying, where X is the number of enchantments you control."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.copy.tokens",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 111.4",
+      "CR 107.3"
+    ],
+    "pattern": "create {n:Qty} tokens that are copies of {o:Obj}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create X tokens that are copies of target creature an opponent controls."
+      },
+      {
+        "text": "Create three tokens that are copies of target artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Create X tokens that are copies of target creature an opponent controls, except they have haste.",
+      "Create a token that's a copy of target enchantment an opponent controls.",
+      "Create X tokens that are copies of target creature an opponent controls unless an opponent pays {1}."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.exileUntil",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "exile cards from the top of your library until you exile {f:DiscardDesc}",
+    "build": {
+      "op": "exileUntil",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f"
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Exile cards from the top of your library until you exile a creature card. You may cast that card this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, exile cards from the top of your library until you exile an instant or sorcery card."
+      }
+    ],
+    "counterExamples": [
+      "Exile cards from the top of your library until you exile two creature cards.",
+      "Reveal cards from the top of your library until you reveal a creature card.",
+      "Exile cards from the top of target player's library until you exile a creature card."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.cantBeBlocked.basePT",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 509.1b",
+      "CR 613.4b",
+      "CR 514.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked this turn and has base power and toughness {pt:BasePT} until end of turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Target creature can't be blocked this turn and has base power and toughness 3/3 until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, up to one other target creature can't be blocked this turn and has base power and toughness 2/1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature can't be blocked this turn and has base power and toughness 3/3.",
+      "Target creature can't block this turn and has base power and toughness 3/3 until end of turn.",
+      "Target creature can't be blocked this turn or has base power and toughness 3/3 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.cantBeBlocked.pump",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 509.1b",
+      "CR 613.4c",
+      "CR 514.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked this turn and gets {pt:PT} until end of turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Target creature can't be blocked this turn and gets +2/+0 until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, another target creature you control can't be blocked this turn and gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature can't be blocked this turn and gets +2/+0.",
+      "Target creature can't attack this turn and gets +2/+0 until end of turn.",
+      "Target creature can't be blocked this turn and gets +2/+0 until your next turn."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.choose.targets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose {o:Targets}",
+    "build": {
+      "lower": "chooseTargets",
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, choose up to one target creature. That creature gains flying until end of turn."
+      },
+      {
+        "text": "When ~ enters, choose target artifact an opponent controls. Tap it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, choose up to one target creature.",
+      "Whenever ~ attacks, choose a creature. That creature gains flying until end of turn.",
+      "Whenever ~ attacks, choose up to one target creature. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.put.bf.yours.attacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 400.7",
+      "CR 508.4"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield under your control tapped and attacking",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "attacking": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, put target artifact creature card from defending player's graveyard onto the battlefield under your control tapped and attacking."
+      },
+      {
+        "text": "Put target creature card with mana value 2 or less from an opponent's graveyard onto the battlefield under your control tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature card from an opponent's graveyard onto the battlefield under your control tapped.",
+      "Put target creature card from an opponent's graveyard onto the battlefield under its owner's control tapped and attacking.",
+      "Put target creature card from an opponent's graveyard onto the battlefield under your control tapped and blocking."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.choose.oddEven",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 607.2d"
+    ],
+    "pattern": "choose odd or even",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "oddEven",
+      "as": "chosenOddEven",
+      "link": "chosenOddEven"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose odd or even. Return each creature with mana value of the chosen quality to its owner's hand."
+      },
+      {
+        "text": "Choose odd or even. Exile each artifact with mana value of the chosen quality."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent chooses odd or even. Exile each artifact with mana value of the chosen quality.",
+      "Choose odd or even. Exile each artifact.",
+      "Choose a color. Exile each artifact with mana value of the chosen quality."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.then.control.all",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "then gain control of all {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "until",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact. Then gain control of all artifacts until end of turn."
+      },
+      {
+        "text": "Destroy each creature with power 4 or greater. Then gain control of all creatures until end of turn. They gain haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target artifact. Then gain control of all artifacts.",
+      "Destroy target artifact. Then gain control of each artifact you don't control until end of turn.",
+      "Destroy target artifact. Then gain control of all artifacts until end of turn unless an opponent pays {2}."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.return.choose.bf.yours",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 609.3"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} to the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Destroy all artifacts. Return an artifact card put into a graveyard this way to the battlefield under your control."
+      },
+      {
+        "text": "Destroy all creatures with power 2 or less. Return a creature card put into your graveyard this way to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all artifacts. Return an artifact card put into a graveyard this way to the battlefield under its owner's control.",
+      "Destroy all artifacts. Return two artifact cards put into a graveyard this way to the battlefield under your control.",
+      "Destroy all artifacts. Return an artifact card put into a graveyard this way to your hand."
+    ]
+  },
+  {
+    "id": "eff.stdeoe.return.choose.bf.owner",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 609.3"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} to the battlefield under its owner 's control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Destroy all artifacts. Return an artifact card put into a graveyard this way to the battlefield under its owner's control."
+      },
+      {
+        "text": "Destroy all creatures with power 2 or less. Return a creature card put into a graveyard this way to the battlefield under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all artifacts. Return an artifact card put into a graveyard this way to the battlefield under your control.",
+      "Destroy all artifacts. Return two artifact cards put into a graveyard this way to the battlefield under its owner's control.",
+      "Destroy all artifacts. Return an artifact card put into a graveyard this way to its owner's hand."
+    ]
+  }
+]

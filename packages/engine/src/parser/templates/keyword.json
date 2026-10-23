@@ -1,0 +1,90 @@
+[
+  {
+    "id": "kw.equip",
+    "kind": "ability",
+    "cr": ["CR 702.6a"],
+    "pattern": "equip {c:ManaCost}",
+    "build": { "kind": "keyword", "keyword": "equip", "cost": { "mana": "$c" } },
+    "examples": [{ "text": "Equip {4}", "expect": [{ "kind": "keyword", "keyword": "equip", "cost": { "mana": [{ "kind": "generic", "amount": 4 }] } }] }, { "text": "Equip {2}{B}" }],
+    "counterExamples": ["Equip", "Equip {T}"],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "kw.equip.dash",
+    "kind": "ability",
+    "cr": ["CR 702.6a", "CR 118.1"],
+    "pattern": "equip -- {c:Cost}",
+    "build": { "kind": "keyword", "keyword": "equip", "cost": "$c" },
+    "examples": [{ "text": "Equip--Pay 4 life.", "expect": [{ "kind": "keyword", "keyword": "equip", "cost": { "other": [{ "kind": "payLife", "amount": 4 }] } }] }, { "text": "Equip--Discard two cards." }],
+    "counterExamples": ["Equip--Pay life.", "Equip--Draw a card."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "kw.walk.plains",
+    "kind": "ability",
+    "cr": ["CR 702.14a", "CR 702.14c"],
+    "pattern": "plainswalk",
+    "build": { "kind": "keyword", "keyword": "landwalk", "quality": "plains" },
+    "examples": [{ "text": "Plainswalk", "expect": [{ "kind": "keyword", "keyword": "landwalk", "quality": "plains" }] }, { "text": "Vigilance, plainswalk" }],
+    "counterExamples": ["Plainswalk {1}", "Plainswalks"],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "kw.walk.island",
+    "kind": "ability",
+    "cr": ["CR 702.14a", "CR 702.14c"],
+    "pattern": "islandwalk",
+    "build": { "kind": "keyword", "keyword": "landwalk", "quality": "island" },
+    "examples": [{ "text": "Islandwalk", "expect": [{ "kind": "keyword", "keyword": "landwalk", "quality": "island" }] }, { "text": "Vigilance, islandwalk" }],
+    "counterExamples": ["Islandwalk {1}", "Islandwalks"],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "kw.walk.swamp",
+    "kind": "ability",
+    "cr": ["CR 702.14a", "CR 702.14c"],
+    "pattern": "swampwalk",
+    "build": { "kind": "keyword", "keyword": "landwalk", "quality": "swamp" },
+    "examples": [{ "text": "Swampwalk", "expect": [{ "kind": "keyword", "keyword": "landwalk", "quality": "swamp" }] }, { "text": "Vigilance, swampwalk" }],
+    "counterExamples": ["Swampwalk {1}", "Swampwalks"],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "kw.walk.mountain",
+    "kind": "ability",
+    "cr": ["CR 702.14a", "CR 702.14c"],
+    "pattern": "mountainwalk",
+    "build": { "kind": "keyword", "keyword": "landwalk", "quality": "mountain" },
+    "examples": [{ "text": "Mountainwalk", "expect": [{ "kind": "keyword", "keyword": "landwalk", "quality": "mountain" }] }, { "text": "Vigilance, mountainwalk" }],
+    "counterExamples": ["Mountainwalk {1}", "Mountainwalks"],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "kw.walk.forest",
+    "kind": "ability",
+    "cr": ["CR 702.14a", "CR 702.14c"],
+    "pattern": "forestwalk",
+    "build": { "kind": "keyword", "keyword": "landwalk", "quality": "forest" },
+    "examples": [{ "text": "Forestwalk", "expect": [{ "kind": "keyword", "keyword": "landwalk", "quality": "forest" }] }, { "text": "Vigilance, forestwalk" }],
+    "counterExamples": ["Forestwalk {1}", "Forestwalks"],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "kw.walk.desert",
+    "kind": "ability",
+    "cr": ["CR 702.14a", "CR 702.14c"],
+    "pattern": "desertwalk",
+    "build": { "kind": "keyword", "keyword": "landwalk", "quality": "desert" },
+    "examples": [{ "text": "Desertwalk", "expect": [{ "kind": "keyword", "keyword": "landwalk", "quality": "desert" }] }, { "text": "Vigilance, desertwalk" }],
+    "counterExamples": ["Desertwalk {1}", "Desertwalks"],
+    "status": "stable",
+    "since": 1
+  }
+]

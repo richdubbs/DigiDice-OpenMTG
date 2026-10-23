@@ -1,0 +1,66 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+# ...but the card tool's coverage report sources and tests are code (design 15.2 WP25), not test-coverage output
+!packages/cards/src/coverage/
+!packages/cards/test/coverage/
+!docs/coverage/
+*.tsbuildinfo
+.vite/
+
+# Card data cache (Scryfall bulk data and per-card lookups). Never commit.
+.cache/
+/cache/
+/card-cache/
+# Safety net if OPENMTG_CACHE_DIR points inside the repo: bulk files, local indexes (cards.jsonl,
+# tokens.jsonl), lookup caches, and the in-flight .part / .tmp files of downloads and atomic writes.
+*.jsonl.gz
+oracle-cards*.json
+bulk-meta.json
+lookups.json
+cards.jsonl
+tokens.jsonl
+*.part
+*.tmp
+
+# Comprehensive Rules (Wizards of the Coast text). Local development reference only.
+/rules/
+
+# LLM API keys and local env
+.env
+.env.*
+!.env.example
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Local working notes and tool settings. Not part of the project.
+/docs/private/
+/.scratch/
+/.t3-scratch/
+/AGENTS.md
+/STATUS.md
+/docs/ROADMAP.md
+/docs/CARD_WORK.md
+/docs/audits/
+/docs/research/
+/docs/design/*
+!/docs/design/m5-ability-model.md
+/docs/coverage/*
+!/docs/coverage/backlog-R1.txt
+
+# Local music sources
+/assets/music/
+
+# Code-signing settings for the Windows installer (scripts/build-installer.mjs)
+/scripts/signing.local.json
+
+# Windows executable build output (npm run exe)
+/release/
+# the hosted server's file store when it runs from the repository root (npm run hosted; docs/ops/hosted.md)
+/data/

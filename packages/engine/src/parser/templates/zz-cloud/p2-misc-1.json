@@ -1,0 +1,235 @@
+[
+  {
+    "id": "trg.p2misc1.dayNight.either",
+    "kind": "trigger",
+    "cr": [
+      "CR 731.1",
+      "CR 603.2"
+    ],
+    "pattern": "whenever day becomes night or night becomes day",
+    "build": {
+      "on": [
+        {
+          "ev": "dayNight"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever day becomes night or night becomes day, you gain 3 life.",
+        "expect": {
+          "on": [
+            {
+              "ev": "dayNight"
+            }
+          ]
+        }
+      },
+      {
+        "text": "Whenever day becomes night or night becomes day, scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Whenever day becomes night, you gain 3 life.",
+      "Whenever it becomes day, you gain 3 life.",
+      "Whenever day becomes night or night becomes day for the first time each turn, scry 2."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.p2misc1.enters.dayIfNeither",
+    "kind": "static",
+    "cr": [
+      "CR 731.1",
+      "CR 614.1c",
+      "CR 614.12"
+    ],
+    "pattern": "if it's neither day nor night , it becomes day as ~ enters [the battlefield]",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "dayIfNeither": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "neither",
+      "nor"
+    ],
+    "examples": [
+      {
+        "text": "If it's neither day nor night, it becomes day as ~ enters the battlefield.\nWhenever day becomes night or night becomes day, you gain 3 life."
+      },
+      {
+        "text": "Flying\nIf it's neither day nor night, it becomes day as ~ enters the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "If it's neither day nor night, it becomes night as ~ enters.",
+      "If it's day, it becomes night as ~ enters.",
+      "It becomes day as ~ enters."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.p2misc1.amass.subtype",
+    "kind": "effect",
+    "cr": [
+      "CR 701.47a",
+      "CR 701.47d"
+    ],
+    "pattern": "amass {st:PluralSubtype} {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "amass",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n",
+      "arg": "$st.0"
+    },
+    "subject": "none",
+    "needs": [
+      "action:amass"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Amass Elves 3, then draw a card."
+      },
+      {
+        "text": "You gain 2 life, then amass Slivers 4."
+      }
+    ],
+    "counterExamples": [
+      "Amass Elves.",
+      "Amass 3 Elves.",
+      "Amass Elf 3."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.p2misc1.boastTwice.yourTurns",
+    "kind": "static",
+    "cr": [
+      "CR 602.5b",
+      "CR 702.142a",
+      "CR 500.1"
+    ],
+    "pattern": "{f:Filter} can boast twice during each of your turns rather than once",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "additionalActivation",
+          "keyword": "boast",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "twice",
+      "once",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Creature tokens you control can boast twice during each of your turns rather than once."
+      },
+      {
+        "text": "Warriors you control can boast twice during each of your turns rather than once."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control can boast twice during each turn rather than once.",
+      "Creatures you control can boast three times during each of your turns rather than once.",
+      "Creatures you control can boast twice during each of your turns."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.p2misc1.suppress.enteringOrDying",
+    "kind": "static",
+    "cr": [
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 603.10a",
+      "CR 700.4"
+    ],
+    "pattern": "{f:Filter} entering [the battlefield] or dying don't cause abilities to trigger",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "to": "battlefield",
+            "subject": "$f"
+          },
+          "abilitiesOf": {},
+          "additional": 0,
+          "suppress": true
+        },
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "from": "battlefield",
+            "to": "graveyard",
+            "subject": "$f"
+          },
+          "abilitiesOf": {},
+          "additional": 0,
+          "suppress": true
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creatures entering the battlefield or dying don't cause abilities to trigger.\nFlying"
+      },
+      {
+        "text": "Nontoken creatures entering the battlefield or dying don't cause abilities to trigger."
+      }
+    ],
+    "counterExamples": [
+      "Creatures entering or leaving don't cause abilities to trigger.",
+      "Creatures entering and dying don't cause abilities to trigger.",
+      "Creatures entering or dying don't cause abilities of permanents you control to trigger."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

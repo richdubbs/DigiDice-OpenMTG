@@ -1,0 +1,370 @@
+[
+  {
+    "id": "eff.e28.forage",
+    "kind": "effect",
+    "cr": [
+      "CR 701.61a",
+      "CR 608.2d"
+    ],
+    "pattern": "forage",
+    "build": {
+      "op": "action",
+      "action": "forage",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:forage"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, forage.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, forage.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "forage",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Whenever ~ attacks, you may forage. If you do, draw a card."
+      },
+      {
+        "text": "Draw two cards, then forage."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, forage twice.",
+      "When ~ enters, forage a Food.",
+      "When ~ enters, target player forages."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e28.exert",
+    "kind": "effect",
+    "cr": [
+      "CR 701.43a",
+      "CR 701.43b",
+      "CR 701.43c",
+      "CR 611.2c"
+    ],
+    "pattern": "exert {o:Objs}",
+    "build": {
+      "op": "action",
+      "action": "exert",
+      "who": {
+        "ref": "you"
+      },
+      "subject": "$o"
+    },
+    "subject": "none",
+    "needs": [
+      "action:exert"
+    ],
+    "examples": [
+      {
+        "text": "Exert target creature you control. Draw a card.",
+        "expect": [
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "object",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you"
+                  },
+                  "min": 1,
+                  "max": 1
+                }
+              ],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "exert",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "subject": {
+                    "ref": "target",
+                    "id": "t0"
+                  }
+                },
+                {
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{1}: Exert target artifact you control. You gain 1 life."
+      },
+      {
+        "text": "Whenever ~ attacks, exert up to one target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Exert target player.",
+      "Exert target creature you control until end of turn.",
+      "Exert each creature you control unless its controller pays {1}."
+    ],
+    "status": "experimental",
+    "since": 8
+  },
+  {
+    "id": "sta.e28.youAndEach.hexproof",
+    "kind": "static",
+    "cr": [
+      "CR 702.11c",
+      "CR 702.11b",
+      "CR 613.1f"
+    ],
+    "pattern": "you and {f:Filter} have hexproof",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "hexproof",
+                  "text": "hexproof"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "You and Elves you control have hexproof.",
+        "expect": [
+          {
+            "kind": "static",
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "you"
+                },
+                "mode": "cant",
+                "action": "beTargeted",
+                "other": {
+                  "controller": "opponent"
+                }
+              },
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": [
+                      "Elf"
+                    ],
+                    "controller": "you"
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "hexproof"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "You and artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "You and Elves you control have shroud.",
+      "You and Elves you control have hexproof until end of turn.",
+      "You and target Elf have hexproof."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e28.aslong.youAndEach.hexproof",
+    "kind": "static",
+    "cr": [
+      "CR 702.11c",
+      "CR 702.11b",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as {c:Cond} , you and {f:Filter} have hexproof",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "hexproof",
+                  "text": "hexproof"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ has a +1/+1 counter on it, you and other Soldiers you control have hexproof.",
+        "expect": [
+          {
+            "kind": "static",
+            "condition": {
+              "cond": "matches",
+              "object": {
+                "ref": "self"
+              },
+              "filter": {
+                "counters": {
+                  "kind": "+1/+1"
+                }
+              }
+            },
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "you"
+                },
+                "mode": "cant",
+                "action": "beTargeted",
+                "other": {
+                  "controller": "opponent"
+                }
+              },
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "other": true,
+                    "subtypes": [
+                      "Soldier"
+                    ],
+                    "controller": "you"
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "hexproof"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "As long as it's your turn, you and creatures you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, you and creatures you control have shroud.",
+      "As long as it's your turn, creatures you control have hexproof until end of turn.",
+      "Until end of turn, you and creatures you control have hexproof."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

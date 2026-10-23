@@ -1,0 +1,180 @@
+[
+  {
+    "id": "sta.stdtc2.duringTurn.aslong.self.is.sized.creature.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 306.8",
+      "CR 120.3c",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , as long as {c:Cond} , ~ is ( a | an ) {pt:BasePT} {st:Subtypes} creature and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "turnOf",
+            "whose": "you"
+          },
+          "$c"
+        ]
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, as long as ~ has two or more loyalty counters on it, ~ is a 2/5 Samurai creature and has vigilance."
+      },
+      {
+        "text": "During your turn, as long as you control an artifact, ~ is a 4/4 Rogue creature and has menace."
+      }
+    ],
+    "counterExamples": [
+      "During your opponent's turn, as long as ~ has two or more loyalty counters on it, ~ is a 2/5 Samurai creature and has vigilance.",
+      "During your turn, as long as ~ has two or more loyalty counters on it, ~ is a 2/5 Samurai creature and gains vigilance.",
+      "During your turn, as long as ~ has two or more loyalty counters on it, ~ gets +2/+5 and has vigilance."
+    ]
+  },
+  {
+    "id": "rid.stdtc2.ifCardIs.entersTappedAttacking",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 508.4",
+      "CR 110.2"
+    ],
+    "pattern": "if that card is ( a | an ) {f:Filter} card , it enters tapped and attacking",
+    "build": {
+      "$patchPrevious": {
+        "to": {
+          "tapped": {
+            "@new": true
+          },
+          "attacking": {
+            "@new": true
+          },
+          "statusIf": {
+            "@new": "$f"
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may put a creature card from your hand onto the battlefield. If that card is an artifact card, it enters tapped and attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, you may put a creature card from your hand onto the battlefield. If that card is an artifact card, it enters tapped and attacking.\n{4}: ~ gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may put a creature card from your hand onto the battlefield. If that card is an artifact card, it enters tapped.",
+      "Whenever ~ attacks, draw a card. If that card is an artifact card, it enters tapped and attacking.",
+      "Whenever ~ attacks, you may put a creature card from your hand onto the battlefield. If that card isn't an artifact card, it enters tapped and attacking."
+    ]
+  },
+  {
+    "id": "sta.stdtc2.triggerMod.dying.selfOrEmblem",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.10a",
+      "CR 700.4",
+      "CR 114.4"
+    ],
+    "pattern": "if {f:Filter} dying causes a triggered ability of ~ or an emblem you own to trigger , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "from": "battlefield",
+            "to": "graveyard"
+          },
+          "abilitiesOf": {
+            "anyOf": [
+              {
+                "self": true
+              },
+              {
+                "emblem": true,
+                "owner": "you"
+              }
+            ]
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has \"If an artifact creature dying causes a triggered ability of this creature or an emblem you own to trigger, that ability triggers an additional time.\""
+      },
+      {
+        "text": "Enchanted creature has \"If a Goblin dying causes a triggered ability of this creature or an emblem you own to trigger, that ability triggers an additional time.\""
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has \"If an artifact creature entering causes a triggered ability of this creature or an emblem you own to trigger, that ability triggers an additional time.\"",
+      "Equipped creature has \"If an artifact creature dying causes a triggered ability of this creature to trigger, that ability triggers an additional time.\"",
+      "Equipped creature has \"If an artifact creature dying causes a triggered ability of this creature or an emblem you own to trigger, that ability triggers two additional times.\""
+    ]
+  }
+]

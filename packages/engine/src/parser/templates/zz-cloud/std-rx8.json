@@ -1,0 +1,39 @@
+[
+  {
+    "id": "eff.stdrx8.exile.equalTo.fromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 401.1",
+      "CR 608.2h"
+    ],
+    "pattern": "exile cards equal to {n:Qty} from the top of {p:Player} 's library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": "$n"
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile cards equal to its power from the top of target opponent's library. You may play those cards this turn."
+      },
+      {
+        "text": "{2}{B}, {T}: Exile cards equal to the number of Rats you control from the top of target player's library."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile cards equal to its power from the bottom of target opponent's library.",
+      "Whenever ~ attacks, mill cards equal to its power.",
+      "Whenever ~ attacks, exile cards from the top of target opponent's library until they exile a land card."
+    ]
+  }
+]

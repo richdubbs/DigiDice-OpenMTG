@@ -1,0 +1,597 @@
+[
+  {
+    "id": "eff.t28.counters.double",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.10e",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "double the number of {k:CounterKind} counters on {o:Objs}",
+    "build": {
+      "op": "action",
+      "action": "doubleCounters",
+      "subject": "$o",
+      "who": {
+        "ref": "you"
+      },
+      "arg": "$k"
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "{2}{G}{G}: Double the number of +1/+1 counters on each Elf you control."
+      },
+      {
+        "text": "{1}{G}, {T}: Double the number of +1/+1 counters on target creature."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}{G}: Double the power of each Elf you control until end of turn.",
+      "{2}{G}{G}: Put a +1/+1 counter on each Elf you control.",
+      "{2}{G}{G}: Double the number of +1/+1 counters on each Elf you control unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t28.counters.put.equalTo",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "put a number of {k:CounterKind} counters on {o:Objs} equal to {q:Qty}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$q"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}{G}: Put a number of +1/+1 counters on ~ equal to target creature's toughness."
+      },
+      {
+        "text": "{3}{G}: Put a number of +1/+1 counters on target creature equal to the number of Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "{3}{G}: Put a number of +1/+1 counters on target creature.",
+      "{3}{G}: Put a +1/+1 counter on target creature equal to the number of Elves you control.",
+      "{3}{G}: Put a number of +1/+1 counters on target creature equal to the number of Elves you control unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t28.counters.put.ifCond",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "^ put {n:Qty} {k:CounterKind} counter[s] on {o:Objs} if {c:Cond}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$n",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{2}{G}: Put three +1/+1 counters on ~ if you gained life this turn."
+      },
+      {
+        "text": "{T}: Put a +1/+1 counter on each creature you control if you control four or more creatures."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: Put three +1/+1 counters on ~ unless you gained life this turn.",
+      "{2}{G}: Put three +1/+1 counters on ~.",
+      "{2}{G}: You gain 2 life and put three +1/+1 counters on ~ if you gained life this turn."
+    ]
+  },
+  {
+    "id": "eff.t28.then.counters.put",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "then put {n:Qty} {k:CounterKind} counter[s] on {o:Objs}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create two 1/1 white Soldier creature tokens. Then put a +1/+1 counter on each creature you control."
+      },
+      {
+        "text": "You gain 3 life. Then put two +1/+1 counters on target creature."
+      }
+    ],
+    "counterExamples": [
+      "Create two 1/1 white Soldier creature tokens. Then remove a +1/+1 counter from each creature you control.",
+      "Create two 1/1 white Soldier creature tokens. Then put a +1/+1 counter on each creature you control unless it is blue.",
+      "Create two 1/1 white Soldier creature tokens. Then put a +1/+1 counter on each creature you control for each Soldier you control."
+    ]
+  },
+  {
+    "id": "eff.t28.counters.put.forEach",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {o:Objs} for each {f:Filter}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Create a 1/1 green Elf Warrior creature token. Put a +1/+1 counter on it for each Forest you control."
+      },
+      {
+        "text": "{2}{G}: Put a +1/+1 counter on target creature for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: Put a +1/+1 counter on target creature.",
+      "{2}{G}: Put a +1/+1 counter on target creature for each artifact you control unless it is blue.",
+      "{2}{G}: Remove a +1/+1 counter from target creature for each artifact you control."
+    ]
+  },
+  {
+    "id": "rep.t28.enters.counter.forEach",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$f"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it for each artifact card in your graveyard."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on it for each Goblin you control."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it for each time it was blocked.",
+      "~ enters with a +1/+1 counter on target creature for each Goblin you control.",
+      "~ enters with a +1/+1 counter on it for each Goblin you control unless it is blue."
+    ]
+  },
+  {
+    "id": "rep.t28.enters.counters.whereX",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "~ enters with x {k:CounterKind} counters on it , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ enters with X +1/+1 counters on it, where X is the number of other artifacts on the battlefield."
+      },
+      {
+        "text": "~ enters with X +1/+1 counters on it, where X is the number of Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with X +1/+1 counters on target creature, where X is the number of Elves you control.",
+      "~ enters with X +1/+1 counters on it, where Y is the number of Elves you control.",
+      "~ enters with two +1/+1 counters on it, where X is the number of Elves you control."
+    ]
+  },
+  {
+    "id": "rep.t28.enters.counter.forEachDied",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 608.2h",
+      "CR 700.4"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it for each {f:Filter} that died this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "happenedCount",
+                  "event": {
+                    "ev": "zoneChange",
+                    "subject": "$f",
+                    "from": "battlefield",
+                    "to": "graveyard"
+                  },
+                  "scope": "turn"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it for each nontoken creature that died this turn."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on it for each green creature that died this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it for each creature that died last turn.",
+      "~ enters with a +1/+1 counter on it for each creature you control.",
+      "~ enters with a +1/+1 counter on it for each creature that died this turn unless it is blue."
+    ]
+  },
+  {
+    "id": "rep.t28.others.enter.additionalCounter",
+    "kind": "static",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6"
+    ],
+    "pattern": "each {f:Filter} enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "other",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Each Elf you control enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "Each other Goblin creature you control enters with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Each Elf you control enters with a +1/+1 counter on it unless it is blue.",
+      "Each Elf you control enters tapped.",
+      "Each Elf you control enters with an additional +1/+1 counter on it for each Goblin you control."
+    ]
+  },
+  {
+    "id": "eff.t28.thisTurn.enter.additionalCounter",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 611.2a",
+      "CR 514.2"
+    ],
+    "pattern": "this turn , each {f:Filter} enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other",
+      "other",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "{2}{G}, {T}: This turn, each Elf you control enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "{G}{W}: This turn, each creature you control enters with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}, {T}: Each Elf you control enters with an additional +1/+1 counter on it.",
+      "{2}{G}, {T}: This turn, each Elf you control enters tapped.",
+      "{2}{G}, {T}: This turn, each Elf you control enters with an additional +1/+1 counter on it unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t28.counters.distribute",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 601.2d",
+      "CR 122.1",
+      "CR 608.2b",
+      "CR 115.1"
+    ],
+    "pattern": "distribute {n:Qty} {k:CounterKind} counters among {o:Objs}",
+    "build": {
+      "lower": "divide",
+      "step": {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "distribute"
+    ],
+    "examples": [
+      {
+        "text": "Distribute three +1/+1 counters among one or two target creatures."
+      },
+      {
+        "text": "{2}{G}: Distribute two +1/+1 counters among one or two other target creatures you control."
+      },
+      {
+        "text": "{3}{B}: Distribute two -1/-1 counters among one or two target creatures an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Distribute three +1/+1 counters among creatures you control.",
+      "Put three +1/+1 counters on one or two target creatures.",
+      "Distribute three +1/+1 counters among one or two target creatures unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.t28.counters.put.twoKinds",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter and ( a | an ) {j:CounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": 1
+      },
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$j",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{W}: Put a +1/+1 counter and a flying counter on target creature."
+      },
+      {
+        "text": "{1}{B}: Put a +1/+1 counter and a deathtouch counter on target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "{2}{W}: Put a +1/+1 counter or a flying counter on target creature.",
+      "{2}{W}: Put a +1/+1 counter and a flying counter on each creature you control.",
+      "{2}{W}: Put two +1/+1 counters and a flying counter on target creature."
+    ]
+  },
+  {
+    "id": "eff.t28.counters.put.twoObjects",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {a:Obj} and ( a | an ) {j:CounterKind} counter on {b:Obj}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$a",
+        "kind": "$k",
+        "count": 1
+      },
+      {
+        "op": "putCounters",
+        "on": "$b",
+        "kind": "$j",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}: Put a +1/+1 counter on target creature and a +1/+1 counter on ~."
+      },
+      {
+        "text": "{G}, {T}: Put a +1/+1 counter on target Elf you control and a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "{1}{G}: Put a +1/+1 counter on target creature and two +1/+1 counters on ~.",
+      "{1}{G}: Put a +1/+1 counter on target creature or a +1/+1 counter on ~.",
+      "{1}{G}: Put a +1/+1 counter on target creature and a -1/-1 counter on ~."
+    ]
+  }
+]

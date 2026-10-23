@@ -1,0 +1,94 @@
+[
+  {
+    "id": "eff.stdcombat5.token.three",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 608.2c"
+    ],
+    "pattern": "create {n:Qty} {t:TokenDesc} , {m:Qty} {u:TokenDesc} , and {k:Qty} {v:TokenDesc}",
+    "build": [
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "token": "$t"
+      },
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$m",
+        "token": "$u"
+      },
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$k",
+        "token": "$v"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a 2/2 green Wolf creature token, a Food token, and a 1/1 white Spirit creature token with flying."
+      },
+      {
+        "text": "Create a Treasure token, a Clue token, and two 1/1 red Goblin creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "Create a 2/2 green Wolf creature token, a Food token, or a 1/1 white Spirit creature token with flying.",
+      "Create a 2/2 green Wolf creature token, a Food token, and put a +1/+1 counter on ~.",
+      "Target player creates a 2/2 green Wolf creature token, a Food token, and a 1/1 white Spirit creature token with flying."
+    ]
+  },
+  {
+    "id": "eff.stdcombat5.secretlyChoose.creatureTypeList",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 205.3m",
+      "CR 607.2d"
+    ],
+    "pattern": "secretly choose {c:CreatureTypeChoices}",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "creatureType",
+      "options": "$c",
+      "as": "chosenCreatureType",
+      "link": "type",
+      "secret": true
+    },
+    "subject": "none",
+    "consumes": [
+      "secretly"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, secretly choose Elf, Dwarf, or Orc."
+      },
+      {
+        "text": "When ~ enters, draw a card. Then secretly choose Wizard or Rogue."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose Elf, Dwarf, or Orc.",
+      "When ~ enters, secretly choose Elf, Dwarf, and Orc.",
+      "When ~ enters, target opponent secretly chooses Elf, Dwarf, or Orc."
+    ]
+  }
+]

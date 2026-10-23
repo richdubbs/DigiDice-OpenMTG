@@ -1,0 +1,90 @@
+[
+  {
+    "id": "eff.stdexile2.choose.oneExiledThisWay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 406.1"
+    ],
+    "pattern": "choose a card exiled this way",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "set",
+              "number": "plural",
+              "head": "card",
+              "participle": "exiled this way",
+              "text": "cards exiled this way"
+            }
+          },
+          "zone": "exile"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top four cards of your library, then choose a card exiled this way. You may play that card this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top two cards of your library. Choose a card exiled this way. Until the end of your next turn, you may play that card."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top four cards of your library, then choose a card exiled this way.",
+      "Exile the top four cards of your library, then choose a card milled this way. You may play that card this turn.",
+      "Exile the top four cards of your library, then choose two cards exiled this way. You may play that card this turn."
+    ]
+  },
+  {
+    "id": "eff.stdexile2.thatPlayer.exiles.obj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "that player exiles {o:Obj}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent reveals X cards from their hand, where X is the number of artifacts you control. You choose one of those cards. That player exiles it."
+      },
+      {
+        "text": "When ~ enters, target opponent reveals X cards from their hand, where X is the number of Elves you control. You choose one of those cards. That player exiles that card."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent reveals X cards from their hand, where X is the number of artifacts you control. You choose one of those cards. That player discards it.",
+      "Target opponent reveals X cards from their hand, where X is the number of artifacts you control. You choose one of those cards. That player exiles it face down.",
+      "Target opponent reveals X cards from their hand, where X is the number of artifacts you control. You choose two of those cards. That player exiles them."
+    ]
+  }
+]

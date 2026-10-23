@@ -1,0 +1,80 @@
+{
+  "name": "unleash",
+  "rule": "702.98",
+  "params": [],
+  "mechanisms": [
+    "replacement",
+    "expands"
+  ],
+  "reminder": "You may have this creature enter with a +1/+1 counter on it. It can't block as long as it has a +1/+1 counter on it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "You may have ~ enter with a +1/+1 counter on it.",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choice": [
+              {
+                "label": "a +1/+1 counter",
+                "counters": [
+                  {
+                    "kind": "+1/+1",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "label": "no counter"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "static",
+      "text": "~ can't block as long as it has a +1/+1 counter on it.",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "+1/+1",
+            "cmp": {
+              "op": ">=",
+              "value": 1
+            }
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    }
+  ]
+}

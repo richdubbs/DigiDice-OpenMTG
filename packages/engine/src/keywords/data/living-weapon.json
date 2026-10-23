@@ -1,0 +1,65 @@
+{
+  "name": "living weapon",
+  "rule": "702.92",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this Equipment enters, create a 0/0 black Phyrexian Germ creature token, then attach this to it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, create a 0/0 black Phyrexian Germ creature token, then attach ~ to it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1,
+            "token": {
+              "colors": [
+                "B"
+              ],
+              "types": [
+                "Creature"
+              ],
+              "subtypes": [
+                "Phyrexian",
+                "Germ"
+              ],
+              "power": 0,
+              "toughness": 0
+            },
+            "as": "token"
+          },
+          {
+            "op": "attach",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "ref": "bound",
+              "name": "token"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,260 @@
+[
+  {
+    "id": "eff.stdrx29.choose.exactlyN.youControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 700.2a",
+      "CR 115.10"
+    ],
+    "pattern": "choose exactly {n:Qty} {f:Filter} you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose exactly two creatures you control. The chosen creatures get +2/+2 until end of turn."
+      },
+      {
+        "text": "Choose exactly three artifacts you control. Untap the chosen artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Choose up to two creatures you control. The chosen creatures get +2/+2 until end of turn.",
+      "Choose exactly two creatures an opponent controls. The chosen creatures get +2/+2 until end of turn.",
+      "Choose exactly two target creatures you control. The chosen creatures get +2/+2 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.stdrx29.youDrawX.and.pumpGrant.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 608.2h",
+      "CR 107.3"
+    ],
+    "pattern": "you draw x cards and {o:Objs} get +x/+x and gain {a:Abilities} {d:Dur} , where x is {q:Qty}",
+    "build": [
+      {
+        "lower": "whereX",
+        "value": "$q",
+        "steps": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "X"
+            }
+          },
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": {
+                      "q": "X"
+                    },
+                    "toughness": {
+                      "q": "X"
+                    }
+                  },
+                  {
+                    "layer": 6,
+                    "add": "$a"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "You draw X cards and creatures you control get +X/+X and gain haste until end of turn, where X is the number of Elves you control."
+      },
+      {
+        "text": "You draw X cards and Goblins you control get +X/+X and gain menace until end of turn, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "You draw X cards and creatures you control get +X/+X and gain haste until end of turn, where Y is the number of Elves you control.",
+      "Target player draws X cards and creatures you control get +X/+X and gain haste until end of turn, where X is the number of Elves you control.",
+      "You draw X cards and creatures you control get +X/+X and lose haste until end of turn, where X is the number of Elves you control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.stdrx29.forEach.powerAboveBase.counters.difference",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 208.1",
+      "CR 613.4",
+      "CR 122.1",
+      "CR 107.1b"
+    ],
+    "pattern": "for each {f:Filter} with power greater than that creature 's base power , put a number of {k:CounterKind} counters on that creature equal to the difference",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "powerGreaterThanBase": true
+        }
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "putCounters",
+          "on": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "kind": "$k",
+          "count": {
+            "q": "math",
+            "op": "-",
+            "args": [
+              {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "bound",
+                  "name": "each"
+                }
+              },
+              {
+                "q": "basePower",
+                "of": {
+                  "ref": "bound",
+                  "name": "each"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, for each Warrior you control with power greater than that creature's base power, put a number of +1/+1 counters on that creature equal to the difference."
+      },
+      {
+        "text": "At the beginning of your end step, for each Elf you control with power greater than that creature's base power, put a number of +1/+1 counters on that creature equal to the difference."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, for each creature you control with power greater than that creature's base power, put a +1/+1 counter on that creature.",
+      "Whenever ~ attacks, for each creature you control with power less than that creature's base power, put a number of +1/+1 counters on that creature equal to the difference.",
+      "Whenever ~ attacks, for each creature you control with power greater than that creature's base power, remove a number of +1/+1 counters from that creature equal to the difference."
+    ]
+  },
+  {
+    "id": "eff.stdrx29.cast.anyNumber.instantSorcery.free.fromAmong",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 304.1",
+      "CR 307.1"
+    ],
+    "pattern": "you may cast any number of instant and/or sorcery spells from among {g:Objs} without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Instant",
+              "Sorcery"
+            ],
+            "is": "$g",
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top five cards of your library. You may cast any number of instant and/or sorcery spells from among them without paying their mana costs."
+      },
+      {
+        "text": "When ~ enters, exile the top four cards of your library. You may cast any number of instant and/or sorcery spells from among the exiled cards without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top five cards of your library. You may cast any number of instant and/or sorcery spells from among them.",
+      "Exile the top five cards of your library. You may cast any number of creature spells from among them without paying their mana costs.",
+      "Exile the top five cards of your library. You may cast an instant or sorcery spell from among them without paying its mana cost."
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "name": "toxic",
+  "rule": "702.164",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "Players dealt combat damage by this creature also get {n} poison counters.",
+  "multiple": "cumulative",
+  "status": "implemented",
+  "readers": [
+    "rules/damage.ts#dealDamage"
+  ]
+}

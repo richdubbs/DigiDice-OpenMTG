@@ -1,0 +1,1306 @@
+[
+ {
+  "card": "Darklight Phoenix",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand against the Oracle text: the combat trigger functions only in the graveyard (zone graveyard, CR 113.6m) and its intervening if (two or more creatures died this turn) is checked when it triggers and on resolution (CR 603.4); it returns the card to the battlefield",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "haste",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "haste"
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "zoneChange",
+        "subject": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "from": "battlefield",
+        "to": "graveyard"
+       },
+       "scope": "turn",
+       "times": {
+        "op": ">=",
+        "value": 2
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Arclight Phoenix",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand: graveyard trigger at the beginning of combat on your turn with the intervening if three or more instant and sorcery spells cast this turn (CR 603.4, 113.6m)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "haste",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "haste"
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "cast",
+        "player": "you",
+        "spell": {
+         "types": [
+          "Instant",
+          "Sorcery"
+         ]
+        }
+       },
+       "scope": "turn",
+       "times": {
+        "op": ">=",
+        "value": 3
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Silversmote Ghoul",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand: end step graveyard trigger with the intervening if 3 or more life gained this turn returns it tapped (CR 603.4, 113.6m); the sacrifice ability draws a card",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end",
+         "whose": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "q": "lifeGainedThisTurn"
+       },
+       "op": ">=",
+       "right": 3
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          },
+          "tapped": true
+         }
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     },
+     {
+      "kind": "activated",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ],
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "self": true
+         },
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Angelic Destiny",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand: the Aura's dies trigger returns the card the Aura became in its owner's graveyard ({ref:self, moved:true}, CR 400.7f, 704.5m) to its owner's hand",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "enchant",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      },
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "enchant"
+      }
+     },
+     {
+      "kind": "static",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "add": [
+            "Angel"
+           ]
+          }
+         },
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "flying"
+           },
+           {
+            "kind": "keyword",
+            "keyword": "first strike"
+           }
+          ]
+         },
+         {
+          "layer": "7c",
+          "power": 4,
+          "toughness": 4
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Creature"
+          ],
+          "attachedToSource": true
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "self",
+          "moved": true
+         },
+         "to": {
+          "zone": "hand"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Starving Revenant",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand (eff.r5fxz.forEach.keptOnTop): surveil 2, then once for each card left on top (StepResult.kept, CR 701.25a) you draw a card and lose 3 life; the descend trigger is unchanged",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "surveil",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2,
+         "as": "surveil"
+        },
+        {
+         "op": "repeat",
+         "times": {
+          "q": "resultCount",
+          "step": "surveil",
+          "which": {
+           "owner": "you",
+           "isCard": true
+          }
+         },
+         "do": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          },
+          {
+           "op": "loseLife",
+           "who": {
+            "ref": "you"
+           },
+           "amount": 3
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "draw",
+         "player": "you"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "exists",
+       "of": {
+        "ref": "each",
+        "filter": {
+         "types": [
+          "Artifact",
+          "Battle",
+          "Creature",
+          "Enchantment",
+          "Land",
+          "Planeswalker"
+         ],
+         "zone": "graveyard",
+         "owner": "you",
+         "isCard": true
+        }
+       },
+       "atLeast": 8
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "amount": 1
+        },
+        {
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hollow Marauder",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand (eff.r5fxz.forEach.thoseWhoDidntDiscard): the target opponents each discard a card, then you draw once for each of them who did not discard a card with mana value 4 or greater (countPlayers.didNot over the discard step's StepResult.before, CR 701.9a, 608.2c); the cost reduction and flying are unchanged",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "zone": [
+       "stack"
+      ],
+      "effects": [
+       {
+        "s": "costMod",
+        "applies": {
+         "self": true,
+         "caster": "you"
+        },
+        "change": {
+         "kind": "reduce",
+         "generic": {
+          "q": "math",
+          "op": "*",
+          "args": [
+           1,
+           {
+            "q": "count",
+            "of": {
+             "ref": "each",
+             "filter": {
+              "types": [
+               "Creature"
+              ],
+              "zone": "graveyard",
+              "owner": "you",
+              "isCard": true
+             }
+            }
+           }
+          ]
+         },
+         "floor": "zero"
+        }
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 0,
+         "max": "any",
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "discard",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "count": 1,
+         "as": "discard"
+        },
+        {
+         "op": "repeat",
+         "times": {
+          "q": "countPlayers",
+          "of": {
+           "ref": "target",
+           "id": "t0"
+          },
+          "didNot": {
+           "op": "discard",
+           "step": "discard",
+           "which": {
+            "manaValue": {
+             "op": ">=",
+             "value": 4
+            }
+           }
+          }
+         },
+         "do": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ghostly Dancers",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand (eff.r5fxz.instructionChoice.orUnlock, eff.r5fxz.unlock.lockedDoor.roomYouControl): as the enters trigger resolves you choose one instruction (CR 608.2d): return an enchantment card from your graveyard to your hand, or unlock a locked door of a Room you control (a Room with a locked door, CR 709.5f)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseValue",
+         "who": {
+          "ref": "you"
+         },
+         "what": "option",
+         "options": [
+          "first",
+          "second"
+         ],
+         "as": "instructionChoice",
+         "link": "instructionChoice"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "first"
+         },
+         "then": [
+          {
+           "op": "chooseObjects",
+           "who": {
+            "ref": "you"
+           },
+           "from": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Enchantment"
+             ],
+             "zone": "graveyard",
+             "owner": "you",
+             "isCard": true
+            }
+           },
+           "min": 1,
+           "max": 1,
+           "as": "regrow"
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "regrow"
+           },
+           "to": {
+            "zone": "hand"
+           }
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "second"
+         },
+         "then": [
+          {
+           "op": "chooseObjects",
+           "who": {
+            "ref": "you"
+           },
+           "from": {
+            "ref": "each",
+            "filter": {
+             "subtypes": [
+              "Room"
+             ],
+             "controller": "you",
+             "lockedDoor": true
+            }
+           },
+           "min": 1,
+           "max": 1,
+           "as": "lockedRoom"
+          },
+          {
+           "op": "designateObject",
+           "what": {
+            "ref": "bound",
+            "name": "lockedRoom"
+           },
+           "designation": "unlockDoor"
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Enchantment"
+          ],
+          "controller": "you"
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "becomes",
+         "what": "fullyUnlocked",
+         "object": {
+          "subtypes": [
+           "Room"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1,
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Spirit"
+          ],
+          "power": 3,
+          "toughness": 1,
+          "keywords": [
+           "flying"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Supper for Spiders",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand: every creature card in an opponent's graveyard that was put there from the battlefield this turn (putThereFrom, CR 400.7) enters under your control; they are Food artifacts with the sacrifice ability for good (layer 4 types and subtypes set, layer 6 add; CR 205.1a, 613.1d, 611.2c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Creature"
+           ],
+           "zone": "graveyard",
+           "owner": "opponent",
+           "putThereThisTurn": true,
+           "putThereFrom": "battlefield",
+           "isCard": true
+          }
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         },
+         "as": "them"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "types": {
+              "set": [
+               "Artifact"
+              ]
+             },
+             "subtypes": {
+              "set": [
+               "Food"
+              ]
+             }
+            },
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "activated",
+               "cost": {
+                "mana": [
+                 {
+                  "kind": "generic",
+                  "amount": 2
+                 }
+                ],
+                "tap": true,
+                "other": [
+                 {
+                  "kind": "sacrifice",
+                  "filter": {
+                   "self": true
+                  },
+                  "count": 1,
+                  "self": true
+                 }
+                ]
+               },
+               "effect": {
+                "targets": [],
+                "steps": [
+                 {
+                  "op": "gainLife",
+                  "who": {
+                   "ref": "you"
+                  },
+                  "amount": 3
+                 }
+                ]
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sugar Coat",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand (sta.r5fxz.enchanted.permanent.colorless.artifact.with.losesOthers): the enchanted permanent is a colorless Food artifact (types and subtypes set, colors set to none) that loses its abilities and has the sacrifice ability (CR 205.1a, 613.1d-f); flash and enchant creature or Food are unchanged",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flash",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "flash"
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "enchant",
+      "filter": {
+       "anyOf": [
+        {
+         "types": [
+          "Creature"
+         ]
+        },
+        {
+         "subtypes": [
+          "Food"
+         ]
+        }
+       ]
+      },
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "enchant"
+      }
+     },
+     {
+      "kind": "static",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "types": {
+           "set": [
+            "Artifact"
+           ]
+          },
+          "subtypes": {
+           "set": [
+            "Food"
+           ]
+          }
+         },
+         {
+          "layer": 5,
+          "colors": {
+           "set": []
+          }
+         },
+         {
+          "layer": 6,
+          "removeAll": true,
+          "add": [
+           {
+            "kind": "activated",
+            "cost": {
+             "mana": [
+              {
+               "kind": "generic",
+               "amount": 2
+              }
+             ],
+             "tap": true,
+             "other": [
+              {
+               "kind": "sacrifice",
+               "filter": {
+                "self": true
+               },
+               "count": 1,
+               "self": true
+              }
+             ]
+            },
+            "effect": {
+             "targets": [],
+             "steps": [
+              {
+               "op": "gainLife",
+               "who": {
+                "ref": "you"
+               },
+               "amount": 3
+              }
+             ]
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "One Last Job",
+  "expect": "full",
+  "verified": "r5-fxz review, by hand (eff.r5fxz.return.targets.bf.attachedTo.creatureYouControl): the third spree mode returns the target Aura or Equipment card attached to a creature you control chosen as it enters (CR 303.4f, 301.5c); the other modes return their targets",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "spree",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "spree"
+      }
+     },
+     {
+      "kind": "spell",
+      "src": [
+       1,
+       2,
+       3
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [],
+       "modes": {
+        "min": 1,
+        "max": 3,
+        "options": [
+         {
+          "program": {
+           "targets": [
+            {
+             "id": "t0",
+             "kind": "object",
+             "min": 1,
+             "max": 1,
+             "filter": {
+              "types": [
+               "Creature"
+              ],
+              "zone": "graveyard",
+              "owner": "you",
+              "isCard": true
+             }
+            }
+           ],
+           "steps": [
+            {
+             "op": "move",
+             "what": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "to": {
+              "zone": "battlefield",
+              "controller": {
+               "ref": "you"
+              }
+             }
+            }
+           ]
+          },
+          "cost": {
+           "mana": [
+            {
+             "kind": "generic",
+             "amount": 2
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "targets": [
+            {
+             "id": "t1",
+             "kind": "object",
+             "min": 1,
+             "max": 1,
+             "filter": {
+              "subtypes": [
+               "Mount",
+               "Vehicle"
+              ],
+              "zone": "graveyard",
+              "owner": "you",
+              "isCard": true
+             }
+            }
+           ],
+           "steps": [
+            {
+             "op": "move",
+             "what": {
+              "ref": "target",
+              "id": "t1"
+             },
+             "to": {
+              "zone": "battlefield",
+              "controller": {
+               "ref": "you"
+              }
+             }
+            }
+           ]
+          },
+          "cost": {
+           "mana": [
+            {
+             "kind": "generic",
+             "amount": 1
+            }
+           ]
+          }
+         },
+         {
+          "program": {
+           "targets": [
+            {
+             "id": "t2",
+             "kind": "object",
+             "min": 1,
+             "max": 1,
+             "filter": {
+              "subtypes": [
+               "Aura",
+               "Equipment"
+              ],
+              "zone": "graveyard",
+              "owner": "you",
+              "isCard": true
+             }
+            }
+           ],
+           "steps": [
+            {
+             "op": "chooseObjects",
+             "who": {
+              "ref": "you"
+             },
+             "from": {
+              "ref": "each",
+              "filter": {
+               "types": [
+                "Creature"
+               ],
+               "controller": "you"
+              }
+             },
+             "min": 1,
+             "max": 1,
+             "as": "host"
+            },
+            {
+             "op": "move",
+             "what": {
+              "ref": "target",
+              "id": "t2"
+             },
+             "to": {
+              "zone": "battlefield",
+              "controller": {
+               "ref": "you"
+              },
+              "attachedTo": {
+               "ref": "bound",
+               "name": "host"
+              }
+             }
+            }
+           ]
+          },
+          "cost": {
+           "mana": [
+            {
+             "kind": "generic",
+             "amount": 1
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

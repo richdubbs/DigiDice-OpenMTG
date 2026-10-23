@@ -1,0 +1,340 @@
+[
+  {
+    "id": "eff.t72.basept.gains.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} has base power and toughness {pt:BasePT} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control has base power and toughness 2/5 and gains reach and vigilance."
+      },
+      {
+        "text": "Until end of turn, ~ has base power and toughness 6/6 and gains trample."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control has base power and toughness 2/5 and loses reach.",
+      "Target creature you control has base power and toughness 2/5 and gains reach.",
+      "Until end of turn, target creature you control gets +2/+5 and gains reach and vigilance.",
+      "Until end of turn, target creature you control has base power 2 and gains reach and vigilance."
+    ]
+  },
+  {
+    "id": "eff.t72.becomes.subtype.artifactcreature.basept.inaddition.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {st:Subtypes} artifact creature with base power and toughness {pt:BasePT} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target land you control becomes a Golem artifact creature with base power and toughness 3/3 in addition to its other types."
+      },
+      {
+        "text": "Until end of turn, ~ becomes an Elemental artifact creature with base power and toughness 5/2 in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target land you control becomes a Golem artifact creature with base power and toughness 3/3.",
+      "Until end of turn, target land you control becomes a Golem creature with base power and toughness 3/3 in addition to its other types.",
+      "Target land you control becomes a Golem artifact creature with base power and toughness 3/3 in addition to its other types.",
+      "Until end of turn, target land you control becomes a Golem artifact creature with base power 3 in addition to its other types."
+    ],
+    "consumes": [
+      "in addition",
+      "other"
+    ]
+  },
+  {
+    "id": "eff.t72.becomes.artifact.inaddition.gains.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes an artifact in addition to its other types and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature becomes an artifact in addition to its other types and gains flying."
+      },
+      {
+        "text": "Until end of turn, target land you control becomes an artifact in addition to its other types and gains hexproof and haste."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature becomes an artifact and gains flying.",
+      "Until end of turn, target creature becomes an artifact in addition to its other types and loses flying.",
+      "Target creature becomes an artifact in addition to its other types and gains flying.",
+      "Until end of turn, target creature becomes an enchantment in addition to its other types and gains flying."
+    ],
+    "consumes": [
+      "in addition",
+      "other"
+    ]
+  },
+  {
+    "id": "eff.t72.becomes.basept.artifactcreature.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {pt:BasePT} artifact creature",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target noncreature artifact you control becomes a 3/3 artifact creature."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a 5/4 artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target noncreature artifact you control becomes a 3/3 creature.",
+      "Target noncreature artifact you control becomes a 3/3 artifact creature.",
+      "Until end of turn, target noncreature artifact you control becomes a 3/3 Golem artifact creature.",
+      "Until end of turn, target noncreature artifact you control becomes a 3/3 artifact creature with flying."
+    ]
+  },
+  {
+    "id": "eff.t72.becomes.subtype.artifactcreature.with.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target artifact token you control becomes a 4/2 Golem artifact creature with reach."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a 1/5 Construct artifact creature with flying and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target artifact token you control becomes a 4/2 Golem artifact creature.",
+      "Until end of turn, target artifact token you control becomes a 4/2 Golem creature with reach.",
+      "Target artifact token you control becomes a 4/2 Golem artifact creature with reach.",
+      "Until end of turn, target artifact token you control becomes a 4/2 Golem artifact creature with reach in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.t72.becomes.artifactcreature.basept.gains.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes an artifact creature with base power and toughness {pt:BasePT} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target artifact you control becomes an artifact creature with base power and toughness 2/6 and gains flying."
+      },
+      {
+        "text": "Until end of turn, ~ becomes an artifact creature with base power and toughness 7/7 and gains trample and haste."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target artifact you control becomes an artifact creature with base power and toughness 2/6.",
+      "Until end of turn, target artifact you control becomes an artifact creature with base power and toughness 2/6 and loses flying.",
+      "Target artifact you control becomes an artifact creature with base power and toughness 2/6 and gains flying.",
+      "Until end of turn, target artifact you control becomes a creature with base power and toughness 2/6 and gains flying."
+    ]
+  }
+]

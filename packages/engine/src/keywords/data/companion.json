@@ -1,0 +1,14 @@
+{
+  "name": "companion",
+  "rule": "702.139",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.",
+  "multiple": "independent",
+  "status": "native",
+  "readers": [
+    "core/special/companion.ts#companionDenial"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "@openmtg/client",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "DigiDice LLC",
+  "description": "OpenMTG browser client: React UI for hot-seat play, decks and card images (unofficial fan project). DigiDice brand assets are not MIT licensed (see assets/brand/README.md).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@openmtg/accounts": "*",
+    "@openmtg/ai": "*",
+    "@openmtg/engine": "*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@openmtg/hosted": "*",
+    "@openmtg/server": "*",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^5.2.0",
+    "jsdom": "^26.1.0",
+    "vite": "^7.3.7"
+  }
+}

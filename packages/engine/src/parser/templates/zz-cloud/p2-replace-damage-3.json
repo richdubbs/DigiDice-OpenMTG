@@ -1,0 +1,328 @@
+[
+  {
+    "id": "eff.p2rd3.redirect.all.toObj.toYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.9",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "all damage that would be dealt to {o:Obj} {d:Dur} is dealt to you instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "All damage that would be dealt to target artifact creature this turn is dealt to you instead."
+      },
+      {
+        "text": "{1}{W}: All damage that would be dealt to target Knight this turn is dealt to you instead."
+      }
+    ],
+    "counterExamples": [
+      "All damage that would be dealt to target artifact creature this turn is dealt to an opponent instead.",
+      "All damage that would be dealt by target artifact creature this turn is dealt to you instead.",
+      "All damage that would be dealt to target artifact creature is dealt to you instead."
+    ]
+  },
+  {
+    "id": "eff.p2rd3.redirect.combat.toYou.toObj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.9",
+      "CR 611.2a",
+      "CR 510.2"
+    ],
+    "pattern": "all combat damage that would be dealt to you {d:Dur} is dealt to {t:Obj} instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": "$t"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "All combat damage that would be dealt to you this turn is dealt to target blocking creature instead."
+      },
+      {
+        "text": "All combat damage that would be dealt to you this turn is dealt to target creature you control instead. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "All combat damage that would be dealt to you is dealt to target blocking creature instead.",
+      "All noncombat damage that would be dealt to you this turn is dealt to target blocking creature instead.",
+      "All combat damage that would be dealt by you this turn is dealt to target blocking creature instead."
+    ]
+  },
+  {
+    "id": "eff.p2rd3.redirect.next.toObj.toYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.9",
+      "CR 615.7",
+      "CR 611.2a"
+    ],
+    "pattern": "the next {n:Qty} damage that would be dealt to {o:Obj} {d:Dur} is dealt to you instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": {
+              "ref": "you"
+            },
+            "amount": "$n"
+          },
+          "shield": {
+            "uses": "all",
+            "amount": "$n"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{1}: The next 2 damage that would be dealt to target Soldier you control this turn is dealt to you instead."
+      },
+      {
+        "text": "The next 3 damage that would be dealt to target creature this turn is dealt to you instead. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{1}: The next 2 damage that would be dealt to target Soldier you control this turn is dealt to target player instead.",
+      "{1}: The next 2 damage that would be dealt by target Soldier you control this turn is dealt to you instead.",
+      "{1}: The next 2 damage that would be dealt to target Soldier you control is dealt to you instead."
+    ]
+  },
+  {
+    "id": "eff.p2rd3.redirect.nextSourceOfChoice.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.9",
+      "CR 609.7a",
+      "CR 615.7"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to you {d:Dur} , that damage is dealt to {t:Obj} instead",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "redirect",
+              "to": "$t"
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "instead",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{1}: The next time a source of your choice would deal damage to you this turn, that damage is dealt to target Wall you control instead."
+      },
+      {
+        "text": "{W}, {T}: The next time a source of your choice would deal damage to you this turn, that damage is dealt to ~ instead."
+      }
+    ],
+    "counterExamples": [
+      "{1}: The next time a source of your choice would deal damage to you this turn, prevent that damage.",
+      "{1}: The next time a source of your choice would deal damage to you, that damage is dealt to target Wall you control instead.",
+      "{1}: The next time a source of an opponent's choice would deal damage to you this turn, that damage is dealt to target Wall you control instead."
+    ]
+  },
+  {
+    "id": "eff.p2rd3.redirect.nextSourceOfChoice.obj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.9",
+      "CR 609.7a",
+      "CR 615.7"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to {o:Obj} {d:Dur} , that damage is dealt to {t:Obj} instead",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "object": {
+                  "is": "$o"
+                }
+              }
+            },
+            "body": {
+              "b": "redirect",
+              "to": "$t"
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "instead",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{0}: The next time a source of your choice would deal damage to target Elf this turn, that damage is dealt to ~ instead."
+      },
+      {
+        "text": "{2}: The next time a source of your choice would deal damage to target creature you control this turn, that damage is dealt to ~ instead."
+      }
+    ],
+    "counterExamples": [
+      "{0}: The next time a source of your choice would deal damage to target Elf this turn, prevent that damage.",
+      "{0}: The next time a source of your choice would deal damage to target Elf, that damage is dealt to ~ instead.",
+      "{0}: The next time a source of your choice would deal damage by target Elf this turn, that damage is dealt to ~ instead."
+    ]
+  }
+]

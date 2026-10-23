@@ -1,0 +1,524 @@
+[
+  {
+    "id": "kw.m6.kicker.andor",
+    "kind": "ability",
+    "cr": [
+      "CR 702.33b",
+      "CR 702.33f",
+      "CR 601.2b"
+    ],
+    "pattern": "kicker {a:ManaCost} and/or {b:ManaCost}",
+    "build": [
+      {
+        "kind": "keyword",
+        "keyword": "kicker",
+        "cost": {
+          "mana": "$a"
+        }
+      },
+      {
+        "kind": "keyword",
+        "keyword": "kicker",
+        "cost": {
+          "mana": "$b"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Kicker {1}{W} and/or {2}{B}"
+      },
+      {
+        "text": "Kicker {G} and/or {3}"
+      }
+    ],
+    "counterExamples": [
+      "Kicker {1}{W} or {2}{B}",
+      "Multikicker {1}{W} and/or {2}{B}",
+      "Kicker {1}{W} and {2}{B}"
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.m6.additional.choice",
+    "kind": "static",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.2h"
+    ],
+    "pattern": "as an additional cost to cast ~ , {a:Cost} or {b:Cost}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$a",
+          "choiceGroup": "cost"
+        },
+        {
+          "s": "additionalCost",
+          "cost": "$b",
+          "choiceGroup": "cost"
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, sacrifice an artifact or discard two cards."
+      },
+      {
+        "text": "As an additional cost to cast ~, discard two cards or pay 5 life."
+      },
+      {
+        "text": "As an additional cost to cast ~, pay 2 life or sacrifice a land."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, you may sacrifice an artifact or pay {4}.",
+      "As an additional cost to cast ~, sacrifice an artifact and pay {4}.",
+      "As an additional cost to activate ~, sacrifice an artifact or pay {4}."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.m6.additional.choice.payMana",
+    "kind": "static",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.2h"
+    ],
+    "pattern": "as an additional cost to cast ~ , {a:Cost} or pay {m:ManaCost}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": "$a",
+          "choiceGroup": "cost"
+        },
+        {
+          "s": "additionalCost",
+          "cost": {
+            "mana": "$m"
+          },
+          "choiceGroup": "cost"
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, sacrifice a creature or pay {3}."
+      },
+      {
+        "text": "As an additional cost to cast ~, discard a card or pay {4}."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, you may sacrifice a creature or pay {3}.",
+      "As an additional cost to cast ~, sacrifice a creature and pay {3}.",
+      "As an additional cost to cast ~, sacrifice a creature or pay 3 life."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "cm.m6.additional.choice.manaFirst",
+    "kind": "static",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.2h"
+    ],
+    "pattern": "as an additional cost to cast ~ , pay {m:ManaCost} or {b:Cost}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "mana": "$m"
+          },
+          "choiceGroup": "cost"
+        },
+        {
+          "s": "additionalCost",
+          "cost": "$b",
+          "choiceGroup": "cost"
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, pay {2} or sacrifice an artifact."
+      },
+      {
+        "text": "As an additional cost to cast ~, pay {1} or discard a card."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, you may pay {2} or sacrifice an artifact.",
+      "As an additional cost to cast ~, pay {2} and sacrifice an artifact.",
+      "As an additional cost to cast ~, pay 2 life or sacrifice an artifact."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.enters.counter.kicked",
+    "kind": "static",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33e",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 400.7d"
+    ],
+    "pattern": "~ enters with (a | an) {k:CounterKind} counter on it for each time it was kicked",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "kickCount"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each time",
+      "kicked"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it for each time it was kicked."
+      },
+      {
+        "text": "~ enters with a charge counter on it for each time it was kicked."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it for each creature you control.",
+      "~ enters with a +1/+1 counter on it if it was kicked.",
+      "Target creature enters with a +1/+1 counter on it for each time it was kicked."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.enters.counters.kicked",
+    "kind": "static",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33e",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 400.7d"
+    ],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counters on it for each time it was kicked",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "math",
+                  "op": "*",
+                  "args": [
+                    "$n",
+                    {
+                      "q": "kickCount"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each time",
+      "kicked"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with two +1/+1 counters on it for each time it was kicked."
+      },
+      {
+        "text": "~ enters with three charge counters on it for each time it was kicked."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with two +1/+1 counters on it for each creature you control.",
+      "~ enters with two +1/+1 counters on it if it was kicked.",
+      "~ enters with two +1/+1 counters on target creature for each time it was kicked."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.m6.gainlife.kicked",
+    "kind": "effect",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33e",
+      "CR 119.3",
+      "CR 400.7d"
+    ],
+    "pattern": "you gain {n:Qty} life for each time ( it | ~ ) was kicked",
+    "build": {
+      "op": "gainLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$n",
+          {
+            "q": "kickCount"
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each time",
+      "kicked"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you gain 3 life for each time it was kicked."
+      },
+      {
+        "text": "When ~ enters, you gain 2 life for each time ~ was kicked."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you gain 3 life for each creature you control.",
+      "When ~ enters, you gain 3 life if it was kicked.",
+      "When ~ enters, target player gains 3 life for each time it was kicked."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rep.m6.escapes.counters",
+    "kind": "static",
+    "cr": [
+      "CR 702.138b",
+      "CR 702.138c",
+      "CR 614.1c",
+      "CR 614.12"
+    ],
+    "pattern": "~ escapes with {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "wasCast",
+        "via": "escape"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "escapes"
+    ],
+    "examples": [
+      {
+        "text": "~ escapes with a +1/+1 counter on it."
+      },
+      {
+        "text": "~ escapes with three +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "~ escapes with a +1/+1 counter on target creature.",
+      "~ enters with a +1/+1 counter on it.",
+      "~ escapes with a +1/+1 counter on it and with flying."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.m6.sacrifice.unless",
+    "kind": "effect",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 702.138b"
+    ],
+    "pattern": "sacrifice {o:Obj} unless {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "not",
+        "of": "$c"
+      },
+      "then": [
+        {
+          "op": "sacrifice",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, sacrifice it unless it escaped."
+      },
+      {
+        "text": "When ~ enters, you gain 2 life. Sacrifice it unless it escaped."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, sacrifice it unless you pay {2}.",
+      "When ~ enters, sacrifice it if it escaped.",
+      "When ~ enters, exile it unless it escaped."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "rid.m6.instead.damage",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 702.33e"
+    ],
+    "pattern": "if {c:Cond} , ( it | ~ ) deals {n:Qty} damage instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": "$n"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 2 damage to any target. If ~ was kicked, it deals 4 damage instead."
+      },
+      {
+        "text": "~ deals 1 damage to target creature. If it's your turn, it deals 3 damage instead."
+      },
+      {
+        "text": "~ deals 3 damage to target creature. If you control a Wizard, ~ deals 5 damage instead."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 2 damage to any target. If ~ was kicked, it deals 4 damage.",
+      "If ~ was kicked, it deals 4 damage instead.",
+      "~ deals 2 damage to any target. If ~ was kicked, it deals 4 damage to you instead."
+    ],
+    "status": "stable",
+    "since": 1
+  }
+]

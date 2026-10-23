@@ -1,0 +1,21 @@
+{
+  "name": "max speed",
+  "rule": "702.178",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "",
+  "multiple": "independent",
+  "status": "implemented",
+  "modifies": {
+    "kind": "grant",
+    "while": {
+      "cond": "designation",
+      "who": {
+        "ref": "you"
+      },
+      "what": "maxSpeed"
+    }
+  }
+}

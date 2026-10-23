@@ -1,0 +1,17 @@
+{
+  "name": "emerge",
+  "rule": "702.119",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "hook"
+  ],
+  "reminder": "You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.",
+  "multiple": "independent",
+  "status": "planned"
+}

@@ -1,0 +1,11 @@
+# std-rx28 (wave 2, Standard lane rx28): the golden cards of the round (test/m5/golden/cards/cloud-std-rx28-review.json) and the cards whose templates it promoted
+Kellan, the Kid
+Taii Wakeen, Perfect Shot
+Imodane, the Pyrohammer
+Storm, Windrider
+Arachne, Psionic Weaver
+Monstrous Emergence
+Scarlet Spider, Ben Reilly
+Ertha Jo, Frontier Mentor
+Skyseer's Chariot
+Petrified Hamlet

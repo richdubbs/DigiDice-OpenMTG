@@ -1,0 +1,1092 @@
+/* Game screen, pass cover, game over, New game. Colors only from the theme variables (theme.ts). */
+/* The game fills exactly one screen: the board scrolls inside its slot, the bar and the prompt stay visible. */
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/*
+ * The top bar: slim (44px), a dark glass strip with a neon edge. Its buttons are compact slabs (a 2px side), so every click still sinks. It never wraps:
+ * the turn text gives way (ellipsis) before anything else does.
+ */
+.game-bar {
+  --btn-depth: 2px;
+  position: relative;
+  z-index: 5;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 12px;
+  background: linear-gradient(180deg, rgba(16, 32, 66, 0.98) 0%, rgba(4, 10, 24, 0.98) 100%);
+  border-bottom: 1px solid rgba(var(--neon-rgb), 0.55);
+  box-shadow:
+    0 2px 14px rgba(var(--neon-rgb), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.game-bar-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--neon);
+  text-shadow: 0 0 10px var(--glow);
+}
+
+.game-bar-turn {
+  min-width: 0;
+  overflow: hidden;
+  padding: 3px 12px;
+  border: 1px solid rgba(var(--neon-rgb), 0.3);
+  border-radius: 999px;
+  background: rgba(2, 6, 16, 0.6);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.6);
+  font-size: 0.85rem;
+  color: var(--text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Branding slot 3: the small 3D logo on the Menu button. */
+.game-bar-menu {
+  flex: none;
+  gap: 8px;
+  min-width: 0;
+  height: 34px;
+  padding: 0 14px 0 6px;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.game-menu {
+  --btn-depth: 3px;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-width: 180px;
+  padding: 12px;
+  border: 1px solid var(--neon);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #0c1a38, #050c1c);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.7),
+    0 0 24px var(--glow-soft);
+}
+
+.game-menu .donate-quiet {
+  align-self: center;
+}
+
+.game-bar-covered {
+  justify-content: flex-end;
+  border-bottom: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.game-bar-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.game-bar-actions button {
+  min-width: 0;
+  padding: 4px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.game-bar-actions button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Concede ends the game, so it carries the magenta accent (the theme's danger slab colors, set here for the bar). */
+.game-bar-concede {
+  --btn-face: linear-gradient(180deg, #3a0d3f 0%, #240829 60%, #1a061e 100%);
+  --btn-face-hover: linear-gradient(180deg, #4e1155 0%, #300a36 60%, #22072a 100%);
+  --btn-side: #3d003f;
+  --btn-rim: rgba(var(--neon-2-rgb), 0.7);
+  --btn-glow: rgba(var(--neon-2-rgb), 0.6);
+}
+
+.game-confirm {
+  --btn-depth: 3px;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 12px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 420px;
+  padding: 14px 16px;
+  border: 1px solid var(--neon-2);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #1a0a26, #070612);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.7),
+    0 0 24px var(--glow-2);
+}
+
+.game-confirm p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+.game-table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The board fills the slot and keeps its prompt bar (its `prompt` prop) on screen; a board that does not scroll itself scrolls here. */
+.game-board-slot {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * The prompt in the board's rail (board.css .board-prompt): the slot may shrink when the rail is full; then the prompt's list of choices scrolls in its own
+ * box and its actions stay whole and in sight (prompts.css). The slot itself never scrolls (a scroll box here would hold the pinned actions inside it).
+ */
+.game-prompt-slot {
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.game-prompt-slot:focus {
+  outline: none;
+}
+
+.game-error {
+  color: var(--accent-2);
+}
+
+/* CR 710.2: a flipped flip card on the board turns 180 degrees with its picture (boardCards.tsx); it fills the board's image box. */
+.game-card-flipped {
+  width: 100%;
+  height: 100%;
+  transform: rotate(180deg);
+}
+
+/* A problem on the other side of the connection (the computer could not decide): shown above the prompt until the game moves on. */
+.game-status {
+  margin: 0;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--accent-2);
+  color: var(--accent-2);
+}
+
+/* M6-11 (CR 708.9): this turn's reveals of face-down cards, and every face-down card at the end of the game, above the prompt. */
+.game-reveal {
+  padding: 4px 16px;
+  border-bottom: 1px solid var(--accent-2);
+  color: var(--text);
+}
+
+.game-reveal-line {
+  margin: 0;
+}
+
+/*
+ * Hot-seat pass cover: opaque, covers the whole viewport; only Concede and Leave (top), the logo and the continue button. It has its own neon room (grid
+ * floor, horizon) so it feels like part of the app, but nothing of the game is drawn on it.
+ */
+.pass-cover {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 60%, rgba(var(--neon-rgb), 0.18), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 50% 64%, rgba(var(--neon-2-rgb), 0.1), transparent 72%),
+    linear-gradient(180deg, #02050c 0%, #050b18 50%, #071330 64%, #02050c 100%);
+  text-align: center;
+}
+
+.pass-cover::before {
+  content: '';
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: -8%;
+  height: 58%;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--grid-line-strong) 1px, transparent 1px) 50% 0 / 64px 64px,
+    linear-gradient(0deg, var(--grid-line-strong) 1px, transparent 1px) 50% 0 / 64px 64px;
+  transform: perspective(520px) rotateX(64deg);
+  transform-origin: 50% 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 70%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 22%, #000 70%, transparent 100%);
+}
+
+.pass-cover::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 42%;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--neon-2) 22%, var(--neon) 50%, var(--neon-2) 78%, transparent);
+  box-shadow:
+    0 0 18px 2px var(--glow),
+    0 0 42px 6px rgba(var(--neon-2-rgb), 0.25);
+  opacity: 0.55;
+}
+
+.pass-cover > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pass-cover-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px 16px 48px;
+}
+
+.pass-cover-title {
+  margin: 16px 0 0;
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pass-cover-text {
+  margin: 0 0 10px;
+  max-width: 460px;
+  color: var(--text-muted);
+}
+
+.pass-cover-button {
+  --btn-depth: 6px;
+  min-width: 320px;
+  padding: 16px 36px;
+  border-radius: 14px;
+  font-size: 1.2rem;
+  letter-spacing: 0.06em;
+}
+
+.pass-cover-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/*
+ * Game over (branding slot 7): drawn in the board's side rail, in the prompt's corner (ui/arena). Stacked to fit the rail: the small 3D logo beside the
+ * result and its reason, then Rematch as the big action and the other buttons under it, all visible without scrolling at 1098x698 and 1400x900.
+ */
+.game-over {
+  --btn-depth: 3px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'logo title'
+    'logo reason'
+    'buttons buttons'
+    'donate donate';
+  align-items: center;
+  gap: 2px 10px;
+  padding: 10px 8px 12px;
+  /* The logo's halo is wider than its box; it must not make the prompt scroll. */
+  overflow: hidden;
+  text-align: left;
+}
+
+.game-over-logo {
+  grid-area: logo;
+  margin: 0 2px;
+}
+
+/* M12-4b (m12 design D10): a multiplayer game's finishing order between the result and the buttons. */
+.game-over[data-places] {
+  grid-template-areas:
+    'logo title'
+    'logo reason'
+    'places places'
+    'buttons buttons'
+    'donate donate';
+}
+
+.game-over-places {
+  grid-area: places;
+  display: grid;
+  gap: 3px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.game-over-places li {
+  display: grid;
+  grid-template-columns: 2.4em minmax(0, 1fr);
+  gap: 0 6px;
+  padding: 3px 6px;
+  border: 1px solid rgba(var(--neon-rgb), 0.22);
+  border-radius: 7px;
+  background: rgba(5, 12, 28, 0.6);
+}
+
+.game-over-places li[data-place='1'] {
+  border-color: var(--neon);
+  box-shadow: 0 0 10px var(--glow-soft);
+}
+
+.game-over-place {
+  grid-row: span 2;
+  font-weight: 800;
+  color: #f2fbff;
+}
+
+.game-over-place-name {
+  font-weight: 700;
+  color: #f2fbff;
+}
+
+.game-over-place-how {
+  color: var(--text-muted);
+}
+
+.game-over-folded {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px 8px;
+}
+
+.game-over-title {
+  grid-area: title;
+  align-self: end;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  color: #f2fbff;
+  text-shadow:
+    0 0 6px rgba(var(--neon-rgb), 0.9),
+    0 0 20px rgba(var(--neon-rgb), 0.45);
+}
+
+.game-over-title:focus {
+  outline: none;
+}
+
+.game-over-title:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.game-over-reason {
+  grid-area: reason;
+  align-self: start;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+
+.game-over-buttons {
+  grid-area: buttons;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.game-over-buttons button {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 12px;
+  border-radius: 9px;
+  font-size: 0.88rem;
+  white-space: nowrap;
+}
+
+.game-over-buttons .button-primary {
+  --btn-depth: 5px;
+  flex: 1 1 100%;
+  min-height: 40px;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.game-over-buttons .button-link {
+  flex: 1 1 100%;
+  padding: 2px 6px;
+}
+
+.game-over-donate {
+  grid-area: donate;
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/*
+ * New game (screen 5): Arena's Play screen in the DigiDice room. The two players are HUD panels side by side with a VS emblem between them; the format
+ * and options sit in a panel beside the big Start slab. Sized to fit 1400x900 without scrolling.
+ */
+.screen.new-game {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  max-width: 1240px;
+}
+
+/* The form block sits in the middle of the room under the header, so a tall window gets even space above and below it instead of one empty area. */
+.new-game-body {
+  margin: auto 0;
+}
+
+.new-game-players {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* Three rows shared by both panels (name, who plays, form), so the two forms and deck cases line up whatever each panel holds. */
+  grid-template-rows: auto auto 1fr;
+  gap: 0 52px;
+  margin-bottom: 16px;
+}
+
+.new-game-players > .new-game-player {
+  display: grid;
+  grid-row: 1 / span 3;
+  grid-template-rows: subgrid;
+}
+
+/* The VS emblem in the gutter (decorative). */
+.new-game-players::after {
+  content: 'VS';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--neon-2), var(--neon-deep));
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  box-shadow:
+    0 0 0 3px #050b18,
+    0 0 0 4px rgba(255, 255, 255, 0.35),
+    0 0 22px var(--glow),
+    0 0 30px var(--glow-2);
+  pointer-events: none;
+}
+
+.new-game fieldset {
+  min-width: 0;
+}
+
+.new-game-player,
+.new-game-options {
+  min-width: 0;
+  margin: 0;
+  padding: 18px 22px 18px;
+}
+
+/* A player's form on the left, the deck they chose on the right. */
+.new-game-player-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 176px;
+  gap: 8px 20px;
+  align-items: stretch;
+}
+
+.new-game-player-form {
+  min-width: 0;
+}
+
+/* The deck case: a dark window with the grid floor and a glow under the box (blue for player 1, magenta for player 2). */
+.new-game-preview {
+  --case-glow: rgba(var(--neon-rgb), 0.26);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 8px 12px;
+  border: 1px solid rgba(var(--neon-rgb), 0.3);
+  border-radius: 12px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 85% 38% at 50% 60%, var(--case-glow), transparent 72%),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 50% 0 / 22px 22px,
+    linear-gradient(0deg, var(--grid-line) 1px, transparent 1px) 50% 0 / 22px 22px,
+    linear-gradient(180deg, rgba(3, 8, 20, 0.92), rgba(8, 20, 44, 0.92));
+  box-shadow:
+    inset 0 0 26px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.new-game-preview[data-player='2'] {
+  --case-glow: rgba(var(--neon-2-rgb), 0.22);
+  border-color: rgba(var(--neon-2-rgb), 0.34);
+}
+
+.new-game-preview-empty {
+  border-style: dashed;
+}
+
+.new-game-ghost {
+  opacity: 0.32;
+  filter: grayscale(0.8);
+}
+
+.new-game-preview-hint {
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.new-game-preview-box {
+  animation: new-game-pop 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes new-game-pop {
+  from {
+    transform: translateY(10px) scale(0.92);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.new-game-preview-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #f2fbff;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 10px var(--glow);
+  white-space: nowrap;
+}
+
+.new-game-preview-meta {
+  font-size: 0.74rem;
+  line-height: 1.3;
+  color: var(--text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .new-game-preview-box {
+    animation: none;
+  }
+}
+
+.new-game-player h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #f2fbff;
+  text-shadow: 0 0 10px var(--glow);
+}
+
+/* The player's number in a ring (decorative: the heading text says it too). */
+.new-game-player h2::before {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--neon);
+  border-radius: 50%;
+  background: rgba(var(--neon-rgb), 0.14);
+  box-shadow: 0 0 12px var(--glow);
+  color: var(--neon);
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+.new-game-player-1 h2::before {
+  content: '1';
+}
+
+.new-game-player-2 h2::before {
+  content: '2';
+  border-color: var(--neon-2);
+  background: rgba(var(--neon-2-rgb), 0.14);
+  box-shadow: 0 0 12px var(--glow-2);
+  color: #ff7dff;
+}
+
+/* M12-4b: players 3 and 4 (a game with three or four players) get their own ring colors: green and amber. */
+.new-game-player-3 h2::before {
+  content: '3';
+  border-color: #3dffb0;
+  background: rgba(61, 255, 176, 0.12);
+  box-shadow: 0 0 12px rgba(61, 255, 176, 0.45);
+  color: #7dffc9;
+}
+
+.new-game-player-4 h2::before {
+  content: '4';
+  border-color: #ffb43d;
+  background: rgba(255, 180, 61, 0.12);
+  box-shadow: 0 0 12px rgba(255, 180, 61, 0.45);
+  color: #ffd27d;
+}
+
+.new-game-preview[data-player='3'] {
+  --case-glow: rgba(61, 255, 176, 0.18);
+  border-color: rgba(61, 255, 176, 0.32);
+}
+
+.new-game-preview[data-player='4'] {
+  --case-glow: rgba(255, 180, 61, 0.18);
+  border-color: rgba(255, 180, 61, 0.32);
+}
+
+/* M12-4b: "Players: 2 / 3 / 4" above the seats, pills like "Played by". */
+.new-game-count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+}
+
+.new-game-count legend {
+  float: left;
+  margin: 0 6px 0 0;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.new-game-count-choices {
+  display: flex;
+  gap: 8px;
+}
+
+.new-game .new-game-count-choices label {
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid rgba(var(--neon-rgb), 0.35);
+  border-radius: 9px;
+  background: linear-gradient(180deg, #0a1730, #050c1c);
+  color: var(--text);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.new-game .new-game-count-choices label:has(input:checked) {
+  border-color: var(--neon);
+  background: linear-gradient(180deg, #16386a, #0b2146);
+  box-shadow: 0 0 14px var(--glow-soft);
+}
+
+.new-game-remove {
+  margin-left: auto;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+/* Three or four seats: two columns, each seat its own block (no VS emblem between two of four). */
+.new-game-players[data-seats='3'],
+.new-game-players[data-seats='4'] {
+  grid-template-rows: none;
+  gap: 14px 24px;
+}
+
+.new-game-players[data-seats='3'] > .new-game-player,
+.new-game-players[data-seats='4'] > .new-game-player {
+  grid-row: auto;
+  grid-template-rows: auto auto 1fr;
+}
+
+.new-game-players[data-seats='3']::after,
+.new-game-players[data-seats='4']::after {
+  content: none;
+}
+
+/* Player 1 sits at this screen: a lit pill in the same place and size as Player 2's "Played by" choice. */
+.new-game-legend {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.new-game-you {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--neon);
+  border-radius: 9px;
+  background: linear-gradient(180deg, #16386a, #0b2146);
+  box-shadow:
+    0 0 14px var(--glow-soft),
+    inset 0 0 14px rgba(var(--neon-rgb), 0.18);
+  color: var(--text);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.new-game label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.new-game input[type='text'],
+.new-game input[type='number'],
+.new-game select {
+  width: 100%;
+  max-width: 100%;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* Played by: two pills; the chosen one is lit. */
+.new-game-opponent {
+  min-width: 0;
+  margin: 0 0 6px;
+  padding: 0;
+  border: 0;
+}
+
+.new-game-opponent legend,
+.new-game-options legend {
+  float: left;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.new-game-options legend {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 10px var(--glow-soft);
+}
+
+.new-game-segment {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 8px;
+  clear: both;
+}
+
+.new-game .new-game-segment label {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid rgba(var(--neon-rgb), 0.35);
+  border-radius: 9px;
+  background: linear-gradient(180deg, #0a1730, #050c1c);
+  color: var(--text);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+
+.new-game .new-game-segment label:hover {
+  border-color: var(--neon);
+}
+
+.new-game .new-game-segment label:has(input:checked) {
+  border-color: var(--neon);
+  background: linear-gradient(180deg, #16386a, #0b2146);
+  box-shadow:
+    0 0 14px var(--glow-soft),
+    inset 0 0 14px rgba(var(--neon-rgb), 0.18);
+}
+
+.new-game .inline {
+  flex-direction: row;
+  align-items: center;
+}
+
+/* Milestone 9: the way to the Host and Join screens (online/). */
+.new-game-online {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0 0 12px;
+  padding: 10px 18px;
+}
+
+.new-game-online .new-game-legend {
+  margin: 0 8px 0 0;
+}
+
+/*
+ * Milestone 13: the DigiDice server's button before there is a server: off, with a diagonal banner across its top-right corner. The button is too short
+ * for a ribbon clipped to its corner (the words would be cut), so the banner is tilted across the corner and stands out past the button's edges.
+ */
+.new-game-online .coming-soon {
+  position: relative;
+  overflow: visible;
+  margin-right: 18px;
+}
+
+.coming-soon-ribbon {
+  position: absolute;
+  top: -10px;
+  right: -22px;
+  z-index: 1;
+  padding: 2px 9px;
+  border-radius: 3px;
+  transform: rotate(16deg);
+  background: linear-gradient(180deg, rgba(var(--neon-2-rgb), 0.95), rgba(var(--neon-2-rgb), 0.78));
+  box-shadow: 0 0 10px rgba(var(--neon-2-rgb), 0.55);
+  color: #fff;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.new-game-check {
+  margin: 6px 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.new-game-problems {
+  margin: 4px 0;
+  padding-left: 20px;
+  color: #ff8bff;
+}
+
+.new-game-notes {
+  margin: 4px 0;
+  padding-left: 20px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.new-game-bottom {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.new-game-fields {
+  clear: both;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.new-game-fields label {
+  margin: 0;
+}
+
+.new-game-start {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+}
+
+.new-game-start .new-game-check,
+.new-game-start .game-error {
+  margin: 0;
+  text-align: center;
+}
+
+.new-game-go {
+  --btn-depth: 6px;
+  width: 100%;
+  min-height: 68px;
+  border-radius: 14px;
+  font-size: 1.4rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 860px) {
+  .new-game-players {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    gap: 18px;
+  }
+
+  .new-game-players > .new-game-player {
+    display: block;
+    grid-row: auto;
+  }
+
+  .new-game-players::after {
+    display: none;
+  }
+
+  .new-game-bottom {
+    grid-template-columns: 1fr;
+  }
+
+  .new-game-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .new-game-player-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Tall windows (1400x900): roomier panels and a bigger deck case, so the form fills the room instead of floating in it. */
+@media (min-height: 860px) {
+  .new-game-player,
+  .new-game-options {
+    padding: 24px 28px 26px;
+  }
+
+  .new-game-player-body {
+    grid-template-columns: minmax(0, 1fr) 210px;
+  }
+
+  .new-game-players {
+    margin-bottom: 26px;
+  }
+
+  .new-game label {
+    margin: 12px 0;
+  }
+
+  .new-game-preview {
+    gap: 5px;
+  }
+}
+
+/* Short windows (1098x698): tighter spacing so the whole screen still fits. */
+@media (max-height: 800px) {
+  .screen.new-game {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .new-game .screen-header {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .new-game-players {
+    margin-bottom: 12px;
+  }
+
+  .new-game-preview {
+    padding: 6px 6px 8px;
+  }
+
+  .new-game-player,
+  .new-game-options {
+    padding: 12px 18px;
+  }
+
+  .new-game label {
+    margin: 6px 0;
+  }
+
+  .new-game input[type='text'],
+  .new-game input[type='number'],
+  .new-game select {
+    padding: 5px 10px;
+  }
+
+  .new-game-check {
+    margin: 4px 0;
+    font-size: 0.85rem;
+  }
+
+  .new-game-go {
+    min-height: 56px;
+    font-size: 1.25rem;
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "backup",
+  "rule": "702.165",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this creature enters, put {n} +1/+1 counters on target creature. If that's another creature, it gains the following abilities until end of turn.",
+  "multiple": "independent",
+  "status": "planned"
+}

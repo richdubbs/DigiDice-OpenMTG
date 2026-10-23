@@ -1,0 +1,30 @@
+{
+  "name": "protection",
+  "rule": "702.16",
+  "params": [
+    {
+      "name": "quality",
+      "type": "quality"
+    }
+  ],
+  "mechanisms": [
+    "flag",
+    "hook"
+  ],
+  "reminder": "This creature can't be blocked, targeted, dealt damage, enchanted, or equipped by anything {quality}.",
+  "multiple": "redundantPerParam",
+  "status": "implemented",
+  "hooks": [
+    "canBeBlocked",
+    "canBeTargetedBy",
+    "canBeEnchantedBy",
+    "canBeEquippedBy"
+  ],
+  "readers": [
+    "rules/combat-rules.ts#blockDenial",
+    "rules/targets.ts#isTargetable",
+    "rules/attachment.ts#auraCanEnchantObject",
+    "rules/attachment.ts#equipmentAttachedLegally",
+    "rules/damage.ts#dealDamage"
+  ]
+}

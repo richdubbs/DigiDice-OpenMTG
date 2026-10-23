@@ -1,0 +1,169 @@
+[
+  {
+    "id": "trg.stdrx19.cast.first.eachOpponentsTurn",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 500.1"
+    ],
+    "pattern": "whenever you cast your first spell during each opponent 's turn",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "nth": 1
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "opponent"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "during",
+      "each"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast your first spell during each opponent's turn, you gain 2 life."
+      },
+      {
+        "text": "Whenever you cast your first spell during each opponent's turn, create a 1/1 blue Bird creature token with flying."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast your second spell during each opponent's turn, draw a card.",
+      "Whenever you cast your first spell during each of your turns, draw a card.",
+      "Whenever you cast a spell during each opponent's turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdrx19.permit.extraland.eachPlayer",
+    "kind": "static",
+    "cr": [
+      "CR 305.2",
+      "CR 305.2a",
+      "CR 101.4"
+    ],
+    "pattern": "( each player | players ) may play an additional land on each of their turns",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "action": "playLand"
+    },
+    "consumes": [
+      "may",
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Players may play an additional land on each of their turns."
+      },
+      {
+        "text": "Flying\nPlayers may play an additional land on each of their turns."
+      }
+    ],
+    "counterExamples": [
+      "Players may play two additional lands on each of their turns.",
+      "Each opponent may play an additional land on each of their turns.",
+      "Players may play an additional land this turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.stdrx19.event.firstEachTurn",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c"
+    ],
+    "pattern": "whenever {e:Event} for the first time each turn",
+    "build": {
+      "on": "$e",
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each"
+    ],
+    "needs": [
+      "feature:trigger.first"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you lose life for the first time each turn, draw a card."
+      },
+      {
+        "text": "Whenever a creature you control dies for the first time each turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you lose life for the second time each turn, put a +1/+1 counter on ~.",
+      "Whenever you lose life for the first time during each of your turns, put a +1/+1 counter on ~.",
+      "Whenever you lose life for the first time each combat, put a +1/+1 counter on ~."
+    ],
+    "status": "stable",
+    "since": 8,
+    "weak": 1
+  },
+  {
+    "id": "trg.stdrx19.surveil.firstEachTurn",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 701.25a"
+    ],
+    "pattern": "whenever you surveil for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "surveil",
+          "actor": "you"
+        }
+      ],
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each"
+    ],
+    "needs": [
+      "feature:trigger.first"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you surveil for the first time each turn, draw a card."
+      },
+      {
+        "text": "Whenever you surveil for the first time each turn, ~ deals 2 damage to each opponent."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you surveil for the second time each turn, draw a card.",
+      "Whenever an opponent surveils for the first time each turn, draw a card.",
+      "Whenever you surveil for the first time during each of your turns, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

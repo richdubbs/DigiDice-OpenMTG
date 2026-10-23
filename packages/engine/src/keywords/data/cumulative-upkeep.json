@@ -1,0 +1,75 @@
+{
+  "name": "cumulative upkeep",
+  "rule": "702.24",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "At the beginning of your upkeep, put an age counter on this permanent, then sacrifice it unless you pay its upkeep cost for each age counter on it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "At the beginning of your upkeep, put an age counter on ~. Then sacrifice it unless you pay its cumulative upkeep cost for each age counter on it.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "step",
+            "step": "upkeep",
+            "whose": "you"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "zone": "battlefield"
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "age",
+            "count": 1
+          },
+          {
+            "op": "pay",
+            "who": {
+              "ref": "you"
+            },
+            "cost": "$cost",
+            "times": {
+              "q": "counters",
+              "on": {
+                "ref": "self"
+              },
+              "kind": "age"
+            },
+            "else": [
+              {
+                "op": "sacrifice",
+                "what": {
+                  "ref": "self"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

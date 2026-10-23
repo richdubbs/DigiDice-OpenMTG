@@ -1,0 +1,53 @@
+{
+  "name": "riot",
+  "rule": "702.136",
+  "params": [],
+  "mechanisms": [
+    "replacement"
+  ],
+  "reminder": "This creature enters with your choice of a +1/+1 counter or haste.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "~ enters with your choice of a +1/+1 counter or haste.",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choice": [
+              {
+                "label": "a +1/+1 counter",
+                "counters": [
+                  {
+                    "kind": "+1/+1",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "label": "haste",
+                "withAbilities": [
+                  {
+                    "kind": "keyword",
+                    "keyword": "haste",
+                    "text": "Haste"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

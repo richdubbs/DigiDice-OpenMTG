@@ -1,0 +1,506 @@
+[
+  {
+    "id": "kw.e13.craft",
+    "kind": "ability",
+    "cr": [
+      "CR 702.167a",
+      "CR 702.167b"
+    ],
+    "pattern": "craft with {f:Filter} {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "craft",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": "$f"
+    },
+    "examples": [
+      {
+        "text": "Craft with artifact {3}{U}",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "craft",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 3
+                },
+                {
+                  "kind": "color",
+                  "color": "U"
+                }
+              ]
+            },
+            "filter": {
+              "types": [
+                "Artifact"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Craft with Forest {2}{G}{G}"
+      }
+    ],
+    "counterExamples": [
+      "Craft with artifact",
+      "Craft with artifact {T}",
+      "Craft with an artifact you control {2}",
+      "Craft {2}{W}"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.e13.craft.n",
+    "kind": "ability",
+    "cr": [
+      "CR 702.167a",
+      "CR 702.167b"
+    ],
+    "pattern": "craft with {n:Qty} {f:Filter} {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "craft",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": "$f",
+      "amount": "$n"
+    },
+    "examples": [
+      {
+        "text": "Craft with three artifacts {4}{W}",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "craft",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 4
+                },
+                {
+                  "kind": "color",
+                  "color": "W"
+                }
+              ]
+            },
+            "filter": {
+              "types": [
+                "Artifact"
+              ]
+            },
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "text": "Craft with two Goblins {1}{R}"
+      }
+    ],
+    "counterExamples": [
+      "Craft with two creatures",
+      "Craft with X creatures {3}",
+      "Craft with two or more creatures and a land {3}"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.e13.craft.orMore",
+    "kind": "ability",
+    "cr": [
+      "CR 702.167a",
+      "CR 702.167b",
+      "CR 601.2b"
+    ],
+    "pattern": "craft with {n:Qty} or more {f:Filter} {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "craft",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": "$f",
+      "amount": "$n",
+      "quality": "or more"
+    },
+    "examples": [
+      {
+        "text": "Craft with one or more Elves {3}{G}",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "craft",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 3
+                },
+                {
+                  "kind": "color",
+                  "color": "G"
+                }
+              ]
+            },
+            "filter": {
+              "subtypes": [
+                "Elf"
+              ]
+            },
+            "amount": 1,
+            "quality": "or more"
+          }
+        ]
+      },
+      {
+        "text": "Craft with two or more artifacts {6}"
+      }
+    ],
+    "counterExamples": [
+      "Craft with one or more Elves",
+      "Craft with one or fewer Elves {3}{G}",
+      "Craft with one or more Elves {T}"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "kw.e13.craft.orMore.any",
+    "kind": "ability",
+    "cr": [
+      "CR 702.167a",
+      "CR 601.2b"
+    ],
+    "pattern": "craft with {n:Qty} or more {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "craft",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {},
+      "amount": "$n",
+      "quality": "or more"
+    },
+    "examples": [
+      {
+        "text": "Craft with one or more {4}",
+        "expect": [
+          {
+            "kind": "keyword",
+            "keyword": "craft",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 4
+                }
+              ]
+            },
+            "filter": {},
+            "amount": 1,
+            "quality": "or more"
+          }
+        ]
+      },
+      {
+        "text": "Craft with two or more {2}{B}"
+      }
+    ],
+    "counterExamples": [
+      "Craft with one or more",
+      "Craft with one or fewer {4}",
+      "Craft with one {4}"
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e13.return.self.gy.bf.counter",
+    "kind": "effect",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 614.1c",
+      "CR 122.6"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield with ( a | an ) {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}{G}: Return ~ from your graveyard to the battlefield with a finality counter on it.",
+        "expect": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              },
+              "counters": [
+                {
+                  "kind": "finality",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{1}{B}, Discard two cards: Return ~ from your graveyard to the battlefield with a +1/+1 counter on it. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{3}{G}: Return ~ from your graveyard to the battlefield with two finality counters on it.",
+      "{3}{G}: Return ~ from your graveyard to your hand with a finality counter on it.",
+      "{3}{G}: Return ~ from a graveyard to the battlefield with a finality counter on it.",
+      "{3}{G}: Return ~ from your graveyard to the battlefield with a finality counter on each creature you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e13.return.self.gy.bf.tapped.counter",
+    "kind": "effect",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 614.1c",
+      "CR 122.6"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield tapped with ( a | an ) {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{6}: Return ~ from your graveyard to the battlefield tapped with a finality counter on it.",
+        "expect": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              },
+              "tapped": true,
+              "counters": [
+                {
+                  "kind": "finality",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{2}{B}: Return ~ from your graveyard to the battlefield tapped with a +1/+1 counter on it. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{6}: Return ~ from your graveyard to the battlefield untapped with a finality counter on it.",
+      "{6}: Return ~ from your graveyard to the battlefield tapped with three finality counters on it.",
+      "{6}: Return ~ from your graveyard to your hand tapped with a finality counter on it."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e13.return.choose.bf.counter",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 614.1c"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} to the battlefield with ( a | an ) {k:CounterKind} counter on it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "counters": [
+            {
+              "kind": "$k",
+              "count": 1
+            }
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return a creature card from your graveyard to the battlefield with a finality counter on it."
+      },
+      {
+        "text": "Mill three cards, then return an artifact card from your graveyard to the battlefield with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Return two creature cards from your graveyard to the battlefield with a finality counter on it.",
+      "Return a creature card from your graveyard to the battlefield with a finality counter on each creature you control.",
+      "Return target creature card from your graveyard to your hand with a finality counter on it."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e13.put.bf.counter",
+    "kind": "effect",
+    "cr": [
+      "CR 110.2",
+      "CR 400.7",
+      "CR 614.1c"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield [under your control] with ( a | an ) {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target creature card with mana value 3 or less from a graveyard onto the battlefield under your control with a finality counter on it."
+      },
+      {
+        "text": "Put target artifact card from your graveyard onto the battlefield with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature card from a graveyard onto the battlefield under its owner's control with a finality counter on it.",
+      "Put target creature card from your graveyard onto the battlefield with two finality counters on it.",
+      "Put target creature card from your graveyard onto the battlefield face down with a finality counter on it."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e13.return.bf.attacking.counter",
+    "kind": "effect",
+    "cr": [
+      "CR 110.2",
+      "CR 400.7",
+      "CR 508.4",
+      "CR 614.1c"
+    ],
+    "pattern": "return {o:Objs} to the battlefield tapped and attacking with ( a | an ) {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "attacking": true,
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return target Zombie card from your graveyard to the battlefield tapped and attacking with a finality counter on it."
+      },
+      {
+        "text": "Return target creature card with mana value 2 or less from your graveyard to the battlefield tapped and attacking with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to the battlefield tapped and blocking with a finality counter on it.",
+      "Return target creature card from your graveyard to the battlefield tapped and attacking with two finality counters on it."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

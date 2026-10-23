@@ -1,0 +1,3 @@
+# std-craft-2 (lane std-craft; test/cloud/std-craft-2, golden std-craft-2-review.json)
+# craft with nonlands with activated abilities; each activated ability of the craft link, once each turn; copy an activated ability
+The Enigma Jewel // Locus of Enlightenment

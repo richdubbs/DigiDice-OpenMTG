@@ -1,0 +1,942 @@
+[
+  {
+    "id": "eff.t8.damage.eachAndPlayers",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 120.3f"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to each {f:Filter} and {p:Player}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 7 damage to each creature and each player.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "~ deals 7 damage to each creature and each player.",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "damage",
+                  "source": {
+                    "ref": "self"
+                  },
+                  "to": {
+                    "ref": "each",
+                    "filter": {
+                      "types": [
+                        "Creature"
+                      ]
+                    }
+                  },
+                  "amount": 7,
+                  "also": [
+                    {
+                      "to": {
+                        "ref": "each",
+                        "who": "player"
+                      },
+                      "amount": 7
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "~ deals X damage to each creature with reach and each player."
+      },
+      {
+        "text": "{3}{R}: ~ deals 4 damage to each creature without flying and each opponent."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 7 damage to each creature and each player unless it is blue.",
+      "~ deals 7 damage to each creature and 2 damage to each player.",
+      "~ deals 7 damage to target creature and each player.",
+      "~ deals 7 damage to each creature or each player."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.damage.andAnother",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 120.3f",
+      "CR 115.4"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and {m:Qty} damage to {p:Player}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$p",
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "~ deals 5 damage to any target and 2 damage to you.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "~ deals 5 damage to any target and 2 damage to you.",
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "anyTarget",
+                  "min": 1,
+                  "max": 1,
+                  "text": "any target"
+                }
+              ],
+              "steps": [
+                {
+                  "op": "damage",
+                  "source": {
+                    "ref": "self"
+                  },
+                  "to": {
+                    "ref": "target",
+                    "id": "t0"
+                  },
+                  "amount": 5,
+                  "also": [
+                    {
+                      "to": {
+                        "ref": "you"
+                      },
+                      "amount": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{2}, {T}: ~ deals 3 damage to target creature and 3 damage to you."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 5 damage to any target and 2 damage to you unless it is blue.",
+      "~ deals 5 damage to any target and you lose 2 life.",
+      "~ deals 5 damage to any target and 2 damage to each other creature."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.damage.toEqual",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to {to:Recipient} equal to {n:Qty}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n"
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "~ deals damage to target creature equal to the number of Forests you control.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "~ deals damage to target creature equal to the number of Forests you control.",
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "object",
+                  "min": 1,
+                  "max": 1,
+                  "text": "target creature",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  }
+                }
+              ],
+              "steps": [
+                {
+                  "op": "damage",
+                  "source": {
+                    "ref": "self"
+                  },
+                  "to": {
+                    "ref": "target",
+                    "id": "t0"
+                  },
+                  "amount": {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": {
+                        "subtypes": [
+                          "Forest"
+                        ],
+                        "controller": "you"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "~ deals damage to target player equal to the number of artifacts you control."
+      },
+      {
+        "text": "{2}{R}: ~ deals damage to any target equal to the number of Goblins you control."
+      }
+    ],
+    "counterExamples": [
+      "~ deals damage to target creature equal to the number of Forests you control unless it is blue.",
+      "~ deals damage to target creature equal to.",
+      "~ deals damage to target creature equal to twice the number of Forests you control instead."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.damage.itself",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} deal[s] damage to itself equal to its power",
+    "build": {
+      "op": "damage",
+      "source": "$o",
+      "to": "$o",
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": "$o"
+      }
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}, {T}: Target creature deals damage to itself equal to its power.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{3}, {T}: Target creature deals damage to itself equal to its power.",
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "object",
+                  "min": 1,
+                  "max": 1,
+                  "text": "target creature",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  }
+                }
+              ],
+              "steps": [
+                {
+                  "op": "damage",
+                  "source": {
+                    "ref": "target",
+                    "id": "t0"
+                  },
+                  "to": {
+                    "ref": "target",
+                    "id": "t0"
+                  },
+                  "amount": {
+                    "q": "stat",
+                    "stat": "power",
+                    "of": {
+                      "ref": "target",
+                      "id": "t0"
+                    }
+                  }
+                }
+              ]
+            },
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 3
+                }
+              ],
+              "tap": true
+            }
+          }
+        ]
+      },
+      {
+        "text": "{1}{B}, {T}: Target creature an opponent controls deals damage to itself equal to its power."
+      }
+    ],
+    "counterExamples": [
+      "Target creature deals damage to itself equal to its toughness.",
+      "Target creature deals damage to itself equal to its power unless it is blue.",
+      "Target creature deals damage to each other creature equal to its power."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.damage.mayHave",
+    "kind": "effect",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 608.2d",
+      "CR 603.5"
+    ],
+    "pattern": "{p:Player} may have {src:Obj} deal {n:Qty} damage to {to:Recipient}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may have ~ deal 4 damage to target player or planeswalker.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, you may have ~ deal 4 damage to target player or planeswalker.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "objectOrPlayer",
+                  "min": 1,
+                  "max": 1,
+                  "text": "target player or planeswalker",
+                  "filter": {
+                    "types": [
+                      "Planeswalker"
+                    ]
+                  },
+                  "players": {
+                    "who": "any"
+                  }
+                }
+              ],
+              "steps": [
+                {
+                  "op": "may",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "do": [
+                    {
+                      "op": "damage",
+                      "source": {
+                        "ref": "self"
+                      },
+                      "to": {
+                        "ref": "target",
+                        "id": "t0"
+                      },
+                      "amount": 4
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "At the beginning of your end step, you may have ~ deal 3 damage to any target."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may have ~ deal 4 damage to target player or planeswalker unless it is blue.",
+      "When ~ enters, you may have ~ deal 4 damage to target player or planeswalker instead.",
+      "When ~ enters, you have ~ deal 4 damage to target player or planeswalker."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.gainlife.foreach2",
+    "kind": "effect",
+    "cr": [
+      "CR 119.1",
+      "CR 119.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] 2 life for each {f:Filter}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life for each Cleric you control."
+      },
+      {
+        "text": "Target player gains 2 life for each enchantment you control."
+      },
+      {
+        "text": "{2}, {T}: You gain 2 life for each card in your hand."
+      }
+    ],
+    "counterExamples": [
+      "You gain 2 life for each Cleric you control instead.",
+      "You gain 2 life for each.",
+      "You gain 2 life for each Cleric you control unless it is blue.",
+      "You gain 5 life for each Cleric you control."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.gainlife.foreach3",
+    "kind": "effect",
+    "cr": [
+      "CR 119.1",
+      "CR 119.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] 3 life for each {f:Filter}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          3,
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You gain 3 life for each Cleric you control."
+      },
+      {
+        "text": "Target player gains 3 life for each enchantment you control."
+      },
+      {
+        "text": "{2}, {T}: You gain 3 life for each card in your hand."
+      }
+    ],
+    "counterExamples": [
+      "You gain 3 life for each Cleric you control instead.",
+      "You gain 3 life for each.",
+      "You gain 3 life for each Cleric you control unless it is blue.",
+      "You gain 6 life for each Cleric you control."
+    ],
+    "status": "experimental",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.gainlife.foreach4",
+    "kind": "effect",
+    "cr": [
+      "CR 119.1",
+      "CR 119.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] 4 life for each {f:Filter}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          4,
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You gain 4 life for each Cleric you control."
+      },
+      {
+        "text": "Target player gains 4 life for each enchantment you control."
+      },
+      {
+        "text": "{2}, {T}: You gain 4 life for each card in your hand."
+      }
+    ],
+    "counterExamples": [
+      "You gain 4 life for each Cleric you control instead.",
+      "You gain 4 life for each.",
+      "You gain 4 life for each Cleric you control unless it is blue.",
+      "You gain 7 life for each Cleric you control."
+    ],
+    "status": "experimental",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.monarch",
+    "kind": "effect",
+    "cr": [
+      "CR 725.1",
+      "CR 725.3"
+    ],
+    "pattern": "{p:Player} become[s] the monarch",
+    "build": {
+      "op": "designate",
+      "who": "$p",
+      "what": "monarch"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "{4}, {T}: You become the monarch.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{4}, {T}: You become the monarch.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 4
+                }
+              ],
+              "tap": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "designate",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": "monarch"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "Target player becomes the monarch. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You become the monarch unless an opponent pays {3}.",
+      "You take the initiative unless an opponent pays {3}.",
+      "Target player becomes the monarch instead."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.extraTurn.you",
+    "kind": "effect",
+    "cr": [
+      "CR 500.7"
+    ],
+    "pattern": "take an extra turn after this one",
+    "build": {
+      "op": "extraTurn",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "extra"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Take an extra turn after this one.",
+        "expect": [
+          {
+            "kind": "spell",
+            "text": "Draw a card. Take an extra turn after this one.",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                },
+                {
+                  "op": "extraTurn",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{4}{U}, {T}: Take an extra turn after this one."
+      }
+    ],
+    "counterExamples": [
+      "Take two extra turns after this one.",
+      "Take an extra turn after this one unless an opponent pays {3}.",
+      "Take an extra turn."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.extraTurn",
+    "kind": "effect",
+    "cr": [
+      "CR 500.7"
+    ],
+    "pattern": "{p:Player} take[s] an extra turn after this one",
+    "build": {
+      "op": "extraTurn",
+      "who": "$p",
+      "count": 1
+    },
+    "subject": "player",
+    "consumes": [
+      "extra"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target player takes an extra turn after this one."
+      },
+      {
+        "text": "You take an extra turn after this one."
+      }
+    ],
+    "counterExamples": [
+      "Target player takes an extra turn after this one instead.",
+      "Target player takes an extra turn.",
+      "Target player takes three extra turns after this one."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.adapt",
+    "kind": "effect",
+    "cr": [
+      "CR 701.46a"
+    ],
+    "pattern": "adapt {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "adapt",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n"
+    },
+    "subject": "none",
+    "needs": [
+      "action:adapt"
+    ],
+    "examples": [
+      {
+        "text": "{3}{G}: Adapt 3.",
+        "expect": [
+          {
+            "kind": "activated",
+            "text": "{3}{G}: Adapt 3.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 3
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "adapt",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "n": 3
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{5}{U}: Adapt 5."
+      }
+    ],
+    "counterExamples": [
+      "{3}{G}: Adapt.",
+      "{3}{G}: Adapt 3 unless an opponent pays {3}.",
+      "{3}{G}: Adapt target creature 3."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.draw.additional",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 504.1"
+    ],
+    "pattern": "{p:Player} draw[s] an additional card",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": 1
+    },
+    "subject": "player",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's draw step, if ~ is tapped, that player draws an additional card."
+      },
+      {
+        "text": "At the beginning of each opponent's draw step, that player draws an additional card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's draw step, that player draws an additional card unless they pay {3}.",
+      "At the beginning of each player's draw step, that player draws three additional cards.",
+      "At the beginning of each player's draw step, that player draws an additional land."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "rep.t8.enters.counters.if",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 608.2c"
+    ],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counter[s] on it if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with two +1/+1 counters on it if you attacked this turn."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on it if you gained life this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with two +1/+1 counters on it unless you attacked this turn.",
+      "Target creature enters with two +1/+1 counters on it if you attacked this turn.",
+      "~ enters with two +1/+1 counters on target creature if you attacked this turn."
+    ],
+    "status": "stable",
+    "since": 3
+  },
+  {
+    "id": "eff.t8.then.ifCounters.sacrifice",
+    "kind": "effect",
+    "priority": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 122.1",
+      "CR 701.21a"
+    ],
+    "pattern": "then if {o:Obj} has {n:Qty} or more {k:CounterKind} counter[s] on it , sacrifice ~",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "matches",
+        "object": "$o",
+        "filter": {
+          "counters": {
+            "kind": "$k",
+            "cmp": {
+              "op": ">=",
+              "value": "$n"
+            }
+          }
+        }
+      },
+      "then": [
+        {
+          "op": "sacrifice",
+          "what": {
+            "ref": "self"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever enchanted creature attacks, put a +1/+1 counter on it. Then if it has four or more +1/+1 counters on it, sacrifice ~."
+      },
+      {
+        "text": "Whenever enchanted creature blocks, put a +1/+1 counter on it. Then if it has two or more +1/+1 counters on it, sacrifice ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever enchanted creature attacks, put a +1/+1 counter on it. Then if it has four or more +1/+1 counters on it, sacrifice it.",
+      "Whenever enchanted creature attacks, put a +1/+1 counter on it. Then unless it has four or more +1/+1 counters on it, sacrifice ~.",
+      "Whenever enchanted creature attacks, put a +1/+1 counter on it. Then if it has four or fewer +1/+1 counters on it, sacrifice ~."
+    ],
+    "status": "stable",
+    "since": 3
+  }
+]

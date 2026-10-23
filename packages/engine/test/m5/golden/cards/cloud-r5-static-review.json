@@ -1,0 +1,1293 @@
+[
+ {
+  "card": "Archangel of Tithes",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand against the Oracle text and the rules cited (sta.r5static.aslong.attackTax.youOrPlaneswalkers, sta.r5static.aslong.blockTax): flying; while it is untapped, each creature attacking you or a planeswalker you control costs its controller {1} as attackers are declared (CR 508.1h-j); while it is attacking, each blocking creature costs its controller {1} (CR 509.1d-f); the costs add up and the player may decline and declare again (CR 508.1d)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "static",
+      "text": "As long as ~ is untapped, creatures can't attack you or planeswalkers you control unless their controller pays {1} for each of those creatures.",
+      "condition": {
+       "cond": "matches",
+       "object": {
+        "ref": "self"
+       },
+       "filter": {
+        "tapped": false
+       }
+      },
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "attackTax",
+        "of": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "cost": {
+         "mana": [
+          {
+           "kind": "generic",
+           "amount": 1
+          }
+         ]
+        },
+        "defenders": "both"
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "As long as ~ is attacking, creatures can't block unless their controller pays {1} for each of those creatures.",
+      "condition": {
+       "cond": "matches",
+       "object": {
+        "ref": "self"
+       },
+       "filter": {
+        "attacking": true
+       }
+      },
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "blockTax",
+        "of": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "cost": {
+         "mana": [
+          {
+           "kind": "generic",
+           "amount": 1
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dáin, Lord of the Iron Hills",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.aslong.attackTax.you): vigilance; storied (an enduring story once three or more artifacts, legendaries and/or Sagas); as long as you have an enduring story, each creature attacking you costs {1} (CR 508.1h-j, 611.3a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "vigilance",
+      "text": "Vigilance"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "storied",
+      "text": "Storied"
+     },
+     {
+      "kind": "static",
+      "text": "As long as you have an enduring story, creatures can't attack you unless their controller pays {1} for each of those creatures.",
+      "condition": {
+       "cond": "designation",
+       "who": {
+        "ref": "you"
+       },
+       "what": "enduringStory"
+      },
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "attackTax",
+        "of": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "cost": {
+         "mana": [
+          {
+           "kind": "generic",
+           "amount": 1
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ghostly Prison",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.attackTax.you): each creature attacking you costs its controller {2} (CR 508.1h-j); attacks on your planeswalkers are free",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Creatures can't attack you unless their controller pays {2} for each creature they control that's attacking you.",
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "attackTax",
+        "of": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "cost": {
+         "mana": [
+          {
+           "kind": "generic",
+           "amount": 2
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Baird, Steward of Argive",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.attackTax.youOrPlaneswalkers): vigilance; each creature attacking you or a planeswalker you control costs {1} (CR 508.1h-j)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "vigilance",
+      "text": "Vigilance"
+     },
+     {
+      "kind": "static",
+      "text": "Creatures can't attack you or planeswalkers you control unless their controller pays {1} for each of those creatures.",
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "attackTax",
+        "of": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "cost": {
+         "mana": [
+          {
+           "kind": "generic",
+           "amount": 1
+          }
+         ]
+        },
+        "defenders": "both"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Onakke Oathkeeper",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.attackTax.planeswalkers): only attacks on planeswalkers you control cost {1} each (CR 508.1h-j); the graveyard ability returns a planeswalker card",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Creatures can't attack planeswalkers you control unless their controller pays {1} for each creature they control that's attacking a planeswalker you control.",
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "attackTax",
+        "of": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "cost": {
+         "mana": [
+          {
+           "kind": "generic",
+           "amount": 1
+          }
+         ]
+        },
+        "defenders": "planeswalkers"
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{4}{W}{W}, Exile ~ from your graveyard: Return target planeswalker card from your graveyard to the battlefield.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 4
+        },
+        {
+         "kind": "colored",
+         "color": "W"
+        },
+        {
+         "kind": "colored",
+         "color": "W"
+        }
+       ],
+       "other": [
+        {
+         "kind": "exileFrom",
+         "zone": "graveyard",
+         "count": 1,
+         "self": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target planeswalker card from your graveyard",
+         "filter": {
+          "types": [
+           "Planeswalker"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "battlefield",
+          "controller": {
+           "ref": "you"
+          }
+         }
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sphere of Safety",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.attackTax.youOrPlaneswalkers.whereX): each creature attacking you or a planeswalker you control costs {X}, X the number of enchantments you control as the cost is determined (CR 508.1h)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Creatures can't attack you or planeswalkers you control unless their controller pays {X} for each of those creatures, where X is the number of enchantments you control.",
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "attackTax",
+        "of": {
+         "types": [
+          "Creature"
+         ]
+        },
+        "defenders": "both",
+        "value": {
+         "q": "count",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "types": [
+            "Enchantment"
+           ],
+           "controller": "you"
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Forbidding Spirit",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (eff.r5static.attackTax.youOrPlaneswalkers.lasting): when it enters, a resolved effect until your next turn: each creature attacking you or a planeswalker you control costs {2} (CR 508.1h, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "When ~ enters, until your next turn, creatures can't attack you or planeswalkers you control unless their controller pays {2} for each of those creatures.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "untilNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "rule",
+           "rule": "attackTax",
+           "of": {
+            "types": [
+             "Creature"
+            ]
+           },
+           "defenders": "both",
+           "cost": {
+            "mana": [
+             {
+              "kind": "generic",
+              "amount": 2
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sivitri, Dragon Master",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (eff.r5static.attackTax.youOrPlaneswalkers.life.lasting): +1: until your next turn each creature attacking you or a planeswalker you control costs 2 life (CR 508.1h, 119.4, 611.2a)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "text": "+1: Until your next turn, creatures can't attack you or planeswalkers you control unless their controller pays 2 life for each of those creatures.",
+      "cost": {
+       "loyalty": 1
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "untilNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "rule",
+           "rule": "attackTax",
+           "of": {
+            "types": [
+             "Creature"
+            ]
+           },
+           "defenders": "both",
+           "cost": {
+            "other": [
+             {
+              "kind": "payLife",
+              "amount": 2
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "-3: Search your library for a Dragon card, reveal it, put it into your hand, then shuffle.",
+      "cost": {
+       "loyalty": -3
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "search",
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library",
+         "filter": {
+          "subtypes": [
+           "Dragon"
+          ]
+         },
+         "max": 1,
+         "reveal": true,
+         "as": "search"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "search"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "-7: Destroy all non-Dragon creatures.",
+      "cost": {
+       "loyalty": -7
+      },
+      "isLoyalty": true,
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "destroy",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "notSubtypes": [
+            "Dragon"
+           ],
+           "types": [
+            "Creature"
+           ]
+          }
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "text": "~ can be your commander.",
+      "effects": [
+       {
+        "s": "deckConstruction",
+        "rule": "canBeCommander"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Hunter's Blowgun",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.attached.grant.duringTurn.otherwise): equipped creature gets +1/+1; it has deathtouch during your turn and reach during other turns (CR 611.3a: the effects while the condition is false); equip {2}",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "Equipped creature gets +1/+1.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "Equipped creature has deathtouch during your turn. Otherwise, it has reach.",
+      "condition": {
+       "cond": "turnOf",
+       "whose": "you"
+      },
+      "otherwise": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "reach",
+            "text": "reach"
+           }
+          ]
+         }
+        ]
+       }
+      ],
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "deathtouch",
+            "text": "deathtouch"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "text": "Equip {2}"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Burden of Proof",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.attached.pump.aslongIs.otherwise.base.cantBlock): flash; enchant creature; +2/+2 while the creature is a Detective you control, else base power and toughness 1/1 and it can't block Detectives (CR 611.3a, 613.4b, 509.1b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flash",
+      "text": "Flash"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "enchant",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      },
+      "text": "Enchant creature"
+     },
+     {
+      "kind": "static",
+      "text": "Enchanted creature gets +2/+2 as long as it's a Detective you control. Otherwise, it has base power and toughness 1/1 and can't block Detectives.",
+      "condition": {
+       "cond": "matches",
+       "object": {
+        "ref": "attachedTo"
+       },
+       "filter": {
+        "subtypes": [
+         "Detective"
+        ],
+        "controller": "you"
+       }
+      },
+      "otherwise": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": "7b",
+          "power": 1,
+          "toughness": 1
+         }
+        ]
+       },
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "attachedTo"
+        },
+        "mode": "cant",
+        "action": "block",
+        "other": {
+         "subtypes": [
+          "Detective"
+         ]
+        }
+       }
+      ],
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 2
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Marvin, Murderous Mimic",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.has.allActivatedOf): Marvin has the activated abilities of the creatures you control that don't share its name, as layer 6 applies (CR 613.1f, 201.2a); \"this\" in them is Marvin",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ has all activated abilities of creatures you control that don't have the same name as ~.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "addActivatedOf": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "controller": "you",
+            "not": {
+             "sharesWith": {
+              "with": {
+               "ref": "self"
+              },
+              "quality": "name"
+             }
+            }
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thranduil, the Elvenking",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.has.allActivatedOf): Thranduil has the activated abilities of the Elf cards in your graveyard (CR 613.1f); the draw-and-discard trigger on another legendary Elf entering (CR 603.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ has all activated abilities of all Elf cards in your graveyard.",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "addActivatedOf": {
+           "ref": "each",
+           "filter": {
+            "subtypes": [
+             "Elf"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+           }
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever another legendary Elf you control enters, draw two cards, then discard a card.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "supertypes": [
+           "Legendary"
+          ],
+          "subtypes": [
+           "Elf"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 2
+        },
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Silent Arbiter",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.limit.attack, sta.r5static.limit.block): a declaration with more than one attacker, or more than one blocker, is illegal (CR 508.1c, 509.1b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "No more than one creature can attack each combat.",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        },
+        "mode": "cant",
+        "max": 1,
+        "action": "attack"
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "No more than one creature can block each combat.",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        },
+        "mode": "cant",
+        "max": 1,
+        "action": "block"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Crawlspace",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.limit.attackYou): no more than two creatures may attack you in one declaration; attacks on your planeswalkers do not count (CR 508.1b-c)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "No more than two creatures can attack you each combat.",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ]
+         }
+        },
+        "mode": "cant",
+        "max": 2,
+        "action": "attackPlayer",
+        "otherPlayer": {
+         "ref": "you"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Tomik, Orzhov Lawmage",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.limit.attackSelf): flying; your planeswalkers have the static ability \"No more than one creature can attack this planeswalker each combat\" (CR 508.1c, 613.1f); the {T} ability grants flying",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "static",
+      "text": "Planeswalkers you control have \"No more than one creature can attack ~ each combat.\"",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Planeswalker"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "static",
+            "text": "No more than one creature can attack this planeswalker each combat.",
+            "effects": [
+             {
+              "s": "restrict",
+              "subject": {
+               "ref": "each",
+               "filter": {
+                "types": [
+                 "Creature"
+                ]
+               }
+              },
+              "mode": "cant",
+              "max": 1,
+              "action": "attack",
+              "other": {
+               "self": true
+              }
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "text": "{T}: Target creature with a +1/+1 counter on it gains flying until end of turn.",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target creature with a +1/+1 counter on it",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "counters": {
+           "kind": "+1/+1"
+          }
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "flying",
+               "text": "flying"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Absolute Virtue",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (sta.r5static.you.protection.opponents): can't be countered; flying; you can't be dealt damage, enchanted, or targeted by anything your opponents control (CR 702.16b-e; the player's protection, unverified 702.16k)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "~ can't be countered.",
+      "zone": [
+       "stack"
+      ],
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "beCountered"
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "static",
+      "text": "You have protection from each of your opponents.",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "you"
+        },
+        "mode": "cant",
+        "action": "receiveDamage",
+        "other": {
+         "controller": "opponent"
+        }
+       },
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "you"
+        },
+        "mode": "cant",
+        "action": "beTargeted",
+        "other": {
+         "controller": "opponent"
+        }
+       },
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "you"
+        },
+        "mode": "cant",
+        "action": "beEnchanted",
+        "other": {
+         "controller": "opponent"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Pompous Gadabout",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (the nameless filter of parser/holes/filter.ts): hexproof during your turn (CR 611.3a); it can't be blocked by creatures that have no name, such as face-down creatures (CR 201.2a, 708.2a, 509.1b)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "text": "During your turn, ~ has hexproof.",
+      "condition": {
+       "cond": "turnOf",
+       "whose": "you"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "hexproof",
+            "text": "hexproof"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "text": "~ can't be blocked by creatures that don't have a name.",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+         "types": [
+          "Creature"
+         ],
+         "nameless": true
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Maximum Carnage",
+  "expect": "full",
+  "verified": "cloud r5-static review, by hand (eff.r5static.lasting.attack.otherThanYou): chapter I: until your next turn each creature attacks each combat if able and attacks a player other than you if able, two requirements of a resolved effect (CR 508.1d, 611.2a; in a game without teams the other players are your opponents, CR 102.3); II adds {R}{R}{R}; III deals 5 damage to each opponent (CR 714.2)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "chapter",
+      "text": "I -- Until your next turn, each creature attacks each combat if able and attacks a player other than you if able.",
+      "chapters": [
+       1
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "untilNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "mode": "mustIfAble",
+           "action": "attack"
+          },
+          {
+           "s": "restrict",
+           "subject": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "mode": "mustIfAble",
+           "action": "attack",
+           "otherPlayer": {
+            "ref": "each",
+            "who": "opponent"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "chapter",
+      "text": "II -- Add {R}{R}{R}.",
+      "chapters": [
+       2
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "addMana",
+         "who": {
+          "ref": "you"
+         },
+         "units": [
+          [
+           "R"
+          ],
+          [
+           "R"
+          ],
+          [
+           "R"
+          ]
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "chapter",
+      "text": "III -- ~ deals 5 damage to each opponent.",
+      "chapters": [
+       3
+      ],
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "each",
+          "who": "opponent"
+         },
+         "amount": 5
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

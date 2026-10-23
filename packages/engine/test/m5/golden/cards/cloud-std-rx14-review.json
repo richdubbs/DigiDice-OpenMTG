@@ -1,0 +1,633 @@
+[
+ {
+  "card": "Full Bore",
+  "expect": "full",
+  "verified": "std-rx14 review (card wave 2, slice s13; Standard, held-out half: both halves open), by hand against the Oracle text and the rules cited (parser/holes/cond.ts#castForAltCost, render/cond.ts#wasCastPhrase, with FAST5X's eff.fast5x.if.also.grant): target creature you control gets +3/+2 until end of turn (layer 7c); then, if that creature (the target, read as the spell resolves) was cast for its warp cost, it also gains trample and haste until end of turn (layer 6). The cast record is the one the permanent keeps of the spell it was (CR 400.7d); a creature put onto the battlefield without being cast, or one that changed zones since (a warped creature exiled at the end step and cast again normally), has no warp record, so the answer is no (CR 702.185a, 118.9, 608.2b, 608.2h, 611.2a, 613.1f, 613.4c; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "mods": [
+            {
+             "layer": "7c",
+             "power": 3,
+             "toughness": 2
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "wasCast",
+          "object": {
+           "ref": "target",
+           "id": "t0"
+          },
+          "via": "warp"
+         },
+         "then": [
+          {
+           "op": "effect",
+           "duration": {
+            "d": "endOfTurn"
+           },
+           "effects": [
+            {
+             "s": "continuous",
+             "affects": {
+              "ref": "target",
+              "id": "t0"
+             },
+             "mods": [
+              {
+               "layer": 6,
+               "add": [
+                {
+                 "kind": "keyword",
+                 "keyword": "trample"
+                },
+                {
+                 "kind": "keyword",
+                 "keyword": "haste"
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gathering Stone",
+  "expect": "full",
+  "verified": "std-rx14 review, by hand against the Oracle text and the rules cited (render/cond.ts predicates: 'a card of the chosen type'; with Cloud C5's rep.enters.choose.creaturetype and sta.c5.spells.you.chosen.less, std-ecl's trg.stdecl.entersAndWhenever, eff.look.topcard, Cloud std-fin's eff.stdfin.may.reveal.putIntoHand and LOOK3's eff.look3.ifNotPut.hand): as it enters you choose a creature type (CR 614.12a, 607.2d); spells you cast of that type cost {1} less (CR 601.2f); when it enters and at the beginning of your upkeep you look at the top card of your library; if it is a card (never a token) with the chosen creature type, you may reveal it and put it into your hand; if you did not put it there (declined, or not of the type), you may put that card into your graveyard (CR 400.7: still the same card on top). The type was chosen before the enters trigger exists (CR 614.12a, 603.6a) (CR 603.2, 608.2c, 701.20a, 701.20e; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "replace",
+        "body": {
+         "b": "enters",
+         "choose": [
+          {
+           "link": "type",
+           "what": "creatureType"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       }
+      ],
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "costMod",
+        "applies": {
+         "caster": "you",
+         "spells": {
+          "anyOf": [
+           {
+            "stackKind": "spell",
+            "zone": "stack"
+           }
+          ],
+          "chosen": {
+           "link": "type",
+           "quality": "creatureType"
+          }
+         }
+        },
+        "change": {
+         "kind": "reduce",
+         "floor": "zero",
+         "generic": 1
+        }
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "look",
+         "at": {
+          "ref": "topCards",
+          "count": 1,
+          "player": {
+           "ref": "you"
+          }
+         },
+         "as": "seen",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "chosen": {
+            "link": "type",
+            "quality": "creatureType"
+           },
+           "isCard": true
+          },
+          "object": {
+           "ref": "bound",
+           "name": "seen"
+          }
+         },
+         "then": [
+          {
+           "op": "may",
+           "do": [
+            {
+             "op": "reveal",
+             "what": {
+              "ref": "bound",
+              "name": "seen"
+             },
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "op": "move",
+             "as": "moved",
+             "to": {
+              "zone": "hand"
+             },
+             "what": {
+              "ref": "bound",
+              "name": "seen"
+             }
+            }
+           ],
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "did",
+          "not": true,
+          "step": "moved",
+          "to": "hand"
+         },
+         "then": [
+          {
+           "op": "may",
+           "do": [
+            {
+             "op": "move",
+             "to": {
+              "zone": "graveyard"
+             },
+             "what": {
+              "ref": "bound",
+              "name": "seen"
+             }
+            }
+           ],
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        },
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Herald's Horn",
+  "expect": "full",
+  "verified": "std-rx14 review (tuning half), by hand against the Oracle text and the rules cited (render/cond.ts predicates: 'a creature card of the chosen type'; with Cloud C5's choice and cost reduction, eff.look.topcard and Cloud std-fin's eff.stdfin.may.reveal.putIntoHand): as it enters you choose a creature type; creature spells you cast of that type cost {1} less; at the beginning of your upkeep you look at the top card of your library, and if it is a creature card of the chosen type you may reveal it and put it into your hand (CR 614.12a, 607.2d, 601.2f, 503.1a, 608.2c, 701.20a, 701.20e; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "replace",
+        "body": {
+         "b": "enters",
+         "choose": [
+          {
+           "link": "type",
+           "what": "creatureType"
+          }
+         ]
+        },
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       }
+      ],
+      "zone": [
+       "battlefield",
+       "stack"
+      ]
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "costMod",
+        "applies": {
+         "caster": "you",
+         "spells": {
+          "anyOf": [
+           {
+            "stackKind": "spell",
+            "types": [
+             "Creature"
+            ],
+            "zone": "stack"
+           }
+          ],
+          "chosen": {
+           "link": "type",
+           "quality": "creatureType"
+          }
+         }
+        },
+        "change": {
+         "kind": "reduce",
+         "floor": "zero",
+         "generic": 1
+        }
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "look",
+         "at": {
+          "ref": "topCards",
+          "count": 1,
+          "player": {
+           "ref": "you"
+          }
+         },
+         "as": "seen",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "chosen": {
+            "link": "type",
+            "quality": "creatureType"
+           },
+           "isCard": true,
+           "types": [
+            "Creature"
+           ]
+          },
+          "object": {
+           "ref": "bound",
+           "name": "seen"
+          }
+         },
+         "then": [
+          {
+           "op": "may",
+           "do": [
+            {
+             "op": "reveal",
+             "what": {
+              "ref": "bound",
+              "name": "seen"
+             },
+             "who": {
+              "ref": "you"
+             }
+            },
+            {
+             "op": "move",
+             "to": {
+              "zone": "hand"
+             },
+             "what": {
+              "ref": "bound",
+              "name": "seen"
+             }
+            }
+           ],
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "upkeep",
+         "whose": "you"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Garnet, Princess of Alexandria",
+  "expect": "full",
+  "verified": "std-rx14 review (Standard, tuning half), by hand against the Oracle text and the rules cited (eff.stdrx14.removeCounter.eachOfAnyNumber, with ch.may and Cloud std-tdm's eff.stdtdm.counters.forEach.destroyed reading std-rx14's Qty 'for each lore counter removed this way', q countersRemoved): lifelink; whenever Garnet attacks, you may choose any number of Sagas you control (none is a choice too; no targets) and remove one lore counter from each of them; then put a +1/+1 counter on Garnet for each lore counter actually removed by that optional action (a Saga with no lore counter gives none; a declined option removed none, 0) (CR 122.1, 122.6, 508.1m, 603.2, 608.2c, 608.2d, 702.15a, 714.2; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "lifelink"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "may",
+         "as": "removed",
+         "do": [
+          {
+           "op": "chooseObjects",
+           "as": "removeFromChosen",
+           "from": {
+            "ref": "each",
+            "filter": {
+             "controller": "you",
+             "subtypes": [
+              "Saga"
+             ]
+            }
+           },
+           "max": "any",
+           "min": 0,
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "kind": "lore",
+           "op": "removeCounters",
+           "count": 1,
+           "from": {
+            "ref": "bound",
+            "name": "removeFromChosen"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "kind": "+1/+1",
+         "op": "putCounters",
+         "count": {
+          "kind": "lore",
+          "q": "countersRemoved",
+          "step": "removed"
+         },
+         "on": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Fortune, Loyal Steed",
+  "expect": "full",
+  "verified": "std-rx14 review (Standard, held-out half: both halves open), by hand against the Oracle text and the rules cited (dl.endOfCombat.lead, promoted by std-rx14, and eff.stdrx14.flicker.objAndUpToOne; with trg.enters, eff.scry, trg.when and the saddle keyword): when Fortune enters, scry 2; whenever it attacks while saddled, a delayed trigger is created for the end of combat (CR 603.7a, 511.1): then you choose up to one creature that saddled Fortune this turn (no target), Fortune (the attacker, as the object it is: if it left and came back it is a new object, CR 400.7, and is not exiled) and the chosen creature are exiled at the same time and the cards return to the battlefield under their owners' control (new objects, CR 400.7, 406.3, 610.3); saddle 1 (CR 702.171a-c, 701.22a, 608.2c, 608.2d; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "scry",
+         "count": 2,
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "delay",
+         "do": [
+          {
+           "op": "chooseObjects",
+           "as": "flickerAlso",
+           "from": {
+            "ref": "each",
+            "filter": {
+             "saddledThisTurn": {
+              "ref": "self"
+             },
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "max": 1,
+           "min": 0,
+           "who": {
+            "ref": "you"
+           }
+          },
+          {
+           "op": "move",
+           "as": "flickeredBoth",
+           "to": {
+            "zone": "exile"
+           },
+           "what": {
+            "ref": "union",
+            "of": [
+             {
+              "ref": "event",
+              "role": "attacker"
+             },
+             {
+              "ref": "bound",
+              "name": "flickerAlso"
+             }
+            ]
+           }
+          },
+          {
+           "op": "move",
+           "to": {
+            "controller": "owner",
+            "zone": "battlefield"
+           },
+           "what": {
+            "ref": "bound",
+            "name": "flickeredBoth"
+           }
+          }
+         ],
+         "when": {
+          "at": "endOfCombat"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "saddled": true,
+          "self": true
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "amount": 1,
+      "keyword": "saddle"
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,236 @@
+[
+ {
+  "card": "Rakdos, the Muscle",
+  "verified": "std-rx8 review, by hand against the Oracle text (eff.stdrx8.exile.equalTo.fromTop) (eff.e29.permit.play.group.durFirst.anyType): flying and trample; whenever you sacrifice another creature, as many cards as that creature's mana value as it last existed (the event's subject, CR 603.10a, 608.2h) are exiled from the top of target player's library (CR 401.1, 406.1), and until your next end step you may play them, spending mana of any type on them (CR 601.3, 305.1, 609.4b, 611.2a); the sacrifice of another creature pays for indestructible until end of turn and tapping Rakdos itself, once each turn (CR 602.5b, 701.21a)",
+  "expect": "full",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "keyword",
+      "keyword": "trample"
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "as": "them",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "topCards",
+          "count": {
+           "q": "stat",
+           "of": {
+            "ref": "event",
+            "role": "subject"
+           },
+           "stat": "manaValue"
+          },
+          "player": {
+           "ref": "target",
+           "id": "t0"
+          }
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "untilNextStep",
+          "step": "end",
+          "whose": "you"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "action": "play",
+           "anyManaType": true,
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            }
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": [
+        {
+         "kind": "player",
+         "id": "t0",
+         "max": 1,
+         "min": 1,
+         "players": {
+          "who": "any"
+         }
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "action",
+         "actor": "you",
+         "object": {
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "verb": "sacrifice"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "other": [
+        {
+         "kind": "sacrifice",
+         "count": 1,
+         "filter": {
+          "other": true,
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "self"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "indestructible"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "op": "tap",
+         "what": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "limit": {
+       "max": 1,
+       "per": "turn"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Lidless Gaze",
+  "verified": "std-rx8 review (tuning half), by hand against the Oracle text (eff.e29.permit.play.group.durFirst.anyType): the top card of each player's library is exiled (CR 406.1), and until the end of your next turn you may play those cards, spending mana of any type on them (CR 601.3, 305.1, 609.4b, 611.2a, 514.2); flashback {2}{B}{R} (CR 702.34a)",
+  "expect": "full",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "as": "them",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "topCards",
+          "count": 1,
+          "player": {
+           "ref": "each",
+           "who": "player"
+          }
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfNextTurn",
+          "whose": {
+           "ref": "you"
+          }
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "action": "play",
+           "anyManaType": true,
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "them"
+            }
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      }
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        },
+        {
+         "kind": "colored",
+         "color": "R"
+        }
+       ]
+      },
+      "keyword": "flashback"
+     }
+    ]
+   }
+  ]
+ }
+]

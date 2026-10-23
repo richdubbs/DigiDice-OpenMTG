@@ -1,0 +1,214 @@
+[
+  {
+    "id": "trg.stdrx25.you.cycle.another",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.29a",
+      "CR 603.2",
+      "CR 109.1"
+    ],
+    "pattern": "whenever you cycle another card",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "cycle",
+          "actor": "you",
+          "object": {
+            "other": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cycle another card, you gain 2 life."
+      },
+      {
+        "text": "Whenever you cycle another card, target creature gets -1/-1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cycle another creature card, you gain 2 life.",
+      "Whenever an opponent cycles another card, you gain 2 life.",
+      "Whenever you cycle or discard another card, you gain 2 life."
+    ]
+  },
+  {
+    "id": "wrap.stdrx25.payelse.xWhere",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 107.3a",
+      "CR 608.2h"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {x} , where x is {q:Qty}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 1
+          }
+        ]
+      },
+      "times": "$q",
+      "else": "$e"
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell unless its controller pays {X}, where X is the number of cards in your hand."
+      },
+      {
+        "text": "Destroy target artifact unless its controller pays {X}, where X is the greatest power among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller pays {X}. Draw a card.",
+      "Counter target spell if its controller pays {X}, where X is the number of cards in your hand.",
+      "Counter target spell unless its controller pays X life, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.stdrx25.playerDrawsLoses.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 107.3",
+      "CR 121.1",
+      "CR 119.3"
+    ],
+    "pattern": "{p:Player} draws x cards and loses x life , where x is {q:Qty}",
+    "build": [
+      {
+        "op": "let",
+        "name": "whereX",
+        "value": "$q"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "var",
+          "name": "whereX"
+        }
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": {
+          "q": "var",
+          "name": "whereX"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target player draws X cards and loses X life, where X is the number of creatures you control."
+      },
+      {
+        "text": "Each opponent draws X cards and loses X life, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws X cards and gains X life, where X is the number of creatures you control.",
+      "Target player draws X cards and loses two life, where X is the number of creatures you control.",
+      "Target player draws X cards and loses Y life, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.stdrx25.exchange.lifeTotals.twoTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.12a",
+      "CR 701.12c",
+      "CR 115.3",
+      "CR 119.7",
+      "CR 119.8"
+    ],
+    "pattern": "{p:Player} exchange life totals",
+    "build": {
+      "op": "exchange",
+      "a": "$p",
+      "b": "$p",
+      "what": "life"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{5}, {T}: Two target players exchange life totals."
+      },
+      {
+        "text": "When ~ enters, two target players exchange life totals."
+      }
+    ],
+    "counterExamples": [
+      "Two target players exchange hands.",
+      "Two target players exchange life totals with you.",
+      "Target player exchanges life totals."
+    ]
+  },
+  {
+    "id": "eff.stdrx25.may.have.exchange.lifeTotals",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.12a",
+      "CR 701.12c",
+      "CR 115.3"
+    ],
+    "pattern": "you may have {p:Player} exchange life totals",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "exchange",
+          "a": "$p",
+          "b": "$p",
+          "what": "life"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may have two target players exchange life totals."
+      },
+      {
+        "text": "When ~ enters, you may have two target players exchange life totals."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may have two target players exchange hands.",
+      "When ~ enters, two target players may exchange life totals.",
+      "When ~ enters, you may have two target players exchange life totals with you."
+    ]
+  }
+]

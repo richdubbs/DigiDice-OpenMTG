@@ -1,0 +1,1071 @@
+[
+  {
+    "id": "rep.r4copy.enters.copy.a",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 613.2a"
+    ],
+    "pattern": "you may have ~ enter as a copy of ( a | an ) {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of an enchantment or land you control."
+      },
+      {
+        "text": "You may have ~ enter as a copy of a creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of two creatures you control.",
+      "~ enters as a copy of a creature you control.",
+      "You may have ~ enter as a copy of target creature you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.r4copy.enters.copy.any.exceptHas",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9a"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield , except it has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any artifact on the battlefield, except it has vigilance."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it has flying and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it has flying until end of turn.",
+      "You may have ~ enter as a copy of any creature in a graveyard, except it has flying.",
+      "You may have ~ enter as a copy of any creature on the battlefield, except it gains flying."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.becomeCopy",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 613.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes a copy of {p:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}: ~ becomes a copy of another target creature you control."
+      },
+      {
+        "text": "Whenever ~ attacks, target land you control becomes a copy of target land an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes a copy of another target creature you control, except it has flying.",
+      "{3}: ~ becomes a copy of another target creature you control until end of turn.",
+      "{3}: ~ becomes a 1/1 copy of another target creature you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.eachOther.becomeCopy.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 109.2",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1a"
+    ],
+    "pattern": "each other {g:Filter} becomes a copy of {p:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$g"
+              ],
+              "not": {
+                "is": "$p"
+              }
+            }
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{1}{U}: Tap target creature you control. Each other creature you control becomes a copy of that creature until end of turn."
+      },
+      {
+        "text": "{4}: Untap target artifact you control. Each other artifact you control becomes a copy of it until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}: Tap target creature you control. Each other creature you control becomes a copy of that creature.",
+      "{1}{U}: Tap target creature you control. Each creature you control becomes a copy of that creature until end of turn.",
+      "{1}{U}: Tap target creature you control. Each other creature you control becomes a copy of that creature until end of turn, except it has flying."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.becomeCopy.exceptHas.thisAbility",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 707.9a",
+      "CR 613.1a"
+    ],
+    "pattern": "{o:Obj} becomes a copy of {p:Obj} , except it has {a:Abilities} and this ability",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                },
+                {
+                  "thisAbility": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: ~ becomes a copy of target creature card in your graveyard, except it has haste and this ability."
+      },
+      {
+        "text": "{X}{U}: ~ becomes a copy of target artifact card in a graveyard with mana value X, except it has vigilance and this ability."
+      }
+    ],
+    "counterExamples": [
+      "{2}{U}: ~ becomes a copy of target creature card in your graveyard, except it has haste.",
+      "{2}{U}: ~ becomes a copy of target creature card in your graveyard until end of turn, except it has haste and this ability.",
+      "{2}{U}: ~ becomes a copy of target creature card in your graveyard, except it has this ability."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.may.becomeCopy.chosen.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 613.1a"
+    ],
+    "pattern": "you may have {o:Obj} become a copy of {f:Filter} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "1a",
+                  "copyOf": {
+                    "ref": "each",
+                    "filter": "$f"
+                  },
+                  "choose": {}
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "until"
+    ],
+    "needs": [
+      "feature:copy.choose"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may have ~ become a copy of another creature you control until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, you may have it become a copy of a nonlegendary creature you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may have ~ become a copy of another target creature you control until end of turn.",
+      "At the beginning of your upkeep, you may have ~ become a copy of another creature you control.",
+      "At the beginning of your upkeep, ~ becomes a copy of another creature you control until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.r4copy.mayCastCopy",
+    "kind": "rider",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast the copy",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "@require": {
+          "what.ref": "bound",
+          "result": "spell",
+          "count": null,
+          "newTargets": null,
+          "except": null,
+          "as": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile target instant card from your graveyard. Copy it. You may cast the copy."
+      },
+      {
+        "text": "When ~ enters, exile up to one target sorcery card from a graveyard and copy it. You may cast the copy."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell. You may cast the copy.",
+      "Exile target instant card from your graveyard. Copy it. You may cast it.",
+      "Exile target instant card from your graveyard. Copy it. Cast the copy."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.r4copy.mayCastCopy.free",
+    "kind": "rider",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 400.7",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast the copy without paying its mana cost",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "free": true,
+        "@require": {
+          "what.ref": "bound",
+          "result": "spell",
+          "count": null,
+          "newTargets": null,
+          "except": null,
+          "as": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile target instant card from your graveyard. Copy it. You may cast the copy without paying its mana cost."
+      },
+      {
+        "text": "When ~ dies, exile up to one target sorcery card with mana value 3 or less from your graveyard. Copy it. You may cast the copy without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell. You may cast the copy without paying its mana cost.",
+      "Exile target instant card from your graveyard. Copy it. You may cast it without paying its mana cost.",
+      "Exile target instant card from your graveyard. You may cast the copy without paying its mana cost."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.copy.thenMayCastCopy.free",
+    "kind": "effect",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 400.7",
+      "CR 118.9",
+      "CR 608.2c"
+    ],
+    "pattern": "copy {o:Obj} , then you may cast the copy without paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "copyIn": "exile",
+      "optional": true,
+      "free": true
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target instant card from your graveyard. Copy it, then you may cast the copy without paying its mana cost."
+      },
+      {
+        "text": "{2}{U}, {T}: Exile target sorcery card with mana value 2 or less from your graveyard. Copy it, then you may cast the copy without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell, then you may cast the copy without paying its mana cost.",
+      "When ~ enters, exile target instant card from your graveyard. Copy it, then you may cast it without paying its mana cost.",
+      "When ~ enters, exile target instant card from your graveyard. Copy it, then cast the copy without paying its mana cost."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.copyToken.notLegendary.basePT.subtype",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 205.1b",
+      "CR 613.4b"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's not legendary and it's ( a | an ) {pt:BasePT} {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "not",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's not legendary and it's a 3/3 Knight in addition to its other types."
+      },
+      {
+        "text": "Create a token that's a copy of target creature an opponent controls, except it's not legendary and it's a 1/1 Rat in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it's not legendary and it's a 3/3 Knight.",
+      "Create a token that's a copy of target creature you control, except it's legendary and it's a 3/3 Knight in addition to its other types.",
+      "Create a token that's a copy of target creature you control, except it's a 3/3 Knight in addition to its other types."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.copyToken.basePT.colorType.has",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 105.3",
+      "CR 205.1b",
+      "CR 613.4b",
+      "CR 707.9a"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature in addition to its other colors and types and it has {a:Abilities}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "add": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Create a token that's a copy of another target creature you control, except it's a 2/2 blue Illusion creature in addition to its other colors and types and it has flying."
+      },
+      {
+        "text": "Create a token that's a copy of target artifact you control, except it's a 3/3 green Golem creature in addition to its other colors and types and it has trample and haste."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target artifact you control, except it's a 3/3 green Golem creature in addition to its other colors and types.",
+      "Create a token that's a copy of target artifact you control, except it's a 3/3 green Golem creature and it has trample.",
+      "Create a token that's a copy of target artifact you control, except it's a green Golem creature in addition to its other colors and types and it has trample."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.forEach.copyToken.exceptHas",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 608.2f",
+      "CR 111.1"
+    ],
+    "pattern": "for each {f:Filter} , create a token that's a copy of ( it | that creature | that permanent | that artifact ) , except it has {a:Abilities}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "except": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "For each creature target opponent controls, create a token that's a copy of that creature, except it has haste."
+      },
+      {
+        "text": "For each artifact you control, create a token that's a copy of that artifact, except it has \"At the beginning of your upkeep, sacrifice this artifact.\""
+      }
+    ],
+    "counterExamples": [
+      "For each creature target opponent controls, create a token that's a copy of that creature, except it has haste until end of turn.",
+      "For each creature target opponent controls, create a token that's a copy of that creature, except it isn't legendary and has haste.",
+      "For each creature target opponent controls, create two tokens that are copies of that creature, except they have haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.mayHave.player.gainControl",
+    "kind": "effect",
+    "cr": [
+      "CR 108.4",
+      "CR 613.1b",
+      "CR 608.2d",
+      "CR 611.2a"
+    ],
+    "pattern": "you may have {p:Player} gain control of {o:Obj}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 2,
+                  "controller": "$p"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may have target opponent gain control of target artifact you control."
+      },
+      {
+        "text": "When ~ enters, you may have target player gain control of target land you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may have target opponent gain control of target artifact you control until end of turn.",
+      "At the beginning of your upkeep, target opponent may gain control of target artifact you control.",
+      "At the beginning of your upkeep, you may have target opponent exchange control of target artifact you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.r4copy.mayCastAnyNumberOfCopies",
+    "kind": "rider",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast any number of the copies",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "@require": {
+          "what.ref": "bound",
+          "result": "spell",
+          "count": null,
+          "newTargets": null,
+          "except": null,
+          "as": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Exile up to two target instant cards from your graveyard. Copy them. You may cast any number of the copies."
+      },
+      {
+        "text": "When ~ dies, exile any number of target sorcery cards from your graveyard. Copy them. You may cast any number of the copies."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell. You may cast any number of the copies.",
+      "Exile up to two target instant cards from your graveyard. Copy them. You may cast one of the copies.",
+      "Exile up to two target instant cards from your graveyard. You may cast any number of the copies."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r4copy.copy.group",
+    "kind": "effect",
+    "cr": [
+      "CR 707.10",
+      "CR 707.12",
+      "CR 608.2c"
+    ],
+    "pattern": "copy {o:Objs}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile up to two target instant cards from your graveyard. Copy them. You may cast any number of the copies."
+      },
+      {
+        "text": "Exile any number of target sorcery cards from your graveyard. Copy them. You may cast any number of the copies."
+      }
+    ],
+    "counterExamples": [
+      "Exile up to two target instant cards from your graveyard. Copy them twice. You may cast any number of the copies.",
+      "Exile up to two target instant cards from your graveyard. Copy it. You may cast any number of the copies.",
+      "Exile up to two target instant cards from your graveyard. Copy them. You may cast the copies."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.r4copy.firstTokensEachTurn.copies",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 616.1",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "the first time you would create one or more tokens each turn , you may instead create that many tokens that are copies of {o:Obj}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "optional": true,
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "happened",
+          "event": {
+            "ev": "createToken",
+            "player": "you"
+          },
+          "scope": "turn"
+        }
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "copy",
+            "what": "$o",
+            "result": "token",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "eventAmount"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "would",
+      "may",
+      "instead",
+      "that many",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first time you would create one or more tokens each turn, you may instead create that many tokens that are copies of enchanted creature."
+      },
+      {
+        "text": "The first time you would create one or more tokens each turn, you may instead create that many tokens that are copies of enchanted artifact."
+      }
+    ],
+    "counterExamples": [
+      "The first time you would create one or more tokens each turn, create that many tokens that are copies of enchanted creature instead.",
+      "Whenever you would create one or more tokens, you may instead create that many tokens that are copies of enchanted creature.",
+      "The first time you would create one or more tokens each turn, you may instead create twice that many tokens that are copies of enchanted creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.r4copy.attached.firstTokensEachTurn.copies",
+    "kind": "static",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 616.1",
+      "CR 707.2",
+      "CR 111.1",
+      "CR 301.5"
+    ],
+    "pattern": "( as long as | while ) ~ is attached to a creature , the first time you would create one or more tokens each turn , you may instead create that many tokens that are copies of {o:Obj}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "optional": true,
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "attachedTo"
+            },
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          {
+            "cond": "not",
+            "of": {
+              "cond": "happened",
+              "event": {
+                "ev": "createToken",
+                "player": "you"
+              },
+              "scope": "turn"
+            }
+          }
+        ]
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "copy",
+            "what": "$o",
+            "result": "token",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "eventAmount"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "would",
+      "may",
+      "instead",
+      "that many",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "While ~ is attached to a creature, the first time you would create one or more tokens each turn, you may instead create that many tokens that are copies of equipped creature."
+      },
+      {
+        "text": "While this Equipment is attached to a creature, the first time you would create one or more tokens each turn, you may instead create that many tokens that are copies of equipped creature."
+      }
+    ],
+    "counterExamples": [
+      "While ~ is attached to a creature, the first time you would create one or more tokens each turn, you may instead create that many tokens that are copies of target creature.",
+      "While ~ is attached to a creature, whenever you would create one or more tokens, you may instead create that many tokens that are copies of equipped creature.",
+      "While ~ is attached to a creature, the first time you would create one or more tokens each turn, you may instead create a token that's a copy of equipped creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.r4copy.enters.copy.keepName.identity.whenYouDo.exile",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 707.9c",
+      "CR 603.12",
+      "CR 205.1b"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} , except ~ 's name is ~ and ~ is ( a | an ) {pt:BasePT} {st:Subtypes} in addition to ~ 's other types . when you do , exile that card",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "retain": [
+                    "name"
+                  ]
+                },
+                {
+                  "layer": 4,
+                  "subtypes": {
+                    "add": "$st"
+                  }
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ],
+              "then": {
+                "as": "copied",
+                "do": [
+                  {
+                    "op": "reflexive",
+                    "when": {
+                      "did": "copied"
+                    },
+                    "targets": [],
+                    "do": [
+                      {
+                        "op": "move",
+                        "what": {
+                          "ref": "bound",
+                          "name": "copied"
+                        },
+                        "to": {
+                          "zone": "exile"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "in addition",
+      "other",
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature card in a graveyard, except ~'s name is ~ and ~ is a 3/3 Elf Druid in addition to ~'s other types. When you do, exile that card."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any artifact creature card in a graveyard, except ~'s name is ~ and ~ is a 2/2 Construct in addition to ~'s other types. When you do, exile that card."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature card in a graveyard, except ~'s name is ~ and ~ is a 3/3 Elf Druid in addition to ~'s other types. When you do, return that card to its owner's hand.",
+      "You may have ~ enter as a copy of any creature card in a graveyard, except ~'s name is ~ and ~ is a 3/3 Elf Druid in addition to ~'s other types.",
+      "You may have ~ enter as a copy of any creature card in a graveyard, except ~ is a 3/3 Elf Druid in addition to ~'s other types. When you do, exile that card."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -1,0 +1,246 @@
+[
+  {
+    "id": "eff.t42.return.self.gy.bf.transformed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 113.6m", "CR 712.14a", "CR 400.7", "CR 110.2"],
+    "pattern": "return ~ from your graveyard to the battlefield transformed",
+    "build": { "op": "move", "what": { "ref": "self" }, "to": { "zone": "battlefield", "controller": { "ref": "you" }, "transformed": true } },
+    "subject": "none",
+    "examples": [
+      { "text": "{4}{B}{B}: Return ~ from your graveyard to the battlefield transformed. Activate only as a sorcery." },
+      { "text": "{6}{R}: Return ~ from your graveyard to the battlefield transformed." }
+    ],
+    "counterExamples": [
+      "{4}{B}{B}: Return ~ from your graveyard to the battlefield.",
+      "{4}{B}{B}: Return ~ from your graveyard to the battlefield tapped.",
+      "{4}{B}{B}: Return ~ from your graveyard to your hand transformed."
+    ]
+  },
+  {
+    "id": "eff.t42.return.self.gy.bf.attached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 113.6m", "CR 303.4f", "CR 400.7", "CR 110.2"],
+    "pattern": "return ~ from your graveyard to the battlefield attached to {o:Obj}",
+    "build": { "op": "move", "what": { "ref": "self" }, "to": { "zone": "battlefield", "controller": { "ref": "you" }, "attachedTo": "$o" } },
+    "subject": "none",
+    "examples": [
+      { "text": "{3}{W}: Return ~ from your graveyard to the battlefield attached to target creature you control with power 2 or less. Activate only as a sorcery." },
+      { "text": "{2}{U}: Return ~ from your graveyard to the battlefield attached to target artifact you control." }
+    ],
+    "counterExamples": [
+      "{3}{W}: Return ~ from your graveyard to the battlefield attached to each creature you control.",
+      "{3}{W}: Return ~ from your graveyard to the battlefield tapped attached to target creature you control.",
+      "{3}{W}: Return ~ from your graveyard to your hand attached to target creature you control."
+    ]
+  },
+  {
+    "id": "eff.t42.return.bf.attached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 301.5e", "CR 303.4f", "CR 400.7", "CR 110.2"],
+    "pattern": "return {o:Targets} to the battlefield attached to {a:Obj}",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" }, "attachedTo": "$a" } },
+    "subject": "none",
+    "examples": [
+      { "text": "Whenever ~ attacks, return target Aura card from your graveyard to the battlefield attached to ~." },
+      { "text": "Return target Aura card from your graveyard to the battlefield attached to target creature you control." }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, return target Aura card from your graveyard to the battlefield tapped attached to ~.",
+      "Whenever ~ attacks, return target Aura card from your graveyard to the battlefield attached to each creature you control.",
+      "Whenever ~ attacks, return target Aura card from your graveyard to your hand attached to ~."
+    ]
+  },
+  {
+    "id": "eff.t42.return.toBattlefield.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 400.7", "CR 110.2"],
+    "pattern": "return to the battlefield {o:Obj}",
+    "build": { "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" } } },
+    "subject": "none",
+    "examples": [
+      { "text": "Return to the battlefield target creature card in your graveyard with mana value 3 or less." },
+      { "text": "Return to the battlefield target nonland permanent card in your graveyard with mana value less than or equal to the number of lands you control." }
+    ],
+    "counterExamples": [
+      "Return to the battlefield tapped target creature card in your graveyard.",
+      "Return to the battlefield each creature card in your graveyard.",
+      "Return to your hand target creature card in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.t42.draw.thenMayPutHand.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": ["CR 121.1", "CR 608.2c", "CR 608.2d", "CR 110.2a", "CR 110.5b", "CR 400.7"],
+    "pattern": "draw a card , then you may put {f:Filter} onto the battlefield tapped",
+    "build": [
+      { "op": "draw", "who": { "ref": "you" }, "count": 1 },
+      { "op": "chooseObjects", "who": { "ref": "you" }, "from": { "ref": "each", "filter": "$f" }, "min": 0, "max": 1, "as": "put" },
+      { "op": "move", "what": { "ref": "bound", "name": "put" }, "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true } }
+    ],
+    "subject": "none",
+    "consumes": ["may"],
+    "examples": [
+      { "text": "Draw a card, then you may put a land card from your hand onto the battlefield tapped." },
+      { "text": "Draw a card, then you may put a permanent card with mana value less than or equal to the number of lands you control from your hand onto the battlefield tapped." }
+    ],
+    "counterExamples": [
+      "Draw a card, then you may put a land card from your hand onto the battlefield.",
+      "Draw two cards, then you may put a land card from your hand onto the battlefield tapped.",
+      "Draw a card, then put a land card from your hand onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.t42.return.bf.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 107.3", "CR 608.2h", "CR 400.7", "CR 110.2"],
+    "pattern": "return {o:Obj} to the battlefield , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [{ "op": "move", "what": "$o", "to": { "zone": "battlefield", "controller": { "ref": "you" } } }]
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "Return target creature card with mana value X or less from your graveyard to the battlefield, where X is the number of lands you control." },
+      { "text": "When ~ enters, return target artifact card with mana value X or less from your graveyard to the battlefield, where X is the amount of mana spent to cast ~." }
+    ],
+    "counterExamples": [
+      "Return target Wizard card with mana value X or less from your graveyard to the battlefield.",
+      "Return target creature card with mana value X or less from your graveyard to the battlefield, where Y is the number of lands you control.",
+      "Return target creature card with mana value X or less from your graveyard to the battlefield tapped, where X is the number of lands you control."
+    ]
+  },
+  {
+    "id": "eff.t42.search.mvEqual.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 202.3", "CR 107.3", "CR 110.2", "CR 608.2h"],
+    "pattern": "search your library for ( a | an ) {f:Filter} card with mana value equal to {n:Qty} , put that card onto the battlefield , then shuffle",
+    "build": [
+      { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": { "anyOf": ["$f"], "manaValue": { "op": "==", "value": "$n" } }, "max": 1, "as": "search" },
+      { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "battlefield", "controller": { "ref": "you" } } },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "examples": [
+      { "text": "Search your library for a creature card with mana value equal to 2 plus the number of lands you control, put that card onto the battlefield, then shuffle." },
+      { "text": "{T}, Sacrifice another artifact: Search your library for an artifact card with mana value equal to 2 plus the sacrificed artifact's mana value, put that card onto the battlefield, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for a creature card with mana value equal to 2 plus the number of lands you control, put that card into your hand, then shuffle.",
+      "Search your library for a creature card with mana value equal to 2 plus the number of lands you control, put that card onto the battlefield tapped, then shuffle.",
+      "Search your library for a creature card with mana value 2 plus the number of lands you control, put that card onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t42.search.reveal.handOrGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 701.20a", "CR 608.2d", "CR 400.3"],
+    "pattern": "search your library for ( a | an ) {f:Filter} card , reveal it , put it into your hand or graveyard , then shuffle",
+    "build": [
+      { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": "$f", "max": 1, "reveal": true, "as": "search" },
+      {
+        "op": "chooseValue", "who": { "ref": "you" }, "what": "option", "as": "destination", "link": "destination", "options": ["hand", "graveyard"],
+        "guard": { "cond": "exists", "of": { "ref": "bound", "name": "search" } }
+      },
+      { "op": "if", "cond": { "cond": "chosen", "link": "destination", "equals": "hand" }, "then": [{ "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "hand" } }] },
+      { "op": "if", "cond": { "cond": "chosen", "link": "destination", "equals": "graveyard" }, "then": [{ "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "graveyard" } }] },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "examples": [
+      { "text": "Search your library for a creature card, reveal it, put it into your hand or graveyard, then shuffle." },
+      { "text": "Search your library for a land card, reveal it, put it into your hand or graveyard, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for a creature card, reveal it, put it into your hand, then shuffle.",
+      "Search your library for a creature card, put it into your hand or graveyard, then shuffle.",
+      "Search your library for a creature card, reveal it, put it into your hand or on top of your library, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t42.look.topTwo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": ["CR 401.2", "CR 608.2c"],
+    "pattern": "look at the top two cards of your library",
+    "build": { "op": "look", "who": { "ref": "you" }, "at": { "ref": "topCards", "player": { "ref": "you" }, "count": 2 }, "as": "looked" },
+    "subject": "none",
+    "examples": [
+      { "text": "Look at the top two cards of your library. Put one into your hand and the other into your graveyard." },
+      { "text": "Scry 1, then look at the top two cards of your library." }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of your library.",
+      "Look at the bottom two cards of your library.",
+      "Look at the top two cards of your graveyard."
+    ]
+  },
+  {
+    "id": "eff.t42.putOneHand.otherGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 401.2", "CR 608.2c", "CR 608.2d", "CR 400.7"],
+    "pattern": "put one into your hand and the other into your graveyard",
+    "build": [
+      { "op": "chooseObjects", "who": { "ref": "you" }, "from": { "ref": "bound", "name": "looked" }, "min": 1, "max": 1, "as": "kept" },
+      { "op": "move", "what": { "ref": "bound", "name": "kept" }, "to": { "zone": "hand" } },
+      { "op": "move", "what": { "ref": "bound", "name": "looked" }, "to": { "zone": "graveyard" } }
+    ],
+    "subject": "none",
+    "consumes": ["other"],
+    "examples": [
+      { "text": "Look at the top two cards of your library. Put one into your hand and the other into your graveyard." },
+      { "text": "Scry 1, then look at the top two cards of your library. Put one into your hand and the other into your graveyard." },
+      { "text": "You gain 2 life. Look at the top two cards of your library. Put one into your hand and the other into your graveyard." }
+    ],
+    "counterExamples": [
+      "Look at the top two cards of your library. Put one into your hand and the other on the bottom of your library.",
+      "Look at the top two cards of your library. Put one into your hand and the other into your graveyard unless an opponent pays {1}.",
+      "Put one into your hand and the other into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.t42.search.upTo.differentNames.battlefield.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.23a", "CR 701.23b", "CR 201.2", "CR 110.2", "CR 614.1c"],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards and/or {g:Filter} cards with different names , put them onto the battlefield tapped , then shuffle",
+    "build": [
+      { "op": "search", "who": { "ref": "you" }, "zone": "library", "filter": { "anyOf": ["$f", "$g"] }, "min": 0, "max": "$n", "differentNames": true, "as": "search" },
+      { "op": "move", "what": { "ref": "bound", "name": "search" }, "to": { "zone": "battlefield", "controller": { "ref": "you" }, "tapped": true } },
+      { "op": "shuffle", "who": { "ref": "you" } }
+    ],
+    "subject": "none",
+    "consumes": ["up to", "different"],
+    "examples": [
+      { "text": "Search your library for up to four basic land cards and/or Desert cards with different names, put them onto the battlefield tapped, then shuffle." },
+      { "text": "Search your library for up to three basic land cards and/or Gate cards with different names, put them onto the battlefield tapped, then shuffle." }
+    ],
+    "counterExamples": [
+      "Search your library for up to two basic land cards and/or Town cards, put them onto the battlefield tapped, then shuffle.",
+      "Search your library for up to two basic land cards and/or Town cards with different names, put them into your hand, then shuffle.",
+      "Search your library for up to two basic land cards and/or Town cards with different names, put them onto the battlefield, then shuffle."
+    ]
+  }
+]

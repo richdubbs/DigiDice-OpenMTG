@@ -1,0 +1,146 @@
+[
+  {
+    "id": "eff.stdre.cast.fromLinkedExile.owned",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 607.2a",
+      "CR 305.9",
+      "CR 108.3"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from among cards you own exiled with ~",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{2}{B}, {T}: Exile target card from a graveyard.\nWhenever ~ attacks, you may cast a Goblin spell from among cards you own exiled with ~."
+      },
+      {
+        "text": "Sacrifice another creature: Exile target card from a graveyard.\n{T}: You may cast a sorcery spell from among cards you own exiled with ~. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{2}{B}, {T}: Exile target card from a graveyard.\nWhenever ~ attacks, you may cast a Goblin spell from among cards an opponent owns exiled with ~.",
+      "{2}{B}, {T}: Exile target card from a graveyard.\nWhenever ~ attacks, you may cast Goblin spells from among cards you own exiled with ~.",
+      "{2}{B}, {T}: Exile target card from a graveyard.\nWhenever ~ attacks, you may cast a Goblin spell from among cards you own in exile."
+    ]
+  },
+  {
+    "id": "eff.stdre.search.oneOfEach3",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for {f:SearchDesc} , {g:SearchDesc} , and {h:SearchDesc}",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "and": [
+        "$g",
+        "$h"
+      ],
+      "as": "search"
+    },
+    "subject": "none",
+    "needs": [
+      "op:search.and"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a Plains card, a Forest card, and an Island card, put them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Search your library for a red card, a white card, and a green card. Reveal those cards, put them into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a Plains card, a Forest card, and two Island cards, put them onto the battlefield tapped, then shuffle.",
+      "Search your library for a Plains card, a Forest card, or an Island card, put it onto the battlefield tapped, then shuffle.",
+      "Search your graveyard for a Plains card, a Forest card, and an Island card, put them onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.stdre.you.scry",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.22a",
+      "CR 109.5"
+    ],
+    "pattern": "you scry {n:Qty}",
+    "build": {
+      "op": "scry",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever this creature blocks, you scry 3."
+      },
+      {
+        "text": "When this creature enters, it deals 1 damage to each opponent and you scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature blocks, you scry 3 cards.",
+      "Whenever this creature blocks, you surveil 3.",
+      "Whenever this creature blocks, target player scry 3."
+    ]
+  }
+]

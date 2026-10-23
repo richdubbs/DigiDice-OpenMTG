@@ -1,0 +1,125 @@
+[
+  {
+    "id": "eff.stdrx10.choose.twoTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose {a:Targets} and {b:Targets}",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "union",
+        "of": [
+          "$a",
+          "$b"
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose target creature you control and target creature you don't control. Then those creatures fight each other."
+      },
+      {
+        "text": "Choose target creature you control and target creature an opponent controls. Put a +1/+1 counter on the creature you control. Then those creatures fight each other."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature you control and target creature you don't control.",
+      "Choose target creature you control and target creature you don't control. Draw a card.",
+      "Choose a creature you control and a creature you don't control. Then those creatures fight each other."
+    ]
+  },
+  {
+    "id": "eff.stdrx10.fight.eachOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.14a",
+      "CR 701.14b",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Them} fight each other",
+    "build": {
+      "lower": "fightEachOther",
+      "what": "$o"
+    },
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Choose target creature you control and target creature you don't control. Then those creatures fight each other."
+      },
+      {
+        "text": "Choose target creature you control and target creature an opponent controls. Tap the creature an opponent controls. Then those creatures fight each other."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature you control and target creature you don't control. Then those creatures fight.",
+      "Destroy two target creatures. Then those creatures fight each other.",
+      "Choose two target creatures. Then those creatures fight each other."
+    ]
+  },
+  {
+    "id": "sta.stdrx10.cast.self.flashForAddCost",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 702.8a"
+    ],
+    "pattern": "you may cast ~ as though it had flash if you {c:Cost} as an additional cost to cast it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "self": true
+          },
+          "addCost": "$c"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ as though it had flash if you behold an Elf as an additional cost to cast it."
+      },
+      {
+        "text": "You may cast ~ as though it had flash if you sacrifice a creature as an additional cost to cast it."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ as though it had flash if you behold an Elf.",
+      "You may cast ~ as though it had haste if you behold an Elf as an additional cost to cast it.",
+      "You may cast ~ as though it had flash if you behold an Elf as an additional cost to activate it."
+    ]
+  }
+]

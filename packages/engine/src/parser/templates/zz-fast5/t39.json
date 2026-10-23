@@ -1,0 +1,324 @@
+[
+  {
+    "id": "eff.t39.token.monsterRole.attached",
+    "kind": "effect",
+    "cr": [
+      "CR 111.10k",
+      "CR 303.4f",
+      "CR 303.7",
+      "CR 701.7a"
+    ],
+    "pattern": "create a monster role token attached to {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "predefined": "Monster Role"
+      },
+      "attachTo": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a Monster Role token attached to target Goblin you control."
+      },
+      {
+        "text": "Create a Monster Role token attached to target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Create two Monster Role tokens attached to target Goblin you control.",
+      "Create a Monster Role token.",
+      "Create a Young Hero Role token attached to target Goblin you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t39.token.youngHeroRole.attached",
+    "kind": "effect",
+    "cr": [
+      "CR 111.10r",
+      "CR 303.4f",
+      "CR 303.7",
+      "CR 701.7a"
+    ],
+    "pattern": "create a young hero role token attached to {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "predefined": "Young Hero Role"
+      },
+      "attachTo": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a Young Hero Role token attached to target Goblin you control."
+      },
+      {
+        "text": "Create a Young Hero Role token attached to target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Create two Young Hero Role tokens attached to target Goblin you control.",
+      "Create a Young Hero Role token.",
+      "Create a Monster Role token attached to target Goblin you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t39.token.sorcererRole.attached",
+    "kind": "effect",
+    "cr": [
+      "CR 111.10n",
+      "CR 303.4f",
+      "CR 303.7",
+      "CR 701.7a"
+    ],
+    "pattern": "create a sorcerer role token attached to {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "predefined": "Sorcerer Role"
+      },
+      "attachTo": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a Sorcerer Role token attached to target Goblin you control."
+      },
+      {
+        "text": "Create a Sorcerer Role token attached to target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Create two Sorcerer Role tokens attached to target Goblin you control.",
+      "Create a Sorcerer Role token.",
+      "Create a Monster Role token attached to target Goblin you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t39.token.cursedRole.eachAttachedToThat",
+    "kind": "effect",
+    "cr": [
+      "CR 111.10j",
+      "CR 303.4f",
+      "CR 303.7",
+      "CR 608.2f",
+      "CR 701.7a"
+    ],
+    "pattern": "for each {f:Filter} , create a cursed role token attached to that {g:Filter}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1,
+          "token": {
+            "predefined": "Cursed Role"
+          },
+          "attachTo": {
+            "ref": "bound",
+            "name": "each"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "For each Goblin you control, create a Cursed Role token attached to that Goblin."
+      },
+      {
+        "text": "For each artifact creature your opponents control, create a Cursed Role token attached to that creature."
+      }
+    ],
+    "counterExamples": [
+      "For each Goblin you control, create a Cursed Role token.",
+      "For each Goblin you control, create a Wicked Role token attached to that Goblin.",
+      "Create a Cursed Role token attached to that Goblin."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t39.grant.each.targets",
+    "kind": "effect",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 115.1"
+    ],
+    "pattern": "{o:Objs} each gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Up to two target creatures each gain trample until end of turn."
+      },
+      {
+        "text": "Two target creatures each gain flying and vigilance until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Up to two target creatures each gain trample.",
+      "Up to two target creatures each lose trample until end of turn.",
+      "Creatures you control each gain trample until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t39.token.monsterRole.eachOfThose",
+    "kind": "effect",
+    "cr": [
+      "CR 111.10k",
+      "CR 303.4f",
+      "CR 303.7",
+      "CR 608.2f",
+      "CR 701.7a"
+    ],
+    "pattern": "for each of {o:Objs} , create a monster role token attached to it",
+    "build": {
+      "op": "forEach",
+      "over": "$o",
+      "as": "each",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1,
+          "token": {
+            "predefined": "Monster Role"
+          },
+          "attachTo": {
+            "ref": "bound",
+            "name": "each"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Up to two target creatures each gain trample until end of turn. For each of those creatures, create a Monster Role token attached to it."
+      },
+      {
+        "text": "Two target creatures gain flying until end of turn. For each of those creatures, create a Monster Role token attached to it."
+      }
+    ],
+    "counterExamples": [
+      "Up to two target creatures each gain trample until end of turn. For each of those creatures, create a Young Hero Role token attached to it.",
+      "Up to two target creatures each gain trample until end of turn. For each of those creatures, create a Monster Role token.",
+      "Up to two target creatures each gain trample until end of turn. Create a Monster Role token attached to each of those creatures."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t39.token.wickedRole.thenEachAttachedToThat",
+    "kind": "effect",
+    "cr": [
+      "CR 111.10q",
+      "CR 303.4f",
+      "CR 303.7",
+      "CR 608.2f",
+      "CR 701.7a"
+    ],
+    "pattern": "then for each {f:Filter} , create a wicked role token attached to that {g:Filter}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1,
+          "token": {
+            "predefined": "Wicked Role"
+          },
+          "attachTo": {
+            "ref": "bound",
+            "name": "each"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Create a 1/1 white Soldier creature token. Then for each Goblin you control, create a Wicked Role token attached to that Goblin."
+      },
+      {
+        "text": "Draw a card. Then for each creature you control, create a Wicked Role token attached to that creature."
+      }
+    ],
+    "counterExamples": [
+      "Create a 1/1 white Soldier creature token. Then for each Goblin you control, create a Wicked Role token.",
+      "Create a 1/1 white Soldier creature token. Then for each Goblin you control, create a Cursed Role token attached to that Goblin.",
+      "Create a 1/1 white Soldier creature token. Then create a Wicked Role token attached to that Goblin."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

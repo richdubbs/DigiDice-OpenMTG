@@ -1,0 +1,616 @@
+[
+  {
+    "id": "eff.stdsos.search.n.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for {n:Qty} {f:Filter} cards , put them onto the battlefield tapped , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": "$n",
+        "max": "$n",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Sacrifice a land. Search your library for three basic land cards, put them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Search your library for two basic Forest cards, put them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three basic land cards, put them onto the battlefield tapped, then shuffle.",
+      "Search your library for three basic land cards, put them onto the battlefield, then shuffle.",
+      "Search your library for three basic land cards, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "cm.stdsos.ability.less.foreach.counter.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7a",
+      "CR 602.1",
+      "CR 122.1"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate for each {k:CounterKind} counter on ~",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "counters",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "kind": "$k"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: Draw a card. This ability costs {1} less to activate for each charge counter on ~."
+      },
+      {
+        "text": "{6}{U}, {T}: Create a 2/2 blue Bird creature token with flying. This ability costs {2} less to activate for each lore counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Draw a card. This ability costs {1} more to activate for each charge counter on ~.",
+      "{4}, {T}: Draw a card. This ability costs {1} less to activate for each charge counter on target artifact.",
+      "{4}, {T}: Draw a card. This spell costs {1} less to cast for each charge counter on ~.",
+      "{4}, {T}: Draw a card. This ability costs {1} less to activate for each charge counter on ~ this turn."
+    ]
+  },
+  {
+    "id": "eff.stdsos.then.may.put.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 110.5b",
+      "CR 400.7"
+    ],
+    "pattern": "then you may put {f:Filter} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards. Then you may put a land card from your hand onto the battlefield tapped."
+      },
+      {
+        "text": "Draw X cards. Then you may put an artifact card with mana value X or less from your hand onto the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. Then put a land card from your hand onto the battlefield tapped.",
+      "Draw two cards. Then you may put two land cards from your hand onto the battlefield tapped.",
+      "Draw two cards. Then you may put a land card from your hand onto the battlefield.",
+      "Draw two cards. Then you may put a land card from your hand into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.stdsos.then.may.put.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "then you may put {f:Filter} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards. Then you may put a creature card from your hand onto the battlefield."
+      },
+      {
+        "text": "Scry 2. Then you may put an enchantment card with mana value 2 or less from your hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. Then put a creature card from your hand onto the battlefield.",
+      "Draw two cards. Then you may put a creature card from your hand onto the battlefield tapped.",
+      "Draw two cards. Then you may put two creature cards from your hand onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.stdsos.becomes.twocolors.subtype.basept.eachq",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 105.3",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b",
+      "CR 107.3"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {c:Color} and {c2:Color} {st:Subtypes} with base power and toughness each equal to {q:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$q",
+              "toughness": "$q"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature becomes a red and white Goblin with base power and toughness each equal to X."
+      },
+      {
+        "text": "Until end of turn, target creature becomes a black and green Snail with base power and toughness each equal to the number of lands you control plus 2."
+      }
+    ],
+    "counterExamples": [
+      "Target creature becomes a red and white Goblin with base power and toughness each equal to X.",
+      "Until end of turn, target creature becomes a red Goblin with base power and toughness each equal to X.",
+      "Until end of turn, each creature becomes a red and white Goblin with base power and toughness each equal to X."
+    ]
+  },
+  {
+    "id": "eff.stdsos.then.put.milled.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 400.7j",
+      "CR 110.2a"
+    ],
+    "pattern": "then put ( a | an ) {f:Filter} card from among {g:Milled} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. Then put a creature card from among them onto the battlefield."
+      },
+      {
+        "text": "Mill five cards. Then put an artifact or land card from among them onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. Then put an instant or sorcery card from among them into your hand.",
+      "Mill four cards. Then you may put an instant or sorcery card from among them onto the battlefield.",
+      "Mill four cards. Then put an instant or sorcery card from among them onto the battlefield tapped.",
+      "Mill four cards. Then put an instant or sorcery card from among them onto the battlefield under target opponent's control."
+    ]
+  },
+  {
+    "id": "eff.stdsos.copy.token.basept.subtype.creature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 613.4b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's ( a | an ) {pt:BasePT} {st:Subtypes} creature in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target artifact you control, except it's a 1/1 Goblin creature in addition to its other types."
+      },
+      {
+        "text": "Create a token that's a copy of target nonland permanent, except it's a 0/0 Elf creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target artifact you control, except it's a Goblin creature in addition to its other types.",
+      "Create a token that's a copy of target artifact you control, except it's a 1/1 Goblin creature.",
+      "Create a token that's a copy of target artifact you control, except it's a 1/1 Goblin artifact in addition to its other types."
+    ]
+  },
+  {
+    "id": "rep.stdsos.enters.counters.numberEqual",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 107.3"
+    ],
+    "pattern": "~ enters with a number of {k:CounterKind} counters on it equal to {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ enters with a number of charge counters on it equal to three minus X."
+      },
+      {
+        "text": "~ enters with a number of stun counters on it equal to the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a number of charge counters on target creature equal to three minus X.",
+      "Target creature enters with a number of charge counters on it equal to three minus X.",
+      "~ enters with a number of charge counters on it."
+    ]
+  },
+  {
+    "id": "rep.stdsos.enters.counters.numberEqual.thenTapped.if",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.1d",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 107.3"
+    ],
+    "pattern": "~ enters with a number of {k:CounterKind} counters on it equal to {q:Qty} . if {l:Qty} is {n:Qty} or less , it enters tapped",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "condition": {
+            "cond": "compare",
+            "left": "$l",
+            "op": "<=",
+            "right": "$n"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a number of charge counters on it equal to three minus X. If X is 2 or less, it enters tapped."
+      },
+      {
+        "text": "~ enters with a number of stun counters on it equal to four minus the number of cards in your hand. If the number of cards in your hand is 3 or less, it enters tapped."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a number of charge counters on it equal to three minus X. If X is 2 or less, it enters untapped.",
+      "~ enters with a number of charge counters on it equal to three minus X. It enters tapped.",
+      "~ enters with a number of charge counters on it equal to three minus X. If X is 2 or less, each creature enters tapped.",
+      "~ enters with a number of charge counters on it equal to three minus X. If X is 2 or more, it enters tapped."
+    ]
+  },
+  {
+    "id": "eff.stdsos.then.if.becomesPrepared",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 603.4",
+      "CR 722.3a"
+    ],
+    "pattern": "then if {c:Cond} , ~ becomes prepared",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "designateObject",
+          "what": {
+            "ref": "self"
+          },
+          "designation": "prepared"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Draw a card. Then if you control a Goblin, this creature becomes prepared."
+      },
+      {
+        "text": "{T}: Scry 2. Then if you control three or more artifacts, this creature becomes prepared."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Draw a card. Then if you control a Goblin, this creature becomes prepared instead.",
+      "{T}: Draw a card. Then unless you control a Goblin, this creature becomes prepared.",
+      "{T}: Draw a card. Then if you control a Goblin, this creature becomes unprepared.",
+      "{T}: Draw a card. Then if you control a Goblin, each creature becomes prepared."
+    ]
+  }
+]

@@ -1,0 +1,251 @@
+[
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.p2ab2.obj.cantblock.filter",
+    "kind": "static",
+    "weak": 1,
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't block {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "block",
+      "other": "$f"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't block Goblins."
+      },
+      {
+        "text": "~ can't block red creatures with power 3 or less."
+      }
+    ],
+    "counterExamples": [
+      "~ can block Goblins.",
+      "~ can't block Goblins this turn.",
+      "~ can't be blocked by Goblins."
+    ]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.p2ab2.filter.cantblock.it",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{f:Filter} can't block it",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "block",
+      "other": {
+        "self": true
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures with toughness greater than ~'s toughness can't block it."
+      },
+      {
+        "text": "Goblins with flying can't block it."
+      }
+    ],
+    "counterExamples": [
+      "Creatures with toughness greater than ~'s toughness can block it.",
+      "Creatures with toughness greater than ~'s toughness can't block it this turn.",
+      "Creatures with toughness greater than ~'s toughness can't be blocked by it."
+    ],
+    "weak": 1
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.p2ab2.aslong.it.attack.nodefender",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 611.3a",
+      "CR 702.3b"
+    ],
+    "pattern": "as long as {c:Cond} , it can attack as though it didn't have defender",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is untapped, it can attack as though it didn't have defender."
+      },
+      {
+        "text": "As long as ~'s toughness is 4 or greater, it can attack as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is untapped, it can attack as though it had defender.",
+      "As long as ~ is untapped, it can block as though it didn't have defender.",
+      "If ~ is untapped, it can attack as though it didn't have defender."
+    ],
+    "weak": 1
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "sta.p2ab2.attack.nodefender.aslong",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 611.3a",
+      "CR 702.3b"
+    ],
+    "pattern": "~ can attack as though it didn't have defender as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "~ can attack as though it didn't have defender as long as you control a Wizard."
+      },
+      {
+        "text": "~ can attack as though it didn't have defender as long as you control two or more Wizards."
+      }
+    ],
+    "counterExamples": [
+      "~ can attack as though it had defender as long as you control a Wizard.",
+      "~ can block as though it didn't have defender as long as you control a Wizard.",
+      "~ can attack as though it didn't have defender unless you control a Wizard."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.p2ab2.dur.each.cant.block",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} can't block",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, creatures your opponents control can't block."
+      },
+      {
+        "text": "Until your next turn, up to two target creatures can't block."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, creatures your opponents control can block.",
+      "Until your next turn, creatures your opponents control can't attack.",
+      "Until your next turn creatures your opponents control can't block alone."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.p2ab2.self.cantblock.unless",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "~ can't block unless {c:Cond}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "onlyIf",
+      "action": "block",
+      "when": "$c"
+    },
+    "consumes": [
+      "can't",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ can't block unless you control a Wizard."
+      },
+      {
+        "text": "~ can't block unless you have two or more cards in hand."
+      }
+    ],
+    "counterExamples": [
+      "~ can block unless you control a Wizard.",
+      "~ can't attack unless you control a Wizard as long as it's tapped.",
+      "~ can't block if you control a Wizard."
+    ],
+    "weak": 1
+  }
+]

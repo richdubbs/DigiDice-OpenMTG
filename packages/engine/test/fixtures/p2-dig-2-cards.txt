@@ -1,0 +1,4 @@
+# p2-dig-2: "If a <card> is revealed this way" after a reveal of the top card (CR 701.20a, 608.2c).
+# After editing: npm run cards -- fixtures
+Elven Farsight
+Galadriel of Lothlórien

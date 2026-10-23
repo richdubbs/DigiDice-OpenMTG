@@ -1,0 +1,187 @@
+[
+  {
+    "id": "rep.stdrx24.enters.choiceOfTwoCounters",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 122.1b"
+    ],
+    "pattern": "~ enters with your choice of ( a | an ) {k1:CounterKind} counter or ( a | an ) {k2:CounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choice": [
+              {
+                "label": "$k1",
+                "counters": [
+                  {
+                    "kind": "$k1",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "label": "$k2",
+                "counters": [
+                  {
+                    "kind": "$k2",
+                    "count": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "your",
+      "choice",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with your choice of a flying counter or a trample counter on it."
+      },
+      {
+        "text": "Haste\n~ enters with your choice of a deathtouch counter or a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with your choice of a flying counter or haste.",
+      "~ enters with your choice of two flying counters or a trample counter on it.",
+      "~ enters with your choice of a flying counter or a trample counter on target creature.",
+      "~ enters with a flying counter or a trample counter on it."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdrx24.skip.nextUntap",
+    "kind": "effect",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 614.10a",
+      "CR 502.1"
+    ],
+    "pattern": "{p:Player} skips their next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "step",
+            "step": "untap",
+            "whose": "$p"
+          },
+          "body": {
+            "b": "skip"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "skip"
+    ],
+    "needs": [
+      "feature:shield.skip"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent skips their next untap step."
+      },
+      {
+        "text": "Draw a card. Target player skips their next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Target player skips their untap step.",
+      "Target player skips their next two untap steps.",
+      "Target player untaps all lands they control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdrx24.skip.nextUntap.you",
+    "kind": "effect",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 614.10a",
+      "CR 502.1"
+    ],
+    "pattern": "you skip your next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "step",
+            "step": "untap",
+            "whose": {
+              "ref": "you"
+            }
+          },
+          "body": {
+            "b": "skip"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "skip"
+    ],
+    "needs": [
+      "feature:shield.skip"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards. You skip your next untap step."
+      },
+      {
+        "text": "Untap target permanent. You skip your next untap step."
+      }
+    ],
+    "counterExamples": [
+      "You skip your untap step.",
+      "You skip your next two untap steps.",
+      "Skip your next turn."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -1,0 +1,234 @@
+[
+  {
+    "id": "rep.p2re3.extraTurn.skip.player",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.10",
+      "CR 500.7"
+    ],
+    "pattern": "if a player would begin an extra turn , ( that player skips | they skip ) that turn instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "beginTurn",
+        "whose": "any",
+        "extra": true
+      },
+      "body": {
+        "b": "skip"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "extra",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a player would begin an extra turn, they skip that turn instead."
+      },
+      {
+        "text": "Haste, reach\nIf a player would begin an extra turn, they skip that turn instead."
+      }
+    ],
+    "counterExamples": [
+      "If a player would begin an extra turn, they skip that turn.",
+      "If a player would begin a turn, they skip that turn instead.",
+      "If a player would begin an extra turn, they skip their next turn instead."
+    ]
+  },
+  {
+    "id": "rep.p2re3.extraTurn.skip.opponent",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.10",
+      "CR 500.7"
+    ],
+    "pattern": "if an opponent would begin an extra turn , ( that player skips | they skip ) that turn instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "beginTurn",
+        "whose": "opponent",
+        "extra": true
+      },
+      "body": {
+        "b": "skip"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "extra",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If an opponent would begin an extra turn, they skip that turn instead."
+      },
+      {
+        "text": "Haste, reach\nIf an opponent would begin an extra turn, they skip that turn instead."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would begin an extra turn, they skip that turn.",
+      "If an opponent would begin a turn, they skip that turn instead.",
+      "If an opponent would begin an extra turn, they skip their next turn instead."
+    ]
+  },
+  {
+    "id": "rep.p2re3.self.graveyardFromBf.insteadExileExtraTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 500.7"
+    ],
+    "pattern": "if ~ would ( be put into a graveyard from the battlefield | die ) , instead exile it and take an extra turn after this one",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {
+          "self": true
+        },
+        "from": "battlefield",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "to": {
+              "zone": "exile"
+            }
+          },
+          {
+            "op": "extraTurn",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "extra"
+    ],
+    "examples": [
+      {
+        "text": "If ~ would die, instead exile it and take an extra turn after this one."
+      },
+      {
+        "text": "Haste, reach\nIf ~ would die, instead exile it and take an extra turn after this one."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would die, exile it and take an extra turn after this one.",
+      "If ~ would die, instead exile it and draw a card.",
+      "If ~ would be put into exile from the battlefield, instead exile it and take an extra turn after this one."
+    ]
+  },
+  {
+    "id": "rep.p2re3.draw.while.insteadEffects",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.1"
+    ],
+    "pattern": "if you would draw a card while {c:Cond} , instead {e:Effects}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "you"
+      },
+      "condition": "$c",
+      "body": {
+        "b": "instead",
+        "do": "$e"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card while you have no cards in hand, instead you draw two cards and you gain 2 life."
+      },
+      {
+        "text": "If you would draw a card while you control a Wizard, instead you scry 2 and you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card while you have no cards in hand, you draw two cards and you gain 2 life.",
+      "If an opponent would draw a card while you have no cards in hand, instead you draw two cards and you gain 2 life.",
+      "If you would draw a card while you have no cards in hand, instead you may draw two cards and you gain 2 life."
+    ]
+  },
+  {
+    "id": "rep.p2re3.scry.insteadEffects",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 701.22a"
+    ],
+    "pattern": "if you would scry a number of cards , {e:Effects} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "scry",
+        "actor": "you"
+      },
+      "body": {
+        "b": "instead",
+        "do": "$e"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would scry a number of cards, you gain that much life instead."
+      },
+      {
+        "text": "If you would scry a number of cards, each opponent loses that much life instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would scry a number of cards, draw that many cards.",
+      "If an opponent would scry a number of cards, draw that many cards instead.",
+      "If you would surveil a number of cards, draw that many cards instead."
+    ]
+  }
+]

@@ -1,0 +1,2694 @@
+[
+  {
+    "card": "Frontier Seeker",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.dig.reveal.hand.or): CR 701.20a, 701.20e, 608.2d: when it enters, look at the top five cards, you may reveal one card that is a Mount creature or a Plains and put it into your hand (one choice among the five, either description), the rest go to the bottom in a random order",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 5
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Creature"
+                          ],
+                          "subtypes": [
+                            "Mount"
+                          ]
+                        },
+                        {
+                          "subtypes": [
+                            "Plains"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "reveal",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "bottom",
+                    "order": "random"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Paradox Surveyor",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.dig.reveal.hand.orX): CR 107.3, 202.1, 701.20a, 608.2d: when it enters, look at the top five cards, you may reveal one land card or one card with {X} in its mana cost (the filter manaCostHasX) and put it into your hand, the rest go to the bottom in a random order; reach is the keyword",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "reach"
+          },
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 5
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Land"
+                          ]
+                        },
+                        {
+                          "manaCostHasX": true
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "reveal",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "bottom",
+                    "order": "random"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Thundertrap Trainer",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.dig.reveal.hand.noncreatureNonland): CR 205.4b, 701.20a, 608.2d: when it enters, look at the top four cards, you may reveal one card that is neither a creature nor a land and put it into your hand, the rest go to the bottom in a random order; offspring {4} is the keyword",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "offspring",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 4
+                }
+              ]
+            }
+          },
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 4
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "notTypes": [
+                            "Creature",
+                            "Land"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "reveal",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "bottom",
+                    "order": "random"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Wandering Mind",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.dig.reveal.hand.noncreatureNonland): CR 205.4b, 701.20a, 608.2d: when it enters, look at the top six cards, you may reveal one noncreature, nonland card and put it into your hand, the rest go to the bottom in a random order",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "flying"
+          },
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 6
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "notTypes": [
+                            "Creature",
+                            "Land"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "reveal",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "bottom",
+                    "order": "random"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Narset, Parter of Veils",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.dig.reveal.hand.noncreatureNonland): CR 205.4b, 701.20a, 606.4: the -2 loyalty ability looks at the top four cards, you may reveal one noncreature, nonland card and put it into your hand, the rest go to the bottom in a random order; p2-player-rules-1, by hand against the Oracle text: the static ability, each opponent can't draw more than one card each turn, counting every card drawn this turn (CR 121.1, 614.17) (sta.p2pr1.cantDrawMoreThanOne)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effects": [
+              {
+                "action": "draw",
+                "max": 1,
+                "mode": "cant",
+                "s": "restrict",
+                "subject": {
+                  "ref": "each",
+                  "who": "opponent"
+                }
+              }
+            ],
+            "kind": "static"
+          },
+          {
+            "cost": {
+              "loyalty": -2
+            },
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "at": {
+                    "count": 4,
+                    "player": {
+                      "ref": "you"
+                    },
+                    "ref": "topCards"
+                  },
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "as": "b1",
+                  "from": {
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "notTypes": [
+                            "Creature",
+                            "Land"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "name": "b0",
+                        "ref": "bound"
+                      },
+                      "zone": "library"
+                    },
+                    "ref": "each"
+                  },
+                  "max": 1,
+                  "min": 0,
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "op": "reveal",
+                  "what": {
+                    "name": "b1",
+                    "ref": "bound"
+                  },
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "op": "move",
+                  "to": {
+                    "zone": "hand"
+                  },
+                  "what": {
+                    "name": "b1",
+                    "ref": "bound"
+                  }
+                },
+                {
+                  "op": "move",
+                  "to": {
+                    "order": "random",
+                    "position": "bottom",
+                    "zone": "library"
+                  },
+                  "what": {
+                    "filter": {
+                      "is": {
+                        "name": "b0",
+                        "ref": "bound"
+                      },
+                      "not": {
+                        "is": {
+                          "name": "b1",
+                          "ref": "bound"
+                        }
+                      },
+                      "zone": "library"
+                    },
+                    "ref": "each"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "isLoyalty": true,
+            "kind": "activated"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Getaway Barrel",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.dig.put.battlefield.random): CR 701.20a, 608.2d, 110.2, 401.4: when it is put into a graveyard from the battlefield, reveal the top thirteen cards, one creature card among them is chosen at random (no player chooses; none: nothing) and put onto the battlefield under your control, the rest go to the bottom in a random order",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "reveal",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 13
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Creature"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 1,
+                  "max": 1,
+                  "random": true,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "battlefield",
+                    "controller": {
+                      "ref": "you"
+                    }
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "bottom",
+                    "order": "random"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Loot, Exuberant Explorer",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.dig.reveal.battlefield.mvAtMost) (eff.t43.dig.rest.bottomRandomShort): CR 202.3, 608.2h, 701.20a, 110.2, 305.2: you may play an additional land; the activated ability looks at the top six cards, you may reveal one creature card whose mana value is at most the number of lands you control and put it onto the battlefield, the rest go to the bottom in a random order",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "effects": [
+              {
+                "s": "permit",
+                "who": {
+                  "ref": "you"
+                },
+                "action": "playLand"
+              }
+            ]
+          },
+          {
+            "kind": "activated",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 4
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                }
+              ],
+              "tap": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 6
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Creature"
+                          ]
+                        }
+                      ],
+                      "manaValue": {
+                        "op": "<=",
+                        "value": {
+                          "q": "count",
+                          "of": {
+                            "ref": "each",
+                            "filter": {
+                              "types": [
+                                "Land"
+                              ],
+                              "controller": "you"
+                            }
+                          }
+                        }
+                      },
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "reveal",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "battlefield",
+                    "controller": {
+                      "ref": "you"
+                    }
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "bottom",
+                    "order": "random"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Kaslem's Stonetree // Kaslem's Strider",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t43.dig.rest.bottomRandomShort): CR 701.20e, 608.2c, 401.4: when it enters, look at the top six cards, you may put a land card among them onto the battlefield tapped, the rest go to the bottom in a random order; craft with Cave {5}{G} is the keyword",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 6
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Land"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "battlefield",
+                    "controller": {
+                      "ref": "you"
+                    },
+                    "tapped": true
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "bottom",
+                    "order": "random"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "kind": "keyword",
+            "keyword": "craft",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 5
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                }
+              ]
+            },
+            "filter": {
+              "subtypes": [
+                "Cave"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "abilities": []
+      }
+    ]
+  },
+  {
+    "card": "Outcaster Greenblade",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.search.or.reveal.hand): CR 701.23a, 701.20a, 701.24a: when it enters, search your library for a card that is a basic land or a Desert, reveal it, put it into your hand, shuffle (the search is not optional; the filter is the union of the two descriptions)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "search",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "zone": "library",
+                  "filter": {
+                    "anyOf": [
+                      {
+                        "supertypes": [
+                          "Basic"
+                        ],
+                        "types": [
+                          "Land"
+                        ]
+                      },
+                      {
+                        "subtypes": [
+                          "Desert"
+                        ]
+                      }
+                    ]
+                  },
+                  "max": 1,
+                  "reveal": true,
+                  "as": "search"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "search"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "shuffle",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "kind": "static",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": {
+                          "subtypes": [
+                            "Desert"
+                          ],
+                          "controller": "you"
+                        }
+                      }
+                    },
+                    "toughness": {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": {
+                          "subtypes": [
+                            "Desert"
+                          ],
+                          "controller": "you"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Spinewoods Armadillo",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.search.or.reveal.hand): CR 701.23a, 701.20a, 701.24a, 118.6: {1}{G}, discard this card (activated from the hand): search for a basic land or a Desert, reveal it, put it into your hand, shuffle, then gain 3 life; reach and ward {3} are keywords",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "reach"
+          },
+          {
+            "kind": "keyword",
+            "keyword": "ward",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 3
+                }
+              ]
+            }
+          },
+          {
+            "kind": "activated",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 1
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                }
+              ],
+              "other": [
+                {
+                  "kind": "discard",
+                  "count": 1,
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "search",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "zone": "library",
+                  "filter": {
+                    "anyOf": [
+                      {
+                        "supertypes": [
+                          "Basic"
+                        ],
+                        "types": [
+                          "Land"
+                        ]
+                      },
+                      {
+                        "subtypes": [
+                          "Desert"
+                        ]
+                      }
+                    ]
+                  },
+                  "max": 1,
+                  "reveal": true,
+                  "as": "search"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "search"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "shuffle",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "op": "gainLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 3
+                }
+              ]
+            },
+            "zone": [
+              "hand"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Gatecreeper Vine",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.search.may.or.reveal.hand): CR 701.23a, 701.20a, 701.24a, 608.2d: when it enters, you may search your library for a basic land card or a Gate card, reveal it, put it into your hand, then shuffle (the search is optional: one may step around all three); defender is the keyword",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "defender"
+          },
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "may",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "do": [
+                    {
+                      "op": "search",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "zone": "library",
+                      "filter": {
+                        "anyOf": [
+                          {
+                            "supertypes": [
+                              "Basic"
+                            ],
+                            "types": [
+                              "Land"
+                            ]
+                          },
+                          {
+                            "subtypes": [
+                              "Gate"
+                            ]
+                          }
+                        ]
+                      },
+                      "max": 1,
+                      "reveal": true,
+                      "as": "search"
+                    },
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "bound",
+                        "name": "search"
+                      },
+                      "to": {
+                        "zone": "hand"
+                      }
+                    },
+                    {
+                      "op": "shuffle",
+                      "who": {
+                        "ref": "you"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Town Greeter",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand): CR 701.17a, 608.2c, 608.2h, 400.7: when it enters, mill four cards, you may put one land card among the milled cards into your hand (the move is named, for the next sentence), and if the move put a Town card into your hand (the card as it was before it moved: cond did with which and to hand) you gain 2 life",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 4,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Land"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  },
+                  "as": "did"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "did",
+                    "which": {
+                      "subtypes": [
+                        "Town"
+                      ],
+                      "isCard": true
+                    },
+                    "to": "hand"
+                  },
+                  "then": [
+                    {
+                      "op": "gainLife",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "amount": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Eerie Gravestone",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand): CR 701.17a, 608.2c, 608.2d: {1}{B}, sacrifice it: mill four cards, you may put one creature card among the milled cards into your hand (never a creature card already in the graveyard); the enters trigger draws a card",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "activated",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 1
+                },
+                {
+                  "kind": "colored",
+                  "color": "B"
+                }
+              ],
+              "other": [
+                {
+                  "kind": "sacrifice",
+                  "filter": {
+                    "self": true
+                  },
+                  "count": 1,
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 4,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Creature"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Ostrich-Horse",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand): CR 701.17a, 608.2c, 608.2e: when it enters, mill three cards, you may put one land card among them into your hand; if you don't (no land among them, or you decline), put a +1/+1 counter on it (cond did, not, on the named move)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 3,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Land"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  },
+                  "as": "did"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "did",
+                    "not": true
+                  },
+                  "then": [
+                    {
+                      "op": "putCounters",
+                      "on": {
+                        "ref": "self"
+                      },
+                      "kind": "+1/+1",
+                      "count": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Ainok Wayfarer",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand): CR 701.17a, 608.2c, 608.2e: when it enters, mill three cards, you may put one land card among them into your hand; if you don't, put a +1/+1 counter on it (cond did, not, on the named move)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 3,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Land"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  },
+                  "as": "did"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "did",
+                    "not": true
+                  },
+                  "then": [
+                    {
+                      "op": "putCounters",
+                      "on": {
+                        "ref": "self"
+                      },
+                      "kind": "+1/+1",
+                      "count": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Scout the City",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand.permanent): CR 110.4, 701.17a, 608.2d, 700.2: choose one: mill three cards, you may put one permanent card (the six permanent types) among the milled cards into your hand, then gain 3 life; or destroy target creature with flying",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [],
+              "steps": [],
+              "modes": {
+                "min": 1,
+                "max": 1,
+                "options": [
+                  {
+                    "program": {
+                      "targets": [],
+                      "steps": [
+                        {
+                          "op": "mill",
+                          "who": {
+                            "ref": "you"
+                          },
+                          "count": 3,
+                          "as": "them"
+                        },
+                        {
+                          "op": "chooseObjects",
+                          "who": {
+                            "ref": "you"
+                          },
+                          "from": {
+                            "ref": "each",
+                            "filter": {
+                              "anyOf": [
+                                {
+                                  "types": [
+                                    "Artifact",
+                                    "Battle",
+                                    "Creature",
+                                    "Enchantment",
+                                    "Land",
+                                    "Planeswalker"
+                                  ]
+                                }
+                              ],
+                              "is": {
+                                "ref": "bound",
+                                "name": "them"
+                              },
+                              "zone": "any"
+                            }
+                          },
+                          "min": 0,
+                          "max": 1,
+                          "as": "chosen"
+                        },
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "chosen"
+                          },
+                          "to": {
+                            "zone": "hand"
+                          }
+                        },
+                        {
+                          "op": "gainLife",
+                          "who": {
+                            "ref": "you"
+                          },
+                          "amount": 3
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "program": {
+                      "targets": [
+                        {
+                          "id": "t0",
+                          "kind": "object",
+                          "min": 1,
+                          "max": 1,
+                          "filter": {
+                            "types": [
+                              "Creature"
+                            ],
+                            "keyword": "flying"
+                          }
+                        }
+                      ],
+                      "steps": [
+                        {
+                          "op": "destroy",
+                          "what": {
+                            "ref": "target",
+                            "id": "t0"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Something Worth Saving",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand.permanent): CR 110.4, 701.17a, 608.2d: mill four cards, you may put one permanent card among the milled cards into your hand, then gain 1 life",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 4,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Artifact",
+                            "Battle",
+                            "Creature",
+                            "Enchantment",
+                            "Land",
+                            "Planeswalker"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "gainLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Flourishing Bloom-Kin",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.search.upTo.andReveal) (eff.t75.found.putBattlefieldTapped.restHand): CR 701.23a, 701.20a, 608.2c, 608.2d, 110.2, 701.24a: when it is turned face up, search for up to two Forest cards and reveal them, you choose one of them to put onto the battlefield tapped and the other (the rest of the cards found) goes to your hand, then shuffle; it gets +1/+1 for each Forest you control; disguise {4}{G} is the keyword",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": {
+                          "subtypes": [
+                            "Forest"
+                          ],
+                          "controller": "you"
+                        }
+                      }
+                    },
+                    "toughness": {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": {
+                          "subtypes": [
+                            "Forest"
+                          ],
+                          "controller": "you"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "kind": "keyword",
+            "keyword": "disguise",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 4
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "becomes",
+                  "what": "turnedFaceUp",
+                  "object": {
+                    "self": true
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "search",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "zone": "library",
+                  "filter": {
+                    "subtypes": [
+                      "Forest"
+                    ]
+                  },
+                  "min": 0,
+                  "max": 2,
+                  "reveal": true,
+                  "as": "search"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "search"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 1,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "battlefield",
+                    "controller": {
+                      "ref": "you"
+                    },
+                    "tapped": true
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "search"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "shuffle",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Viewpoint Synchronization",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.search.upTo.andReveal) (eff.t75.found.putBattlefieldTapped.restHand): CR 701.23a, 701.20a, 608.2c, 608.2d, 110.2, 701.24a: search for up to three basic land cards and reveal them, you choose two of them to put onto the battlefield tapped and the rest go to your hand, then shuffle; freerunning stays manual",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "freerunning",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 2
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "search",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "zone": "library",
+                  "filter": {
+                    "supertypes": [
+                      "Basic"
+                    ],
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "min": 0,
+                  "max": 3,
+                  "reveal": true,
+                  "as": "search"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "search"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 2,
+                  "max": 2,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "battlefield",
+                    "controller": {
+                      "ref": "you"
+                    },
+                    "tapped": true
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "search"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "shuffle",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Fork in the Road",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.search.upTo.andReveal): CR 701.23a, 701.20a, 608.2c, 608.2d, 701.24a: search for up to two basic land cards and reveal them, put one of them into your hand and the other into your graveyard, then shuffle; the parser understands the search and leaves the two following sentences manual, so this golden ability is compared outside those masks",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "search",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "zone": "library",
+                  "filter": {
+                    "supertypes": [
+                      "Basic"
+                    ],
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "min": 0,
+                  "max": 2,
+                  "reveal": true,
+                  "as": "found"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "found"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 1,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "found"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "graveyard"
+                  }
+                },
+                {
+                  "op": "shuffle",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Jarad's Orders",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.search.upTo.andReveal): CR 701.23a, 701.20a, 608.2c, 608.2d, 701.24a: search for up to two creature cards and reveal them, put one of them into your hand and the other into your graveyard, then shuffle; the parser understands the search and leaves the two following sentences manual, so this golden ability is compared outside those masks",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "search",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "zone": "library",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "min": 0,
+                  "max": 2,
+                  "reveal": true,
+                  "as": "found"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "found"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 1,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "found"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "graveyard"
+                  }
+                },
+                {
+                  "op": "shuffle",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Rapid Rescue",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand.permanent): CR 110.4, 701.17a, 608.2c, 608.2d: mill two cards, you may put one permanent card among the milled cards (named \"the milled cards\") into your hand, then gain 2 life",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 2,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Artifact",
+                            "Battle",
+                            "Creature",
+                            "Enchantment",
+                            "Land",
+                            "Planeswalker"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "gainLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 2
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Dredger's Insight",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand): CR 701.17a, 608.2c, 608.2d: when it enters, mill four cards, you may put one artifact, creature or land card among the milled cards into your hand; the other ability (cards leaving your graveyard) was manual; Standard round 4, r4-trig: one batch of artifact and/or creature cards leaving your graveyard (CR 603.2c, 205.2a)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "types": [
+                      "Artifact",
+                      "Creature"
+                    ],
+                    "isCard": true,
+                    "owner": "you"
+                  },
+                  "from": "graveyard"
+                }
+              ],
+              "batch": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "gainLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 1
+                }
+              ]
+            }
+          },
+          {
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 4,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Artifact",
+                            "Creature",
+                            "Land"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Rick Jones, Destined Sidekick",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand): CR 701.17a, 608.2c, 608.2d: {3}, {T}: mill four cards, you may put one Hero or enchantment card among the cards just milled (\"those cards\") into your hand",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "activated",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 3
+                }
+              ],
+              "tap": true
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 4,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "anyOf": [
+                            {
+                              "subtypes": [
+                                "Hero"
+                              ]
+                            },
+                            {
+                              "types": [
+                                "Enchantment"
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Seed of Hope",
+    "expect": "full",
+    "verified": "FAST5 T75 review, by hand against the Oracle text and the rules cited below (eff.t75.milled.may.put.hand.permanent): CR 110.4, 701.17a, 608.2c, 608.2d: mill two cards, you may put one permanent card among the milled cards into your hand, then gain 2 life",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "mill",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 2,
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "types": [
+                            "Artifact",
+                            "Battle",
+                            "Creature",
+                            "Enchantment",
+                            "Land",
+                            "Planeswalker"
+                          ]
+                        }
+                      ],
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "any"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "gainLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 2
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

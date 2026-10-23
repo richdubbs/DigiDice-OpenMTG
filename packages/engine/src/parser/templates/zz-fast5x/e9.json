@@ -1,0 +1,178 @@
+[
+  {
+    "id": "eff.e9.blight",
+    "kind": "effect",
+    "cr": [
+      "CR 701.68a",
+      "CR 701.68b"
+    ],
+    "pattern": "blight {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "blight",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, blight 1.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "Whenever ~ attacks, blight 1.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "attacks",
+                  "attacker": {
+                    "self": true
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "blight",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "n": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "When ~ enters, you may blight 3. If you do, draw two cards."
+      },
+      {
+        "text": "At the beginning of your upkeep, blight 2."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, blight.",
+      "Whenever ~ attacks, blight target creature 1.",
+      "Whenever ~ attacks, blight 1 unless an opponent pays {1}."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.e9.player.blights",
+    "kind": "effect",
+    "cr": [
+      "CR 701.68a",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} blight[s] {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "blight",
+      "who": "$p",
+      "n": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent blights 1.",
+        "expect": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, each opponent blights 1.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "action",
+                  "action": "blight",
+                  "who": {
+                    "ref": "each",
+                    "who": "opponent"
+                  },
+                  "n": 1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "text": "{2}, {T}: Target opponent blights 2. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent blights.",
+      "When ~ enters, each opponent blights target creature 1.",
+      "When ~ enters, each creature blights 1."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.e9.instead.damage.that.if",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c"
+    ],
+    "pattern": "( it | ~ ) deals {n:Qty} damage to that ( creature | permanent ) instead if {c:Cond}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": "$n"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "instead",
+      "if",
+      "that"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "~ deals 1 damage to target creature. It deals 3 damage to that creature instead if you control a Wizard."
+      },
+      {
+        "text": "~ deals 2 damage to target creature. It deals 4 damage to that creature instead if ~'s additional cost was paid."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 1 damage to target creature. It deals 3 damage to that creature if you control a Wizard.",
+      "It deals 3 damage to that creature instead if you control a Wizard.",
+      "~ deals 1 damage to target creature. It deals 3 damage to target creature instead if you control a Wizard."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

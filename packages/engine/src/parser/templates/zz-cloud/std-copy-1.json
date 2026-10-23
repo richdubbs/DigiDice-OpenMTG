@@ -1,0 +1,202 @@
+[
+  {
+    "id": "abl.stdcopy1.cantBeCopied",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 101.2",
+      "CR 113.6"
+    ],
+    "pattern": "~ can't be copied",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "beCopied"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Example Subject can't be copied."
+      },
+      {
+        "text": "Example Subject can't be copied.\n~ deals 3 damage to target creature and 1 damage to you."
+      }
+    ],
+    "counterExamples": [
+      "~ can be copied.",
+      "Target spell can't be copied.",
+      "~ can't be copied this turn."
+    ]
+  },
+  {
+    "id": "rid.stdcopy1.copy.gains",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10f",
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 400.7a"
+    ],
+    "pattern": "the copy gains {a:Abilities}",
+    "build": {
+      "$patchPrevious": {
+        "gains": {
+          "@new": {
+            "add": "$a"
+          }
+        }
+      }
+    },
+    "attachTo": "copy",
+    "examples": [
+      {
+        "text": "Copy target creature spell. The copy gains haste."
+      },
+      {
+        "text": "Copy target creature spell you control. The copy gains flying and \"When this creature dies, draw a card.\""
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. The copy gains haste.",
+      "Copy target creature spell. The copy gains haste until end of turn.",
+      "Copy target creature spell. The copies gain haste."
+    ]
+  },
+  {
+    "id": "rid.stdcopy1.copy.gains.ifPermanent",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10f",
+      "CR 110.4b",
+      "CR 611.2a",
+      "CR 400.7a"
+    ],
+    "pattern": "if the copy is a permanent spell , it gains {a:Abilities}",
+    "build": {
+      "$patchPrevious": {
+        "gains": {
+          "@new": {
+            "add": "$a",
+            "ifPermanent": true
+          }
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Copy target spell you control. If the copy is a permanent spell, it gains haste."
+      },
+      {
+        "text": "Whenever you cast a spell, you may copy it. If the copy is a permanent spell, it gains vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If the copy is a permanent spell, it gains haste.",
+      "Copy target spell you control. If the copy is a creature spell, it gains haste.",
+      "Copy target spell you control. If the copy is a permanent spell, it gains haste until end of turn."
+    ]
+  },
+  {
+    "id": "rf.stdcopy1.flip.win",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.12",
+      "CR 603.12a",
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "when you win the flip , {e:Effects}",
+    "build": {
+      "op": "reflexive",
+      "when": {
+        "cond": "flip",
+        "won": true
+      },
+      "targets": [],
+      "do": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin. When you win the flip, ~ deals 2 damage to any target."
+      },
+      {
+        "text": "You may discard a card. If you do, flip a coin. When you win the flip, draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "When you win the flip, draw two cards.",
+      "Draw a card. When you win the flip, draw a card.",
+      "Flip a coin. When you win a flip, draw a card."
+    ]
+  },
+  {
+    "id": "rf.stdcopy1.flip.lose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.12",
+      "CR 603.12a",
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "when you lose the flip , {e:Effects}",
+    "build": {
+      "op": "reflexive",
+      "when": {
+        "cond": "flip",
+        "won": false
+      },
+      "targets": [],
+      "do": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin. When you lose the flip, ~ deals 3 damage to target creature."
+      },
+      {
+        "text": "Flip a coin. When you win the flip, draw a card. When you lose the flip, you lose 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When you lose the flip, you lose 2 life.",
+      "Draw a card. When you lose the flip, discard a card.",
+      "Flip a coin. When you lose a flip, discard a card."
+    ]
+  }
+]

@@ -1,0 +1,119 @@
+[
+  {
+    "id": "eff.p2ga2.eachOpponent.may.scry",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.22a"
+    ],
+    "pattern": "each opponent may scry {n:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "scry",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each other",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, draw a card. Then each opponent may scry 2."
+      },
+      {
+        "text": "Each opponent may scry 3."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent scries 2.",
+      "Each opponent may surveil 2.",
+      "Each player may scry 3."
+    ]
+  },
+  {
+    "id": "eff.p2ga2.eachOpponent.may.putFromHand.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "( each opponent | each other player ) may put ( a | an ) {f:Filter} card from their hand onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent may put an artifact card from their hand onto the battlefield."
+      },
+      {
+        "text": "Each other player may put a land card from their hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent puts an artifact card from their hand onto the battlefield.",
+      "Each opponent may put an artifact card from their graveyard onto the battlefield."
+    ]
+  }
+]

@@ -1,0 +1,6 @@
+# p2-zone-moves-1 (Phase 2 lane p2-zone-moves; test/cloud/p2-zone-moves-1, golden cloud-p2-zone-moves-1-review.json): wheels, a group draws what each player
+# discarded, "that many cards minus N", "the greatest number of cards a player discarded this way"
+Windfall
+Dark Deal
+Shocker
+Barbed Shocker

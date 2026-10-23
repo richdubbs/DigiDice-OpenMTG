@@ -1,0 +1,465 @@
+[
+  {
+    "id": "eff.r3copy.player.creates.copyToken",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 111.2"
+    ],
+    "pattern": "{p:Player} create[s] a token that's a copy of {o:Obj}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": "$p"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player creates a token that's a copy of target artifact you control."
+      },
+      {
+        "text": "Target opponent creates a token that's a copy of target artifact."
+      }
+    ],
+    "counterExamples": [
+      "Target player creates a token that's a copy of target creature, except it's an artifact.",
+      "Target player creates two tokens that are copies of target creature you control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r3copy.dur.becomeCopy",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 613.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes a copy of {p:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control becomes a copy of another target creature."
+      },
+      {
+        "text": "Untap target creature you control. Until end of turn, it becomes a copy of up to one other target creature."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control becomes a copy of another target creature, except it has flying.",
+      "Until end of turn, target creature you control becomes a 1/1 copy of another target creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r3copy.becomeCopy.dur.exceptHas",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 707.9a",
+      "CR 613.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes a copy of {p:Obj} {d:Dur} , except ( it | ~ ) has {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "except",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "~ becomes a copy of up to one target creature you control until end of turn, except ~ has hexproof."
+      },
+      {
+        "text": "Target creature you control becomes a copy of another target creature until end of turn, except it has flying."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control becomes a copy of another target creature, except it has flying.",
+      "Target creature you control becomes a copy of another target creature until end of turn, except it isn't legendary."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r3copy.filter.becomeCopies.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1a"
+    ],
+    "pattern": "{f:Filter} become copies of {p:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Artifacts you control become copies of target creature until end of turn."
+      },
+      {
+        "text": "Exile target creature you control. Clues you control become copies of it until the next end step."
+      }
+    ],
+    "counterExamples": [
+      "Artifacts you control become copies of target creature.",
+      "Artifacts you control become copies of target creature until end of turn, except they have haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r3copy.copyToken.notLegendary.subtype",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 205.3d",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it isn't legendary and is a {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it isn't legendary and is a Spirit in addition to its other types."
+      },
+      {
+        "text": "Exile target creature card from your graveyard. Create a token that's a copy of it, except it isn't legendary and is a Zombie in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it is legendary and is a Spirit in addition to its other types.",
+      "Create a token that's a copy of target creature you control, except it isn't legendary and is a Spirit."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r3copy.linked.copyToken.notLegendary.subtype",
+    "kind": "effect",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of a card exiled with ~ , except it isn't legendary and is a {st:Subtypes} in addition to its other types",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "copied"
+      },
+      {
+        "op": "copy",
+        "what": {
+          "ref": "bound",
+          "name": "copied"
+        },
+        "result": "token",
+        "who": {
+          "ref": "you"
+        },
+        "except": [
+          {
+            "layer": 4,
+            "supertypes": {
+              "remove": [
+                "Legendary"
+              ]
+            }
+          },
+          {
+            "layer": 4,
+            "subtypes": {
+              "add": "$st"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\n{2}: Create a token that's a copy of a card exiled with ~, except it isn't legendary and is a Spirit in addition to its other types."
+      },
+      {
+        "text": "When ~ enters, exile up to two target creature cards from your graveyard.\nAt the beginning of your upkeep, create a token that's a copy of a card exiled with ~, except it isn't legendary and is a Zombie in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Create a token that's a copy of a card exiled with ~, except it isn't legendary and is a Spirit in addition to its other types.",
+      "When ~ enters, exile target creature card from a graveyard.\n{2}: Create a token that's a copy of each card exiled with ~, except it isn't legendary and is a Spirit in addition to its other types."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r3copy.copyToken.subtype",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's a Spirit in addition to its other types."
+      },
+      {
+        "text": "Exile target creature card from your graveyard. Create a token that's a copy of it, except it's an Elemental in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it's a Spirit.",
+      "Create a token that's a copy of target creature you control, except it's a Spirit instead of its other types."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.r3copy.copyToken.notLegendary.subtype.has",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 205.1b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it isn't legendary , is ( a | an ) {st:Subtypes} in addition to its other types , and has {a:Abilities}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it isn't legendary, is a Spirit in addition to its other types, and has haste."
+      },
+      {
+        "text": "Create a token that's a copy of target nontoken creature you control, except it isn't legendary, is an Illusion in addition to its other types, and has flying."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it isn't legendary, is a Spirit in addition to its other types, and has haste until end of turn.",
+      "Create a token that's a copy of target creature you control, except it is legendary, is a Spirit in addition to its other types, and has haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rid.r3copy.ifYouDo.copy.newTargets",
+    "kind": "rider",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.7",
+      "CR 608.2c"
+    ],
+    "pattern": "if you do , you may choose new targets for the copy",
+    "build": {
+      "$patchPrevious": {
+        "newTargets": {
+          "@new": "may"
+        },
+        "@into": true
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast an instant spell, you may copy it. If you do, you may choose new targets for the copy."
+      },
+      {
+        "text": "Whenever you cast a sorcery spell, you may copy that spell. If you do, you may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell, you may draw a card. If you do, you may choose new targets for the copy.",
+      "Whenever you cast an instant spell, you may copy it. If you don't, you may choose new targets for the copy."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

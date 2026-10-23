@@ -1,0 +1,77 @@
+{
+  "name": "soulshift",
+  "rule": "702.46",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When this creature dies, you may return target Spirit card with mana value {n} or less from your graveyard to your hand.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ dies, you may return target Spirit card with mana value {n} or less from your graveyard to your hand.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "object",
+            "min": 1,
+            "max": 1,
+            "text": "target Spirit card with mana value {n} or less from your graveyard",
+            "filter": {
+              "subtypes": [
+                "Spirit"
+              ],
+              "manaValue": {
+                "op": "<=",
+                "value": "$amount"
+              },
+              "zone": "graveyard",
+              "owner": "you",
+              "isCard": true
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "target",
+                  "id": "t0"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

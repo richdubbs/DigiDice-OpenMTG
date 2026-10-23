@@ -1,0 +1,16 @@
+{
+  "name": "prowl",
+  "rule": "702.76",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption"
+  ],
+  "reminder": "You may cast this for its prowl cost if you dealt combat damage to a player this turn with a creature that had any of this spell's creature types.",
+  "multiple": "independent",
+  "status": "planned"
+}

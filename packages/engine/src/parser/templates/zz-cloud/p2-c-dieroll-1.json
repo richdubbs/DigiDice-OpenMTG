@@ -1,0 +1,165 @@
+[
+  {
+    "id": "eff.p2cdr1.rollDie.d20",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2"
+    ],
+    "pattern": "roll a d20",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 20
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}, {T}: Roll a d20.\n1—10 | You gain 2 life.\n11—20 | You gain 5 life."
+      },
+      {
+        "text": "Whenever ~ blocks, roll a d20.\n1—12 | ~ gets +1/+0 until end of turn.\n13—20 | ~ gets +2/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d12.",
+      "Roll two d20.",
+      "Roll a d20 and add 1."
+    ]
+  },
+  {
+    "id": "eff.p2cdr1.rollDie.d4",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2"
+    ],
+    "pattern": "roll a d4",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 4
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}, {T}: Roll a d4. You gain life equal to the result."
+      },
+      {
+        "text": "When ~ dies, roll a d4.\n1—2 | You draw a card.\n3—4 | You draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d6.",
+      "Roll two d4.",
+      "Roll a d4 twice."
+    ]
+  },
+  {
+    "id": "eff.p2cdr1.rollDie.d6",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2"
+    ],
+    "pattern": "roll a d6",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 6
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}: Roll a d6. You gain life equal to the result."
+      },
+      {
+        "text": "At the beginning of your end step, roll a d6.\n1—3 | You lose 1 life.\n4—6 | You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d4.",
+      "Roll two d6.",
+      "Roll a d6 and add 2."
+    ]
+  },
+  {
+    "id": "eff.p2cdr1.rollDie.sixSided",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2"
+    ],
+    "pattern": "roll a six-sided die",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 6
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}, {T}: Roll a six-sided die. You gain life equal to the result."
+      },
+      {
+        "text": "When ~ enters, roll a six-sided die. You gain life equal to the result."
+      }
+    ],
+    "counterExamples": [
+      "Roll a four-sided die.",
+      "Roll two six-sided dice.",
+      "Roll a six-sided die twice."
+    ]
+  },
+  {
+    "id": "sta.p2cdr1.rule.diceAdvantage",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.6",
+      "CR 614.1a",
+      "CR 616.1"
+    ],
+    "pattern": "if you would roll one or more dice , instead roll that many dice plus one and ignore the lowest roll",
+    "build": {
+      "s": "rule",
+      "rule": "diceAdvantage"
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Loaded Bones -- If you would roll one or more dice, instead roll that many dice plus one and ignore the lowest roll."
+      },
+      {
+        "text": "Lucky Streak -- If you would roll one or more dice, instead roll that many dice plus one and ignore the lowest roll."
+      }
+    ],
+    "counterExamples": [
+      "If you would roll one or more dice, instead roll that many dice plus one and ignore the highest roll.",
+      "If a player would roll one or more dice, instead they roll that many dice plus one and ignore the lowest roll.",
+      "If you would roll one or more dice, instead roll that many dice plus two and ignore the two lowest rolls."
+    ]
+  }
+]

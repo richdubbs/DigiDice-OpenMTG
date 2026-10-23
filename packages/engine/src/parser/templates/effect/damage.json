@@ -1,0 +1,94 @@
+[
+  {
+    "id": "eff.damage.equal",
+    "kind": "effect",
+    "cr": ["CR 120.1", "CR 120.3", "CR 608.2h"],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to {to:Recipient}",
+    "build": {"op": "damage", "source": "$src", "to": "$to", "amount": "$n"},
+    "subject": "object",
+    "examples": [
+      {"text": "Target Giant you control deals damage equal to its power to target creature an opponent controls."},
+      {"text": "~ deals damage equal to the number of Islands you control to any target."}
+    ],
+    "counterExamples": ["~ deals damage equal to its power.", "~ deals damage equal to the number of Islands you control to any target unless it is blue.", "Target creature you control deals damage equal to its power to each other creature."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.damage.foreach",
+    "kind": "effect",
+    "cr": ["CR 120.1", "CR 120.3", "CR 608.2h"],
+    "pattern": "{src:Obj} deal[s] 1 damage to {to:Recipient} for each {f:Filter}",
+    "build": {"op": "damage", "source": "$src", "to": "$to", "amount": {"q": "count", "of": {"ref": "each", "filter": "$f"}}},
+    "subject": "object",
+    "consumes": ["each"],
+    "examples": [
+      {"text": "~ deals 1 damage to any target for each Goblin you control."},
+      {"text": "~ deals 1 damage to target player for each artifact you control."}
+    ],
+    "counterExamples": ["~ deals 2 damage to any target for each Goblin you control.", "~ deals 1 damage to any target for each.", "When ~ enters, it deals 1 damage to any target for each creature you control with toughness greater than its power."],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "eff.damage.divided",
+    "kind": "effect",
+    "cr": ["CR 120.1", "CR 601.2d", "CR 115.4"],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage divided as you choose among {to:Recipient}",
+    "build": {"op": "damage", "source": "$src", "to": "$to", "amount": "$n", "divided": "announced"},
+    "subject": "object",
+    "examples": [
+      {"text": "~ deals 5 damage divided as you choose among one or two targets."},
+      {"text": "~ deals 7 damage divided as you choose among any number of target creatures."}
+    ],
+    "counterExamples": ["~ deals 5 damage divided evenly, rounded down, among one or two targets.", "~ deals 5 damage divided as you choose."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.damage.evenly.down",
+    "kind": "effect",
+    "cr": ["CR 120.1", "CR 107.1a", "CR 608.2b"],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage divided evenly , rounded down , among {to:Recipient}",
+    "build": {"op": "damage", "source": "$src", "to": "$to", "amount": "$n", "divided": "evenlyRoundDown"},
+    "subject": "object",
+    "examples": [
+      {"text": "~ deals X damage divided evenly, rounded down, among two targets."},
+      {"text": "~ deals 9 damage divided evenly, rounded down, among up to three targets."}
+    ],
+    "counterExamples": ["~ deals X damage divided evenly, rounded up, among any number of targets.", "~ deals X damage divided evenly among any number of targets."],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "rid.damage.unpreventable",
+    "kind": "rider",
+    "cr": ["CR 615.12", "CR 608.2c"],
+    "pattern": "( that | the | this ) damage can't be prevented",
+    "build": {"$patchPrevious": {"unpreventable": true}},
+    "attachTo": "damage",
+    "consumes": ["can't"],
+    "examples": [
+      {"text": "~ deals 6 damage to any target. The damage can't be prevented."},
+      {"text": "~ deals 2 damage to each creature. That damage can't be prevented."}
+    ],
+    "counterExamples": ["~ deals 6 damage to any target. The damage can be prevented.", "Draw a card. The damage can't be prevented."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "eff.fight",
+    "kind": "effect",
+    "cr": ["CR 701.14a", "CR 701.14b"],
+    "pattern": "{a:Obj} fight[s] {b:Obj}",
+    "build": {"op": "fight", "a": "$a", "b": "$b"},
+    "subject": "object",
+    "examples": [
+      {"text": "Target creature you control fights target creature an opponent controls."},
+      {"text": "Target Wolf you control fights target creature you don't control."}
+    ],
+    "counterExamples": ["Target creature you control fights.", "Target creature you control fights each creature you don't control."],
+    "status": "stable",
+    "since": 1
+  }
+]

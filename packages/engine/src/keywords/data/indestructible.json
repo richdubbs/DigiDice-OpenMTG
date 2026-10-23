@@ -1,0 +1,15 @@
+{
+  "name": "indestructible",
+  "rule": "702.12",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "Damage and effects that say \"destroy\" don't destroy this permanent.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "rules/destroy.ts#destroy",
+    "core/sba-objects.ts#performObjectSbas"
+  ]
+}

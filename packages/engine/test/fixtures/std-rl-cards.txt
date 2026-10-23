@@ -1,0 +1,28 @@
+# std-rl (precon round L; test/cloud/std-rl, golden cloud-std-rl-review.json): keywords training, vanishing and retrace; "enchanted|equipped creature
+# gets +X/+X|-X/-X, where X is ..."; "Cast ~ only if <condition>"; "you may play <land type>s from your graveyard"; "<group> can attack this turn as though
+# they didn't have defender"; a player's search onto the battlefield tapped; tapped token copies; counters "equal to" without "a number of"; renderer readings
+Warrior's Resolve
+Jenny Flint
+Crack in Time
+Formless Genesis
+Embrace the Unknown
+Worm Harvest
+Staff of Titania
+Exoskeletal Armor
+Opaline Bracers
+Tangleweave Armor
+Kagemaro's Clutch
+Fertilid
+Skyclave Relic
+Wakestone Gargoyle
+Twice Upon a Time // Unlikely Meeting
+Hewed Stone Retainers
+Illusory Angel
+Skyshroud Condor
+Talara's Battalion
+Experiment Twelve
+Titania, Nature's Force
+Hidden Dragonslayer
+Leafkin Avenger
+Patrolling Peacemaker
+Kami of Whispered Hopes

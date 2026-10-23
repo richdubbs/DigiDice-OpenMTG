@@ -1,0 +1,11 @@
+{
+  "name": "demonstrate",
+  "rule": "702.144",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "When you cast this spell, you may copy it. If you do, choose an opponent to also copy it. Players may choose new targets for their copies.",
+  "multiple": "independent",
+  "status": "planned"
+}

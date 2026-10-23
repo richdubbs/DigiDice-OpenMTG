@@ -1,0 +1,15 @@
+{
+  "name": "deathtouch",
+  "rule": "702.2",
+  "params": [],
+  "mechanisms": [
+    "flag"
+  ],
+  "reminder": "Any amount of damage this deals to a creature is enough to destroy it.",
+  "multiple": "redundant",
+  "status": "implemented",
+  "readers": [
+    "rules/damage.ts#dealDamage",
+    "core/combat-damage.ts#lethalFor"
+  ]
+}

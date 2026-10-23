@@ -1,0 +1,65 @@
+{
+  "name": "mentor",
+  "rule": "702.134",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever this creature attacks, put a +1/+1 counter on target attacking creature with lesser power.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks, put a +1/+1 counter on target attacking creature with lesser power.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacks",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "object",
+            "min": 1,
+            "max": 1,
+            "text": "target attacking creature with lesser power",
+            "filter": {
+              "attacking": true,
+              "types": [
+                "Creature"
+              ],
+              "power": {
+                "op": "<",
+                "value": {
+                  "q": "stat",
+                  "stat": "power",
+                  "of": {
+                    "ref": "self"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "target",
+              "id": "t0"
+            },
+            "kind": "+1/+1",
+            "count": 1
+          }
+        ]
+      }
+    }
+  ]
+}

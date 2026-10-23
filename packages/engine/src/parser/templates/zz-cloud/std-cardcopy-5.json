@@ -1,0 +1,156 @@
+[
+  {
+    "id": "trg.stdcardcopy5.oneOrMore.creaturesOrGraveyardCreatureCards.exiled",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2c",
+      "CR 603.10a",
+      "CR 603.6a"
+    ],
+    "pattern": "whenever one or more creatures you control and/or creature cards in your graveyard are put into exile",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you"
+          },
+          "from": "battlefield",
+          "to": "exile"
+        },
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "types": [
+              "Creature"
+            ],
+            "isCard": true,
+            "owner": "you"
+          },
+          "from": "graveyard",
+          "to": "exile"
+        }
+      ],
+      "batch": true,
+      "wholeBatch": true
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more creatures you control and/or creature cards in your graveyard are put into exile, you gain 2 life."
+      },
+      {
+        "text": "Whenever one or more creatures you control and/or creature cards in your graveyard are put into exile, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more creatures you control and/or creature cards in your graveyard are put into your hand, you gain 2 life.",
+      "Whenever one or more creatures you control are put into exile, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.stdcardcopy5.mayChoose.fromAmong",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "you may choose {f:DiscardDesc} from among {g:Objs}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "is": "$g",
+          "zone": "any"
+        }
+      },
+      "min": 0,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more creatures you control and/or creature cards in your graveyard are put into exile, you may choose a creature card from among them. Until end of turn, target token you control becomes a copy of it."
+      },
+      {
+        "text": "Whenever one or more creatures you control and/or creature cards in your graveyard are put into exile, you may choose an artifact creature card from among them. Until end of turn, target token you control becomes a copy of it, except it has haste."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more creatures you control and/or creature cards in your graveyard are put into exile, you may choose two creature cards from among them. Until end of turn, target token you control becomes a copy of it.",
+      "Whenever one or more creatures you control and/or creature cards in your graveyard are put into exile, choose a creature card from among them. Until end of turn, target token you control becomes a copy of it."
+    ]
+  },
+  {
+    "id": "eff.stdcardcopy5.dur.becomeCopy.exceptHas",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 613.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes a copy of {p:Obj} , except it has {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control becomes a copy of another target creature, except it has flying."
+      },
+      {
+        "text": "When ~ enters, until end of turn, target token you control becomes a copy of up to one other target creature, except it has haste."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control becomes a copy of another target creature, except it's an artifact.",
+      "Until your next turn, target creature you control becomes a copy of another target creature, except it has flying and haste and it's red."
+    ]
+  }
+]

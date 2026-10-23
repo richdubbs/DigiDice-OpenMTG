@@ -1,0 +1,633 @@
+[
+  {
+    "card": "Cheering Crowd",
+    "expect": "full",
+    "verified": "Standard round std-rq review (card wave 2, slice s1; Standard-legal), by hand against the Oracle text and the rules cited (eff.stdrq.player.may.putCounters, eff.stdrq.player.mana.forEachCounter): at the beginning of each player's first (precombat) main phase, that player (the event's player) may put a +1/+1 counter on the creature; if they did, that player adds {C} for each counter of any kind on it, into their own mana pool (CR 505.1a, 608.2d, 122.1, 122.6, 106.4; cites from memory, unverified)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "do": [
+                    {
+                      "count": 1,
+                      "kind": "+1/+1",
+                      "on": {
+                        "ref": "self"
+                      },
+                      "op": "putCounters"
+                    }
+                  ],
+                  "op": "may",
+                  "who": {
+                    "ref": "event",
+                    "role": "player"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "did",
+                    "step": "b0"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "dynamic": {
+                        "count": {
+                          "kind": "any",
+                          "on": {
+                            "ref": "self"
+                          },
+                          "q": "counters"
+                        },
+                        "kind": "ofType",
+                        "type": "C"
+                      },
+                      "op": "addMana",
+                      "who": {
+                        "ref": "event",
+                        "role": "player"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "step",
+                  "step": "main1"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Desecration Demon",
+    "expect": "full",
+    "verified": "Standard round std-rq review (card wave 2, slice s1; Standard-legal), by hand against the Oracle text and the rules cited (eff.stdrq.anyOpponent.maySacrifice.theirChoice): flying; at the beginning of each combat, each opponent in APNAP order may sacrifice a creature they choose, and once one does no one else is asked; if one did, tap the Demon and put a +1/+1 counter on it (CR 702.9, 507.1, 608.2d, 101.4, 701.21a; cites from memory, unverified)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "keyword": "flying",
+            "kind": "keyword"
+          },
+          {
+            "effect": {
+              "steps": [
+                {
+                  "anyOne": true,
+                  "as": "b0",
+                  "do": [
+                    {
+                      "count": 1,
+                      "filter": {
+                        "types": [
+                          "Creature"
+                        ]
+                      },
+                      "op": "sacrificeChoice",
+                      "who": {
+                        "ref": "iterating"
+                      }
+                    }
+                  ],
+                  "op": "may",
+                  "who": {
+                    "ref": "each",
+                    "who": "opponent"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "did",
+                    "step": "b0"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "op": "tap",
+                      "what": {
+                        "ref": "self"
+                      }
+                    },
+                    {
+                      "count": 1,
+                      "kind": "+1/+1",
+                      "on": {
+                        "ref": "self"
+                      },
+                      "op": "putCounters"
+                    }
+                  ]
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "step",
+                  "step": "beginCombat"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Archaic's Agony",
+    "expect": "full",
+    "verified": "Standard round std-rq review (card wave 2, slice s1; Standard-legal), by hand against the Oracle text and the rules cited (eff.stdrq.exile.fromTop.equalTo): converge: X damage to target creature, X the number of colors of mana spent to cast it; exile that many cards from the top of your library as the excess damage dealt to that creature by that damage; you may play those cards until the end of your next turn (CR 702.119a, 120.4a, 120.10, 406.1, 611.2a; cites from memory, unverified)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "amount": {
+                    "q": "colorsSpent"
+                  },
+                  "as": "b0",
+                  "op": "damage",
+                  "source": {
+                    "ref": "self"
+                  },
+                  "to": {
+                    "id": "t0",
+                    "ref": "target"
+                  }
+                },
+                {
+                  "as": "b1",
+                  "op": "move",
+                  "to": {
+                    "zone": "exile"
+                  },
+                  "what": {
+                    "count": {
+                      "q": "excessDamage",
+                      "step": "dealt",
+                      "to": {
+                        "id": "t0",
+                        "ref": "target"
+                      }
+                    },
+                    "player": {
+                      "ref": "you"
+                    },
+                    "ref": "topCards"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "endOfNextTurn",
+                    "whose": {
+                      "ref": "you"
+                    }
+                  },
+                  "effects": [
+                    {
+                      "action": "play",
+                      "of": {
+                        "is": {
+                          "name": "b1",
+                          "ref": "bound"
+                        }
+                      },
+                      "s": "permit",
+                      "who": {
+                        "ref": "you"
+                      }
+                    }
+                  ],
+                  "op": "effect"
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "spell"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Breaching Dragonstorm",
+    "expect": "full",
+    "verified": "Standard round std-rq review (card wave 2, slice s1; Standard-legal), by hand against the Oracle text and the rules cited (eff.stdrq.cast.free.maxManaValue): when it enters, exile cards from the top of your library until a nonland card is exiled (the binding is that card only); you may cast it without paying its mana cost only as a spell of mana value 8 or less (a face or half of greater mana value is not offered); if you don't, that card goes to your hand; when a Dragon you control enters, return the enchantment to its owner's hand (CR 406.1, 601.2, 202.3, 118.9, 608.2g; cites from memory, unverified)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "filter": {
+                    "notTypes": [
+                      "Land"
+                    ]
+                  },
+                  "op": "exileUntil",
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "as": "b1",
+                  "free": true,
+                  "maxManaValue": 8,
+                  "op": "cast",
+                  "optional": true,
+                  "what": {
+                    "name": "b0",
+                    "ref": "bound"
+                  },
+                  "who": {
+                    "ref": "you"
+                  }
+                },
+                {
+                  "cond": {
+                    "cond": "did",
+                    "not": true,
+                    "step": "b1"
+                  },
+                  "op": "if",
+                  "then": [
+                    {
+                      "op": "move",
+                      "to": {
+                        "zone": "hand"
+                      },
+                      "what": {
+                        "name": "b0",
+                        "ref": "bound"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            }
+          },
+          {
+            "effect": {
+              "steps": [
+                {
+                  "op": "move",
+                  "to": {
+                    "zone": "hand"
+                  },
+                  "what": {
+                    "ref": "self"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "controller": "you",
+                    "subtypes": [
+                      "Dragon"
+                    ]
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Dragonhawk, Fate's Tempest",
+    "expect": "full",
+    "verified": "Standard round std-rq review (card wave 2, slice s1; Standard-legal), by hand against the Oracle text and the rules cited (eff.stdrq.damage.n.forEach.stillExiled): flying; whenever it enters or attacks, exile the top X cards of your library, X the number of creatures you control with power 4 or greater; you may play them until your next end step; a delayed trigger at the beginning of your next end step deals 2 damage to each opponent for each of those cards still in exile (a card that left exile is a new object, CR 400.7) (CR 702.9, 406.1, 611.2a, 603.7, 120.3; cites from memory, unverified)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "keyword": "flying",
+            "kind": "keyword"
+          },
+          {
+            "effect": {
+              "steps": [
+                {
+                  "as": "b0",
+                  "op": "move",
+                  "to": {
+                    "zone": "exile"
+                  },
+                  "what": {
+                    "count": {
+                      "of": {
+                        "filter": {
+                          "controller": "you",
+                          "power": {
+                            "op": ">=",
+                            "value": 4
+                          },
+                          "types": [
+                            "Creature"
+                          ]
+                        },
+                        "ref": "each"
+                      },
+                      "q": "count"
+                    },
+                    "player": {
+                      "ref": "you"
+                    },
+                    "ref": "topCards"
+                  }
+                },
+                {
+                  "duration": {
+                    "d": "untilNextStep",
+                    "step": "end",
+                    "whose": "you"
+                  },
+                  "effects": [
+                    {
+                      "action": "play",
+                      "of": {
+                        "is": {
+                          "name": "b0",
+                          "ref": "bound"
+                        }
+                      },
+                      "s": "permit",
+                      "who": {
+                        "ref": "you"
+                      }
+                    }
+                  ],
+                  "op": "effect"
+                },
+                {
+                  "capture": [
+                    "b0"
+                  ],
+                  "do": [
+                    {
+                      "amount": {
+                        "args": [
+                          2,
+                          {
+                            "of": {
+                              "filter": {
+                                "is": {
+                                  "name": "b0",
+                                  "ref": "bound"
+                                },
+                                "zone": "exile"
+                              },
+                              "ref": "each"
+                            },
+                            "q": "count"
+                          }
+                        ],
+                        "op": "*",
+                        "q": "math"
+                      },
+                      "op": "damage",
+                      "source": {
+                        "ref": "self"
+                      },
+                      "to": {
+                        "ref": "each",
+                        "who": "opponent"
+                      }
+                    }
+                  ],
+                  "op": "delay",
+                  "when": {
+                    "at": "step",
+                    "next": true,
+                    "step": "end",
+                    "whose": "you"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                },
+                {
+                  "attacker": {
+                    "self": true
+                  },
+                  "ev": "attacks"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Bumi, Unleashed",
+    "expect": "full",
+    "verified": "Standard round std-rq review (card wave 2, slice s1; Standard-legal), by hand against the Oracle text and the rules cited (eff.stdrq.extraCombat.onlyAttackers): trample; when it enters, earthbend 4; whenever it deals combat damage to a player, untap all lands you control and add an additional combat phase after this phase in which only land creatures can be declared as attackers (CR 702.19, 500.8, 508.1c; cites from memory, unverified)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "keyword": "trample",
+            "kind": "keyword"
+          },
+          {
+            "effect": {
+              "steps": [
+                {
+                  "action": "earthbend",
+                  "n": 4,
+                  "op": "action",
+                  "subject": {
+                    "id": "t0",
+                    "ref": "target"
+                  },
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": [
+                {
+                  "filter": {
+                    "controller": "you",
+                    "types": [
+                      "Land"
+                    ]
+                  },
+                  "id": "t0",
+                  "kind": "object",
+                  "max": 1,
+                  "min": 1
+                }
+              ]
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            }
+          },
+          {
+            "effect": {
+              "steps": [
+                {
+                  "op": "untap",
+                  "what": {
+                    "filter": {
+                      "controller": "you",
+                      "types": [
+                        "Land"
+                      ]
+                    },
+                    "ref": "each"
+                  }
+                },
+                {
+                  "attackers": {
+                    "allTypes": [
+                      "Creature",
+                      "Land"
+                    ]
+                  },
+                  "op": "extraPhase",
+                  "phase": "combat"
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "combat": true,
+                  "ev": "damage",
+                  "recipient": {
+                    "player": "any"
+                  },
+                  "source": {
+                    "self": true
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Agent Maria Hill",
+    "expect": "full",
+    "verified": "Standard round std-rq review (card wave 2, slice s1; Standard-legal), by hand against the Oracle text and the rules cited (event reading 'becomes tapped to pay a teamwork cost'): whenever it is tapped to pay the teamwork cost of a spell as that spell is cast, put a +1/+1 counter on it and draw a card (CR 702.194a, 601.2h, 122.1; cites from memory, unverified)",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "effect": {
+              "steps": [
+                {
+                  "count": 1,
+                  "kind": "+1/+1",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "op": "putCounters"
+                },
+                {
+                  "count": 1,
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  }
+                }
+              ],
+              "targets": []
+            },
+            "kind": "triggered",
+            "trigger": {
+              "on": [
+                {
+                  "by": {
+                    "self": true
+                  },
+                  "ev": "becomes",
+                  "object": {},
+                  "what": "teamworkCostPaid"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

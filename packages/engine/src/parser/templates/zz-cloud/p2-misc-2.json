@@ -1,0 +1,133 @@
+[
+  {
+    "id": "sta.p2misc2.triggerMod.orAnother",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.10a",
+      "CR 109.4"
+    ],
+    "pattern": "if a triggered ability of {f:Filter} or {g:Filter} triggers , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "abilitiesOf": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ]
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If a triggered ability of a red spell you control or another red permanent you control triggers, that ability triggers an additional time."
+      },
+      {
+        "text": "If a triggered ability of a multicolored spell you control or another multicolored permanent you control triggers, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If a triggered ability of a red spell you control or another red permanent you control triggers, that ability triggers two additional times.",
+      "If a triggered ability of a red spell an opponent controls or another red permanent you control triggers, that ability triggers an additional time.",
+      "If an activated ability of a red spell you control or another red permanent you control is activated, that ability triggers an additional time."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.p2misc2.untilNextTurn.lifeFixed.protectionEverything",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16b",
+      "CR 702.16e",
+      "CR 702.16j",
+      "CR 119.7",
+      "CR 119.8",
+      "CR 611.2a"
+    ],
+    "pattern": "until your next turn , your life total can't change and you gain protection from everything",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "untilNextTurn",
+        "whose": {
+          "ref": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "gainLife"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "loseLife"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beEnchanted"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "receiveDamage"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "next",
+      "can't",
+      "everything"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, your life total can't change and you gain protection from everything. Draw a card."
+      },
+      {
+        "text": "Draw two cards. Until your next turn, your life total can't change and you gain protection from everything."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, your life total can't change and you gain protection from each of your opponents.",
+      "Until end of turn, your life total can't change and you gain protection from everything.",
+      "Until your next turn, your life total can't change and you gain hexproof."
+    ]
+  }
+]

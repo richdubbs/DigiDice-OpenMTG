@@ -1,0 +1,1196 @@
+[
+  {
+    "id": "eff.t30.damage.twoTargets",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 115.3",
+      "CR 115.4"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and {m:Qty} damage to {r:AnyTarget}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$r",
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "~ deals 4 damage to any target and 3 damage to any other target."
+      },
+      {
+        "text": "~ deals 5 damage to target creature and 1 damage to target player or planeswalker."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 4 damage to any target and 3 damage to any other target unless that player pays {2}.",
+      "~ deals 4 damage to any target or 3 damage to any other target.",
+      "~ deals 4 damage to each creature and 3 damage to any other target."
+    ]
+  },
+  {
+    "id": "eff.t30.damage.andItself",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 115.4"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and {m:Qty} damage to itself",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$src",
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}, {T}: ~ deals 4 damage to any target and 2 damage to itself."
+      },
+      {
+        "text": "Whenever ~ attacks, ~ deals 1 damage to target creature and 3 damage to itself."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: ~ deals 4 damage to any target and 2 damage to you.",
+      "{3}, {T}: ~ deals 4 damage to any target or 2 damage to itself.",
+      "{3}, {T}: ~ deals 4 damage to any target and 2 damage to itself unless that player pays {2}."
+    ]
+  },
+  {
+    "id": "eff.t30.damage.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 107.3",
+      "CR 107.1b",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] x damage to {to:Recipient} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, ~ deals X damage to that player, where X is 5 minus the number of cards in their hand."
+      },
+      {
+        "text": "Whenever ~ attacks, ~ deals X damage to target player, where X is the number of Goblins you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, ~ deals X damage to target player.",
+      "Whenever ~ attacks, ~ deals X damage to target player, where Y is the number of Goblins you control.",
+      "Whenever ~ attacks, ~ deals X damage to target player, where X is the number of Goblins you control, unless that player pays {1}."
+    ]
+  },
+  {
+    "id": "eff.t30.loseLife.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] x life , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "At the beginning of your end step, target opponent loses X life, where X is the amount of life you gained this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, target player loses X life, where X is the number of Vampires you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, target player loses X life.",
+      "Whenever ~ attacks, target player loses X life and you gain X life, where X is the number of Vampires you control.",
+      "Whenever ~ attacks, target player gains X life, where X is the number of Vampires you control."
+    ]
+  },
+  {
+    "id": "eff.t30.loseLife.halfRoundedUp",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.1a",
+      "CR 119.1"
+    ],
+    "pattern": "{p:Player} lose[s] half their life , rounded up",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          {
+            "q": "life",
+            "of": "$p"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever ~ becomes tapped, target opponent loses half their life, rounded up."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player loses half their life, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes tapped, target opponent loses half their life, rounded down.",
+      "Whenever ~ becomes tapped, target opponent loses half their life.",
+      "Whenever ~ becomes tapped, target opponent loses half your life, rounded up."
+    ],
+    "consumes": [
+      "half"
+    ]
+  },
+  {
+    "id": "eff.t30.mill.halfLibraryRoundedUp",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 107.1a"
+    ],
+    "pattern": "{p:Player} mill[s] half their library , rounded up",
+    "build": {
+      "op": "mill",
+      "who": "$p",
+      "count": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          {
+            "q": "zoneSize",
+            "zone": "library",
+            "of": "$p"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent mills half their library, rounded up."
+      },
+      {
+        "text": "Whenever ~ becomes tapped, target player mills half their library, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent mills half their library, rounded down.",
+      "When ~ enters, target opponent mills half their library.",
+      "When ~ enters, target opponent mills half your library, rounded up."
+    ],
+    "consumes": [
+      "half"
+    ]
+  },
+  {
+    "id": "eff.t30.gainLife.forEachOther1",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2h",
+      "CR 109.2"
+    ],
+    "pattern": "{p:Player} gain[s] 1 life for each other {f:Filter}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "other": true
+          }
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you gain 1 life for each other Human you control."
+      },
+      {
+        "text": "Whenever ~ attacks, you gain 1 life for each other creature you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you gain 1 life for each other Human you control and each opponent loses 1 life.",
+      "When ~ enters, you gain 1 life for each other Human you control unless an opponent pays {1}.",
+      "When ~ enters, you gain 1 life for each other."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.t30.gainLife.forEachOther2",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2h",
+      "CR 109.2"
+    ],
+    "pattern": "{p:Player} gain[s] 2 life for each other {f:Filter}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "other": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you gain 2 life for each other Human you control."
+      },
+      {
+        "text": "Whenever ~ attacks, you gain 2 life for each other creature you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you gain 2 life for each other Human you control and each opponent loses 2 life.",
+      "When ~ enters, you gain 2 life for each other Human you control unless an opponent pays {1}.",
+      "When ~ enters, you gain 2 life for each other."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.t30.gainLife.forEachOther3",
+    "kind": "effect",
+    "since": 7,
+    "status": "experimental",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2h",
+      "CR 109.2"
+    ],
+    "pattern": "{p:Player} gain[s] 3 life for each other {f:Filter}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          3,
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "other": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you gain 3 life for each other Human you control."
+      },
+      {
+        "text": "Whenever ~ attacks, you gain 3 life for each other creature you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you gain 3 life for each other Human you control and each opponent loses 3 life.",
+      "When ~ enters, you gain 3 life for each other Human you control unless an opponent pays {1}.",
+      "When ~ enters, you gain 3 life for each other."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.t30.may.haveMill",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.17a"
+    ],
+    "pattern": "you may have {p:Player} mill {n:Qty} card[s]",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "mill",
+          "who": "$p",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may have target player mill four cards."
+      },
+      {
+        "text": "When ~ dies, you may have target opponent mill three cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may have target player draw four cards.",
+      "Whenever ~ attacks, target player may mill four cards.",
+      "Whenever ~ attacks, you may have target player mill four cards unless they pay {1}."
+    ]
+  },
+  {
+    "id": "eff.t30.may.haveDiscard",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.9a",
+      "CR 701.9b"
+    ],
+    "pattern": "you may have {p:Player} discard {n:Qty} card[s]",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "discard",
+          "who": "$p",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may have target opponent discard a card."
+      },
+      {
+        "text": "When ~ dies, you may have target player discard two cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may have target opponent discard a card at random.",
+      "Whenever ~ attacks, target opponent may discard a card.",
+      "Whenever ~ attacks, you may have target opponent draw a card."
+    ]
+  },
+  {
+    "id": "eff.t30.mill.equalTo",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} mill[s] cards equal to {q:Qty}",
+    "build": {
+      "op": "mill",
+      "who": "$p",
+      "count": "$q"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, up to one target player mills cards equal to ~'s toughness."
+      },
+      {
+        "text": "When ~ enters, target player mills cards equal to the number of Islands you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, up to one target player draws cards equal to ~'s toughness.",
+      "Whenever ~ attacks, up to one target player mills cards equal to ~'s toughness unless they pay {1}.",
+      "Whenever ~ attacks, up to one target player mills a card."
+    ]
+  },
+  {
+    "id": "eff.t30.may.millEqualTo",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.17a",
+      "CR 608.2h"
+    ],
+    "pattern": "you may mill cards equal to {q:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "mill",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$q"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may mill cards equal to the number of Forests you control."
+      },
+      {
+        "text": "When ~ dies, you may mill cards equal to its power."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may draw cards equal to the number of Forests you control.",
+      "When ~ enters, you mill cards equal to the number of Forests you control.",
+      "When ~ enters, target player may mill cards equal to the number of Forests you control."
+    ]
+  },
+  {
+    "id": "eff.t30.mill.whereX",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} mill[s] x cards , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "mill",
+          "who": "$p",
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever ~ becomes tapped, target player mills X cards, where X is the number of Merfolk you control."
+      },
+      {
+        "text": "When ~ enters, target opponent mills X cards, where X is the number of Wizard cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes tapped, target player mills X cards.",
+      "Whenever ~ becomes tapped, target player draws X cards, where X is the number of Merfolk you control.",
+      "Whenever ~ becomes tapped, target player mills X cards, where Y is the number of Merfolk you control."
+    ]
+  },
+  {
+    "id": "eff.t30.draw.forEachDiedThisTurn",
+    "kind": "effect",
+    "since": 7,
+    "status": "experimental",
+    "cr": [
+      "CR 121.1",
+      "CR 700.4",
+      "CR 608.2h"
+    ],
+    "pattern": "draw a card for each {f:Filter} that died this turn",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": "$f",
+          "from": "battlefield",
+          "to": "graveyard"
+        },
+        "scope": "turn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, draw a card for each creature that died this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, draw a card for each creature that died this turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, draw a card for each creature that died.",
+      "When ~ enters, draw a card for each creature that entered this turn.",
+      "When ~ enters, draw two cards for each creature that died this turn."
+    ]
+  },
+  {
+    "id": "eff.t30.draw.forEachDiedThisTurn.then",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 700.4",
+      "CR 608.2h",
+      "CR 608.2c"
+    ],
+    "pattern": "then draw a card for each {f:Filter} that died this turn",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": "$f",
+          "from": "battlefield",
+          "to": "graveyard"
+        },
+        "scope": "turn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent sacrifices a creature. Then draw a card for each creature that died this turn."
+      },
+      {
+        "text": "Destroy target artifact creature. Then draw a card for each creature that died this turn."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target artifact creature. Then draw a card for each creature that died.",
+      "Destroy target artifact creature. Then draw two cards for each creature that died this turn.",
+      "Destroy target artifact creature. Then target player draws a card for each creature that died this turn."
+    ]
+  },
+  {
+    "id": "eff.t30.draw.forEachCounterOn",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "draw a card for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "counters",
+        "on": "$o",
+        "kind": "$k"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, draw a card for each +1/+1 counter on ~."
+      },
+      {
+        "text": "When ~ leaves the battlefield, draw a card for each -1/-1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, draw two cards for each +1/+1 counter on ~.",
+      "Whenever ~ attacks, draw a card for each creature on ~.",
+      "Whenever ~ attacks, target player draws a card for each +1/+1 counter on ~."
+    ]
+  },
+  {
+    "id": "eff.t30.bounce.another",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 109.2"
+    ],
+    "pattern": "return another {f:Filter} to its owner 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "other": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "bounce"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "bounce"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, return another Human you control to its owner's hand."
+      },
+      {
+        "text": "At the beginning of your end step, return another creature you control to its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, return another Human you control to its owner's hand unless you pay {1}.",
+      "Whenever ~ attacks, return target Human you control to its owner's hand and draw a card.",
+      "Whenever ~ attacks, return another Human you control to the top of its owner's library."
+    ],
+    "consumes": [
+      "another"
+    ]
+  },
+  {
+    "id": "eff.t30.bounce.playerChooses",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} return[s] {f:Filter} to its owner 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "bounce"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "bounce"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, that player returns a land they control to its owner's hand."
+      },
+      {
+        "text": "Whenever a player casts a creature spell, that player returns a creature they control to its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, target opponent returns a creature they control to its owner's hand unless they pay {1}.",
+      "Whenever ~ attacks, target opponent returns a creature you control to the top of its owner's library.",
+      "Whenever ~ attacks, target opponent returns a creature they control to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.t30.return.bf.additionalCounters",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 122.6",
+      "CR 400.7",
+      "CR 614.1c"
+    ],
+    "pattern": "return {o:Objs} to the battlefield with {n:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield with three additional +1/+1 counters on it."
+      },
+      {
+        "text": "When ~ dies, return target creature card from your graveyard to the battlefield with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to your hand with three additional +1/+1 counters on it.",
+      "Return target creature card from your graveyard to the battlefield with three additional +1/+1 counters on it unless an opponent pays {2}.",
+      "Return target creature card from your graveyard to the battlefield tapped with three additional +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.t30.search.may.reveal.hand.manaValueAtLeast",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2d",
+      "CR 202.3"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card with mana value {n:Qty} or greater , reveal it , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": ">=",
+              "value": "$n"
+            }
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for a creature card with mana value 7 or greater, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ dies, you may search your library for an artifact card with mana value 3 or greater, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for a creature card with mana value 7 or less, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for a creature card with mana value 7 or greater, reveal it, put it onto the battlefield, then shuffle.",
+      "When ~ enters, you may search your library for two creature cards with mana value 7 or greater, reveal them, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.t30.draw.youAndPlayerEach",
+    "kind": "effect",
+    "since": 7,
+    "status": "experimental",
+    "cr": [
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 109.5"
+    ],
+    "pattern": "you and {p:Player} each draw a card",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": 1
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you and target opponent each draw a card."
+      },
+      {
+        "text": "When ~ dies, you and target player each draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you and target opponent each draw two cards.",
+      "Whenever ~ attacks, you and target opponent each discard a card.",
+      "Whenever ~ attacks, you or target opponent each draw a card."
+    ]
+  },
+  {
+    "id": "eff.t30.exile.playerChooses",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} exile[s] ( a | an ) {f:Filter} they control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent exiles an artifact they control."
+      },
+      {
+        "text": "Whenever ~ attacks, target player exiles a creature they control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent exiles an artifact you control.",
+      "When ~ enters, target opponent sacrifices an artifact they control.",
+      "When ~ enters, target opponent exiles two artifacts they control."
+    ]
+  },
+  {
+    "id": "eff.t30.mill.thenPutFromAmongThem",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 701.17c",
+      "CR 608.2c",
+      "CR 400.7j"
+    ],
+    "pattern": "mill {n:Qty} cards , then put up to {m:Qty} {f:Filter} card[s] from among them into your hand",
+    "build": [
+      {
+        "op": "mill",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "milled"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "milled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "$m",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Mill five cards, then put up to two creature cards from among them into your hand."
+      },
+      {
+        "text": "When ~ enters, mill three cards, then put up to one land card from among them into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill five cards, then put up to two creature cards from among them onto the battlefield.",
+      "Mill five cards, then put two creature cards from among them into your hand.",
+      "Mill five cards, then put up to two creature cards from your graveyard into your hand."
+    ]
+  },
+  {
+    "id": "eff.t30.search.upTo.bf.tapped",
+    "kind": "effect",
+    "since": 7,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.24a",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards , put them onto the battlefield tapped , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Whenever one or more creatures you control attack, search your library for up to that many basic land cards, put them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Search your library for up to three basic land cards, put them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three basic land cards, put them onto the battlefield, then shuffle.",
+      "Search your library for up to three basic land cards, put them into your hand, then shuffle.",
+      "Search your library for three basic land cards, put them onto the battlefield tapped, then shuffle."
+    ]
+  }
+]

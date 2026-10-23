@@ -1,0 +1,79 @@
+[
+  {
+    "id": "eff.p2ga1.eachPlayer.chooses.sacrificesRest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.21a"
+    ],
+    "pattern": "each player chooses {n:Qty} {f:Filter} they control , then sacrifices the rest",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": {
+              "ref": "iterating"
+            }
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "chosen"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": {
+            "ref": "iterating"
+          },
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "chosen"
+            }
+          }
+        },
+        "count": 1,
+        "mode": "all"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player chooses two creatures they control, then sacrifices the rest."
+      },
+      {
+        "text": "Each player chooses an artifact they control, then sacrifices the rest."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses two creatures they control, then sacrifices them.",
+      "Each player chooses two creatures you control, then sacrifices the rest."
+    ]
+  }
+]

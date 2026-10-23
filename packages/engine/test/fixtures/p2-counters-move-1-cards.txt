@@ -1,0 +1,11 @@
+# p2-counters-move-1 (lane p2-counters-move): the round's golden cards (test/m5/golden/cards/p2-counters-move-1-review.json)
+# Ezuri, Stalker of Spheres: golden entry in push-t1-review.json (unchanged); listed here because the round makes it full (its proliferate trigger)
+Nesting Grounds
+Leech Bonder
+Resourceful Defense
+Nexus Mentality
+Fate Transfer
+Ezuri, Stalker of Spheres
+Expansion Algorithm
+Scheming Aspirant
+Roalesk, Apex Hybrid

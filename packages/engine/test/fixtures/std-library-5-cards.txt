@@ -1,0 +1,3 @@
+# std-library-5 (account B lane std-library; test/cloud/std-library-5, golden cloud-std-library-5-review.json): "Exile ~ and N other cards named ... from your
+# graveyard" as a cost (the ability functions in the graveyard); epithet card names
+Say Its Name

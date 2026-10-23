@@ -1,0 +1,60 @@
+{
+  "name": "flanking",
+  "rule": "702.25",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "Whenever a creature without flanking blocks this creature, the blocking creature gets -1/-1 until end of turn.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ becomes blocked by a creature without flanking, the blocking creature gets -1/-1 until end of turn.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "becomesBlocked",
+            "attacker": {
+              "self": true
+            },
+            "by": {
+              "types": [
+                "Creature"
+              ],
+              "notKeyword": "flanking"
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "event",
+                  "role": "blocker"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": -1,
+                    "toughness": -1
+                  }
+                ]
+              }
+            ],
+            "duration": {
+              "d": "endOfTurn"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

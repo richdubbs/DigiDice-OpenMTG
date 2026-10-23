@@ -1,0 +1,484 @@
+[
+  {
+    "id": "eff.stdrs.player.exileUntil",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 401.1",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} exiles cards from the top of their library until they exile {f:DiscardDesc}",
+    "build": {
+      "op": "exileUntil",
+      "who": "$p",
+      "filter": "$f"
+    },
+    "subject": "player",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Target opponent exiles cards from the top of their library until they exile a creature card. You may cast that card this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, each opponent exiles cards from the top of their library until they exile an artifact card."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles cards from the top of their library until they exile two creature cards.",
+      "Target opponent exiles cards from the top of your library until they exile a creature card.",
+      "Target opponent reveals cards from the top of their library until they reveal a creature card."
+    ]
+  },
+  {
+    "id": "eff.stdrs.cast.linkedExiled.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast a card exiled with ~ without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Each opponent exiles cards from the top of their library until they exile an instant card.\nAt the beginning of your upkeep, you may cast a card exiled with ~ without paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, exile target instant card from a graveyard.\n{3}{U}, {T}: You may cast a card exiled with ~ without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Each opponent exiles cards from the top of their library until they exile an instant card.\nAt the beginning of your upkeep, you may cast a card exiled with ~.",
+      "{2}, {T}: Each opponent exiles cards from the top of their library until they exile an instant card.\nAt the beginning of your upkeep, you may cast cards exiled with ~ without paying their mana costs.",
+      "At the beginning of your upkeep, you may cast a card from your graveyard without paying its mana cost."
+    ]
+  },
+  {
+    "id": "sta.stdrs.aslong.cast.exiled.anyType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 604.1",
+      "CR 601.3",
+      "CR 609.4b",
+      "CR 611.3a",
+      "CR 400.7"
+    ],
+    "pattern": "as long as {c:Cond} , you may cast the exiled card , and mana of any type can be spent to cast that spell",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "anyManaType": true
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature card from an opponent's graveyard.\nAs long as you control an artifact, you may cast the exiled card, and mana of any type can be spent to cast that spell."
+      },
+      {
+        "text": "When ~ enters, target opponent reveals their hand. You choose an instant card from it. Exile that card.\nAs long as you have 10 or more life, you may cast the exiled card, and mana of any type can be spent to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature card from an opponent's graveyard.\nAs long as you control an artifact, you may cast the exiled card.",
+      "When ~ enters, exile target creature card from an opponent's graveyard.\nAs long as you control an artifact, you may play the exiled card, and mana of any type can be spent to cast that spell.",
+      "When ~ enters, exile target creature card from an opponent's graveyard.\nYou may cast the exiled card, and mana of any type can be spent to cast that spell."
+    ]
+  },
+  {
+    "id": "eff.stdrs.player.exileTop.faceDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 701.13a",
+      "CR 401.1",
+      "CR 109.5"
+    ],
+    "pattern": "{p:Player} exile[s] the top {n:Qty} card[s] of their library face down",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": "$n"
+      },
+      "to": {
+        "zone": "exile",
+        "faceDown": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target opponent exiles the top three cards of their library face down."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player exiles the top two cards of their library face down."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles the top three cards of their library.",
+      "Target opponent exiles the top three cards of your library face down.",
+      "Target opponent exiles three cards from their hand face down."
+    ]
+  },
+  {
+    "id": "eff.stdrs.lookAndPlay.group.remainsExiled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 701.20e",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may look at and play {o:Group} for as long as they remain exiled",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": "$o"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "remainsExiled"
+        },
+        "effects": [
+          {
+            "s": "permit",
+            "who": {
+              "ref": "you"
+            },
+            "action": "play",
+            "of": {
+              "is": "$o"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top three cards of target opponent's library face down. You may look at and play those cards for as long as they remain exiled."
+      },
+      {
+        "text": "{4}, {T}: Exile the top two cards of each opponent's library face down. You may look at and play them for as long as they remain exiled."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top three cards of target opponent's library face down. You may look at those cards for as long as they remain exiled.",
+      "Exile the top three cards of target opponent's library face down. You may look at and play those cards this turn.",
+      "Exile the top three cards of target opponent's library face down. You may play those cards for as long as they remain exiled. You gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.stdrs.lookAndPlay.one.remainsExiled",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 406.3",
+      "CR 701.20e",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may look at and play {o:Obj} for as long as it remains exiled",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": "$o"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "remainsExiled"
+        },
+        "effects": [
+          {
+            "s": "permit",
+            "who": {
+              "ref": "you"
+            },
+            "action": "play",
+            "of": {
+              "is": "$o"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library face down. You may look at and play that card for as long as it remains exiled."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, exile the top card of that player's library face down. You may look at and play that card for as long as it remains exiled."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library face down. You may look at that card for as long as it remains exiled.",
+      "Exile the top card of target opponent's library face down. You may look at and play that card this turn.",
+      "Exile the top card of target opponent's library face down. You may look at and cast that card for as long as it remains exiled."
+    ]
+  },
+  {
+    "id": "eff.stdrs.lookAndPlay.one.remainsExiled.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 406.3",
+      "CR 701.20e",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 609.4b"
+    ],
+    "pattern": "you may look at and play {o:Obj} for as long as it remains exiled , and mana of any type can be spent to cast ( it | that spell )",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": "$o"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "remainsExiled"
+        },
+        "effects": [
+          {
+            "s": "permit",
+            "who": {
+              "ref": "you"
+            },
+            "action": "play",
+            "of": {
+              "is": "$o"
+            },
+            "anyManaType": true
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library face down. You may look at and play that card for as long as it remains exiled, and mana of any type can be spent to cast that spell."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, exile the top card of that player's library face down. You may look at and play that card for as long as it remains exiled, and mana of any type can be spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library face down. You may look at and play that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast that spell.",
+      "Exile the top card of target opponent's library face down. You may look at and play that card this turn, and mana of any type can be spent to cast that spell.",
+      "Exile the top card of target opponent's library face down. You may look at that card for as long as it remains exiled, and mana of any type can be spent to cast that spell."
+    ]
+  },
+  {
+    "id": "rid.stdrs.castThisWay.spendAnyType",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 601.2g",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "if you cast a spell this way , you may spend mana as though it were mana of any type to cast it",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.s": "permit",
+          "effects.1": null
+        },
+        "effects": [
+          {
+            "anyManaType": {
+              "@new": true
+            }
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "if",
+      "may",
+      "as though",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent exiles the top four cards of their library face down. You may look at and play those cards for as long as they remain exiled. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it."
+      },
+      {
+        "text": "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it.",
+      "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, you gain 2 life.",
+      "Exile the top card of target opponent's library. You draw a card. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it."
+    ]
+  },
+  {
+    "id": "eff.stdrs.copy.token.basept.subtype.artifactCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 613.4b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Artifact",
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's a 2/2 Construct artifact creature in addition to its other types."
+      },
+      {
+        "text": "When ~ enters, create a token that's a copy of target land you control, except it's a 4/4 Golem artifact creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it's a 2/2 Construct artifact creature.",
+      "Create a token that's a copy of target creature you control, except it's a Construct artifact creature in addition to its other types.",
+      "Create a token that's a copy of target creature you control, except it's a 2/2 Construct artifact in addition to its other types."
+    ]
+  }
+]

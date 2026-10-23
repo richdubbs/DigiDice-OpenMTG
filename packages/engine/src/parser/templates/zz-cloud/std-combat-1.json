@@ -1,0 +1,259 @@
+[
+  {
+    "id": "eff.stdcombat1.attachOneOfThem.toA",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 301.5"
+    ],
+    "pattern": "attach one of them to ( a | an ) {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "plural",
+                "text": "them"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "attachOne"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "attachHost"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "bound",
+          "name": "attachOne"
+        },
+        "to": {
+          "ref": "bound",
+          "name": "attachHost"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, look at the top five cards of your library. You may put any number of Aura cards from among them onto the battlefield. Put the rest into your graveyard. When you put one or more Auras onto the battlefield this way, attach one of them to a creature you control."
+      },
+      {
+        "text": "When ~ enters, look at the top four cards of your library. You may put any number of Equipment cards from among them onto the battlefield. Put the rest on the bottom of your library in any order. When you put one or more Equipment onto the battlefield this way, you may attach one of them to a Knight you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, look at the top four cards of your library. You may put any number of Equipment cards from among them onto the battlefield. Put the rest on the bottom of your library in any order. When you put one or more Equipment onto the battlefield this way, attach each of them to a Knight you control.",
+      "When ~ enters, look at the top four cards of your library. You may put any number of Equipment cards from among them onto the battlefield. Put the rest on the bottom of your library in any order. When you put one or more Equipment onto the battlefield this way, attach one of them to target Knight you control.",
+      "When ~ enters, look at the top four cards of your library. You may put any number of Equipment cards from among them onto the battlefield. Put the rest on the bottom of your library in any order. When you put one or more Equipment onto the battlefield this way, attach two of them to a Knight you control."
+    ]
+  },
+  {
+    "id": "trg.stdcombat1.when.duringTheirTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 500.1",
+      "CR 102.1"
+    ],
+    "pattern": "( when | whenever ) {e:Event} during their turn",
+    "build": {
+      "on": "$e",
+      "while": {
+        "cond": "turnOf",
+        "whose": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "player",
+            "number": "plural",
+            "text": "their"
+          }
+        }
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent draws a card during their turn, you gain 1 life."
+      },
+      {
+        "text": "Whenever an opponent casts a creature spell during their turn, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent draws a card during their next turn, you gain 1 life.",
+      "Whenever an opponent draws a card during your turn and their turn, you gain 1 life.",
+      "Whenever an opponent draws a card during their upkeep, you gain 1 life."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.stdcombat1.player.cantAttackYouOrWalkers.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{p:Player} can't attack you or planeswalkers you control {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "$p"
+            }
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "$p"
+            }
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent can't attack you or planeswalkers you control this turn."
+      },
+      {
+        "text": "Each opponent can't attack you or planeswalkers you control this turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent can't attack you or planeswalkers you control.",
+      "Target opponent can't attack you or creatures you control this turn.",
+      "Target opponent can't block you or planeswalkers you control this turn."
+    ]
+  },
+  {
+    "id": "eff.stdcombat1.gainControl.whileAuraAttached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1b",
+      "CR 611.2b",
+      "CR 303.4",
+      "CR 701.3a",
+      "CR 603.2"
+    ],
+    "pattern": "gain control of that permanent for as long as that aura is attached to it",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileObject",
+        "object": {
+          "ref": "event",
+          "role": "subject"
+        },
+        "as": "attached",
+        "to": {
+          "ref": "event",
+          "role": "object"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "event",
+            "role": "object"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever an Aura you control becomes attached to an artifact an opponent controls, gain control of that permanent for as long as that Aura is attached to it."
+      },
+      {
+        "text": "Whenever an Aura you control becomes attached to a creature an opponent controls with power 2 or less, gain control of that permanent for as long as that Aura is attached to it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an Aura you control becomes attached to an artifact an opponent controls, gain control of that permanent for as long as that Aura remains on the battlefield.",
+      "Whenever an Aura you control becomes attached to an artifact an opponent controls, gain control of that creature for as long as that Aura is attached to it.",
+      "Whenever an Aura you control becomes attached to an artifact an opponent controls, gain control of that permanent until that Aura is attached to it."
+    ]
+  }
+]

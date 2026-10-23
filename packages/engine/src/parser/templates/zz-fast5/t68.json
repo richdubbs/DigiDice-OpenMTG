@@ -1,0 +1,600 @@
+[
+  {
+    "id": "sta.t68.aslong.counters.artifactcreature",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 122.1",
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 301.7"
+    ],
+    "pattern": "as long as ~ has {n:Qty} or more {k:CounterKind} counters on it , it's an artifact creature",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "$k",
+            "cmp": {
+              "op": ">=",
+              "value": "$n"
+            }
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ has four or more wind counters on it, it's an artifact creature."
+      },
+      {
+        "text": "As long as ~ has two or more spark counters on it, it's an artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ has four or more wind counters on it, it's an artifact.",
+      "As long as ~ has four or fewer wind counters on it, it's an artifact creature.",
+      "As long as ~ has four or more wind counters on it, it's an artifact creature until end of turn.",
+      "If ~ has four or more wind counters on it, it's an artifact creature."
+    ]
+  },
+  {
+    "id": "sta.t68.aslong.counter.nonbasic.mountains",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 122.1",
+      "CR 305.7",
+      "CR 613.1d"
+    ],
+    "pattern": "as long as ~ has a {k:CounterKind} counter on ~ , nonbasic lands are mountains",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "$k"
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Land"
+              ],
+              "notSupertypes": [
+                "Basic"
+              ]
+            }
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": [
+                  "Mountain"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ has a siege counter on ~, nonbasic lands are Mountains."
+      },
+      {
+        "text": "Vigilance\nAs long as ~ has a flame counter on ~, nonbasic lands are Mountains."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ has a siege counter on ~, nonbasic lands are Islands.",
+      "As long as ~ has a siege counter on ~, basic lands are Mountains.",
+      "As long as ~ has a siege counter on ~, nonbasic lands are Mountains in addition to their other land types.",
+      "As long as ~ has two siege counters on ~, nonbasic lands are Mountains."
+    ]
+  },
+  {
+    "id": "sta.t68.pump.foreach.colorsAmong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 105.1"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} for each color among {f:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "distinct",
+                "what": "colors",
+                "among": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "distinct",
+                "what": "colors",
+                "among": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+0 for each color among Elves you control."
+      },
+      {
+        "text": "~ gets +2/+1 for each color among artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+0 for each color among Elves you control until end of turn.",
+      "~ gets +1/+0 for each color of mana spent to cast it.",
+      "~ gets +1/+0 for each creature type among Elves you control.",
+      "~ gets +1/+0 for each color you control."
+    ]
+  },
+  {
+    "id": "sta.t68.group.basept.grant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 303.4b"
+    ],
+    "pattern": "{f:Filter} have base power and toughness {pt:BasePT} and have {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "base"
+    ],
+    "examples": [
+      {
+        "text": "Other creatures you control that are enchanted by Auras you control have base power and toughness 3/3 and have flying."
+      },
+      {
+        "text": "Elves you control have base power and toughness 2/2 and have vigilance and reach."
+      }
+    ],
+    "counterExamples": [
+      "Other creatures you control that are enchanted by Auras you control have base power and toughness 3/3 and lose flying.",
+      "Other creatures you control that are enchanted by Auras you control have base power and toughness 3/3 until end of turn and have flying.",
+      "Other creatures you control that are enchanted by Auras you control get base power and toughness 3/3 and have flying.",
+      "Other creatures you control that are enchanted by Auras you control have power and toughness 3/3 and have flying."
+    ]
+  },
+  {
+    "id": "sta.t68.duringturn.selfAnd.grant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , ~ and {f:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "self"
+              },
+              {
+                "ref": "each",
+                "filter": "$f"
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, ~ and other Elves you control have flying."
+      },
+      {
+        "text": "During your turn, ~ and artifact creatures you control have haste, vigilance, and ward {1}."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, ~ and other Elves you control lose flying.",
+      "During your opponents' turns, ~ and other Elves you control have flying.",
+      "During your turn, ~ or other Elves you control have flying.",
+      "During your turn, ~ and other Elves you control have flying until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t68.duringend.grant.each",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 513.1"
+    ],
+    "pattern": "during your end step , {f:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you",
+        "step": "end"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your end step, Elf tokens you control have \"This token can't be sacrificed.\""
+      },
+      {
+        "text": "During your end step, creatures you control have flying."
+      }
+    ],
+    "counterExamples": [
+      "During your upkeep, Elf tokens you control have \"This token can't be sacrificed.\"",
+      "During your end step, Elf tokens you control lose flying.",
+      "During each end step, Elf tokens you control have flying.",
+      "During your end step, Elf tokens you control have flying until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t68.self.cantbesacrificed",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 701.21a",
+      "CR 101.2"
+    ],
+    "pattern": "~ can't be sacrificed",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "beSacrificed"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be sacrificed."
+      },
+      {
+        "text": "Trample\n~ can't be sacrificed."
+      }
+    ],
+    "counterExamples": [
+      "~ can be sacrificed.",
+      "~ can't be exiled.",
+      "Target creature can't be sacrificed.",
+      "~ can't be sacrificed this turn."
+    ]
+  },
+  {
+    "id": "sta.t68.each.cantattack.you",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 604.1"
+    ],
+    "pattern": "each {f:Filter} can't attack you or planeswalkers you control",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each Elf that's enchanted by an Aura you control can't attack you or planeswalkers you control."
+      },
+      {
+        "text": "Each creature with trample can't attack you or planeswalkers you control."
+      }
+    ],
+    "counterExamples": [
+      "Each creature that's enchanted by an Aura you control can't attack you.",
+      "Each creature that's enchanted by an Aura you control can't block you or planeswalkers you control.",
+      "Each creature that's enchanted by an Aura you control can't attack you or planeswalkers you control unless its controller pays {1}.",
+      "Each creature that's enchanted by an Aura you control can't attack an opponent or planeswalkers you control."
+    ]
+  },
+  {
+    "id": "sta.t68.grant.aslong.ownsAdventure",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 715.1",
+      "CR 406.1",
+      "CR 108.3"
+    ],
+    "pattern": "{o:Obj} (has | have) {a:Abilities} as long as you own a card in exile that has an adventure",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "isCard": true,
+            "zone": "exile",
+            "owner": "you",
+            "adventure": true
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "~ has vigilance as long as you own a card in exile that has an Adventure."
+      },
+      {
+        "text": "~ has flying and trample as long as you own a card in exile that has an Adventure."
+      }
+    ],
+    "counterExamples": [
+      "~ has haste as long as you control a card in exile that has an Adventure.",
+      "~ has haste as long as you own a card in your graveyard that has an Adventure.",
+      "~ has haste as long as you own a card in exile that has flying.",
+      "~ has haste as long as you own a card in exile that has an Adventure until end of turn."
+    ]
+  },
+  {
+    "id": "sta.t68.self.grant.aslong.notDealtCombatDamageYet",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 510.2",
+      "CR 400.7",
+      "CR 201.5"
+    ],
+    "pattern": "~ has {a:Abilities} as long as they haven't dealt combat damage yet",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "happened",
+          "event": {
+            "ev": "damage",
+            "source": {
+              "self": true
+            },
+            "combat": true
+          },
+          "scope": "game"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "~ has flying as long as they haven't dealt combat damage yet."
+      },
+      {
+        "text": "~ has hexproof and vigilance as long as they haven't dealt combat damage yet."
+      }
+    ],
+    "counterExamples": [
+      "~ has flying as long as they haven't dealt combat damage.",
+      "~ has flying as long as they have dealt combat damage yet.",
+      "~ has flying as long as they haven't dealt damage yet.",
+      "~ has flying as long as they haven't dealt combat damage this turn."
+    ]
+  }
+]

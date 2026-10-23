@@ -1,0 +1,296 @@
+[
+  {
+    "id": "eff.stdry5.skip.nextTurn.you",
+    "kind": "effect",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 500.7",
+      "CR 500.11"
+    ],
+    "pattern": "you skip your next turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "beginTurn",
+            "whose": {
+              "ref": "you"
+            }
+          },
+          "body": {
+            "b": "skip"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "skip"
+    ],
+    "needs": [
+      "feature:shield.skip",
+      "feature:replace.on.turn"
+    ],
+    "examples": [
+      {
+        "text": "Draw three cards. You skip your next turn."
+      },
+      {
+        "text": "Untap all lands you control. You skip your next turn."
+      }
+    ],
+    "counterExamples": [
+      "You skip your turn.",
+      "You skip your next untap step.",
+      "Target player skips their next turn.",
+      "You take an extra turn after this one."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdry5.skip.nextTwoTurns.you",
+    "kind": "effect",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 500.7",
+      "CR 500.11"
+    ],
+    "pattern": "you skip your next two turns",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "beginTurn",
+            "whose": {
+              "ref": "you"
+            }
+          },
+          "body": {
+            "b": "skip"
+          },
+          "shield": {
+            "uses": 2
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "skip"
+    ],
+    "needs": [
+      "feature:shield.skip",
+      "feature:replace.on.turn"
+    ],
+    "examples": [
+      {
+        "text": "Draw seven cards. You skip your next two turns."
+      },
+      {
+        "text": "When ~ dies, you skip your next two turns."
+      }
+    ],
+    "counterExamples": [
+      "You skip your next turn.",
+      "You skip your next three turns.",
+      "You skip your next two untap steps.",
+      "You take two extra turns after this one."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdry5.objs.cantBeTargeted",
+    "kind": "static",
+    "cr": [
+      "CR 604.1",
+      "CR 115.1",
+      "CR 115.4",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Objs} can't be the targets of spells or abilities",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTargeted"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creature cards in graveyards can't be the targets of spells or abilities."
+      },
+      {
+        "text": "Flying\nLand cards in graveyards can't be the targets of spells or abilities."
+      }
+    ],
+    "counterExamples": [
+      "Cards in graveyards can be the targets of spells or abilities.",
+      "Cards in graveyards can't be the targets of spells.",
+      "Cards in graveyards can't be the targets of spells or abilities your opponents control."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdry5.untapstep.whileTapped",
+    "kind": "effect",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Obj} doesn't untap during its controller 's untap step for as long as ~ remains tapped",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileSource",
+        "as": "tapped"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Tap target land. That land doesn't untap during its controller's untap step for as long as ~ remains tapped."
+      },
+      {
+        "text": "{1}{U}, {T}: Tap target creature an opponent controls. It doesn't untap during its controller's untap step for as long as ~ remains tapped."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Tap target land. That land doesn't untap during its controller's untap step for as long as you control ~.",
+      "{3}, {T}: Tap target land. That land doesn't untap during its controller's next untap step.",
+      "{3}, {T}: Tap target land. That land untaps during its controller's untap step for as long as ~ remains tapped."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.stdry5.untapstep.whileTapped.they",
+    "kind": "effect",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:They} don't untap during their controllers' untap steps for as long as ~ remains tapped",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileSource",
+        "as": "tapped"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: Tap all lands your opponents control. They don't untap during their controllers' untap steps for as long as ~ remains tapped."
+      },
+      {
+        "text": "{2}{B}, {T}: Tap all nonblack creatures. They don't untap during their controllers' untap steps for as long as ~ remains tapped."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Tap all lands your opponents control. They don't untap during their controllers' untap steps for as long as you control ~.",
+      "{4}, {T}: Tap all lands your opponents control. They don't untap during their controllers' next untap steps.",
+      "{4}, {T}: Tap all lands your opponents control. They untap during their controllers' untap steps for as long as ~ remains tapped."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.stdry5.damageToSelf.prevent.sentence",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a"
+    ],
+    "pattern": "if damage would be dealt to ~ , prevent that damage . {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "Haste\nIf damage would be dealt to ~, prevent that damage. Put a -1/-1 counter on ~."
+      },
+      {
+        "text": "Flying\nIf damage would be dealt to ~, prevent that damage. You lose 1 life."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~, prevent that damage. Remove a +1/+1 counter from ~ at the beginning of the next end step.",
+      "If damage would be dealt by ~, prevent that damage. Remove a +1/+1 counter from ~.",
+      "If combat damage would be dealt to ~, prevent that damage. Remove a +1/+1 counter from ~."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -1,0 +1,131 @@
+{
+  "name": "awaken",
+  "rule": "702.113",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    },
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "If you cast this spell for {cost}, also put {n} +1/+1 counters on target land you control and it becomes a 0/0 Elemental creature with haste. It's still a land.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Awaken {n}--{cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "awaken"
+        }
+      ]
+    },
+    {
+      "kind": "spell",
+      "text": "If this spell's awaken cost was paid, put {n} +1/+1 counters on target land you control. That land becomes a 0/0 Elemental creature with haste. It's still a land.",
+      "effect": {
+        "targets": [
+          {
+            "id": "awaken",
+            "kind": "object",
+            "min": 1,
+            "max": 1,
+            "text": "target land you control",
+            "filter": {
+              "types": [
+                "Land"
+              ],
+              "controller": "you"
+            },
+            "onlyIf": {
+              "cond": "wasCast",
+              "via": "awaken"
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "if",
+            "cond": {
+              "cond": "wasCast",
+              "via": "awaken"
+            },
+            "then": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "target",
+                  "id": "awaken"
+                },
+                "kind": "+1/+1",
+                "count": "$amount"
+              },
+              {
+                "op": "effect",
+                "duration": {
+                  "d": "permanent"
+                },
+                "effects": [
+                  {
+                    "s": "continuous",
+                    "affects": {
+                      "ref": "target",
+                      "id": "awaken"
+                    },
+                    "mods": [
+                      {
+                        "layer": 4,
+                        "types": {
+                          "add": [
+                            "Creature"
+                          ]
+                        },
+                        "subtypes": {
+                          "add": [
+                            "Elemental"
+                          ]
+                        }
+                      },
+                      {
+                        "layer": 6,
+                        "add": [
+                          {
+                            "kind": "keyword",
+                            "keyword": "haste",
+                            "text": "haste"
+                          }
+                        ]
+                      },
+                      {
+                        "layer": "7b",
+                        "power": 0,
+                        "toughness": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

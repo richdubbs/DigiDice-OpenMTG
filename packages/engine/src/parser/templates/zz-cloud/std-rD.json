@@ -1,0 +1,178 @@
+[
+  {
+    "id": "eff.stdrd.choose.cardTypeList",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 205.2a"
+    ],
+    "pattern": "choose {o:TypeChoices}",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "cardType",
+      "options": "$o",
+      "as": "chosenCardType",
+      "link": "chosenCardType"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose creature or planeswalker. Destroy all permanents of the chosen type."
+      },
+      {
+        "text": "Choose artifact, enchantment, or land. Exile all permanents of the chosen type."
+      }
+    ],
+    "counterExamples": [
+      "Choose land or nonland.",
+      "Choose a card type. Destroy all permanents of the chosen type.",
+      "Target opponent chooses artifact or creature."
+    ]
+  },
+  {
+    "id": "rep.stdrd.enters.choose.cardTypeList",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a",
+      "CR 205.2a"
+    ],
+    "pattern": "as ~ enters , choose {o:TypeChoices}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "cardType",
+                "link": "cardType",
+                "options": "$o"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose artifact or creature.\nSpells you cast of the chosen type cost {2} less to cast."
+      },
+      {
+        "text": "As ~ enters, choose enchantment, instant, or sorcery.\nSpells you cast of the chosen type cost {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose artifact and creature.",
+      "As ~ enters, choose land or nonland.",
+      "When ~ enters, choose artifact or creature."
+    ]
+  },
+  {
+    "id": "sta.stdrd.players.cantCast.chosen",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 601.3",
+      "CR 607.2d",
+      "CR 101.2"
+    ],
+    "pattern": "( players | each player ) can't cast spells {c:Chosen}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "cast",
+      "other": {
+        "chosen": "$c"
+      }
+    },
+    "consumes": [
+      "can't",
+      "chosen",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose creature or sorcery.\nEach player can't cast spells of the chosen type."
+      },
+      {
+        "text": "As ~ enters, choose enchantment, instant, or sorcery.\nEach player can't cast spells of the chosen type."
+      }
+    ],
+    "counterExamples": [
+      "Each player can't cast spells of the chosen type.",
+      "As ~ enters, choose creature or sorcery.\nEach player can't cast spells of the chosen type this turn.",
+      "As ~ enters, choose creature or sorcery.\nYour opponents can't cast spells of the chosen type."
+    ]
+  },
+  {
+    "id": "eff.stdrd.exile.fromYourGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 701.13a",
+      "CR 404.1"
+    ],
+    "pattern": "exile {o:Obj} from your graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": "$o",
+          "zone": "graveyard",
+          "owner": "you"
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Whenever you discard a card, exile that card from your graveyard and you gain 1 life."
+      },
+      {
+        "text": "Whenever you discard a card, you may exile that card from your graveyard. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Exile target card from your graveyard.",
+      "Whenever an opponent discards a card, exile that card from their graveyard.",
+      "Whenever you discard a card, exile that card from your hand."
+    ]
+  }
+]

@@ -1,0 +1,197 @@
+[
+  {
+    "id": "sta.stdrm.pump.foreach.playerCounters",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 122.1"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} for each {k:CounterKind} counter {p:Player} ( has | have )",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "counters",
+                "on": "$p",
+                "kind": "$k"
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "counters",
+                "on": "$p",
+                "kind": "$k"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +2/+0 for each experience counter you have."
+      },
+      {
+        "text": "Equipped creature gets +1/+2 for each experience counter you have."
+      },
+      {
+        "text": "Enchanted creature gets +2/+2 for each poison counter you have."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +2/+0 for each experience counter on ~.",
+      "~ gets +2/+0 until end of turn for each experience counter you have.",
+      "~ gets +2/+0 for each experience counter you have and has flying.",
+      "~ gets +2/+0 for each experience card you have."
+    ]
+  },
+  {
+    "id": "eff.stdrm.phaseOut.one",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.26a",
+      "CR 702.26b",
+      "CR 702.26g"
+    ],
+    "pattern": "{o:Obj} phases out",
+    "build": {
+      "op": "phaseOut",
+      "what": "$o"
+    },
+    "subject": "object",
+    "priority": -1,
+    "examples": [
+      {
+        "text": "{1}{U}, {T}: Target artifact or creature phases out."
+      },
+      {
+        "text": "When ~ enters, target creature an opponent controls phases out."
+      },
+      {
+        "text": "{W}: Enchanted creature phases out."
+      }
+    ],
+    "counterExamples": [
+      "{1}{U}, {T}: Target artifact or creature phases in.",
+      "{1}{U}, {T}: Target artifact or creature phases out until end of turn.",
+      "{1}{U}, {T}: Target artifact or creature can't phase out.",
+      "{1}{U}, {T}: Target artifact or creature phases out at the beginning of the next end step."
+    ]
+  },
+  {
+    "id": "eff.stdrm.phaseOut.many",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.26a",
+      "CR 702.26b",
+      "CR 702.26g"
+    ],
+    "pattern": "{o:Objs} phase[s] out",
+    "build": {
+      "op": "phaseOut",
+      "what": "$o"
+    },
+    "subject": "object",
+    "priority": -2,
+    "examples": [
+      {
+        "text": "All creatures you control phase out."
+      },
+      {
+        "text": "When ~ enters, up to two target creatures you control phase out."
+      },
+      {
+        "text": "Each nonland permanent target opponent controls phases out."
+      }
+    ],
+    "counterExamples": [
+      "All creatures you control phase in.",
+      "All creatures you control phase out until your next turn.",
+      "All creatures you control can't phase out.",
+      "All creatures you control phase out at end of combat."
+    ]
+  },
+  {
+    "id": "cm.stdrm.self.less.foreach.drawnThisTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 121.1"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast for each card you've drawn this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "cardsDrawnThisTurn"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {2} less to cast for each card you've drawn this turn."
+      },
+      {
+        "text": "~ costs {3} less to cast for each card you've drawn this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {2} more to cast for each card you've drawn this turn.",
+      "~ costs {2} less to cast for each card you've discarded this turn.",
+      "~ costs {2} less to cast for each card an opponent has drawn this turn.",
+      "~ costs {2} less to activate for each card you've drawn this turn."
+    ]
+  }
+]

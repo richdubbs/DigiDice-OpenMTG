@@ -1,0 +1,835 @@
+[
+  {
+    "id": "eff.t64.copy.token.subtypeCreature",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's ( a | an ) {st:Subtypes} in addition to its other creature types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's a Spirit in addition to its other creature types."
+      },
+      {
+        "text": "Create a token that's a copy of target creature, except it's an Elf in addition to its other creature types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it's a Reflection.",
+      "Create a token that's a copy of target creature you control, except it's a Reflection in addition to its other creature types and it has haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.each.becomeCopy",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.2a"
+    ],
+    "pattern": "each {f:Filter} becomes a copy of {p:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact you control becomes a copy of target non-Aura permanent."
+      },
+      {
+        "text": "Each creature you control becomes a copy of target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Each nonland permanent you control becomes a copy of target non-Aura permanent until end of turn.",
+      "Each nonland permanent you control becomes a copy of target non-Aura permanent, except it has haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.becomeCopy.second.untilEot.notLegendary",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes a copy of a second {p:Obj} {d:Dur} , except it isn't legendary",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": [
+                {
+                  "layer": 4,
+                  "supertypes": {
+                    "remove": [
+                      "Legendary"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "second",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Target Equipment you control becomes a copy of a second target Equipment you control until end of turn, except it isn't legendary."
+      },
+      {
+        "text": "Target creature you control becomes a copy of a second target creature you control until end of turn, except it isn't legendary."
+      }
+    ],
+    "counterExamples": [
+      "Target Equipment you control becomes a copy of a second target Equipment you control until end of turn, except it is legendary.",
+      "Target Equipment you control becomes a copy of a second target Equipment you control, except it isn't legendary."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.t64.enters.copy.keepName",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 707.9c",
+      "CR 201.3"
+    ],
+    "pattern": "you may have ~ enter as a copy of ( a | an ) {f:Filter} , except ~ 's name is ~",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "retain": [
+                    "name"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of a Wizard you control, except ~'s name is ~."
+      },
+      {
+        "text": "You may have ~ enter as a copy of an artifact you control, except ~'s name is ~."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of a creature you control, except ~'s name is Bob.",
+      "You may have ~ enter as a copy of a creature you control, except ~'s name is ~ and it has haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.t64.enters.copy.subtypeAbility.a",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 205.1b"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} , except it's a {st:Subtypes} in addition to its other types and it has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "layer": 4,
+                  "subtypes": {
+                    "add": "$st"
+                  }
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it's a Bear in addition to its other types and it has trample."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any artifact on the battlefield, except it's a Gnome in addition to its other types and it has \"At the beginning of your upkeep, you gain 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it's a Bird and it has flying.",
+      "You may have ~ enter as a copy of any creature in a graveyard, except it's a Bird in addition to its other types and it has flying."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "rep.t64.enters.copy.tapped.graveyard.subtype",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 707.2"
+    ],
+    "pattern": "you may have ~ enter tapped as a copy of any {f:Filter} , except it's ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "tapped": true,
+              "except": [
+                {
+                  "layer": 4,
+                  "subtypes": {
+                    "add": "$st"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "in addition",
+      "other",
+      "tapped"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter tapped as a copy of any artifact card in a graveyard, except it's a Gnome in addition to its other types."
+      },
+      {
+        "text": "You may have ~ enter tapped as a copy of any creature card in a graveyard, except it's an Elf in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter tapped as a copy of any artifact card in a graveyard, except it's a Gnome.",
+      "You may have ~ enter as a copy of any artifact card in a graveyard, except it's a Gnome in addition to its other types."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.copy.tokens.notLegendary",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 111.1",
+      "CR 111.4"
+    ],
+    "pattern": "create {n:Qty} tokens that are copies of {o:Obj} , except the tokens aren't legendary",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create two tokens that are copies of target creature you control, except the tokens aren't legendary."
+      },
+      {
+        "text": "Create three tokens that are copies of target creature, except the tokens aren't legendary."
+      }
+    ],
+    "counterExamples": [
+      "Create two tokens that are copies of target creature you control, except the tokens are legendary.",
+      "Create two tokens that are copies of target creature you control, except the tokens aren't legendary and have haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.copy.token.notLegendary.not",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's not legendary",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's not legendary."
+      },
+      {
+        "text": "Create a token that's a copy of target artifact, except it's not legendary."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it's legendary.",
+      "Create a token that's a copy of target creature you control, except it's not legendary and has haste."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.forEach.copyTokens.thatPermanent",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 111.1",
+      "CR 601.2c",
+      "CR 107.3"
+    ],
+    "pattern": "for each of {o:Objs} , create {n:Qty} tokens that are copies of that permanent",
+    "build": {
+      "op": "forEach",
+      "over": "$o",
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "For each of two target permanents, create X tokens that are copies of that permanent."
+      },
+      {
+        "text": "For each of up to three target permanents, create two tokens that are copies of that permanent."
+      }
+    ],
+    "counterExamples": [
+      "For each of X target permanents, create X tokens that are copies of it.",
+      "For each of X target permanents, create X tokens that are copies of that creature."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.forEach.copyTapped",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 111.1",
+      "CR 110.5b"
+    ],
+    "pattern": "for each of {o:Objs} , create a tapped token that's a copy of it",
+    "build": {
+      "op": "forEach",
+      "over": "$o",
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "For each of up to two target creatures, create a tapped token that's a copy of it."
+      },
+      {
+        "text": "For each of two target artifacts, create a tapped token that's a copy of it."
+      }
+    ],
+    "counterExamples": [
+      "For each of two target artifacts, create a token that's a copy of it.",
+      "For each of two target artifacts, create a tapped token that's a copy of that artifact."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.becomeCopy.battlefieldOrGraveyard.legendary",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 707.9b",
+      "CR 707.9c",
+      "CR 205.4a",
+      "CR 611.2a",
+      "CR 115.1"
+    ],
+    "pattern": "{d:Dur} , ~ becomes a copy of up to one target creature on the battlefield or creature card in a graveyard , except ~ 's name is ~ and ~ is a legendary {st:Subtypes} creature",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": {
+                "ref": "target",
+                "id": "",
+                "$target": {
+                  "kind": "object",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "zone": [
+                      "battlefield",
+                      "graveyard"
+                    ]
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "text": "up to one target creature on the battlefield or creature card in a graveyard"
+                }
+              },
+              "except": [
+                {
+                  "retain": [
+                    "name"
+                  ]
+                },
+                {
+                  "layer": 4,
+                  "supertypes": {
+                    "set": [
+                      "Legendary"
+                    ]
+                  },
+                  "types": {
+                    "set": [
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "set": "$st"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "except",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, ~ becomes a copy of up to one target creature on the battlefield or creature card in a graveyard, except ~'s name is ~ and ~ is a legendary Human Mercenary creature."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a copy of up to one target creature on the battlefield or creature card in a graveyard, except ~'s name is ~ and ~ is a legendary Elf creature."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, ~ becomes a copy of up to one target creature on the battlefield, except ~'s name is ~ and ~ is a legendary Elf creature.",
+      "Until your next turn, ~ becomes a copy of up to one target creature on the battlefield or creature card in a graveyard, except ~'s name is ~ and ~ is a legendary Elf creature in addition to ~'s other types."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.becomeCopy.artifactEnchantmentLand.villain",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 707.9b",
+      "CR 707.9c",
+      "CR 205.4a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 115.1"
+    ],
+    "pattern": "{d:Dur} , ~ becomes a copy of up to one target artifact , non-Aura enchantment , or land , except ~ 's name is ~ , ~ is a legendary {pt:BasePT} {st:Subtypes} creature in addition to ~ 's other types , and ~ has {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": {
+                "ref": "target",
+                "id": "",
+                "$target": {
+                  "kind": "object",
+                  "filter": {
+                    "anyOf": [
+                      {
+                        "types": [
+                          "Artifact"
+                        ]
+                      },
+                      {
+                        "types": [
+                          "Enchantment"
+                        ],
+                        "notSubtypes": [
+                          "Aura"
+                        ]
+                      },
+                      {
+                        "types": [
+                          "Land"
+                        ]
+                      }
+                    ]
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "text": "up to one target artifact, non-Aura enchantment, or land"
+                }
+              },
+              "except": [
+                {
+                  "retain": [
+                    "name"
+                  ]
+                },
+                {
+                  "layer": 4,
+                  "supertypes": {
+                    "add": [
+                      "Legendary"
+                    ]
+                  },
+                  "types": {
+                    "add": [
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "add": "$st"
+                  }
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "except",
+      "up to",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, ~ becomes a copy of up to one target artifact, non-Aura enchantment, or land, except ~'s name is ~, ~ is a legendary 4/4 Human Villain creature in addition to ~'s other types, and ~ has vigilance."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a copy of up to one target artifact, non-Aura enchantment, or land, except ~'s name is ~, ~ is a legendary 3/3 Elf Rogue creature in addition to ~'s other types, and ~ has haste."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, ~ becomes a copy of up to one target artifact, non-Aura enchantment, or land, except ~'s name is ~, ~ is a legendary 4/4 Human Villain creature, and ~ has vigilance.",
+      "Until your next turn, ~ becomes a copy of up to one target artifact or land, except ~'s name is ~, ~ is a legendary 4/4 Human Villain creature in addition to ~'s other types, and ~ has vigilance."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.t64.may.becomeCopy.creatureCardExiledWithIt",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 611.2a"
+    ],
+    "pattern": "you may have ~ become a copy of a creature card exiled with ( it | ~ ) {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "self"
+              },
+              "mods": [
+                {
+                  "layer": "1a",
+                  "copyOf": {
+                    "ref": "linked",
+                    "link": "exiled"
+                  },
+                  "choose": {
+                    "types": [
+                      "Creature"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "needs": [
+      "feature:copy.choose"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile target card from a graveyard.\nWhenever you gain life, you may have ~ become a copy of a creature card exiled with it until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, exile target card from a graveyard.\nAt the beginning of your upkeep, you may have ~ become a copy of a creature card exiled with ~ until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile target card from a graveyard.\nWhenever you gain life, you may have ~ become a copy of a creature card exiled with it.",
+      "Whenever ~ attacks, exile target card from a graveyard.\nWhenever you gain life, you may have ~ become a copy of an artifact card exiled with it until end of turn.",
+      "Whenever ~ attacks, exile target card from a graveyard.\nWhenever you gain life, you may have ~ become a copy of target creature card exiled with it until end of turn."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

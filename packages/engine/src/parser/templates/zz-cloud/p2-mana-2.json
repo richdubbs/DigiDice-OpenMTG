@@ -1,0 +1,43 @@
+[
+  {
+    "id": "eff.p2mana2.mana.chooseColor.devotion",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.5",
+      "CR 106.1",
+      "CR 605.1a"
+    ],
+    "pattern": "choose a color . add an amount of mana of that color equal to your devotion to that color",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "devotionColor",
+        "of": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:mana.devotionColor"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Choose a color. Add an amount of mana of that color equal to your devotion to that color."
+      },
+      {
+        "text": "{1}{G}, {T}, Sacrifice ~: Choose a color. Add an amount of mana of that color equal to your devotion to that color."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose a color. Add an amount of mana of that color equal to your devotion to green.",
+      "{T}: Choose a color. Add an amount of mana of that color equal to the number of lands you control.",
+      "{T}: Choose a color. Add one mana of that color for each permanent you control."
+    ]
+  }
+]

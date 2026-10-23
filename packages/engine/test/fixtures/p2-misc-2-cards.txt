@@ -1,0 +1,3 @@
+# p2-misc-2 (Phase 2 lane p2-misc): the round's golden cards (test/m5/golden/cards/p2-misc-2-review.json)
+Echoes of Eternity
+Teferi's Protection

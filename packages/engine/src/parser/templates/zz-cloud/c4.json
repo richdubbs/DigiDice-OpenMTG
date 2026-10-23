@@ -1,0 +1,122 @@
+[
+  {
+    "id": "eff.c4.destroy.ifx.allother",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 107.3",
+      "CR 608.2c",
+      "CR 109.2"
+    ],
+    "pattern": "if x is {n:Qty} or ( more | greater ) , destroy all other {g:Filter}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "X"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "destroy",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$g"
+              ],
+              "not": {
+                "is": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "object",
+                    "number": "singular",
+                    "text": "other"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{X}, {T}: Destroy target artifact. If X is 4 or more, destroy all other artifacts."
+      },
+      {
+        "text": "Create X 2/2 green Wolf creature tokens. If X is 6 or more, destroy all other creatures."
+      },
+      {
+        "text": "Destroy up to one target artifact or creature with mana value X. If X is 5 or more, destroy all other artifacts and creatures."
+      },
+      {
+        "text": "Destroy target creature. If X is 4 or greater, destroy all other creatures."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: Destroy target artifact. If X is 4 or more, destroy all artifacts.",
+      "{X}, {T}: Destroy target artifact. If X is 4 or less, destroy all other artifacts.",
+      "{X}, {T}: Destroy target artifact. If X is 4 or more, exile all other artifacts."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.c4.ifx.ormore",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 608.2c"
+    ],
+    "pattern": "if x is {n:Qty} or ( more | greater ) , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "X"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{X}, {T}: Draw a card. If X is 3 or more, draw two cards."
+      },
+      {
+        "text": "Destroy all creatures with mana value X or less. If X is 5 or more, draw two cards."
+      },
+      {
+        "text": "Target player mills X cards. If X is 6 or more, you gain 3 life."
+      },
+      {
+        "text": "Return target creature card with mana value X or less from your graveyard to your hand. If X is 3 or greater, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: Draw a card. If X is 3 or less, draw two cards.",
+      "{X}, {T}: Draw a card. If Y is 3 or more, draw two cards.",
+      "{X}, {T}: Draw a card. If X is 3 or more, draw two cards instead."
+    ]
+  }
+]

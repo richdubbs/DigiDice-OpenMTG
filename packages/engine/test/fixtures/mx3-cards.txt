@@ -1,0 +1,17 @@
+# MX3 (FAST5): the Ring tempts you, Ring-bearers (CR 701.54).
+# After editing: npm run cards -- fixtures
+
+# ---- The Ring tempts you (CR 701.54a, 701.54c-d)
+Claim the Precious
+Birthday Escape
+Bilbo, Retired Burglar
+One Ring to Rule Them All
+
+# ---- "Whenever the Ring tempts you", "whenever you choose a creature as your Ring-bearer", "if you chose a creature other than ~" (CR 701.54d, 603.4)
+Gandalf, Friend of the Shire
+Nazgûl
+Call of the Ring
+
+# ---- "Is your Ring-bearer", "a Ring-bearer" (CR 701.54e)
+Frodo Baggins
+Dúnedain Rangers

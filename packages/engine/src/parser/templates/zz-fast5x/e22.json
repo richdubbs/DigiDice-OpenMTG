@@ -1,0 +1,175 @@
+[
+  {
+    "id": "trg.e22.cardLeavesYourGraveyard.yourTurn",
+    "kind": "trigger",
+    "cr": ["CR 603.1", "CR 603.2", "CR 603.2c", "CR 603.10a", "CR 400.3", "CR 500.1"],
+    "pattern": "whenever a card leaves your graveyard during your turn",
+    "build": {
+      "on": [{ "ev": "zoneChange", "subject": { "isCard": true, "owner": "you" }, "from": "graveyard" }],
+      "while": { "cond": "turnOf", "whose": "you" }
+    },
+    "consumes": ["whenever", "during"],
+    "needs": ["feature:trigger.while"],
+    "examples": [
+      {
+        "text": "Whenever a card leaves your graveyard during your turn, draw a card.",
+        "expect": {
+          "on": [{ "ev": "zoneChange", "subject": { "isCard": true, "owner": "you" }, "from": "graveyard" }],
+          "while": { "cond": "turnOf", "whose": "you" }
+        }
+      },
+      { "text": "Whenever a card leaves your graveyard during your turn, you gain 2 life. This ability triggers only once each turn." },
+      { "text": "Whenever a card leaves your graveyard during your turn, put a +1/+1 counter on ~." }
+    ],
+    "counterExamples": [
+      "Whenever a card leaves your graveyard during an opponent's turn, draw a card.",
+      "Whenever a card leaves an opponent's graveyard during your turn, draw a card.",
+      "Whenever a creature card leaves your graveyard during your turn, draw a card.",
+      "Whenever a card enters your graveyard during your turn, draw a card."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.e22.cardsLeaveYourGraveyard.batch.yourTurn",
+    "kind": "trigger",
+    "cr": ["CR 603.1", "CR 603.2", "CR 603.2c", "CR 603.10a", "CR 400.3", "CR 500.1"],
+    "pattern": "whenever one or more cards leave your graveyard during your turn",
+    "build": {
+      "on": [{ "ev": "zoneChange", "subject": { "isCard": true, "owner": "you" }, "from": "graveyard" }],
+      "batch": true,
+      "while": { "cond": "turnOf", "whose": "you" }
+    },
+    "consumes": ["whenever", "during", "one or more"],
+    "needs": ["feature:trigger.while", "feature:trigger.batch"],
+    "examples": [
+      {
+        "text": "Whenever one or more cards leave your graveyard during your turn, create a Treasure token.",
+        "expect": {
+          "on": [{ "ev": "zoneChange", "subject": { "isCard": true, "owner": "you" }, "from": "graveyard" }],
+          "batch": true,
+          "while": { "cond": "turnOf", "whose": "you" }
+        }
+      },
+      { "text": "Whenever one or more cards leave your graveyard during your turn, put a +1/+1 counter on ~." },
+      { "text": "Whenever one or more cards leave your graveyard during your turn, each opponent loses 1 life." }
+    ],
+    "counterExamples": [
+      "Whenever one or more cards leave your graveyard during an opponent's turn, create a Treasure token.",
+      "Whenever one or more creature cards leave your graveyard during your turn, create a Treasure token.",
+      "Whenever two or more cards leave your graveyard during your turn, create a Treasure token.",
+      "Whenever one or more cards leave an opponent's graveyard during your turn, create a Treasure token."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e22.aslong.additionalPump",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 700.11", "CR 207.2c"],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] an additional {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
+    },
+    "consumes": ["as long as", "additional"],
+    "examples": [
+      {
+        "text": "As long as there are eight or more permanent cards in your graveyard, ~ gets an additional +2/+2.",
+        "expect": {
+          "kind": "static",
+          "condition": {
+            "cond": "exists",
+            "of": { "ref": "each", "filter": { "types": ["Artifact", "Battle", "Creature", "Enchantment", "Land", "Planeswalker"], "zone": "graveyard", "owner": "you", "isCard": true } },
+            "atLeast": 8
+          },
+          "effects": [{ "s": "continuous", "affects": { "ref": "self" }, "mods": [{ "layer": "7c", "power": 2, "toughness": 2 }] }]
+        }
+      },
+      { "text": "As long as you control five or more lands, ~ gets an additional +1/+0." }
+    ],
+    "counterExamples": [
+      "As long as there are eight or more permanent cards in your graveyard, ~ gets an additional +2/+2 until end of turn.",
+      "As long as there are eight or more permanent cards in your graveyard, ~ gets additional +2/+2.",
+      "~ gets an additional +2/+2 unless there are eight or more permanent cards in your graveyard."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e22.aslong.pump.blockedByOne",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 509.1b", "CR 700.11", "CR 207.2c"],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] an additional {pt:PT} and can't be blocked by more than one creature",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        { "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] },
+        { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beBlocked", "max": 1 }
+      ]
+    },
+    "consumes": ["as long as", "can't", "additional"],
+    "examples": [
+      {
+        "text": "As long as there are eight or more permanent cards in your graveyard, ~ gets an additional +2/+2 and can't be blocked by more than one creature.",
+        "expect": {
+          "kind": "static",
+          "condition": {
+            "cond": "exists",
+            "of": { "ref": "each", "filter": { "types": ["Artifact", "Battle", "Creature", "Enchantment", "Land", "Planeswalker"], "zone": "graveyard", "owner": "you", "isCard": true } },
+            "atLeast": 8
+          },
+          "effects": [
+            { "s": "continuous", "affects": { "ref": "self" }, "mods": [{ "layer": "7c", "power": 2, "toughness": 2 }] },
+            { "s": "restrict", "subject": { "ref": "self" }, "mode": "cant", "action": "beBlocked", "max": 1 }
+          ]
+        }
+      },
+      { "text": "As long as you control seven or more lands, ~ gets an additional +1/+1 and can't be blocked by more than one creature." }
+    ],
+    "counterExamples": [
+      "As long as there are eight or more permanent cards in your graveyard, ~ gets an additional +2/+2 and can't be blocked by more than two creatures.",
+      "As long as there are eight or more permanent cards in your graveyard, ~ gets an additional +2/+2 and can't block more than one creature.",
+      "As long as there are eight or more permanent cards in your graveyard, ~ gets an additional +2/+2 and can't be blocked."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "sta.e22.pump.minusX.whereX",
+    "kind": "static",
+    "cr": ["CR 604.1", "CR 611.3a", "CR 613.4c", "CR 107.3", "CR 207.2c"],
+    "pattern": "{o:Obj} get[s] -x/-0 , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [{ "s": "continuous", "affects": "$o", "mods": [{ "layer": "7c", "power": { "q": "math", "op": "*", "args": [-1, "$q"] }, "toughness": 0 }] }]
+    },
+    "examples": [
+      {
+        "text": "Enchanted permanent gets -X/-0, where X is the number of permanent cards in your graveyard.",
+        "expect": {
+          "kind": "static",
+          "effects": [{
+            "s": "continuous",
+            "affects": { "ref": "attachedTo" },
+            "mods": [{
+              "layer": "7c",
+              "power": { "q": "math", "op": "*", "args": [-1, { "q": "count", "of": { "ref": "each", "filter": { "types": ["Artifact", "Battle", "Creature", "Enchantment", "Land", "Planeswalker"], "zone": "graveyard", "owner": "you", "isCard": true } } }] },
+              "toughness": 0
+            }]
+          }]
+        }
+      },
+      { "text": "Enchanted creature gets -X/-0, where X is the number of cards in your hand." }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets -X/-0 until end of turn, where X is the number of cards in your hand.",
+      "Enchanted creature gets -X/-X, where X is the number of cards in your hand.",
+      "Enchanted creature gets -2/-0, where X is the number of cards in your hand."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

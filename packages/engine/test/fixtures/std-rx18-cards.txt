@@ -1,0 +1,16 @@
+# std-rx18 (wave 2, Commander precon lane rx18; test/cloud/std-rx18, golden cloud-std-rx18-review.json): "<obj> becomes an artifact in addition to its other types";
+# attached base power and toughness with abilities; "loses all abilities and can't attack or block"; "investigate X times, where X is the number of opponents you have";
+# "whenever you cycle or discard another card"; "sacrifices ..., discards a card, and loses N life"; "creatures without flying your opponents control";
+# "you and target opponent each create a <token>"
+Liquimetal Coating
+Memnarch
+Ashnod's Transmogrant
+Hulkbuster Armor
+Almost Perfect
+Super State
+Observed Stasis
+Ethereal Investigator
+Archfiend of Ifnir
+Archon of Cruelty
+Stoneshock Giant
+Bloodroot Apothecary

@@ -1,0 +1,11 @@
+{
+  "name": "epic",
+  "rule": "702.50",
+  "params": [],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "For the rest of the game, you can't cast spells. At the beginning of each of your upkeeps, copy this spell except for its epic ability. You may choose a new target for the copy.",
+  "multiple": "independent",
+  "status": "planned"
+}

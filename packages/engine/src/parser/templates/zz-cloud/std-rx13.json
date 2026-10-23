@@ -1,0 +1,35 @@
+[
+  {
+    "id": "sta.stdrx13.mayNotUntap.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 604.1"
+    ],
+    "pattern": "you may choose not to untap ~ during your untap step",
+    "build": {
+      "s": "rule",
+      "rule": "mayNotUntap"
+    },
+    "consumes": [
+      "may",
+      "not",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "You may choose not to untap this permanent during your untap step."
+      },
+      {
+        "text": "You may choose not to untap this permanent during your untap step.\n{T}: You gain 3 life and scry 1."
+      }
+    ],
+    "counterExamples": [
+      "You may choose not to untap ~ during each other player's untap step.",
+      "You may choose not to untap target creature during your untap step.",
+      "This permanent doesn't untap during your untap step."
+    ]
+  }
+]

@@ -1,0 +1,304 @@
+[
+  {
+    "id": "rst.t16.cantattack.unless.defending.controls",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 508.1c", "CR 506.2", "CR 101.2"],
+    "pattern": "{o:Obj} can't attack unless defending player controls ( a | an ) {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "onlyIf",
+      "action": "attack",
+      "when": { "cond": "exists", "of": { "ref": "each", "filter": { "controller": { "ref": "defending" }, "anyOf": ["$f"] } } }
+    },
+    "consumes": ["can't", "unless"],
+    "examples": [
+      { "text": "~ can't attack unless defending player controls a Desert." },
+      { "text": "~ can't attack unless defending player controls an artifact." }
+    ],
+    "counterExamples": [
+      "~ can't attack unless you control a Desert.",
+      "~ can't block unless defending player controls a Desert.",
+      "~ can't attack unless defending player controls two or more Deserts."
+    ]
+  },
+  {
+    "id": "rst.t16.cantattackblock.unless",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 508.1c", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Obj} can't attack or block unless {c:Cond}",
+    "build": [
+      { "s": "restrict", "subject": "$o", "mode": "onlyIf", "action": "attack", "when": "$c" },
+      { "s": "restrict", "subject": "$o", "mode": "onlyIf", "action": "block", "when": "$c" }
+    ],
+    "consumes": ["can't", "unless"],
+    "examples": [
+      { "text": "~ can't attack or block unless you control four or more artifacts." },
+      { "text": "~ can't attack or block unless you control two or more creatures." }
+    ],
+    "counterExamples": [
+      "~ can't attack unless you control four or more artifacts.",
+      "~ can't attack or block as long as you control four or more artifacts.",
+      "~ can attack or block unless you control four or more artifacts."
+    ]
+  },
+  {
+    "id": "eff.t16.cantberegenerated",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 611.2a", "CR 701.19c", "CR 101.2"],
+    "pattern": "{o:Obj} can't be regenerated {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "cant", "action": "beRegenerated" }] },
+    "subject": "object",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Target artifact creature can't be regenerated this turn." },
+      { "text": "{2}: Target creature an opponent controls can't be regenerated this turn." }
+    ],
+    "counterExamples": [
+      "Target creature can be regenerated this turn.",
+      "Target creature can't be destroyed this turn.",
+      "Target creature can't be regenerated."
+    ]
+  },
+  {
+    "id": "eff.t16.cantattackblock",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 611.2a", "CR 508.1c", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Obj} can't attack or block {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        { "s": "restrict", "subject": "$o", "mode": "cant", "action": "attack" },
+        { "s": "restrict", "subject": "$o", "mode": "cant", "action": "block" }
+      ]
+    },
+    "subject": "object",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Target artifact creature can't attack or block this turn." },
+      { "text": "{3}, {T}: Target creature an opponent controls can't attack or block this turn." }
+    ],
+    "counterExamples": [
+      "Target creature can attack or block this turn.",
+      "Target creature can't attack or block.",
+      "Target creature can't attack and can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "rst.t16.cantbetargeted.white",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 115.1", "CR 113.7a", "CR 101.2"],
+    "pattern": "{o:Obj} can't be the target of white spells or abilities from white sources",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beTargeted", "other": { "colors": ["W"] } },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Enchanted permanent can't be the target of white spells or abilities from white sources." },
+      { "text": "Enchanted creature can't be the target of white spells or abilities from white sources." }
+    ],
+    "counterExamples": [
+      "~ can't be the target of white spells or abilities from black sources.",
+      "~ can't be the target of white spells.",
+      "~ can't be the target of nonwhite spells or abilities from nonwhite sources."
+    ]
+  },
+  {
+    "id": "rst.t16.cantbetargeted.blue",
+    "kind": "static",
+    "since": 5,
+    "status": "experimental",
+    "cr": ["CR 604.1", "CR 115.1", "CR 113.7a", "CR 101.2"],
+    "pattern": "{o:Obj} can't be the target of blue spells or abilities from blue sources",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beTargeted", "other": { "colors": ["U"] } },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Enchanted permanent can't be the target of blue spells or abilities from blue sources." },
+      { "text": "Enchanted creature can't be the target of blue spells or abilities from blue sources." }
+    ],
+    "counterExamples": [
+      "~ can't be the target of blue spells or abilities from red sources.",
+      "~ can't be the target of blue spells.",
+      "~ can't be the target of nonblue spells or abilities from nonblue sources."
+    ]
+  },
+  {
+    "id": "rst.t16.cantbetargeted.black",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 115.1", "CR 113.7a", "CR 101.2"],
+    "pattern": "{o:Obj} can't be the target of black spells or abilities from black sources",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beTargeted", "other": { "colors": ["B"] } },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Enchanted permanent can't be the target of black spells or abilities from black sources." },
+      { "text": "Enchanted creature can't be the target of black spells or abilities from black sources." }
+    ],
+    "counterExamples": [
+      "~ can't be the target of black spells or abilities from white sources.",
+      "~ can't be the target of black spells.",
+      "~ can't be the target of nonblack spells or abilities from nonblack sources."
+    ]
+  },
+  {
+    "id": "rst.t16.cantbetargeted.red",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 115.1", "CR 113.7a", "CR 101.2"],
+    "pattern": "{o:Obj} can't be the target of red spells or abilities from red sources",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beTargeted", "other": { "colors": ["R"] } },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Enchanted permanent can't be the target of red spells or abilities from red sources." },
+      { "text": "Enchanted creature can't be the target of red spells or abilities from red sources." }
+    ],
+    "counterExamples": [
+      "~ can't be the target of red spells or abilities from green sources.",
+      "~ can't be the target of red spells.",
+      "~ can't be the target of nonred spells or abilities from nonred sources."
+    ]
+  },
+  {
+    "id": "rst.t16.cantbetargeted.green",
+    "kind": "static",
+    "since": 5,
+    "status": "experimental",
+    "cr": ["CR 604.1", "CR 115.1", "CR 113.7a", "CR 101.2"],
+    "pattern": "{o:Obj} can't be the target of green spells or abilities from green sources",
+    "build": { "s": "restrict", "subject": "$o", "mode": "cant", "action": "beTargeted", "other": { "colors": ["G"] } },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Enchanted permanent can't be the target of green spells or abilities from green sources." },
+      { "text": "Enchanted creature can't be the target of green spells or abilities from green sources." }
+    ],
+    "counterExamples": [
+      "~ can't be the target of green spells or abilities from blue sources.",
+      "~ can't be the target of green spells.",
+      "Equipped creature can't be the target of nongreen spells or abilities from nongreen sources."
+    ]
+  },
+  {
+    "id": "eff.t16.cantbeblocked.except.dur",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 611.2a", "CR 509.1b", "CR 101.2"],
+    "pattern": "{o:Obj} can't be blocked {d:Dur} except by {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [{ "s": "restrict", "subject": "$o", "mode": "cant", "action": "beBlockedBy", "other": { "not": "$f" } }]
+    },
+    "subject": "object",
+    "consumes": ["can't", "except"],
+    "examples": [
+      { "text": "{2}: ~ can't be blocked this turn except by creatures with reach." },
+      { "text": "Target creature can't be blocked this turn except by Goblins." }
+    ],
+    "counterExamples": [
+      "{2}: ~ can't be blocked this turn except by two or more creatures.",
+      "{2}: ~ can't be blocked except by creatures with reach.",
+      "{2}: ~ can't be blocked this turn by creatures with reach."
+    ]
+  },
+  {
+    "id": "rst.t16.cantbeblocked.greaterpower",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 208.1", "CR 101.2"],
+    "pattern": "~ can't be blocked by creatures with greater power",
+    "build": {
+      "s": "restrict",
+      "subject": { "ref": "self" },
+      "mode": "cant",
+      "action": "beBlockedBy",
+      "other": { "types": ["Creature"], "power": { "op": ">", "value": { "q": "stat", "stat": "power", "of": { "ref": "self" } } } }
+    },
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "~ can't be blocked by creatures with greater power." },
+      { "text": "Flying\n~ can't be blocked by creatures with greater power." }
+    ],
+    "counterExamples": [
+      "~ can't be blocked by creatures with greater toughness.",
+      "~ can't be blocked by creatures with greater power this turn.",
+      "~ can't block creatures with greater power."
+    ]
+  },
+  {
+    "id": "eff.t16.each.cantblock.self",
+    "kind": "effect",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 611.2a", "CR 509.1b", "CR 101.2"],
+    "pattern": "{f:Filter} can't block ~ {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": { "ref": "each", "filter": "$f" }, "mode": "cant", "action": "block", "other": { "self": true } }] },
+    "subject": "object",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "{2}{R}: Creatures without flying can't block ~ this turn." },
+      { "text": "{1}: Creatures with power 2 or less can't block ~ this turn." }
+    ],
+    "counterExamples": [
+      "{2}{R}: Creatures without flying can't block ~.",
+      "{2}{R}: Creatures without flying can block ~ this turn.",
+      "{2}{R}: Creatures without flying can't attack ~ this turn."
+    ]
+  },
+  {
+    "id": "rst.t16.each.cantattackblock",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 508.1c", "CR 509.1b", "CR 101.2"],
+    "pattern": "{f:Filter} can't attack or block",
+    "build": [
+      { "s": "restrict", "subject": { "ref": "each", "filter": "$f" }, "mode": "cant", "action": "attack" },
+      { "s": "restrict", "subject": { "ref": "each", "filter": "$f" }, "mode": "cant", "action": "block" }
+    ],
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Green creatures can't attack or block." },
+      { "text": "Goblins you control can't attack or block." }
+    ],
+    "counterExamples": [
+      "Green creatures can attack or block.",
+      "Green creatures can't attack or block this turn.",
+      "Green creatures can't attack or block alone."
+    ]
+  },
+  {
+    "id": "rst.t16.two.groups.cantblock",
+    "kind": "static",
+    "since": 5,
+    "status": "stable",
+    "cr": ["CR 604.1", "CR 509.1b", "CR 101.2"],
+    "pattern": "{a:Filter} and {b:Filter} can't block",
+    "build": [
+      { "s": "restrict", "subject": { "ref": "each", "filter": "$a" }, "mode": "cant", "action": "block" },
+      { "s": "restrict", "subject": { "ref": "each", "filter": "$b" }, "mode": "cant", "action": "block" }
+    ],
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Green creatures and red creatures can't block." },
+      { "text": "Artifact creatures and black creatures can't block." }
+    ],
+    "counterExamples": [
+      "Green creatures and red creatures can block.",
+      "Green creatures and red creatures can't attack.",
+      "Green creatures and red creatures can't block this turn."
+    ]
+  }
+]

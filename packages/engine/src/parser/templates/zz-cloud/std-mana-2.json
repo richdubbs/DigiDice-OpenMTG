@@ -1,0 +1,162 @@
+[
+  {
+    "id": "eff.stdmana2.milledThisWay.upToOne.put.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "put up to one {f:Filter} card {g:MilledThisWay} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, mill four cards. Put up to one artifact card milled this way into your hand."
+      },
+      {
+        "text": "{2}, {T}: Mill three cards. Put up to one land card milled this way into your hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, mill four cards. Put up to two artifact cards milled this way into your hand.",
+      "When ~ enters, mill four cards. Put up to one artifact card milled this way onto the battlefield.",
+      "When ~ enters, mill four cards. Put one artifact card milled this way into your hand."
+    ],
+    "subject": "none"
+  },
+  {
+    "id": "eff.stdmana2.mana.fiveColorPairs",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4"
+    ],
+    "pattern": "add ( {W}{W} , {U}{U} , {B}{B} , {R}{R} , and {G}{G} | {W}{W}{U}{U}{B}{B}{R}{R}{G}{G} )",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "units": [
+        [
+          "W"
+        ],
+        [
+          "W"
+        ],
+        [
+          "U"
+        ],
+        [
+          "U"
+        ],
+        [
+          "B"
+        ],
+        [
+          "B"
+        ],
+        [
+          "R"
+        ],
+        [
+          "R"
+        ],
+        [
+          "G"
+        ],
+        [
+          "G"
+        ]
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Add {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}."
+      },
+      {
+        "text": "When ~ enters, add {W}{W}{U}{U}{B}{B}{R}{R}{G}{G}."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {W}{W}, {U}{U}, {B}{B}, {R}{R}, or {G}{G}.",
+      "{T}: Add {W}{W}, {U}{U}, {B}{B}, and {R}{R}.",
+      "{2}, {T}: Add {W}{U}{B}{R}{G}."
+    ]
+  },
+  {
+    "id": "eff.stdmana2.counters.put.upTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2d"
+    ],
+    "pattern": "put up to {n:Qty} {k:CounterKind} counter[s] on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$n",
+      "upTo": true
+    },
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Put up to two +1/+1 counters on target Golem you control."
+      },
+      {
+        "text": "When ~ enters, put up to three oil counters on target artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Put two +1/+1 counters on target Golem you control.",
+      "{3}, {T}: Put up to two +1/+1 counters on each Golem you control.",
+      "{3}, {T}: Remove up to two +1/+1 counters from target Golem you control."
+    ]
+  }
+]

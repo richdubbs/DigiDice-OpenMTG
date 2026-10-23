@@ -1,0 +1,3 @@
+# std-rx2 (wave 2 slice s25; test/cloud/std-rx2, golden cloud-std-rx2-review.json): "If a creature attacking causes a triggered ability of a permanent you
+# control to trigger, that ability triggers an additional time" (sta.stdrx2.triggerMod.attacking, feature:triggerMod.attacks)
+Windcrag Siege

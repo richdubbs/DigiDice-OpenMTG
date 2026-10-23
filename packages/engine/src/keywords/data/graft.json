@@ -1,0 +1,102 @@
+{
+  "name": "graft",
+  "rule": "702.58",
+  "params": [
+    {
+      "name": "amount",
+      "type": "number"
+    }
+  ],
+  "mechanisms": [
+    "replacement",
+    "expands"
+  ],
+  "reminder": "This creature enters with {n} +1/+1 counters on it. Whenever another creature enters, you may move a +1/+1 counter from this creature onto it.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "~ enters with {n} +1/+1 counters on it.",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "+1/+1",
+                "count": "$amount"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "triggered",
+      "text": "Whenever another creature enters, if ~ has a +1/+1 counter on it, you may move a +1/+1 counter from ~ onto that creature.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "types": [
+                "Creature"
+              ],
+              "other": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "+1/+1"
+          }
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "moveCounters",
+                "from": {
+                  "ref": "self"
+                },
+                "to": {
+                  "ref": "event",
+                  "role": "subject"
+                },
+                "kind": "+1/+1",
+                "count": 1
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

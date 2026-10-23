@@ -1,0 +1,4 @@
+# std-promote-4: the golden cards of the round (test/m5/golden/cards/cloud-std-ecl-review.json, cloud-std-cardcopy-2-review.json)
+Calamity, Galloping Inferno
+Sandstorm Crasher
+Satya, Aetherflux Genius

@@ -1,0 +1,23 @@
+# FAST5X E24: a character card's own gendered pronouns (he, him, his, she, her) read as "~" (CR 201.5, design 6.4; parser/front/selfref.ts).
+# After editing: npm run cards -- fixtures
+
+# ---- The shapes of zz-fast5x/e24.json on real cards
+Gandalf, Wandering Wizard
+Gallia, Tragic Host
+Stature, Size Shifter
+Leatherhead, Swamp Stalker
+Morlun, Devourer of Spiders
+Quicksilver, Brash Blur
+
+# ---- Pronouns the existing templates read once they are "~"
+Venus, Torn Between Worlds
+Kang, Temporal Tyrant
+Scarlet Spider, Kaine
+
+# ---- A legendary short name that is also a subtype (CR 201.5c): "Wolverine", "Oko"
+Wraith, Vicious Vigilante
+Oko, Lorwyn Liege // Oko, Shadowmoor Scion
+
+# ---- Pronouns that stay manual: another character's name in the text ("Her Majesty"), a sentence with no template
+The Underworld Fantasy Queen
+Hellcat, Undying Vigilante

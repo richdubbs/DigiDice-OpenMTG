@@ -1,0 +1,100 @@
+[
+  {
+    "id": "ch.may",
+    "kind": "effect",
+    "cr": ["CR 608.2d", "CR 603.5"],
+    "pattern": "you may {e:Effects}",
+    "build": { "op": "may", "who": { "ref": "you" }, "do": "$e" },
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may draw two cards." },
+      { "text": "You may destroy target artifact." },
+      { "text": "You may draw a card. If you do, discard a card." }
+    ],
+    "counterExamples": [
+      "You draw two cards.",
+      "You may draw two cards unless it is blue.",
+      "Target player may draw three cards.",
+      "You may draw two cards unless target opponent pays {3}."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "ch.maypay",
+    "kind": "effect",
+    "cr": ["CR 118.12", "CR 608.2d"],
+    "pattern": "{p:Player} may pay {c:Cost}",
+    "build": { "op": "pay", "who": "$p", "cost": "$c" },
+    "consumes": ["may"],
+    "priority": 1,
+    "examples": [{ "text": "You may pay {4}." }, { "text": "Target opponent may pay {3}{G}." }],
+    "counterExamples": ["You may pay.", "You pay {4}.", "You may pay {4} any number of times.", "You may pay {X} any number of times."],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "ch.pay",
+    "kind": "effect",
+    "cr": ["CR 118.12", "CR 118.3"],
+    "pattern": "pay {c:Cost}",
+    "build": { "op": "pay", "who": { "ref": "you" }, "cost": "$c" },
+    "subject": "none",
+    "examples": [
+      { "text": "Pay {2}{R}{R}. If you don't, discard two cards." },
+      { "text": "Pay {1}{B}. If you don't, you lose the game." }
+    ],
+    "counterExamples": [
+      "Pay. If you don't, discard two cards.",
+      "Pay {2} for each card in your hand. If you don't, discard two cards.",
+      "Pay {X}. If you don't, discard two cards."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "ch.put.fromHand",
+    "kind": "effect",
+    "cr": ["CR 608.2d", "CR 110.2a", "CR 400.7"],
+    "pattern": "you may put {f:Filter} onto the battlefield",
+    "build": [{ "op": "chooseObjects", "who": { "ref": "you" }, "from": { "ref": "each", "filter": "$f" }, "min": 0, "max": 1, "as": "put" }, { "op": "move", "what": { "ref": "bound", "name": "put" }, "to": { "zone": "battlefield", "controller": { "ref": "you" } } }],
+    "consumes": ["may"],
+    "examples": [
+      { "text": "You may put an artifact card from your hand onto the battlefield." },
+      { "text": "You may put a land card from your hand onto the battlefield." }
+    ],
+    "counterExamples": [
+      "You may put two land cards from your hand onto the battlefield.",
+      "You may put an artifact card from your hand on top of your library.",
+      "Put a land card from your hand onto the battlefield."
+    ],
+    "status": "stable",
+    "since": 1
+  },
+  {
+    "id": "ch.maypay.discard",
+    "kind": "effect",
+    "cr": ["CR 118.12", "CR 608.2d", "CR 701.9a"],
+    "pattern": "{p:Player} may pay {m:ManaCost} and discard ( a | an ) card",
+    "build": { "op": "pay", "who": "$p", "cost": { "mana": "$m", "other": [{ "kind": "discard", "count": 1 }] } },
+    "consumes": ["may"],
+    "priority": 2,
+    "examples": [{ "text": "You may pay {3} and discard a card." }, { "text": "Target opponent may pay {2}{B} and discard a card." }],
+    "counterExamples": ["You may pay {3} or discard a card.", "You may pay {3} and discard two cards.", "You may discard a card and pay {3}."],
+    "status": "experimental",
+    "since": 1
+  },
+  {
+    "id": "ch.maypay.sacrifice",
+    "kind": "effect",
+    "cr": ["CR 118.12", "CR 608.2d", "CR 701.21a"],
+    "pattern": "{p:Player} may pay {m:ManaCost} and sacrifice ( a | an ) {f:Filter}",
+    "build": { "op": "pay", "who": "$p", "cost": { "mana": "$m", "other": [{ "kind": "sacrifice", "filter": "$f", "count": 1 }] } },
+    "consumes": ["may"],
+    "priority": 2,
+    "examples": [{ "text": "You may pay {3} and sacrifice a creature." }, { "text": "You may pay {1}{G} and sacrifice an enchantment." }],
+    "counterExamples": ["You may pay {3} or sacrifice a creature.", "You may pay {3} and sacrifice two creatures.", "You may sacrifice a creature and pay {3}."],
+    "status": "stable",
+    "since": 1
+  }
+]

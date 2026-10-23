@@ -1,0 +1,3 @@
+[
+{"card":"Essence Symbiote","expect":"full","verified":"CLOUD p2-promote-2 review, by hand against the Oracle text and the rules cited: whenever a creature you control mutates, put a +1/+1 counter on that creature (the merged permanent) and you gain 2 life (trg.m6.yourCreature.mutates) (CR 702.140d, 702.140e, 730.2a)","faces":[{"abilities":[{"effect":{"steps":[{"count":1,"kind":"+1/+1","on":{"ref":"event","role":"subject"},"op":"putCounters"},{"amount":2,"op":"gainLife","who":{"ref":"you"}}],"targets":[]},"kind":"triggered","trigger":{"on":[{"ev":"becomes","object":{"controller":"you","types":["Creature"]},"what":"mutated"}]}}]}]}
+]

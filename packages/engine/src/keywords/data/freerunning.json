@@ -1,0 +1,61 @@
+{
+  "name": "freerunning",
+  "rule": "702.173",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this spell for its freerunning cost if you dealt combat damage to a player this turn with an Assassin or commander.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Freerunning {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "freerunning",
+          "when": {
+            "cond": "happened",
+            "event": {
+              "ev": "damage",
+              "combat": true,
+              "source": {
+                "anyOf": [
+                  {
+                    "subtypes": [
+                      "Assassin"
+                    ]
+                  },
+                  {
+                    "commander": true
+                  }
+                ],
+                "controller": "you"
+              },
+              "recipient": {
+                "player": "any"
+              }
+            },
+            "scope": "turn"
+          }
+        }
+      ]
+    }
+  ]
+}

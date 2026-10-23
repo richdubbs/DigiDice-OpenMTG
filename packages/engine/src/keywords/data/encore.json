@@ -1,0 +1,132 @@
+{
+  "name": "encore",
+  "rule": "702.141",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    }
+  ],
+  "mechanisms": [
+    "expands"
+  ],
+  "reminder": "{cost}, Exile this card from your graveyard: For each opponent, create a token copy that attacks that opponent this turn if able. They gain haste. Sacrifice them at the beginning of the next end step. Activate only as a sorcery.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{printed}",
+      "zone": [
+        "graveyard"
+      ],
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "exileFrom",
+              "zone": "graveyard",
+              "count": 1,
+              "self": true
+            }
+          ]
+        }
+      },
+      "sorcerySpeed": true,
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "forEach",
+            "over": {
+              "ref": "each",
+              "who": "opponent"
+            },
+            "as": "encoreOpponent",
+            "do": [
+              {
+                "op": "copy",
+                "what": {
+                  "ref": "self"
+                },
+                "result": "token",
+                "who": {
+                  "ref": "you"
+                },
+                "as": "encore"
+              },
+              {
+                "op": "effect",
+                "effects": [
+                  {
+                    "s": "restrict",
+                    "subject": {
+                      "ref": "bound",
+                      "name": "encore"
+                    },
+                    "mode": "mustIfAble",
+                    "action": "attack",
+                    "otherPlayer": {
+                      "ref": "iterating"
+                    }
+                  }
+                ],
+                "duration": {
+                  "d": "endOfTurn"
+                }
+              },
+              {
+                "op": "effect",
+                "effects": [
+                  {
+                    "s": "continuous",
+                    "affects": {
+                      "ref": "bound",
+                      "name": "encore"
+                    },
+                    "mods": [
+                      {
+                        "layer": 6,
+                        "add": [
+                          {
+                            "kind": "keyword",
+                            "keyword": "haste",
+                            "text": "haste"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "duration": {
+                  "d": "permanent"
+                }
+              },
+              {
+                "op": "delay",
+                "when": {
+                  "at": "step",
+                  "step": "end",
+                  "next": true
+                },
+                "capture": [
+                  "encore"
+                ],
+                "do": [
+                  {
+                    "op": "sacrifice",
+                    "what": {
+                      "ref": "bound",
+                      "name": "encore"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

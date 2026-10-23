@@ -1,0 +1,304 @@
+[
+  {
+    "id": "eff.r5cost.counters.forEachOpponent.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 122.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "for each opponent , put x {k:CounterKind} counters on {o:OppTarget} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "putCounters",
+          "on": "$o",
+          "kind": "$k",
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, put X -1/-1 counters on up to one target creature that player controls, where X is the number of cards in your hand."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, put X +1/+1 counters on up to one target creature that player controls, where X is the number of Elves you control."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, put X -1/-1 counters on up to one target creature that player controls, where X is ~'s power."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put X -1/-1 counters on up to one target creature that player controls, where X is the number of cards in your hand.",
+      "When ~ enters, for each opponent, put X -1/-1 counters on up to two target creatures that player controls, where X is the number of cards in your hand.",
+      "When ~ enters, for each opponent, put X -1/-1 counters on up to one target creature that player controls.",
+      "When ~ enters, for each opponent, put X -1/-1 counters on up to one target creature you control, where X is the number of cards in your hand.",
+      "When ~ enters, for each opponent, remove X -1/-1 counters from up to one target creature that player controls, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "rid.r5cost.harmonize.costIsManaCost",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.180a",
+      "CR 118.9",
+      "CR 608.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "( its | the ) harmonize cost is equal to ( its | that card 's ) mana cost",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.mods.0.add.0.keyword": "harmonize",
+          "effects.0.mods.0.add.0.cost": null,
+          "effects.0.mods.0.add.1": null
+        },
+        "effects": [
+          {
+            "mods": [
+              {
+                "add": [
+                  {
+                    "costIsManaCost": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Target sorcery card in your graveyard gains harmonize until end of turn. Its harmonize cost is equal to its mana cost."
+      },
+      {
+        "text": "Target instant card in your graveyard gains harmonize until end of turn. The harmonize cost is equal to that card's mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Target sorcery card in your graveyard gains harmonize until end of turn. Its harmonize cost is equal to its power.",
+      "Target sorcery card in your graveyard gains flashback until end of turn. Its harmonize cost is equal to its mana cost.",
+      "Target creature gains flying until end of turn. Its harmonize cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "rid.r5cost.embalm.costIsManaCost",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.128a",
+      "CR 118.9",
+      "CR 608.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "( its | the ) embalm cost is equal to ( its | that card 's ) mana cost",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.mods.0.add.0.keyword": "embalm",
+          "effects.0.mods.0.add.0.cost": null,
+          "effects.0.mods.0.add.1": null
+        },
+        "effects": [
+          {
+            "mods": [
+              {
+                "add": [
+                  {
+                    "costIsManaCost": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Target creature card in your graveyard gains embalm until end of turn. The embalm cost is equal to its mana cost."
+      },
+      {
+        "text": "Target Zombie card in your graveyard gains embalm until end of turn. Its embalm cost is equal to that card's mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Target creature card in your graveyard gains embalm until end of turn. The embalm cost is equal to its toughness.",
+      "Target creature card in your graveyard gains unearth until end of turn. The embalm cost is equal to its mana cost.",
+      "Target creature gains flying until end of turn. The embalm cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "eff.r5cost.costmod.spells.opp.targetSelf.life",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 119.4",
+      "CR 604.1"
+    ],
+    "pattern": "spells your opponents cast that target ~ cost an additional {n:Count} life to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "targets": {
+                "ref": "self"
+              }
+            },
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "life": "$n"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Spells your opponents cast that target ~ cost an additional 2 life to cast."
+      },
+      {
+        "text": "Spells your opponents cast that target ~ cost an additional 4 life to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast that target ~ cost an additional 2 life to cast.",
+      "Spells your opponents cast that target a creature you control cost an additional 2 life to cast.",
+      "Spells your opponents cast cost an additional 2 life to cast.",
+      "Spells your opponents cast that target ~ cost {2} more and an additional 2 life to cast."
+    ]
+  },
+  {
+    "id": "eff.r5cost.cast.obj.discardInstead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 608.2g",
+      "CR 701.9a"
+    ],
+    "pattern": "you may cast {o:Obj} by discarding a card rather than paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "optional": true,
+      "costChange": {
+        "kind": "set",
+        "cost": {
+          "other": [
+            {
+              "kind": "discard",
+              "count": 1
+            }
+          ]
+        },
+        "name": "discard"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast target instant card from your graveyard by discarding a card rather than paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ attacks, exile cards from the top of your library until you exile a nonland card. You may cast that card by discarding a card rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast target instant card from your graveyard by discarding two cards rather than paying its mana cost.",
+      "When ~ enters, you may cast target instant card from your graveyard by sacrificing a creature rather than paying its mana cost.",
+      "When ~ enters, you may cast target instant card from your graveyard by discarding a card in addition to paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.r5cost.return.self.fromGraveyard.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 508.4"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield tapped and attacking",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "attacking": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you attack with one or more Goblins, you may pay {1}{R}. If you do, return ~ from your graveyard to the battlefield tapped and attacking."
+      },
+      {
+        "text": "Whenever you attack, if you control three or more Elves, you may pay {G}. If you do, return ~ from your graveyard to the battlefield tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack with one or more Goblins, you may pay {1}{R}. If you do, return ~ from your graveyard to the battlefield tapped.",
+      "Whenever you attack with one or more Goblins, you may pay {1}{R}. If you do, return ~ from your graveyard to your hand.",
+      "Whenever you attack with one or more Goblins, you may pay {1}{R}. If you do, return ~ from exile to the battlefield tapped and attacking."
+    ]
+  }
+]

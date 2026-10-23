@@ -1,0 +1,11 @@
+{
+  "name": "space sculptor",
+  "rule": "702.158",
+  "params": [],
+  "mechanisms": [
+    "structural"
+  ],
+  "reminder": "Space Beleren divides the battlefield into alpha, beta, and gamma sectors. If a creature isn't assigned to a sector, its controller assigns it to one. Opponents assign first.",
+  "multiple": "independent",
+  "status": "planned"
+}

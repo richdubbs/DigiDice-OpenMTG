@@ -1,0 +1,3 @@
+# std-exile-play-2-2 (lane std-exile-play-2; test/cloud/std-exile-play-2-2, golden std-exile-play-2-2-review.json): a cast trigger's replacement that exiles
+# the card with a counter on it as it resolves; a free cast from among cards you own in exile with counters of a kind
+Goliath Daydreamer
