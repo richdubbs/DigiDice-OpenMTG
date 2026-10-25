@@ -140,3 +140,21 @@ describe('AP1 hold-priority toggle next to the Pass button', () => {
     expect((toggle as HTMLButtonElement).disabled).toBe(true);
   });
 });
+
+describe('RES-ALL: the Resolve all button next to Pass (owner, 2026-10-25)', () => {
+  // The scenario's default is full control, so Alice keeps priority over her own spell.
+  const board = () => scenario(['Forest', 'Grizzly Bears'], { p1: { hand: ['Grizzly Bears'], battlefield: ['Forest', 'Forest'] } });
+
+  it('is shown only while the stack holds something', () => {
+    renderPrompt(board());
+    expect(screen.queryByRole('button', { name: 'Resolve all' })).toBeNull();
+  });
+
+  it('sends a pass with resolveAll: the stack resolves', async () => {
+    const t = castAuto(board(), 'Grizzly Bears');
+    expect(t.zones.stack).toHaveLength(1);
+    const { conn } = renderPrompt(t);
+    await click('Resolve all');
+    expect(conn.sent.at(-1)).toEqual({ type: 'pass', player: 'p1', resolveAll: true });
+  });
+});

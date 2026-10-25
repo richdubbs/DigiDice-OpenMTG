@@ -150,6 +150,10 @@ function perform(g: Game, action: Action): void {
       startGame(g, action.concessions ?? []);
       return;
     case 'pass':
+      // RES-ALL: Resolve all passes now and for this player until the stack is empty (shouldAutoPass)
+      if (action.resolveAll === true && g.s.zones.stack.length > 0 && !g.s.priority.resolveAll?.includes(action.player)) {
+        (g.s.priority.resolveAll ??= []).push(action.player);
+      }
       passPriority(g, action.player);
       advance(g);
       return;

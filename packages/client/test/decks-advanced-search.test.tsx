@@ -25,7 +25,7 @@ const searchCalls = (m: ReturnType<typeof fakeServer>) => m.mock.calls.map(([u])
 function renderBuilder(server: FakeServer = {}) {
   const fetchMock = fakeServer(server);
   render(
-    <DecksProvider store={new MemoryDeckStore([deckFixture()])}>
+    <DecksProvider store={new MemoryDeckStore([deckFixture()])} showScryfallImages={false}>
       <NavProvider>
         <DeckbuilderScreen deckId="deck-1" validateDelayMs={0} autoSearch={false} />
       </NavProvider>

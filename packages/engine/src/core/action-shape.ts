@@ -39,7 +39,7 @@ type Assert<T extends true> = T;
 export type PlayerAction = Exclude<Action, { type: 'startGame' }>;
 
 const ACTION_FIELDS = {
-  pass: ['type', 'player'],
+  pass: ['type', 'player', 'resolveAll'], // RES-ALL
   playLand: ['type', 'player', 'card', 'face'],
   cast: ['type', 'player', 'card', 'face', 'method'],
   activate: ['type', 'player', 'source', 'ability'],
@@ -192,6 +192,8 @@ export function actionShapeProblem(x: unknown, opts: ActionShapeOptions = {}): s
     if (extra) return extra;
   }
   switch (x['type']) {
+    case 'pass':
+      return x['resolveAll'] === undefined || x['resolveAll'] === true ? null : 'action malformed'; // RES-ALL: Resolve all
     case 'playLand':
     case 'cast':
       return isStr(x['card'], 64) && (x['face'] === undefined || isInt(x['face'], 0, 8)) && (x['method'] === undefined || isStr(x['method'], 100)) ? null : 'action malformed';

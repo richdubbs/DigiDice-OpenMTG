@@ -1146,10 +1146,23 @@ export interface GameState {
     passes: number;
     /**
      * TRG-STOP ADDITION (optional; absent = none, so states saved before it still load): the controller of the triggered ability that resolved last and
-     * left the stack empty (CR 117.3b). Smart auto-pass stops for that player in this step even when it is not one of their stops (`shouldAutoPass`), so a
-     * beginning-of-combat trigger (Irma, Part-Time Mutant) can be answered before attackers are declared. Cleared when another object resolves or a step begins.
+     * left the stack empty (CR 117.3b). Smart auto-pass stops for every player who can act in this step even when it is not one of their stops
+     * (`shouldAutoPass`), so a beginning-of-combat trigger (Irma, Part-Time Mutant) can be answered before attackers are declared. Cleared when another
+     * object resolves or a step begins.
      */
     afterTrigger?: PlayerId;
+    /**
+     * TRG-STOP2 ADDITION (optional; absent = 0): how many objects were left on the stack by the last resolution in this step (CR 117.3b). The objects above
+     * them were put on the stack since; smart auto-pass passes for a player only on their own spell or activated ability among those (Arena, CR 117.3c),
+     * so after a resolution they get a chance at their own spell again. Cleared when the stack is empty or a step begins.
+     */
+    stackBase?: number;
+    /**
+     * RES-ALL ADDITION (optional; absent = nobody): the players who chose "Resolve all" (`pass` with `resolveAll`): smart auto-pass passes for them until
+     * the stack is empty. A player is taken off when another player casts a spell or activates an ability (`resetPasses`); cleared when the stack is
+     * empty or a step begins.
+     */
+    resolveAll?: PlayerId[];
   };
   combat: CombatState | null;
   continuousEffects: ContinuousEffectRec[];

@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { applyAction, compileCard, type GameState, type OracleCard } from '../../src/index';
-import { act, castAuto, find, pass, scenario, type Zones } from '../m3/scenario';
+import { act, answer, castAuto, find, pass, scenario, type Zones } from '../m3/scenario';
 
 const AUTO = { fullControl: false };
 const CARDS = ['Llanowar Elves', 'Forest', 'Shock', 'Mountain', 'Grizzly Bears', 'Prodigal Pyromancer', 'Think Twice', 'Island'];
@@ -205,8 +205,12 @@ describe('TRG-STOP: after a triggered ability of hers resolves and empties the s
   const withBugle = (p1: { hand: string[]; battlefield: string[] }): GameState =>
     pass(scenario(CARDS, { defs: [BUGLE], p1: { hand: p1.hand, battlefield: ['Test Battle Bugle', ...p1.battlefield] }, stops: AUTO }));
 
-  it('Shock and an untapped Mountain: she is asked in beginning of combat once her trigger has resolved, before attackers', () => {
-    const s = withBugle({ hand: ['Shock'], battlefield: ['Mountain'] });
+  it('Shock and an untapped Mountain: she is asked with her trigger on the stack (TRG-STOP2), then in beginning of combat once it resolved, before attackers', () => {
+    let s = withBugle({ hand: ['Shock'], battlefield: ['Mountain'] });
+    expect(`${s.turn.number}:${s.turn.step}`).toBe('1:beginCombat');
+    expect(s.zones.stack).toHaveLength(1);
+    expect(s.pending).toMatchObject({ kind: 'priority', player: 'p1' });
+    s = pass(s);
     expect(`${s.turn.number}:${s.turn.step}`).toBe('1:beginCombat');
     expect(s.zones.stack).toEqual([]);
     expect(s.players[0]!.life).toBe(21); // the trigger resolved first
@@ -220,9 +224,75 @@ describe('TRG-STOP: after a triggered ability of hers resolves and empties the s
   });
 
   it('the stop lasts only for that step: when she passes, the turn goes on to her next stop', () => {
-    const s = pass(withBugle({ hand: ['Shock'], battlefield: ['Mountain'] }));
+    const s = pass(pass(withBugle({ hand: ['Shock'], battlefield: ['Mountain'] })));
     expect(`${s.turn.number}:${s.turn.step}`).toBe('1:main2');
     expect(s.pending).toMatchObject({ kind: 'priority', player: 'p1' });
     expect(s.priority.afterTrigger).toBeUndefined();
+  });
+});
+
+describe('TRG-STOP2 and RES-ALL: a chance before every trigger resolves, and Resolve all (owner, 2026-10-25)', () => {
+  // "You should be able to cast an instant spell in between every single trigger. There should also be an option to 'resolve all'."
+  const trigger = (name: string, life: number) =>
+    compileCard({
+      name, layout: 'normal', mana_cost: '{0}', type_line: 'Enchantment', oracle_text: `At the beginning of combat on your turn, you gain ${life} life.`,
+      colors: [], keywords: [],
+    } as OracleCard);
+  const DEFS = [trigger('Test Battle Bugle', 1), trigger('Test War Drum', 2)];
+  const ordered = (s: GameState): GameState => {
+    while (s.pending?.kind === 'order') s = answer(s, { kind: 'order', ids: (s.pending as unknown as { items: { id: string }[] }).items.map((i) => i.id) });
+    return s;
+  };
+  /** Alice passes her first main phase; both her beginning-of-combat triggers go on the stack (CR 603.3b). */
+  const atCombat = (p1Hand: string[], p1Lands: string[], p2: Zones = {}): GameState =>
+    ordered(pass(scenario(CARDS, { defs: DEFS, p1: { hand: p1Hand, battlefield: ['Test Battle Bugle', 'Test War Drum', ...p1Lands] }, p2, stops: AUTO })));
+
+  it('Shock and a Mountain: she is asked with each of her triggers on top, and once more after the last one resolved', () => {
+    let s = atCombat(['Shock'], ['Mountain']);
+    const seen: string[] = [];
+    while (s.turn.step === 'beginCombat' && s.pending?.kind === 'priority') {
+      seen.push(`${s.pending.player}:${s.zones.stack.length}`);
+      s = pass(s);
+    }
+    expect(seen).toEqual(['p1:2', 'p1:1', 'p1:0']);
+    expect(s.players[0]!.life).toBe(23);
+  });
+
+  it('nothing she can cast: the triggers resolve without asking her, as before', () => {
+    const s = atCombat(['Shock'], []);
+    expect(s.players[0]!.life).toBe(23);
+    expect(`${s.turn.number}:${s.turn.step}`).not.toBe('1:beginCombat');
+  });
+
+  it('Resolve all: both triggers resolve without asking her; with the stack empty she is asked in beginning of combat (the stop after a trigger)', () => {
+    let s = atCombat(['Shock'], ['Mountain']);
+    expect(s.zones.stack).toHaveLength(2);
+    s = act(s, { type: 'pass', player: 'p1', resolveAll: true });
+    expect(s.zones.stack).toEqual([]);
+    expect(s.players[0]!.life).toBe(23);
+    expect(`${s.turn.step}:${s.pending?.player}`).toBe('beginCombat:p1');
+    expect(s.priority.resolveAll).toBeUndefined();
+  });
+
+  it('Resolve all stops when the other player casts something: Bob Shocks her in response and she is asked to answer it', () => {
+    let s = atCombat(['Shock'], ['Mountain'], { hand: ['Shock'], battlefield: ['Mountain'] });
+    s = act(s, { type: 'pass', player: 'p1', resolveAll: true });
+    expect(s.pending).toMatchObject({ kind: 'priority', player: 'p2' }); // Bob can answer her trigger
+    s = castAuto(s, 'Shock', { player: 'p2', answers: [{ kind: 'chooseTargets', targets: [{ kind: 'player', id: 'p1' }] }] });
+    expect(s.priority.resolveAll).toBeUndefined();
+    expect(s.pending).toMatchObject({ kind: 'priority', player: 'p1' });
+    expect(s.zones.stack).toHaveLength(3);
+  });
+
+  it('her own spell again once the answer above it resolved: right after casting she is passed for, after Bob\'s Shock resolves she is asked', () => {
+    let s = scenario(CARDS, { p1: { hand: ['Shock', 'Shock'], battlefield: ['Mountain', 'Mountain'] }, p2: { hand: ['Shock'], battlefield: ['Mountain'] }, stops: AUTO });
+    s = castAuto(s, 'Shock', { answers: [{ kind: 'chooseTargets', targets: [{ kind: 'player', id: 'p2' }] }] });
+    expect(s.pending).toMatchObject({ kind: 'priority', player: 'p2' }); // Arena: passed for right after her own spell (CR 117.3c)
+    s = castAuto(s, 'Shock', { player: 'p2', answers: [{ kind: 'chooseTargets', targets: [{ kind: 'player', id: 'p1' }] }] });
+    expect(s.pending).toMatchObject({ kind: 'priority', player: 'p1' });
+    s = pass(s); // Bob's Shock resolves (CR 117.4)
+    expect(s.zones.stack).toHaveLength(1);
+    expect(s.players[0]!.life).toBe(18);
+    expect(s.pending).toMatchObject({ kind: 'priority', player: 'p1' }); // her own Shock on top, but something resolved since she cast it (CR 117.3b)
   });
 });

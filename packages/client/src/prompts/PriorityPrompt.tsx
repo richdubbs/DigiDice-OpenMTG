@@ -18,6 +18,9 @@
  * own spell or ability (Arena). The "Hold priority" toggle next to Pass (shortcut H) makes the game stop for this player at every priority, also right
  * after their own spell or ability (CR 117.3c), until it is turned off or the turn ends (the engine clears it then). It is the engine's
  * `StopSettings.holdPriority`, sent as a `setStops` action, so it works the same in hot-seat, against the computer and online.
+ *
+ * Resolve all (RES-ALL, owner 2026-10-25): shown while the stack holds something. It passes now and keeps passing for this player until the stack is
+ * empty (the engine's `pass` with `resolveAll`), unless another player casts a spell or activates an ability, which asks them again.
  */
 import { useEffect, useRef, useState } from 'react';
 import { faceChars, hasType, isByHandKind, type Action, type GameView, type LegalAction, type ObjectId, type PlayerId, type PlayerState } from '@openmtg/engine';
@@ -158,6 +161,10 @@ export function PriorityPrompt({ d, view, legal, act, busy }: PromptProps<'prior
     gameSfx('priority.pass');
     act(passAction);
   };
+  const resolveAll = () => {
+    gameSfx('priority.pass');
+    act({ type: 'pass', player: d.player, resolveAll: true });
+  };
   const click = (id: string) => setOpen((o) => (o === id ? null : id));
   // ui/arena (like Arena): a card clicked on the board with one thing to do does it at once (play the land, cast the spell, tap the land for mana;
   // casting can still be cancelled while targets and costs are chosen, CR 733.1); with several, its list of actions opens here. The chips below keep
@@ -210,6 +217,11 @@ export function PriorityPrompt({ d, view, legal, act, busy }: PromptProps<'prior
         <button type="button" className="button-primary" disabled={busy} onClick={pass} title="Space">
           Pass priority
         </button>
+        {top !== undefined && (
+          <button type="button" className="resolve-all" disabled={busy} onClick={resolveAll}>
+            Resolve all
+          </button>
+        )}
         {me && <HoldPriority me={me} act={act} busy={busy} />}
         {objectless.map((a, i) => (
           <button

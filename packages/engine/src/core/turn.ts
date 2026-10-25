@@ -112,28 +112,34 @@ export function stepLabel(step: Step): string {
  *
  * - Full control, or the temporary hold-priority toggle (`StopSettings.holdPriority`, cleared when the turn ends): the player always gets the decision, also
  *   right after their own spell or ability (CR 117.3c).
- * - An object on the stack: right after their own spell or ability the player passes (Arena: they respond only to the other players' objects); to another
- *   player's object they pass automatically when they have nothing to do but pass and mana abilities (two untapped lands and no instant), and decide
- *   themselves when they could cast a spell or activate a non-mana ability in response.
+ * - An object on the stack: right after they cast their own spell or activated their own ability (CR 117.3c) the player passes (Arena); to any other
+ *   object they pass automatically when they have nothing to do but pass and mana abilities (two untapped lands and no instant), and decide themselves when
+ *   they could cast a spell or activate a non-mana ability in response. TRG-STOP2 (owner, 2026-10-25: "cast an instant spell in between every single
+ *   trigger"): "any other object" includes every triggered ability, theirs too, and their own spell or ability once something above it resolved
+ *   (`priority.stackBase`), so a stack of triggers gives them a chance before each one resolves.
  * - An empty stack: their stops say in which steps they want to stop (Arena); in a step that is not a stop they pass, and at a stop they pass when they have
- *   nothing to do. TRG-STOP (owner, 2026-10-25): right after a triggered ability they control resolved and left the stack empty (`priority.afterTrigger`),
- *   any step counts as a stop for them, so they can act after their own beginning-of-combat trigger before attackers are declared.
+ *   nothing to do. TRG-STOP: right after a triggered ability resolved and left the stack empty (`priority.afterTrigger`), any step counts as a stop for every
+ *   player, so they can act after a beginning-of-combat trigger before attackers are declared.
+ * - RES-ALL "Resolve all" (`pass` with `resolveAll`, `priority.resolveAll`): the player passes until the stack is empty, or until another player casts a
+ *   spell or activates an ability (`resetPasses`), whatever their other settings.
  *
  * OpenMTG accepts that whether the game stops for a player tells the other players something about that player's options (the M2 concern, CR 400.2); the
  * automatic pass is logged like a manual one when the stack is not empty (`passPriority`), so the log reads the same either way.
  */
 export function shouldAutoPass(g: Game, p: PlayerId): boolean {
   const ps = g.player(p);
-  if (ps.stops.fullControl || ps.stops.holdPriority === true) return false;
   const stack = g.s.zones.stack;
+  if (stack.length > 0 && g.s.priority.resolveAll?.includes(p)) return true;
+  if (ps.stops.fullControl || ps.stops.holdPriority === true) return false;
   if (stack.length > 0) {
-    // Arena passes for you right after you cast/activate; respond only to the opponent's objects.
-    const top = g.obj(stack[stack.length - 1]!);
-    if (top.controller === p) return true;
+    // Arena passes for you right after you cast/activate (put on the stack since the last resolution); you answer every trigger, yours too.
+    const i = stack.length - 1;
+    const top = g.obj(stack[i]!);
+    if (top.controller === p && top.stack?.kind !== 'triggered' && i >= (g.s.priority.stackBase ?? 0)) return true;
   } else {
     const own = g.s.turn.activePlayer === p;
     const stops = own ? ps.stops.ownTurn : ps.stops.opponentTurn;
-    if (!stops.includes(g.s.turn.step) && g.s.priority.afterTrigger !== p) return true;
+    if (!stops.includes(g.s.turn.step) && g.s.priority.afterTrigger === undefined) return true;
   }
   return !hasPriorityActions(g, p);
 }
@@ -168,9 +174,14 @@ function allPassed(g: Game): void {
     const top = g.obj(g.s.zones.stack[g.s.zones.stack.length - 1]!);
     const trigger = top.stack?.kind === 'triggered' ? top.controller : undefined;
     resolveTopOfStack(g); // CR 117.4, 608
-    // TRG-STOP: the controller of a triggered ability that left the stack empty gets a stop in this step (shouldAutoPass)
-    if (trigger !== undefined && g.s.zones.stack.length === 0) g.s.priority.afterTrigger = trigger;
+    const left = g.s.zones.stack.length;
+    // TRG-STOP: a triggered ability that left the stack empty gives every player a stop in this step (shouldAutoPass)
+    if (trigger !== undefined && left === 0) g.s.priority.afterTrigger = trigger;
     else delete g.s.priority.afterTrigger;
+    // TRG-STOP2: what is left on the stack was there before anything put on it from now on (shouldAutoPass: your own spell again after a resolution)
+    if (left > 0) g.s.priority.stackBase = left;
+    else delete g.s.priority.stackBase;
+    if (left === 0) delete g.s.priority.resolveAll; // RES-ALL: the stack is resolved
     // CR 117.3b: the active player receives priority after a spell or ability resolves (not when it ended the turn: no player gets priority, CR 724.1c).
     if (!g.s.result && !g.s.turn.ending) givePriority(g, activeOrNext(g));
   } else {
@@ -190,6 +201,11 @@ export function activeOrNext(g: Game): PlayerId {
 /** Called when a player takes an action at priority (CR 117.3c: they receive priority again). */
 export function resetPasses(g: Game): void {
   g.s.priority.passes = 0;
+  // RES-ALL: another player cast or activated something: whoever was resolving all decides again (they may want to answer it)
+  const all = g.s.priority.resolveAll?.filter((x) => x === g.s.priority.player);
+  if (all === undefined) return;
+  if (all.length > 0) g.s.priority.resolveAll = all;
+  else delete g.s.priority.resolveAll;
 }
 
 function goToNextStep(g: Game): void {
@@ -330,6 +346,8 @@ export function beginStep(g: Game, step: Step): void {
   g.s.priority.passes = 0;
   g.s.priority.player = null;
   delete g.s.priority.afterTrigger; // TRG-STOP: the stop after a trigger lasts only for the step it resolved in
+  delete g.s.priority.stackBase; // TRG-STOP2
+  delete g.s.priority.resolveAll; // RES-ALL
   expireAtStepStart(g, step); // "until your next upkeep" and the like (CR 611.2a)
   if (step === 'beginCombat') playerControlAtCombatStart(g); // std-control-3 (CR 723.1, 506.1): "during their next combat phase"
   // CMD3 (CR 702.30a): the turns of the active player's last two upkeep steps, for "since the beginning of your last upkeep" (echo)

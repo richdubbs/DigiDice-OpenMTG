@@ -8,7 +8,8 @@ import type { StopSettings } from './state';
 
 export type Action =
   /** Pass priority (CR 117.3d). */
-  | { type: 'pass'; player: PlayerId }
+  /** RES-ALL: `resolveAll` also passes for this player until the stack is empty (`priority.resolveAll`; the client's Resolve all button). */
+  | { type: 'pass'; player: PlayerId; resolveAll?: true }
   /** Play a land: a special action (CR 116.2a, 305.1). `face` for modal double-faced lands (CR 712). */
   | { type: 'playLand'; player: PlayerId; card: ObjectId; face?: number }
   /**
