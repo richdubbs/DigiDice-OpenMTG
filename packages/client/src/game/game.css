@@ -959,11 +959,15 @@
   color: var(--text-muted);
 }
 
+/* Format and options sit at the top of the form, above the players (owner, 2026-10-25); the start button stays bottom right. */
+.new-game-body > .new-game-options {
+  margin-bottom: 16px;
+}
+
 .new-game-bottom {
   display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 24px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 360px);
+  justify-content: end;
 }
 
 .new-game-fields {
@@ -1019,6 +1023,7 @@
 
   .new-game-bottom {
     grid-template-columns: 1fr;
+    justify-content: stretch;
   }
 
   .new-game-fields {

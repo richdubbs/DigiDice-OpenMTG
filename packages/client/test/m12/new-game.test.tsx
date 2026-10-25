@@ -160,7 +160,7 @@ describe('New game with three or four players (m12 design 5.3 item 1)', () => {
     expect(player(3).getByRole('radio', { name: 'A person at this screen (hot-seat)' })).toBeTruthy();
     // "Who plays first" lists every seat
     expect(within(screen.getByRole('combobox', { name: 'Who plays first' })).getAllByRole('option').map((o) => o.textContent)).toEqual(['Random', 'Ann', 'Ben', 'Cat', 'Dan']);
-    expect(screen.getByText(/^Free-for-All with 4 players \(CR 806\)/)).toBeTruthy();
+    expect(screen.queryByText(/^Free-for-All with 4 players \(CR 806\)/)).toBeNull(); // owner, 2026-10-25: no rules text under the options
     // Remove player 3: Dan moves up
     await reactAct(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Remove player 3' }));
@@ -195,7 +195,7 @@ describe('New game with three or four players (m12 design 5.3 item 1)', () => {
     expect(lifeBox().value).toBe('25');
     await players(3);
     expect(lifeBox().value).toBe('30');
-    expect(screen.getByText(/^Brawl: 30 life \(CR 903\.12f\)/)).toBeTruthy();
+    expect(screen.queryByText(/^Brawl: 30 life \(CR 903\.12f\)/)).toBeNull(); // owner, 2026-10-25: no rules text under the options
     const duel = within(formatBox()).getAllByRole('option').find((o) => (o as HTMLOptionElement).value === 'duel') as HTMLOptionElement;
     expect(duel.disabled).toBe(true);
     expect(duel.textContent).toBe('Duel Commander (two players only)');

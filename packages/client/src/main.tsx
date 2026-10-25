@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
+import { installNoHoverText } from './app/noHoverText';
 import { installSoundUnlock, prerenderOrder } from './audio/engine';
 import { soundEngine } from './audio/sfx';
 import { installUiSounds } from './audio/uiSounds';
@@ -25,6 +26,8 @@ connectScryfallSetting(scryfallSettingSource(settingsStore()));
 // sounds (audio/uiSounds.ts) give every button, toggle and text field its sound.
 installSoundUnlock(soundEngine());
 installUiSounds(document);
+// No hover text boxes anywhere (app/noHoverText.ts): they make the game feel like a website.
+installNoHoverText(document);
 // Every sound is synthesized (no files to load): the page renders them while it is idle, the most needed first, so none is made at the moment it plays.
 soundEngine().prerender(prerenderOrder());
 createRoot(document.getElementById('root')!).render(

@@ -139,7 +139,7 @@ describe('M11-2: starting a Commander game', () => {
     await pick(2, partners);
     expect(formatBox().value).toBe('commander');
     expect(lifeBox().valueAsNumber).toBe(40);
-    expect(screen.getByText(/^Commander: 40 life \(CR 903\.7\)/)).toBeTruthy();
+    expect(screen.queryByText(/^Commander: 40 life \(CR 903\.7\)/)).toBeNull(); // owner, 2026-10-25: no rules text under the options
     await waitFor(() => expect(startButton().disabled).toBe(false));
     await reactAct(async () => {
       fireEvent.click(startButton());
