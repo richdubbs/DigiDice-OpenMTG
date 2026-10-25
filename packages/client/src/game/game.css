@@ -535,8 +535,7 @@
   min-width: 0;
 }
 
-.new-game-player,
-.new-game-options {
+.new-game-player {
   min-width: 0;
   margin: 0;
   padding: 18px 22px 18px;
@@ -833,8 +832,7 @@
   border: 0;
 }
 
-.new-game-opponent legend,
-.new-game-options legend {
+.new-game-opponent legend {
   float: left;
   width: 100%;
   margin: 0 0 6px;
@@ -844,14 +842,6 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
-}
-
-.new-game-options legend {
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--neon);
-  text-shadow: 0 0 10px var(--glow-soft);
 }
 
 .new-game-segment {
@@ -959,26 +949,44 @@
   color: var(--text-muted);
 }
 
-/* Format and options sit at the top of the form, above the players (owner, 2026-10-25); the start button stays bottom right. */
-.new-game-body > .new-game-options {
-  margin-bottom: 16px;
-}
-
 .new-game-bottom {
   display: grid;
   grid-template-columns: minmax(0, 360px);
   justify-content: end;
 }
 
-.new-game-fields {
-  clear: both;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+/* Format and options on the title line (owner, 2026-10-25): small labels beside compact fields, so they take no room above the players. */
+.new-game .screen-header {
+  flex-wrap: wrap;
+  row-gap: 10px;
 }
 
-.new-game-fields label {
+.new-game-quick {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px 22px;
+}
+
+.new-game .new-game-quick label {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   margin: 0;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.new-game .new-game-quick select,
+.new-game .new-game-quick input[type='number'] {
+  width: auto;
+  padding: 5px 10px;
+  font-size: 0.95rem;
+}
+
+.new-game .new-game-quick input[type='number'] {
+  width: 4.5em;
 }
 
 .new-game-start {
@@ -1026,8 +1034,8 @@
     justify-content: stretch;
   }
 
-  .new-game-fields {
-    grid-template-columns: 1fr;
+  .new-game-quick {
+    justify-content: flex-start;
   }
 }
 
@@ -1039,8 +1047,7 @@
 
 /* Tall windows (1400x900): roomier panels and a bigger deck case, so the form fills the room instead of floating in it. */
 @media (min-height: 860px) {
-  .new-game-player,
-  .new-game-options {
+  .new-game-player {
     padding: 24px 28px 26px;
   }
 
@@ -1081,8 +1088,7 @@
     padding: 6px 6px 8px;
   }
 
-  .new-game-player,
-  .new-game-options {
+  .new-game-player {
     padding: 12px 18px;
   }
 

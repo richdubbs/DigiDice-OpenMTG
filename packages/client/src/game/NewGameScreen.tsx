@@ -441,7 +441,57 @@ export function NewGameScreen({
 
   return (
     <div className="screen new-game" data-seats={count}>
-      <ScreenHeader title="New game" />
+      <ScreenHeader title="New game">
+        {/* Format and options on the title line (owner, 2026-10-25): they take no room of their own above the players. */}
+        <div className="new-game-quick" role="group" aria-label="Format and options">
+          <label>
+            Format
+            <select
+              value={format}
+              onChange={(e) => {
+                setFormat(e.target.value);
+                setFormatTouched(true);
+              }}
+            >
+              {FORMATS.map((f) => {
+                const notHere = formatProblem(f.id, count) !== null;
+                return (
+                  <option key={f.id} value={f.id} disabled={notHere}>
+                    {notHere ? `${f.label} (two players only)` : f.label}
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+          <label>
+            Starting life
+            <input
+              type="number"
+              min={1}
+              max={999}
+              value={Number.isNaN(start.startingLife) ? '' : start.startingLife}
+              onChange={(e) => {
+                setLifeTouched(true);
+                setStart((prev) => ({ ...prev, startingLife: e.target.valueAsNumber }));
+              }}
+            />
+          </label>
+          <label>
+            Who plays first
+            <select
+              value={String(start.firstPlayer)}
+              onChange={(e) => setStart((prev) => ({ ...prev, firstPlayer: e.target.value === 'random' ? 'random' : Number(e.target.value) }))}
+            >
+              <option value="random">Random</option>
+              {seats.map((_x, i) => (
+                <option key={i} value={String(i)}>
+                  {trimmed[i] || `Player ${i + 1}`}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </ScreenHeader>
       <nav className="hud-panel new-game-online" aria-label="Play online">
         <span className="new-game-legend">Play online against a friend</span>
         <button type="button" onClick={() => nav.go({ screen: 'hostOnline' })}>
@@ -478,57 +528,6 @@ export function NewGameScreen({
             </p>
           )}
           <div className="new-game-body">
-            <fieldset className="hud-panel new-game-options">
-              <legend>Format and options</legend>
-              <div className="new-game-fields">
-                <label>
-                  Format
-                  <select
-                    value={format}
-                    onChange={(e) => {
-                      setFormat(e.target.value);
-                      setFormatTouched(true);
-                    }}
-                  >
-                    {FORMATS.map((f) => {
-                      const notHere = formatProblem(f.id, count) !== null;
-                      return (
-                        <option key={f.id} value={f.id} disabled={notHere}>
-                          {notHere ? `${f.label} (two players only)` : f.label}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </label>
-                <label>
-                  Starting life
-                  <input
-                    type="number"
-                    min={1}
-                    max={999}
-                    value={Number.isNaN(start.startingLife) ? '' : start.startingLife}
-                    onChange={(e) => {
-                      setLifeTouched(true);
-                      setStart((prev) => ({ ...prev, startingLife: e.target.valueAsNumber }));
-                    }}
-                  />
-                </label>
-                <label>
-                  Who plays first
-                  <select
-                    value={String(start.firstPlayer)}
-                    onChange={(e) => setStart((prev) => ({ ...prev, firstPlayer: e.target.value === 'random' ? 'random' : Number(e.target.value) }))}
-                  >
-                    <option value="random">Random</option>
-                    {seats.map((_x, i) => (
-                      <option key={i} value={String(i)}>
-                        {trimmed[i] || `Player ${i + 1}`}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </fieldset>
             <fieldset className="new-game-count">
               <legend>Players</legend>
               <div className="new-game-count-choices">
