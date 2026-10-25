@@ -116,7 +116,8 @@ export function stepLabel(step: Step): string {
  *   player's object they pass automatically when they have nothing to do but pass and mana abilities (two untapped lands and no instant), and decide
  *   themselves when they could cast a spell or activate a non-mana ability in response.
  * - An empty stack: their stops say in which steps they want to stop (Arena); in a step that is not a stop they pass, and at a stop they pass when they have
- *   nothing to do.
+ *   nothing to do. TRG-STOP (owner, 2026-10-25): right after a triggered ability they control resolved and left the stack empty (`priority.afterTrigger`),
+ *   any step counts as a stop for them, so they can act after their own beginning-of-combat trigger before attackers are declared.
  *
  * OpenMTG accepts that whether the game stops for a player tells the other players something about that player's options (the M2 concern, CR 400.2); the
  * automatic pass is logged like a manual one when the stack is not empty (`passPriority`), so the log reads the same either way.
@@ -132,7 +133,7 @@ export function shouldAutoPass(g: Game, p: PlayerId): boolean {
   } else {
     const own = g.s.turn.activePlayer === p;
     const stops = own ? ps.stops.ownTurn : ps.stops.opponentTurn;
-    if (!stops.includes(g.s.turn.step)) return true;
+    if (!stops.includes(g.s.turn.step) && g.s.priority.afterTrigger !== p) return true;
   }
   return !hasPriorityActions(g, p);
 }
@@ -164,7 +165,12 @@ const playersInTheGame = (g: Game): number => g.s.players.filter((x) => !x.hasLo
 function allPassed(g: Game): void {
   g.s.priority.passes = 0;
   if (g.s.zones.stack.length > 0) {
+    const top = g.obj(g.s.zones.stack[g.s.zones.stack.length - 1]!);
+    const trigger = top.stack?.kind === 'triggered' ? top.controller : undefined;
     resolveTopOfStack(g); // CR 117.4, 608
+    // TRG-STOP: the controller of a triggered ability that left the stack empty gets a stop in this step (shouldAutoPass)
+    if (trigger !== undefined && g.s.zones.stack.length === 0) g.s.priority.afterTrigger = trigger;
+    else delete g.s.priority.afterTrigger;
     // CR 117.3b: the active player receives priority after a spell or ability resolves (not when it ended the turn: no player gets priority, CR 724.1c).
     if (!g.s.result && !g.s.turn.ending) givePriority(g, activeOrNext(g));
   } else {
@@ -323,6 +329,7 @@ export function beginStep(g: Game, step: Step): void {
   g.s.turn.step = step;
   g.s.priority.passes = 0;
   g.s.priority.player = null;
+  delete g.s.priority.afterTrigger; // TRG-STOP: the stop after a trigger lasts only for the step it resolved in
   expireAtStepStart(g, step); // "until your next upkeep" and the like (CR 611.2a)
   if (step === 'beginCombat') playerControlAtCombatStart(g); // std-control-3 (CR 723.1, 506.1): "during their next combat phase"
   // CMD3 (CR 702.30a): the turns of the active player's last two upkeep steps, for "since the beginning of your last upkeep" (echo)

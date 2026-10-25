@@ -1144,6 +1144,12 @@ export interface GameState {
     player: PlayerId | null;
     /** Number of consecutive passes (CR 117.4: all players pass in succession). */
     passes: number;
+    /**
+     * TRG-STOP ADDITION (optional; absent = none, so states saved before it still load): the controller of the triggered ability that resolved last and
+     * left the stack empty (CR 117.3b). Smart auto-pass stops for that player in this step even when it is not one of their stops (`shouldAutoPass`), so a
+     * beginning-of-combat trigger (Irma, Part-Time Mutant) can be answered before attackers are declared. Cleared when another object resolves or a step begins.
+     */
+    afterTrigger?: PlayerId;
   };
   combat: CombatState | null;
   continuousEffects: ContinuousEffectRec[];

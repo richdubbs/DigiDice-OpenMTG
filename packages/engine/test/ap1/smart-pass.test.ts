@@ -9,7 +9,7 @@
  * - The automatic pass is logged like a manual one.
  */
 import { describe, expect, it } from 'vitest';
-import { applyAction, type GameState } from '../../src/index';
+import { applyAction, compileCard, type GameState, type OracleCard } from '../../src/index';
 import { act, castAuto, find, pass, scenario, type Zones } from '../m3/scenario';
 
 const AUTO = { fullControl: false };
@@ -192,5 +192,37 @@ describe('AP1 hold priority (a temporary stop at every priority, CR 117.3c)', ()
     expect(s.pending).toMatchObject({ kind: 'priority', player: 'p2' });
     expect(s.zones.stack).toHaveLength(1);
     expect(find(s, 'Llanowar Elves', 'stack')).toBeDefined();
+  });
+});
+
+describe('TRG-STOP: after a triggered ability of hers resolves and empties the stack, the step counts as a stop for her (CR 117.3b, 507.2)', () => {
+  // Owner, 2026-10-25 (Irma, Part-Time Mutant): the game passed for her while her beginning-of-combat trigger was on the stack (her own object), then again
+  // after it resolved (beginning of combat is not one of her stops), so attackers came before she could cast an instant.
+  const BUGLE = compileCard({
+    name: 'Test Battle Bugle', layout: 'normal', mana_cost: '{0}', type_line: 'Enchantment', oracle_text: 'At the beginning of combat on your turn, you gain 1 life.',
+    colors: [], keywords: [],
+  } as OracleCard);
+  const withBugle = (p1: { hand: string[]; battlefield: string[] }): GameState =>
+    pass(scenario(CARDS, { defs: [BUGLE], p1: { hand: p1.hand, battlefield: ['Test Battle Bugle', ...p1.battlefield] }, stops: AUTO }));
+
+  it('Shock and an untapped Mountain: she is asked in beginning of combat once her trigger has resolved, before attackers', () => {
+    const s = withBugle({ hand: ['Shock'], battlefield: ['Mountain'] });
+    expect(`${s.turn.number}:${s.turn.step}`).toBe('1:beginCombat');
+    expect(s.zones.stack).toEqual([]);
+    expect(s.players[0]!.life).toBe(21); // the trigger resolved first
+    expect(s.pending).toMatchObject({ kind: 'priority', player: 'p1' });
+  });
+
+  it('nothing she can cast: the trigger resolves and the game passes for her as before', () => {
+    const s = withBugle({ hand: ['Shock'], battlefield: [] });
+    expect(s.players[0]!.life).toBe(21);
+    expect(`${s.turn.number}:${s.turn.step}`).not.toBe('1:beginCombat');
+  });
+
+  it('the stop lasts only for that step: when she passes, the turn goes on to her next stop', () => {
+    const s = pass(withBugle({ hand: ['Shock'], battlefield: ['Mountain'] }));
+    expect(`${s.turn.number}:${s.turn.step}`).toBe('1:main2');
+    expect(s.pending).toMatchObject({ kind: 'priority', player: 'p1' });
+    expect(s.priority.afterTrigger).toBeUndefined();
   });
 });
