@@ -21,6 +21,7 @@ import { chooserOf, programWithFixedCounts, specRequired, specUnreadable } from 
 import { readLink, setLink } from '../statics/links';
 import { randomIndex } from '../rules/random';
 import { syncHistory } from '../triggers/stack';
+import { emitDilemma } from '../rules/crime';
 
 export { announceTargets, chooseTargets, describeTargets, emitBecameTarget, specRequired, type AnnouncedTargets } from './announce-targets';
 export type { AnnounceEnv } from './announce-cond';
@@ -293,6 +294,8 @@ export function chooseModes(
     const all = options.map((o) => Number(o.id));
     refuseUnpayable(all);
     rememberModes(g.s, spec, sourceId, env, all);
+    // trek-2 (CR 700.2, 601.2b): every mode is still chosen, by the player (an opponent who would choose is not asked here: no dilemma is guessed for them)
+    if (all.length > 0 && spec.chooser === undefined) emitDilemma(g, player);
     return all;
   }
   const chooser = chooserOf(g, player, spec.chooser, sourceId, new Map());
@@ -323,6 +326,9 @@ export function chooseModes(
     const total = chosen.reduce((n, i) => n + (spec.options[i]!.pawprints ?? 0), 0);
     if (total > spec.pawprints) throw new IllegalAction(`The modes you chose have ${total} pawprints together; ${what} allows ${spec.pawprints}.`, ['CR 700.2i']);
   }
+  // trek-2 (CR 700.2; "face a dilemma" is a new term, its rule number unverified): the player who chose one or more modes faced a dilemma ("Whenever you face a
+  // dilemma", Seven of Nine). Choosing no mode ("choose up to one" with none chosen) is none.
+  if (chosen.length > 0) emitDilemma(g, chooser);
   return chosen;
 }
 

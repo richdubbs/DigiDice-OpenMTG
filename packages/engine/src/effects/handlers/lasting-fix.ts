@@ -43,7 +43,7 @@ export const COND: Mode = { q: 'local', refs: 'all' };
 const STEP: Mode = { q: 'local', refs: 'local' };
 
 /** Quantities that exist only while this resolution runs (design 3.4): they can never be evaluated later, so they are fixed in every position. */
-const LOCAL_Q: ReadonlySet<string> = new Set(['X', 'var', 'resultCount', 'targetCount', 'dieResult', 'excessDamage' /* FAST5X E16 */, 'lifeLost', 'countersRemoved' /* std-rx14 */, 'votes' /* M12-3 */, 'damageDealt' /* std-rx20 */, 'chosenNumber' /* CLOUD std-misc */]);
+const LOCAL_Q: ReadonlySet<string> = new Set(['X', 'var', 'resultCount', 'targetCount', 'dieResult', 'excessDamage' /* FAST5X E16 */, 'lifeLost', 'countersRemoved' /* std-rx14 */, 'countersPut' /* trek-6 */, 'votes' /* M12-3 */, 'damageDealt' /* std-rx20 */, 'chosenNumber' /* CLOUD std-misc */]);
 const ABILITY_KINDS: ReadonlySet<string> = new Set(['spell', 'activated', 'triggered', 'static', 'keyword', 'chapter', 'classLevel', 'levelBracket', 'manual']);
 const CMP: ReadonlySet<string> = new Set(['<=', '>=', '==', '!=', '<', '>']);
 const OBJ_ONLY: ReadonlySet<string> = new Set(['self', 'attachedTo', 'topCards', 'union', 'subject']);
@@ -349,7 +349,7 @@ export function prepareDeferred<T>(cx: ExecCtx, node: T, opts: { keepEvent: bool
     }
     if (typeof x['q'] === 'string') {
       const q = x['q'] as string;
-      const local = q === 'X' || q === 'targetCount' || q === 'dieResult' || q === 'preventedAmount' /* std-library-2: CR 603.12, 615.5 */ || (q === 'eventAmount' && !opts.keepEvent) || ((q === 'resultCount' || q === 'excessDamage' || q === 'lifeLost' || q === 'countersRemoved' || q === 'votes' || q === 'damageDealt') && !names.has(x['step'] as string));
+      const local = q === 'X' || q === 'targetCount' || q === 'dieResult' || q === 'preventedAmount' /* std-library-2: CR 603.12, 615.5 */ || (q === 'eventAmount' && !opts.keepEvent) || ((q === 'resultCount' || q === 'excessDamage' || q === 'lifeLost' || q === 'countersRemoved' || q === 'countersPut' || q === 'votes' || q === 'damageDealt') && !names.has(x['step'] as string));
       if (local) {
         const n = evalQty(cx, x as unknown as Quantity);
         if (n !== undefined) return n;

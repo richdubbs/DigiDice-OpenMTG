@@ -96,6 +96,16 @@ function HoldPriority({ me, act, busy }: { me: PlayerState; act: (a: Action) => 
  */
 export const objectlessSpecials = (legal: readonly LegalAction[]): LegalAction[] => legal.filter((a) => a.kind === 'special' && a.object === undefined);
 
+/**
+ * The tooltip of an objectless special action's button. CMP1: the companion's, once per game. trek-11: playing a card you own from outside the game (The Holodeck: "Once
+ * during each of your turns, you may play a permanent card you own from outside the game or from your graveyard", CR 400.11b): a land play or a spell cast the ordinary way,
+ * not a special action of the stack-less kind, and the permission's one use each turn is shared with the cards in the graveyard.
+ */
+export const objectlessSpecialTitle = (a: LegalAction): string =>
+  a.action.type === 'special' && a.action.kind === 'playOutside'
+    ? "A card you own outside the game (your sideboard), played because an effect lets you: a land is played as your land drop, any other permanent card is cast the usual way with its mana cost, so it can be responded to. The effect's use for this turn is spent, and covers your graveyard too (CR 400.11b, 305.1, 601.3)."
+    : "A special action: it doesn't use the stack, so nobody can respond; once per game, in a main phase of your turn with an empty stack (CR 116.2g, 702.139a)";
+
 /** FAST5X E6: is this special action plotting a card (CR 116.2k, 702.170a)? */
 const isPlot = (a: LegalAction): boolean => a.action.type === 'special' && a.action.kind === 'plot';
 
@@ -211,7 +221,7 @@ export function PriorityPrompt({ d, view, legal, act, busy }: PromptProps<'prior
               gameSfx('ui.select');
               act(a.action);
             }}
-            title="A special action: it doesn't use the stack, so nobody can respond; once per game, in a main phase of your turn with an empty stack (CR 116.2g, 702.139a)"
+            title={objectlessSpecialTitle(a)}
           >
             {a.label}
           </button>

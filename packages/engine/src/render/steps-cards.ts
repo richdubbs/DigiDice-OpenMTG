@@ -33,6 +33,8 @@ export function zoneSetPhrase(f: ObjectFilter, st: RenderState): string | null {
 
 /** FAST5 T46: all the cards of one player's hand and nothing else (the shape parser/templates/effect/cards.json writes for "reveals their hand", "look at ... hand"). */
 const isHandOf = (ref: ObjRef): boolean => ref.ref === 'each' && ref.filter.zone === 'hand' && ref.filter.owner !== undefined && Object.keys(ref.filter).length === 2;
+/** trek-3: the owner of a hand `isHandOf` accepts, as JSON (RefInfo.handOwner). */
+const handOwnerOf = (ref: ObjRef): string => JSON.stringify(ref.ref === 'each' ? ref.filter.owner : null);
 
 function refText(ref: ObjRef, st: RenderState): string {
   if (ref.ref === 'each') {
@@ -464,8 +466,11 @@ export const CLAUSES_CARDS = {
     // card" (parser/holes/object.ts, the participle `exiled` with one card type)
     const one = namesOnePlayer(s.who);
     const desc = one ? K.np({ ...s.filter, zone: 'library' }, cloneState(st), { det: 'none', noZone: true }) : '';
-    const exiledNames = one ? { alts: [...new Set(['the exiled card', `the exiled ${desc}`])] } : {};
+    // trek-12 (CR 608.2c; Q, Stacking the Deck): and "that nonland card", "that card" with its description said again
+    const exiledNames = one ? { alts: [...new Set(['the exiled card', `the exiled ${desc}`, `that ${desc}`])] } : {};
     bind(st, s.as, { nouns: ['card'], plural: !one, zone: 'exile', ...exiledNames });
+    // trek-7 (CR 406.1, 608.2c): every card it exiled is the group whose rest a later instruction moves (render/steps-zones.ts#move); no antecedent of its own
+    if (s.exiled !== undefined) st.info.set(`b:${s.exiled}`, { nouns: ['card'], plural: true, zone: 'exile', exiledBy: s.who });
     if (s.who.ref === 'you') return byPlayer(s.who, st, 'exile', `cards from the top of your library until you exile ${what}`);
     return byPlayer(s.who, st, 'exile', `cards from the top of their library until they exile ${what}`);
   },
@@ -509,7 +514,7 @@ export const CLAUSES_CARDS = {
       return `${what}${to}`;
     });
     const plural = s.what.ref === 'topCards' ? !(typeof s.what.count === 'number' && s.what.count === 1) : true;
-    bind(st, s.as, { nouns: ['card'], plural, zone: s.what.ref === 'topCards' ? 'library' : undefined, ...(isHandOf(s.what) ? { hand: true } : {}), ...(s.what.ref === 'topCards' ? { revealedTop: true as const } : {}) });
+    bind(st, s.as, { nouns: ['card'], plural, zone: s.what.ref === 'topCards' ? 'library' : undefined, ...(isHandOf(s.what) ? { hand: true, handOwner: handOwnerOf(s.what) } : {}), ...(s.what.ref === 'topCards' ? { revealedTop: true as const } : {}) });
     return c;
   },
 
@@ -519,7 +524,7 @@ export const CLAUSES_CARDS = {
       ? `at ${K.qty(s.at.count, cloneState(st))} cards from the top of your library` : null;
     const c = byPlayer(s.who, st, 'look', () => (fromTop !== null ? alt(`at ${refText(s.at, st)}`, fromTop) : `at ${refText(s.at, st)}`));
     const plural = s.at.ref === 'topCards' ? !(typeof s.at.count === 'number' && s.at.count === 1) : true;
-    bind(st, s.as, { nouns: ['card'], plural, zone: s.at.ref === 'topCards' ? 'library' : undefined, ...(isHandOf(s.at) ? { hand: true } : {}) });
+    bind(st, s.as, { nouns: ['card'], plural, zone: s.at.ref === 'topCards' ? 'library' : undefined, ...(isHandOf(s.at) ? { hand: true, handOwner: handOwnerOf(s.at) } : {}) });
     return c;
   },
 

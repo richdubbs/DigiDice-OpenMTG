@@ -18,11 +18,14 @@ export interface Marker {
   icon?: string;
   /** Show only the icon; the text stays for screen readers and in the tooltip. */
   compact?: boolean;
+  /** Drawn as a warning (amber): a partly automated card, which may not work as written. */
+  warning?: boolean;
 }
 
 const LEVEL_BADGE = {
   full: { icon: '✓', text: 'Fully automated', rule: 'The engine plays all of this card\'s text', compact: true },
-  partial: { icon: '◐', text: 'Partly automated', rule: 'Some of this card\'s text is resolved by hand', compact: false },
+  // A partly automated card warns that it may not work as written (cards/AutomationBadge.tsx PARTIAL_WARNING).
+  partial: { icon: '⚠', text: 'Partial: may not function', rule: 'Partly automated: some of this card\'s text is resolved by hand, so it may not work as written', compact: false, warning: true },
   // U+270B with the text presentation selector: a plain glyph, not a colour emoji.
   manual: { icon: '✋︎', text: 'Resolve by hand', rule: 'This card\'s text is resolved by hand', compact: false },
 } as const;
@@ -33,8 +36,8 @@ const LEVEL_BADGE = {
  */
 export function automationMarkers(def: CardDef | null): Marker[] {
   if (!def) return [];
-  const b = LEVEL_BADGE[def.automation.level];
-  return [{ key: 'auto', kind: 'automation', text: b.text, icon: b.icon, rule: b.rule, compact: b.compact }];
+  const b: { icon: string; text: string; rule: string; compact: boolean; warning?: boolean } = LEVEL_BADGE[def.automation.level];
+  return [{ key: 'auto', kind: 'automation', text: b.text, icon: b.icon, rule: b.rule, compact: b.compact, ...(b.warning ? { warning: true } : {}) }];
 }
 
 /** The badge of a spell or ability on the stack: the card's level for a spell, the printed ability's own level for an ability when it is known. */
@@ -97,7 +100,7 @@ export function MarkerStrip({ markers, id }: { markers: readonly Marker[]; id?: 
   return (
     <ul className="marker-strip" aria-label="Status" id={id}>
       {markers.map((m) => (
-        <li key={m.key} className={`marker marker-${m.kind}${m.compact ? ' is-compact' : ''}`} title={m.rule ? `${m.text}: ${m.rule}` : m.text}>
+        <li key={m.key} className={`marker marker-${m.kind}${m.compact ? ' is-compact' : ''}${m.warning ? ' is-warning' : ''}`} title={m.rule ? `${m.text}: ${m.rule}` : m.text}>
           {m.icon && (
             <span className="marker-icon" aria-hidden="true">
               {m.icon}

@@ -1,5 +1,5 @@
 /**
- * Settings, Look and feel (docs/design/ui-profiles.md): the UI profiles. Choosing a profile loads it at once; the two templates (Neon Grid, LCARS) are
+ * Settings, Look and feel (docs/design/ui-profiles.md): the UI profiles. Choosing a profile loads it at once; the templates (Neon Grid, LCARS, Reality Fracture) are
  * read-only, so customizing starts with "Save as new profile". A saved profile's template, colors, text size and backgrounds are changed here and
  * stored at once, like every other setting; it can be renamed, deleted, exported to a file and imported again (in this or another browser).
  */
@@ -190,8 +190,8 @@ export function ProfilesSection({ store = profilesStore() }: { store?: ProfilesS
       <h2 id="settings-profiles">Look and feel</h2>
       <p className="settings-hint">
         A profile is a look for the whole interface; every screen works the same in each one. Pick one to load it. Neon Grid is the look OpenMTG was
-        designed in and LCARS is a starship console; both are templates: save one as a profile of your own to change its colors, text size and
-        backgrounds. Changes are saved at once.
+        designed in, LCARS is a starship console and Reality Fracture is a shattered mirror, card sleeves included; all three are templates: save one as
+        a profile of your own to change its colors, text size and backgrounds. Changes are saved at once.
       </p>
 
       <div className="profile-list" role="radiogroup" aria-labelledby="settings-profiles">

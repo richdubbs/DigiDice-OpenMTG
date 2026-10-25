@@ -59,7 +59,7 @@ export function mentionsHistory(x: unknown): boolean {
   if (Array.isArray(x)) return x.some(mentionsHistory);
   if (x === null || typeof x !== 'object') return false;
   const o = x as Record<string, unknown>;
-  if (o['cond'] === 'happened' || o['cond'] === 'firstTime' || o['cond'] === 'someMatch' /* r5-trig */ || o['q'] === 'happenedCount' || o['q'] === 'happenedDistinct') return true; // CLOUD std-tmt: happenedDistinct
+  if (o['cond'] === 'happened' || o['cond'] === 'firstTime' || o['cond'] === 'someMatch' /* r5-trig */ || o['cond'] === 'firstSpellCast' /* trek-2 */ || o['q'] === 'happenedCount' || o['q'] === 'happenedDistinct') return true; // CLOUD std-tmt: happenedDistinct
   for (const k of Object.keys(o)) if (HISTORY_KEYS.has(k) || mentionsHistory(o[k])) return true;
   return false;
 }
@@ -234,6 +234,7 @@ export function runSteps(cx: ExecCtx, steps: EffectStep[]): StepResult {
   let count = 0;
   let lostBy: Map<PlayerId, number> | undefined; // cloud std-spm (CR 119.3): the life the steps made each player lose (`StepResult.lifeLostBy`)
   let removed: Map<string, number> | undefined; // std-rx14 (CR 122.1): the counters the steps removed (`StepResult.countersRemoved`)
+  let putIn: Map<string, number> | undefined; // trek-6 (CR 122.6): the counters the steps put (`StepResult.countersPut`)
   for (let i = 0; i < steps.length; i++) {
     if (controllerLeft(cx)) break; // M12-2: CR 800.4a, its controller left the game: the resolution stops at once (`resolveStackObject`)
     const st = steps[i]!;
@@ -273,8 +274,9 @@ export function runSteps(cx: ExecCtx, steps: EffectStep[]): StepResult {
     count += res.count;
     if (res.lifeLostBy !== undefined) for (const [p, n] of res.lifeLostBy) (lostBy ??= new Map()).set(p, (lostBy.get(p) ?? 0) + n);
     if (res.countersRemoved !== undefined) for (const [k, n] of res.countersRemoved) (removed ??= new Map()).set(k, (removed.get(k) ?? 0) + n);
+    if (res.countersPut !== undefined) for (const [k, n] of res.countersPut) (putIn ??= new Map()).set(k, (putIn.get(k) ?? 0) + n);
   }
-  const hand = { ...(byHand ? { byHand: true as const } : {}), ...(removed !== undefined ? { countersRemoved: removed } : {}) };
+  const hand = { ...(byHand ? { byHand: true as const } : {}), ...(removed !== undefined ? { countersRemoved: removed } : {}), ...(putIn !== undefined ? { countersPut: putIn } : {}) };
   if (lostBy === undefined) return { performed, count, ...hand };
   return { performed, count, lifeLost: [...lostBy.values()].reduce((a, b) => a + b, 0), lifeLostBy: lostBy, ...hand };
 }

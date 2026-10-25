@@ -42,8 +42,16 @@
  * `feature:permit.cast.oncePerTurn`) and counters the permanent enters with (`entersWith`, CR 614.1c, `feature:permit.cast.entersWith`, applied by
  * effects/rule-replacements/permit-enters.ts). Several permissions that allow it in different ways are for the player to choose (CR 601.3): the cast
  * method `permission:<n>` (graveyardPermitUses).
+ *
+ * trek-11 adds "outside the game" as a place such a permission can name (CR 400.11, 400.11a-b; `PermissionDef.alsoOutside`, isPermanentPlayPermit): "Once during each of
+ * your turns, you may play a permanent card you own from outside the game or from your graveyard" (The Holodeck). ONE graveyard permission (a `play` of the permanent
+ * card types, once each turn) that also covers the cards the player owns outside the game (`GameState.outside`, their sideboard): its graveyard half is the ordinary one
+ * (a land card is played through the `playLand` action, any other permanent card cast through `cast`), its outside half is the `playOutside` special action
+ * (core/special/play-outside.ts), which stages the card (core/zones.ts#stageFromOutside) and runs the same land play or cast; both spend the same once-each-turn
+ * counter, so a use in either place is the turn's (outsideCastUses, outsideLandKey). Only that one form is honored; any other use of the field is a form nothing registers.
  */
 import type { CostDef, CounterSpec, Destination, ObjRef, PermissionDef } from '../types/ability';
+import type { CardType } from '../types/card';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { GameState } from '../types/state';
 import type { Chars } from '../rules/characteristics';
@@ -59,6 +67,9 @@ export const PLAY_PERMIT_CAPABILITIES: readonly string[] = [
   // FAST5X E14 (CR 401.5, 601.3, 305.1): the top card of a library
   'permit:play.top', 'permit:cast.top', 'feature:permit.cast.oncePerTurn', 'permit:lookAt',
   'feature:permit.play.zone.oncePerTurn', // std-rx27 (CR 305.2): a graveyard land permission once each turn (graveyardLandKey)
+  // trek-11 (CR 400.11, 400.11a-b, 305.1, 601.3): "Once during each of your turns, you may play a permanent card you own from outside the game or from your graveyard"
+  // (isPermanentPlayPermit; the `playOutside` special action, core/special/play-outside.ts, reads outsideCastUses and outsideLandKey)
+  'feature:permit.play.zone.outside',
   // FAST5X E25 (CR 708.5, 609.4): "you may look at face-down creatures your opponents control any time" (core/view.ts#canSee, faceDownVisibleTo below)
   'permit:lookAt.faceDown',
   // CLOUD std-fdn (CR 609.4b): "You can spend mana of any type to cast creature spells" (a static ability; isSpendAnyTypePermit, actions/cast.ts)
@@ -219,7 +230,22 @@ export function namedPermitIncrease(s: GameState, player: PlayerId, id: ObjectId
   if (!s.continuousEffects.some((r) => r.effect.s === 'permit' && r.effect.costChange?.kind === 'increase')) return null;
   const uses = namedUses(s, player, id, false);
   if (uses.length === 0 || uses.some((e) => !isIncreaseCost(e.costChange))) return null;
+  // trek-7 (CR 601.3; Zero, Incorporeal Sensate exiles Eternal Scourge, "You may cast this card from exile."): the player casts a card from exile with the permission of their
+  // choosing: the card's own, with no increase ("a spell cast this way" is cast through the other one), is always the cheaper way
+  if (exileFilterCovers(s, player, id)) return null;
   return { mana: [...uses[0]!.costChange!.mana!] };
+}
+
+/** trek-7 (CR 113.6, 601.3): does a static ability that lets `player` cast cards from exile by a description (isExileFilterPermit, "You may cast this card from exile") cover `id`? */
+function exileFilterCovers(s: GameState, player: PlayerId, id: ObjectId): boolean {
+  const o = s.objects[id];
+  if (!o || o.kind !== 'card' || o.zone !== 'exile') return false;
+  const ctx = ruleContext(s);
+  if (!ctx) return false;
+  return ctx.sources.some((src) => {
+    const e = src.effect;
+    return e.s === 'permit' && isExileFilterPermit(e) && src.source !== null && src.order[1] === 0 && refIncludes(cxOf(ctx, src), e.who, player) && exileFilterNames(ctx, s, src, e, id);
+  });
 }
 
 /**
@@ -663,6 +689,28 @@ function landPermitCovers(s: GameState, id: ObjectId, of: PermissionDef['of']): 
 
 // ---- C10: casting from the graveyard and playing cards from it (CR 601.3, 601.3e, 305.1, 404.1) --------------------------------------------------------
 
+/** The card types of a permanent card (CR 110.4, 205.2a): what "a permanent card" is as an `of` filter. */
+export const PERMANENT_CARD_TYPES: readonly CardType[] = ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'];
+
+/**
+ * trek-11 (CR 400.11, 305.1, 601.3, 404.1): is this exactly "Once during each of your turns, you may play a permanent card you own from outside the game or from your
+ * graveyard" (The Holodeck)? `{s:'permit', who:{ref:'you'}, action:'play', of:{types: the six permanent card types}, from:'graveyard', alsoOutside:true, oncePerTurn:true}`
+ * and no other field (an extra quality, a cost, a count, a resolved effect's `who`, a missing limit: fail closed). `of` is judged on the card as the spell it would be (a
+ * land is never a spell, CR 305.9) and, for a land card, by its type: a land card is played as a land (CR 305.1), any other permanent card is cast (CR 601.3).
+ */
+export function isPermanentPlayPermit(p: PermissionDef): boolean {
+  if (p.s !== 'permit' || p.action !== 'play' || p.from !== 'graveyard' || p.alsoOutside !== true || p.oncePerTurn !== true) return false;
+  const rec = p as unknown as Record<string, unknown>;
+  const keys = Object.keys(rec).filter((k) => rec[k] !== undefined);
+  if (keys.length !== 7 || !['s', 'who', 'action', 'of', 'from', 'alsoOutside', 'oncePerTurn'].every((k) => keys.includes(k))) return false;
+  const who = p.who as unknown as Record<string, unknown>;
+  if (Object.keys(who).filter((k) => who[k] !== undefined).length !== 1 || who['ref'] !== 'you') return false;
+  const of = p.of as unknown as Record<string, unknown> | undefined;
+  if (of === undefined || Object.keys(of).filter((k) => of[k] !== undefined).length !== 1) return false;
+  const types = of['types'];
+  return Array.isArray(types) && types.length === PERMANENT_CARD_TYPES.length && PERMANENT_CARD_TYPES.every((t) => types.includes(t));
+}
+
 /** The optional fields a graveyard permission may have besides `of` (a `play` permission has none of them). */
 const GRAVEYARD_CAST_FIELDS: readonly string[] = ['addCost', 'entersWith', 'oncePerTurn', 'exileOnLeave' /* std-rx24: jump-start (CR 702.133a) */, 'single', 'entersSubtypes' /* std-freecast-2 */, 'graveyardInstead' /* p2-graveyard-2 (CR 614.1a) */];
 
@@ -679,6 +727,7 @@ const GRAVEYARD_CAST_FIELDS: readonly string[] = ['addCost', 'entersWith', 'once
  */
 export function isGraveyardPermit(p: PermissionDef): boolean {
   if (p.s !== 'permit' || p.from !== 'graveyard' || (p.action !== 'cast' && p.action !== 'play')) return false;
+  if (p.alsoOutside !== undefined) return isPermanentPlayPermit(p); // trek-11: the field is honored on that one form only
   const rec = p as unknown as Record<string, unknown>;
   // std-rx27 (CR 305.2): a land permission may be once each turn too ("During each of your turns, you may play a land ... from your graveyard")
   const allowed = p.action === 'cast' ? ['s', 'who', 'action', 'from', 'of', ...GRAVEYARD_CAST_FIELDS] : ['s', 'who', 'action', 'from', 'of', ...(p.of !== undefined ? ['oncePerTurn'] : [])];
@@ -717,7 +766,7 @@ function gyHits(ctx: RuleContext, s: GameState, player: PlayerId, land: boolean)
   for (const src of ctx.sources) {
     const e = src.effect;
     if (e.s !== 'permit' || !isGraveyardPermit(e) || (land && e.action !== 'play')) continue;
-    if (!land && e.action === 'play' && e.of !== undefined) continue; // "play lands": never a cast (CR 305.9)
+    if (!land && e.action === 'play' && e.of !== undefined && !isPermanentPlayPermit(e)) continue; // "play lands": never a cast (CR 305.9); trek-11: "play a permanent card" casts the nonland ones
     if (!refIncludes(cxOf(ctx, src), e.who, player)) continue;
     const isStatic = src.source !== null && src.order[1] === 0;
     let key: string | null = null;
@@ -829,12 +878,39 @@ export function graveyardLandKey(s: GameState, player: PlayerId, id: ObjectId): 
   const ctx = ruleContext(s);
   if (!ctx) return null;
   let key: string | null = null;
-  for (const h of gyHits(ctx, s, player, true)) {
+  // trek-11: a permission that cannot reach outside the game is spent first (the Holodeck's shared use stays for the cards only it can play)
+  const hits = [...gyHits(ctx, s, player, true)].sort((a, b) => Number(a.p.alsoOutside === true) - Number(b.p.alsoOutside === true));
+  for (const h of hits) {
     if (!landPermitCovers(s, id, h.p.of)) continue;
     if (h.key === null) return null;
     key ??= h.key;
   }
   return key;
+}
+
+/**
+ * trek-11 (CR 400.11, 305.1, 305.2): the permission a land play of the card staged from outside the game spends: `{key}` of the once-each-turn counter (the same one a
+ * graveyard land play or cast of that permission spends, so the two places share one use a turn), or null when no permission covers cards outside the game now.
+ */
+export function outsideLandKey(s: GameState, player: PlayerId, id: ObjectId): { key: string | null } | null {
+  const o = s.objects[id];
+  if (!o || o.kind !== 'card' || o.fromOutside !== true || o.zone !== 'hand' || o.owner !== player) return null;
+  const ctx = ruleContext(s);
+  if (!ctx) return null;
+  let key: string | null | undefined;
+  for (const h of gyHits(ctx, s, player, true)) {
+    if (h.p.alsoOutside !== true) continue;
+    key ??= h.key;
+  }
+  return key === undefined ? null : { key };
+}
+
+/** trek-11: does a permission that covers cards `player` owns outside the game apply to them now (not spent this turn), and do they own any? A cheap test before staging a card. */
+export function outsidePermitAvailable(s: GameState, player: PlayerId): boolean {
+  if ((s.outside?.[player]?.length ?? 0) === 0) return false;
+  const ctx = ruleContext(s);
+  if (!ctx) return false;
+  return gyHits(ctx, s, player, true).some((h) => h.p.alsoOutside === true);
 }
 
 // ---- Cloud r3-mech: mayhem with no cost (CR 702.187a-b, 305.1) -------------------------------------------------------------------------------------------
@@ -898,13 +974,33 @@ export interface GraveyardUse {
  * the cast method `permission:<n>`, actions/cast.ts#castMethods). Empty when none applies.
  */
 export function graveyardPermitUses(s: GameState, player: PlayerId, id: ObjectId, chars: Chars): GraveyardUse[] {
+  const o = s.objects[id];
+  if (!o || o.kind !== 'card' || o.zone !== 'graveyard' || o.owner !== player) return [];
+  return permitUsesOf(s, player, id, chars, false);
+}
+
+/**
+ * trek-11 (CR 400.11, 400.11b, 601.3, 601.3e): the ways `player` may cast the card staged from outside the game (`GameObject.fromOutside`, core/zones.ts#stageFromOutside),
+ * seen as `chars` (the face being cast, as the spell it would be). Only a permission that covers cards outside the game (`alsoOutside`, The Holodeck) applies, and the
+ * use it spends is the same once-each-turn counter as its graveyard casts and land plays: one permission for both places, once a turn in all. Empty when none applies.
+ */
+export function outsideCastUses(s: GameState, player: PlayerId, id: ObjectId, chars: Chars): GraveyardUse[] {
+  const o = s.objects[id];
+  if (!o || o.kind !== 'card' || o.fromOutside !== true || o.zone !== 'hand' || o.owner !== player) return [];
+  return permitUsesOf(s, player, id, chars, true);
+}
+
+function permitUsesOf(s: GameState, player: PlayerId, id: ObjectId, chars: Chars, outside: boolean): GraveyardUse[] {
   const ctx = ruleContext(s);
   const o = s.objects[id];
-  if (!ctx || !o || o.kind !== 'card' || o.zone !== 'graveyard' || o.owner !== player) return [];
+  if (!ctx || !o) return [];
   let view: CharsView | undefined;
   const ways = new Map<string, GraveyardUse>();
   const extra = new Map<string, GraveyardUse[]>(); // std-rx27: the other once-each-turn ways of the same signature
-  for (const h of gyHits(ctx, s, player, false)) {
+  // trek-11: a graveyard play defaults to a permission that cannot reach outside the game first, so the Holodeck's shared use is kept for the cards only it can play
+  const hits = [...gyHits(ctx, s, player, false)].sort((a, b) => Number(a.p.alsoOutside === true) - Number(b.p.alsoOutside === true));
+  for (const h of hits) {
+    if (outside && h.p.alsoOutside !== true) continue; // trek-11: only a permission that names cards outside the game
     let ok = h.p.of === undefined;
     if (!ok) {
       // CR 601.3e: judged as the spell it would be, on the stack (as topPermitFor); a filter the hooks can't evaluate matches nothing (fail closed)
@@ -1230,7 +1326,10 @@ export function isExileFilterPermit(p: PermissionDef): boolean {
   if (Object.keys(rec).some((k) => rec[k] !== undefined && !['s', 'who', 'action', 'from', 'of', 'anyManaType'].includes(k))) return false;
   const who = p.who as unknown as Record<string, unknown>;
   if (Object.keys(who).filter((k) => who[k] !== undefined).length !== 1 || who['ref'] !== 'you') return false;
-  if (p.of.is !== undefined || p.of.zone !== undefined || p.of.self !== undefined) return false;
+  // trek-7 (CR 113.6, 601.3; Khan, Vengeful Heart): "You may cast this card from exile", a static ability of the card itself that functions in exile (`of` exactly
+  // `{self: true}`: the source, judged where it is by exileFilterNames); `self` beside any quality is another form
+  if (p.of.is !== undefined || p.of.zone !== undefined) return false;
+  if (p.of.self !== undefined && !(p.of.self === true && Object.keys(p.of).filter((k) => (p.of as Record<string, unknown>)[k] !== undefined).length === 1)) return false;
   return p.anyManaType === undefined || p.anyManaType === true;
 }
 

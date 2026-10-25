@@ -103,10 +103,20 @@ export function fakePropose(g: Game, e: Proposed): boolean {
   return true;
 }
 
+/** trek-8 review (CR 608.2f): simultaneous events are all proposed (recorded, vetoed) before any is performed. */
+export function fakeProposeTogether(g: Game, events: readonly Proposed[]): null[] {
+  const ok = events.map((e) => {
+    pipeline.proposals.push(structuredClone(e));
+    return !pipeline.veto?.(e);
+  });
+  events.forEach((e, i) => { if (ok[i]) perform(g, e); });
+  return events.map(() => null);
+}
+
 export function fakeAskManual(_cx: ExecCtx, text: string, reason: string): StepResult {
   pipeline.manual.push({ text, reason });
   return { performed: false, count: 0 };
 }
 
-export const proposeModule = { propose: fakePropose, REPLACEMENT_BODIES: {}, FEATURES: [] };
+export const proposeModule = { propose: fakePropose, proposeTogether: fakeProposeTogether, REPLACEMENT_BODIES: {}, FEATURES: [] };
 export const manualModule = { askManual: fakeAskManual, FEATURES: [] };

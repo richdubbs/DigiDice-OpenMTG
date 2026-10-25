@@ -5,7 +5,7 @@
  */
 import type { Action } from '../types/actions';
 import type { ObjectId, PlayerId } from '../types/ids';
-import type { GameState } from '../types/state';
+import { castOriginOf, type GameState } from '../types/state';
 import { IllegalAction, type Game } from '../core/game';
 import { warnUnsupportedText } from '../core/manual';
 import { moveObject } from '../core/zones';
@@ -15,7 +15,7 @@ import { assertAllowed, deny, type Denial } from '../rules/denial';
 import { gameOf, hookpoints } from '../rules/hookpoints';
 import { sorceryTiming } from '../rules/timing';
 import { additionalLandPlays } from '../statics/hooks';
-import { graveyardLandKey, namedPermit, namedPermitLandTapped, namedSingleKey, playPermitted, topPermitFor } from '../statics/play-permits';
+import { graveyardLandKey, namedPermit, namedPermitLandTapped, namedSingleKey, outsideLandKey, playPermitted, topPermitFor } from '../statics/play-permits';
 import { installResolutionLandPlayer } from '../effects/cast-hook';
 
 /** How many lands the player can play this turn (CR 305.2: one, plus what rule modifications and permissions add; WP16: statics/hooks.ts#additionalLandPlays). */
@@ -39,13 +39,17 @@ export function landCheck(s: GameState, player: PlayerId, id: ObjectId, requeste
   // FAST5X E14 (CR 305.1, 401.5): a card on top of the library that only a top-card permission allows ("You may play lands from the top of your library")
   const byTop = o.zone === 'library' && !namedPermit(s, player, id, true);
 
+  // trek-11 (CR 400.11, 712.8a): a card played from outside the game (the staging object of core/special/play-outside.ts) has its front face's characteristics only
+  const outside = o.fromOutside === true;
   // CR 712.12: a modal double-faced card is played as a land by choosing one of its faces that is a land.
-  const candidates = def.layout === 'modal_dfc' ? def.faces.map((_, i) => i) : [0];
+  const candidates = def.layout === 'modal_dfc' && !outside ? def.faces.map((_, i) => i) : [0];
   const landFaces = candidates.filter((i) => hasType(faceChars(def, i), 'Land'));
   if (landFaces.length === 0) return { denial: deny(`${def.name} is not a land card.`, 'CR 305.1') };
   const face = requestedFace ?? landFaces[0]!;
   if (!candidates.includes(face)) return { denial: deny('That face of the card can\'t be played.', 'CR 712.12') };
   if (!landFaces.includes(face)) return { denial: deny(`${faceChars(def, face).name} is not a land.`, 'CR 712.12', 'CR 305.1') };
+  // trek-11 (CR 400.11b, 305.1): a card from outside the game is played as a land only by a permission that covers cards outside the game (The Holodeck); its owner only
+  if (outside && (o.zone !== 'hand' || o.owner !== player || outsideLandKey(s, player, id) === null)) return { denial: deny(`No effect lets you play ${faceChars(def, face).name} from outside the game.`, 'CR 400.11b', 'CR 305.1') };
   // FAST5X E14: the permission's qualities are checked on the face played (statics/play-permits.ts#topPermitFor)
   if (byTop && topPermitFor(s, player, id, true, faceChars(def, face)) === null) return { denial: deny(`No effect lets you play ${faceChars(def, face).name} from the top of your library.`, 'CR 305.1') };
 
@@ -66,22 +70,26 @@ export function playLand(g: Game, action: Extract<Action, { type: 'playLand' }>)
     return;
   }
   const old = g.obj(action.card);
+  const outside = old.fromOutside === true; // trek-11 (CR 400.11b)
   // std-rx27 (CR 305.1): a land played with a one-card permission ("you may play a card exiled with ~") spends it (statics/play-permits.ts#namedSingleKey)
   const single = old.zone !== 'hand' ? namedSingleKey(g.s, player, action.card, true) : null;
   if (single !== null) g.s.turnActivations[single] = (g.s.turnActivations[single] ?? 0) + 1;
   // std-rx27 (CR 305.2): "During each of your turns, you may play a land ... from your graveyard": a once-each-turn graveyard land permission is spent
   const gyLand = old.zone === 'graveyard' && single === null && !namedPermit(g.s, player, action.card, true) ? graveyardLandKey(g.s, player, action.card) : null;
   if (gyLand !== null) g.s.turnActivations[gyLand] = (g.s.turnActivations[gyLand] ?? 0) + 1;
+  // trek-11 (CR 400.11b, 305.2): ... and so is the same permission's counter when the land is played from outside the game (one use a turn for both places)
+  const outsideKey = outside ? outsideLandKey(g.s, player, action.card)?.key ?? null : null;
+  if (outsideKey !== null) g.s.turnActivations[outsideKey] = (g.s.turnActivations[outsideKey] ?? 0) + 1;
   const name = faceChars(g.s.defs[old.defId]!, check.face).name;
-  const from = old.zone; // cloud std-spm: "whenever you play a land from exile" reads the zone it was played from
+  const from = castOriginOf(old); // cloud std-spm: "whenever you play a land from exile" reads the zone it was played from; trek-11: 'outside' for a card from outside the game (CR 400.11)
   // CR 305.1 / 116.2a: the land goes straight onto the battlefield; it is never a spell.
   // std-exile-play-1-3 (CR 614.1c): "Each land played this way enters tapped" on the permission it is played with (statics/play-permits.ts#namedPermitLandTapped)
-  const tapped = from !== 'hand' && namedPermitLandTapped(g.s, player, action.card);
+  const tapped = !outside && from !== 'hand' && namedPermitLandTapped(g.s, player, action.card);
   const id = moveObject(g, action.card, 'battlefield', { face: check.face, controller: player, cause: 'play land', ...(tapped ? { tapped: true } : {}) });
   if (!id) throw new IllegalAction('The land could not be put onto the battlefield.', ['CR 305.1']);
   g.player(player).landsPlayedThisTurn++; // CR 305.2a
   g.emit({ type: 'landPlayed', objectId: id, player, from });
-  g.log(`${g.player(player).name} plays ${name}.`, { rules: ['CR 305.1', 'CR 116.2a'], level: 'action' });
+  g.log(`${g.player(player).name} plays ${name}${outside ? ' from outside the game' : ''}.`, { rules: ['CR 305.1', 'CR 116.2a', ...(outside ? ['CR 400.11b'] : [])], level: 'action' });
   warnUnsupportedText(g, id); // e.g. "enters tapped" is not automated yet
 }
 

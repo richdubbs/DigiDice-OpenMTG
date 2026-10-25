@@ -19,7 +19,7 @@ import { grantedAbilities, keywordsOfAbilities } from './abilities';
 import type { ApplyMods, CharAbility, ModContext } from './api';
 import { colorFromWord, evalQuantity, objectsOf, playerOf, type EvalCx } from './match';
 import { readLink } from './links';
-import { BASIC_LAND_TYPES, CREATURE_TYPES, hasTypeFor, subtypeClass } from './subtypes';
+import { BASIC_LAND_TYPES, CREATURE_TYPES, hasTypeFor, subtypeClass, type SubtypeClass } from './subtypes';
 
 const INTEGER = /^-?\d+$/;
 
@@ -76,11 +76,18 @@ function layer4(c: Chars, m: Extract<Modification, { layer: 4 }>, cx: EvalCx): C
   let subtypes = c.subtypes.slice();
   const st = setChosen(m.subtypes);
   let lostRulesText = false;
+  // trek-1 (CR 205.3m): a subtype in no list of this build, on a creature or kindred that isn't a planeswalker (whose unlisted subtypes are planeswalker types,
+  // CR 205.3j), is a creature type newer than the list, as rules/filter.ts#creatureTypesOf counts it: "becomes a Doctor" replaces it and "loses all creature
+  // types" removes it, and "is a Borg" names one (assimilate). Every other unlisted subtype keeps having no class. trek-10: the creature types the cards of the
+  // game's own sets print (Borg, Klingon, Vulcan, Officer...) are in the list now (statics/subtypes.ts#PRINTED_CREATURE_TYPES), so a changeling has them and a
+  // noncreature loses them (CR 205.3d); this fallback is only for a type newer than that list.
+  const unlistedCreature = (types.includes('Creature') || types.includes('Kindred')) && !types.includes('Planeswalker');
+  const classOf = (t: string): SubtypeClass | undefined => subtypeClass(t) ?? (unlistedCreature ? 'creature' : undefined);
   if (st) {
     if (st.set !== undefined) {
-      const classes = new Set(st.set.map(subtypeClass).filter((k) => k !== undefined));
+      const classes = new Set(st.set.map(classOf).filter((k) => k !== undefined));
       subtypes = subtypes.filter((t) => {
-        const k = subtypeClass(t);
+        const k = classOf(t);
         return k === undefined || !classes.has(k);
       });
       subtypes = withAll(subtypes, st.set);
@@ -88,7 +95,7 @@ function layer4(c: Chars, m: Extract<Modification, { layer: 4 }>, cx: EvalCx): C
     }
     if (st.add) subtypes = withAll(subtypes, st.add);
     if (st.all) subtypes = withAll(subtypes, CREATURE_TYPES); // CR 702.73a: every creature type
-    if (st.removeAll === 'creature') subtypes = subtypes.filter((t) => subtypeClass(t) !== 'creature'); // FAST5 T41, CR 205.3m: "loses all creature types"
+    if (st.removeAll === 'creature') subtypes = subtypes.filter((t) => classOf(t) !== 'creature'); // FAST5 T41, CR 205.3m: "loses all creature types" (trek-1: unlisted ones too)
     if (st.removeAll === 'land') subtypes = subtypes.filter((t) => subtypeClass(t) !== 'land'); // std-mana-1, CR 205.3i, 305.7: "loses all land types"
     subtypes = withAll(subtypes, chosenValues(cx, st.chosen));
     if (st.remove) subtypes = subtypes.filter((x) => !st.remove!.includes(x));

@@ -14,7 +14,7 @@ import { isPlayerRef } from './refs';
 import { p2iv1CondPhrase } from './p2iv1';
 import { p2iv3AllAny, p2iv3Moved } from './p2iv3';
 import { MILLED_KEY, cloneState, withVariants, type RenderState } from './state';
-import { alt, ALT_OPEN, ALT_SEP, COLOR_WORD, joinList, numWord, NoRenderer, ordinal, parseMarked, withArticle } from './text';
+import { alt, ALT_OPEN, ALT_SEP, COLOR_WORD, joinList, numWord, NoRenderer, ordinal, parseMarked, pluralize, withArticle } from './text';
 
 const INVERT: Record<Cmp, Cmp> = { '<=': '>', '>=': '<', '==': '!=', '!=': '==', '<': '>=', '>': '<=' };
 
@@ -68,7 +68,8 @@ function twoCardsInOneZone(of: readonly Condition[], st: RenderState): string | 
   return `there is ${first} and ${second}`;
 }
 
-function existsPhrase(of: ObjRef,atLeast: Parameters<typeof K.qty>[0] | undefined, negate: boolean, st: RenderState): string {
+/** `oneOpponent` (opp-port-1): the permanents counted are one opponent's own (`countPlayers.controlsIs`), not every opponent's together. */
+function existsPhrase(of: ObjRef,atLeast: Parameters<typeof K.qty>[0] | undefined, negate: boolean, st: RenderState, oneOpponent = false): string {
   if (of.ref !== 'each') {
     const o = K.obj(of, st, 'subject');
     return `${o.text} ${negate ? "isn't" : 'is'} still on the battlefield`;
@@ -98,7 +99,11 @@ function existsPhrase(of: ObjRef,atLeast: Parameters<typeof K.qty>[0] | undefine
   if (!negate && atLeast === undefined && f.commander === true && f.controller === 'you' && (f.types?.length ?? 0) >= 2 && keys.every((k) => k === 'commander' || k === 'controller' || k === 'types')) {
     return `you control a commander that's ${joinList(f.types!.map((t) => withArticle(t.toLowerCase())), 'or').replace(/ or an? /, ' or ')}`;
   }
-  const ctrl = controls(f, st);
+  // opp-port-1 (OPP1 and OPP2 of 2026-10-17; CR 102.3, 806): every opponent's permanents counted together, or no opponent controlling one, is what "your
+  // opponents control" says; "an opponent controls two or more creatures" and "an opponent controls no creatures" are one opponent's own (`oneOpponent`).
+  // Existence (one or more) is the same either way.
+  const countedMany = atLeast !== undefined && !(typeof atLeast === 'number' && atLeast === 1);
+  const ctrl = f.controller === 'opponent' && (countedMany || negate) && !oneOpponent ? 'your opponents control' : controls(f, st);
   const zoneBf = f.zone === undefined || f.zone === 'battlefield';
   const body = (count: string | undefined, plural: boolean): string => K.np(f, st, { det: count === undefined ? 'a' : 'none', plural, count, noController: ctrl !== null });
   if (negate) {
@@ -109,6 +114,8 @@ function existsPhrase(of: ObjRef,atLeast: Parameters<typeof K.qty>[0] | undefine
     const amount = few ? `fewer than ${n}` : 'no';
     // MX3 (family dont-control-a): "you don't control a Ring-bearer" is "you control no Ring-bearers" (not one such permanent, CR 603.4 style)
     if (ctrl === 'you control' && !few) return alt(`${ctrl} ${amount} ${none}`, `you don't control ${body(undefined, false)}`);
+    // opp-port-1 (family no-opponent-controls-a): "your opponents control no creatures" is also "no opponent controls a creature" (Vexing Beetle, CR 102.3)
+    if (ctrl === 'your opponents control' && !few) return alt(`${ctrl} ${amount} ${none}`, `no opponent controls ${body(undefined, false)}`);
     if (ctrl) return `${ctrl} ${amount} ${none}`;
     // std-tdm (CR 401.1; family library-no-cards-in-it): "there are no cards in your library" is also "your library has no cards in it"
     const ownLibrary = !few && f.zone === 'library' && f.owner === 'you' && f.isCard === true && keys.length === 3;
@@ -867,7 +874,7 @@ function condBase(c: Condition, st: RenderState): string {
           if (e instanceof NoRenderer && typeof c.left === 'object' && c.left.q === 'countPlayers' && c.left.lifeIs !== undefined) return null; // r4-static: the idiom only
           if (e instanceof NoRenderer && typeof c.left === 'object' && c.left.q === 'countPlayers' && c.left.poisonIs !== undefined) return null; // std-rx24: the idiom only
           if (e instanceof NoRenderer && typeof c.left === 'object' && c.left.q === 'countPlayers' && c.left.lostLifeIs !== undefined) return null; // Standard round P: the idiom only
-          if (e instanceof NoRenderer && typeof c.left === 'object' && c.left.q === 'countPlayers' && c.left.controlsIs?.op === '==' && c.left.controlsIs.n === 0) return null; // std-rx31: the idiom only
+          if (e instanceof NoRenderer && typeof c.left === 'object' && c.left.q === 'countPlayers' && c.left.controlsIs !== undefined) return null; // std-rx31, opp-port-1: the idiom only
           throw e;
         }
       };
@@ -886,6 +893,11 @@ function condBase(c: Condition, st: RenderState): string {
     }
     case 'share': { // std-cardcopy-1 (CR 205.2a, 105.2, 608.2c; parser/holes/cond.ts#milledThisWayCond): two of the cards a mill step put into a graveyard share a card type or a color
       const f = c.of.ref === 'each' ? c.of.filter : undefined;
+      // trek-9 (CR 205.2a, 105.2, 607.2a, 608.2c; parser/holes/trek9.ts#allExiledShareCond): "all cards exiled with ~ share a card type", the cards the object's linked
+      // exiling instruction exiled and that are still in exile (nothing else said of them)
+      if (c.count === 'all' && f !== undefined && f.zone === 'exile' && f.is?.ref === 'linked' && f.is.link === 'exiled' && Object.keys(f).filter((k) => (f as Record<string, unknown>)[k] !== undefined).sort().join() === 'is,zone') {
+        return `all cards exiled with ~ share ${c.what === 'color' ? 'a color' : 'a card type'}`;
+      }
       const milled = f?.is !== undefined && f.is.ref === 'bound' && st.info.has(`${MILLED_KEY}${f.is.name}`) && f.zone === 'any';
       if (!milled || c.count !== 2) throw new NoRenderer('objects that share a card type or color other than two of the cards milled this way');
       const { is: _is, zone: _zone, ...rest } = f;
@@ -947,6 +959,11 @@ function condBase(c: Condition, st: RenderState): string {
         st.mentioned.add('self');
         return '~ is in your graveyard';
       }
+      // trek-12 (CR 113.6, 602.5b; the parser's holes/cond.ts): "Activate only ... if ~ is exiled": the object itself in exile
+      if (c.object.ref === 'self' && c.filter.zone === 'exile' && Object.keys(c.filter).length === 1) {
+        st.mentioned.add('self');
+        return '~ is exiled';
+      }
       // r4-fxb (CR 608.2c, 608.2h): "if an opponent controls that creature": the controller of an object the ability named, now, said with the controller first
       // (parser/templates/zz-cloud/r4-fxb.json, eff.fxb.ifOpponentControls); the source is no antecedent there, as for "you controlled it"
       if (opponentControlsOnly(c)) {
@@ -964,6 +981,11 @@ function condBase(c: Condition, st: RenderState): string {
       const attached = c.object.ref === 'attachedTo' && Object.keys(c.object).length === 1 && c.filter.zone === undefined && c.filter.isCard === undefined
         ? `${K.obj({ ref: 'self' }, cloneState(st), 'subject').text} is attached to ${K.np(c.filter, cloneState(st), { det: 'a' })}` : null;
       const o = K.obj(c.object, st, 'subject');
+      // trek-5 (CR 401.5, 400.7; parser/holes/cond.ts, family still-on-top): "If that card is still on top of your library" is a named card that is one of the top 1 cards of
+      // your library now; "still" says it is the card it was (a card that moved is a new object, CR 400.7)
+      if (!o.plural && JSON.stringify(c.filter) === JSON.stringify({ zone: 'library', is: { ref: 'topCards', player: { ref: 'you' }, count: 1 } })) {
+        return alt(`${o.text} is the top card of your library`, `${o.text} is still on top of your library`);
+      }
       const preds = predicates(c.filter, st, o.plural);
       if (preds.length === 0) return attached ?? `${o.text} ${o.plural ? 'are' : 'is'} an object`;
       // r5-static (CR 611.3a, 109.4; family is-np): "as long as it's a Detective you control": one object that is of a kind and controlled by you, said as one noun
@@ -1038,6 +1060,7 @@ function condBase(c: Condition, st: RenderState): string {
     case 'beheld': return `${K.np(c.quality, st, { det: 'a', noZone: true })} was beheld`;
     case 'asCast': return asCastPhrase(c.held, st); // FAST5X E17 (CR 601.2i)
     case 'firstNamedResolution': return "this is the first time a spell you control with this spell's name has resolved this game"; // FAST5X E26 (CR 702.192a)
+    case 'firstSpellCast': return `${K.obj({ ref: 'self' }, st, 'subject').text} is the first spell you've cast this game`; // trek-2 (CR 601.2i)
     case 'firstCombat': return "it's the first combat phase of the turn"; // Standard round 4, r4-trig (CR 500.8, 505.1a)
     case 'someMatch': { // Standard round 5, r5-trig (CR 603.4, 603.6a): "one or more of them entered from exile or was cast from exile"
       const f = c.filter;
@@ -1469,8 +1492,12 @@ function zoneHistoryPhrase(c: Extract<Condition, { cond: 'happened' }>, st: Rend
   const kinds = [...(f.types ?? []), ...(f.subtypes ?? [])].map((x) => x.toLowerCase());
   const selfIn = (ws: readonly string[] | undefined): boolean => ws === undefined || ws.length === 0 || ws.some((x) => selfTypes!.includes(x.toLowerCase()));
   if (t === undefined && selfTypes !== undefined && kinds.length > 0 && selfIn(f.types) && selfIn(f.subtypes) && Object.keys(f).every((k) => k === 'types' || k === 'subtypes')) {
-    return alt(`${np(f)} ${verb}${tail}`, `~ or ${K.np({ ...f, other: true }, st, { det: 'a' })} ${verb}${tail}`);
+    // p2-damage-3 (family landfall-you-had): "Activate only if you had a creature enter the battlefield under your control this turn" on a creature (Zhalfirin Decoy)
+    const had = ctl === 'you' && verb === 'entered the battlefield' ? [`you had ${np(f)} enter the battlefield${tail}`] : [];
+    return alt(`${np(f)} ${verb}${tail}`, `~ or ${K.np({ ...f, other: true }, st, { det: 'a' })} ${verb}${tail}`, ...had);
   }
+  // p2-damage-3 (CR 603.4, 207.2c; parser/holes/cond.ts#zoneHistory): Landfall's "you had a land enter the battlefield under your control this turn" (Searing Blaze)
+  if (t === undefined && ctl === 'you' && verb === 'entered the battlefield') return alt(`${np(f)} ${verb}${tail}`, `you had ${np(f)} enter the battlefield${tail}`);
   return `${np(f)} ${verb}${tail}`;
 }
 
@@ -1540,6 +1567,14 @@ function compareIdiom(c: Extract<Condition, { cond: 'compare' }>, st: RenderStat
       if (c.op === '>') return `${left.choice} gets more votes`;
       if (c.op === '>=') return `${left.choice} gets more votes or the vote is tied`;
       return null;
+    }
+    // trek-6 (CR 122.1, 122.6, 608.2c; parser/holes/cond.ts#countersPutThisWay): "you put two or more +1/+1 counters on creatures this way": the counters the instruction right
+    // before it put (render/steps-life.ts binds the step's name with what it put them on), the objects said by the nouns they are
+    case 'countersPut': {
+      if (c.op !== '>=' || typeof right !== 'number' || right < 1 || num === null) return null;
+      const nouns = st.info.get(`b:${left.step}`)?.nouns;
+      if (nouns === undefined || nouns.length === 0) return null;
+      return `you put ${num} or more ${left.kind === undefined ? 'counters' : `${left.kind} counters`} on ${pluralize(nouns[0]!)} this way`; // the first noun is the most specific one (render/np.ts#nounsOf)
     }
     // FAST5X E16 (CR 120.10, 608.2c): "if excess damage was dealt [to that creature] this way", "if that creature is dealt excess damage this way"
     case 'excessDamage': {
@@ -1734,9 +1769,10 @@ function compareIdiom(c: Extract<Condition, { cond: 'compare' }>, st: RenderStat
       return `you've drawn ${num} or more cards this turn`;
     }
     case 'count': {
-      // FAST5 T62 (CR 603.4): "an opponent controls more lands than you" (parser/holes/cond.ts#control): the description counted for an opponent is more than the same one counted for you
-      // FAST5 T70 (CR 608.2c; the engine has exactly two players, so "an opponent" controls the opponent's permanents): the same comparison with the description as an
-      // `anyOf` of one description beside the controller (FAST5 batch 9 integration: both shapes)
+      // FAST5 T62 (CR 603.4): the description counted for every opponent together is more than the same one counted for you; FAST5 T70 (CR 608.2c): the same
+      // comparison with the description as an `anyOf` of one description beside the controller (FAST5 batch 9 integration: both shapes). opp-port-1 (OPP2 of
+      // 2026-10-17; CR 102.3, 806): that is "your opponents control more lands than you"; "an opponent controls more lands than you" is one opponent alone
+      // (`countPlayers.controlsVs`, std-sos review), which the parser reads (parser/holes/cond.ts#control). The two agree in a two-player game only.
       if (typeof right === 'object' && right.q === 'count') {
         if (c.op !== '>' || left.of.ref !== 'each' || right.of.ref !== 'each' || !('filter' in left.of) || !('filter' in right.of)) return null;
         const description = (f: ObjectFilter, who: string): ObjectFilter | null =>
@@ -1744,12 +1780,12 @@ function compareIdiom(c: Extract<Condition, { cond: 'compare' }>, st: RenderStat
         const theirs = description(left.of.filter, 'opponent');
         const mine = description(right.of.filter, 'you');
         if (theirs !== null && mine !== null && JSON.stringify(theirs) === JSON.stringify(mine)) {
-          return `an opponent controls more ${K.np(theirs, st, { det: 'none', plural: true, noController: true })} than you`;
+          return `your opponents control more ${K.np(theirs, st, { det: 'none', plural: true, noController: true })} than you`;
         }
         const { controller: lc, ...lf } = left.of.filter;
         const { controller: rc, ...rf } = right.of.filter;
         if (lc !== 'opponent' || rc !== 'you' || JSON.stringify(lf) !== JSON.stringify(rf)) return null;
-        return `an opponent controls more ${K.np(lf, st, { det: 'none', plural: true, noController: true })} than you`;
+        return `your opponents control more ${K.np(lf, st, { det: 'none', plural: true, noController: true })} than you`;
       }
       // FAST5 T60 (CR 607.2a): "there are three or more cards exiled with ~" (Veteran Survivor): the cards the linked ability of this object exiled
       if (left.of.ref === 'linked' && left.of.link === 'exiled') {
@@ -1772,9 +1808,8 @@ function compareIdiom(c: Extract<Condition, { cond: 'compare' }>, st: RenderStat
         return `you control exactly ${K.np(f, st, { det: 'none', plural: right !== 1, count: numWord(right), noController: true })}`;
       }
       if (c.op !== '>=' || right < 2) return null;
-      const base = existsPhrase(left.of, right, false, st);
-      // FAST1 T5: the count of every opponent's permanents together is "your opponents control eight or more lands" (family comparison)
-      return f.controller === 'opponent' ? alt(base, `your opponents control ${counted(`${numWord(right)} or more`)}`) : base;
+      // FAST1 T5: the count of every opponent's permanents together is "your opponents control eight or more lands" (family comparison; existsPhrase, opp-port-1)
+      return existsPhrase(left.of, right, false, st);
     }
     case 'countPlayers': {
       // std-rx31 (CR 102.1, 603.4): "a player controls no creatures": at least one player controls none (parser/holes/cond.ts#control)
@@ -1782,6 +1817,15 @@ function compareIdiom(c: Extract<Condition, { cond: 'compare' }>, st: RenderStat
       if (ci !== undefined && c.op === '>=' && right === 1 && ci.op === '==' && ci.n === 0 && JSON.stringify(left.of) === JSON.stringify({ ref: 'each', who: 'player' })
         && Object.keys(left).length === 3 && ci.filter.controller === undefined) {
         return `a player controls no ${K.np(ci.filter, st, { det: 'none', plural: true, noController: true })}`;
+      }
+      // opp-port-1 (OPP1 and OPP2 of 2026-10-17; CR 102.3, 806): "an opponent controls two or more creatures", "an opponent controls no creatures": at least one
+      // opponent, judged alone, controls that many (none) of them (parser/holes/cond.ts#control)
+      if (ci !== undefined && c.op === '>=' && right === 1 && JSON.stringify(left.of) === JSON.stringify({ ref: 'each', who: 'opponent' }) && Object.keys(left).length === 3
+        && ci.filter.controller === undefined) {
+        const theirs: ObjRef = { ref: 'each', filter: { ...ci.filter, controller: 'opponent' } };
+        if (ci.op === '==' && ci.n === 0) return existsPhrase(theirs, undefined, true, st, true);
+        if (ci.op === '>=' && ci.n >= 2) return existsPhrase(theirs, ci.n, false, st, true);
+        return null;
       }
       if (left.controlsIs !== undefined) return null; // std-rx12: a count of players who control a number of permanents has words as a count only (render/qty.ts)
       // Standard round P (CR 119.3, 120.3a): "an opponent lost 3 or more life this turn", "a player lost 4 or more life this turn": at least one of those players lost
@@ -1867,7 +1911,9 @@ function compareIdiom(c: Extract<Condition, { cond: 'compare' }>, st: RenderStat
       // CLOUD std-fdn (CR 201.2): "you control ten or more Gates with different names" is the number of different names among the Gates you control
       const a = left.among;
       if (left.what === 'names' && a.ref === 'each' && 'filter' in a && a.filter.controller === 'you') {
-        return alt(base, `you control ${num} or more ${K.np({ ...a.filter, controller: undefined }, st, { det: 'none', plural: true })} with different names`);
+        // trek-5 (CR 201.2; family differently-named-lands): "you control five or more differently named lands" is the same count of different names among the lands you control
+        const kind = K.np({ ...a.filter, controller: undefined }, st, { det: 'none', plural: true });
+        return alt(base, `you control ${num} or more ${kind} with different names`, `you control ${num} or more differently named ${kind}`);
       }
       return left.what === 'colors' && right === 5 ? alt(base, `there are ${num} ${w} among ${among}`) : base;
     }

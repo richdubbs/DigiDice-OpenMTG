@@ -6,7 +6,7 @@ import { namedTokenOf } from '../model/named-tokens';
 import type { Destination, ObjectFilter, ObjRef, PlayerRef, Quantity, TokenDef } from '../types/ability';
 import { acting, plain, type Clause } from './clause';
 import { K } from './kernel';
-import { anaphor, identityOf, isPlayerRef, restOfGroup, roleInfo, withSubjects } from './refs';
+import { AMBIGUOUS, anaphor, identityOf, isPlayerRef, restOfExiled, restOfGroup, roleInfo, withSubjects } from './refs';
 import { zoneSetPhrase } from './steps-cards';
 import { bind, bindCant, byPlayer, countedNp, destPhrase, exileCounters, halfOfControlled, infoOfRef, isComputed, modal, timesWords, type StepOf } from './steps-util';
 import { keywordWords } from './kw';
@@ -207,6 +207,20 @@ export function dealtThisWayOne(what: ObjRef | PlayerRef, st: RenderState): stri
   if (keys !== 'anyOf,is' || what.filter.is?.ref !== 'bound' || what.filter.anyOf?.length !== 1) return null;
   if (st.info.get(`b:${what.filter.is.name}`)?.thisWay !== 'dealt damage this way') return null;
   return K.np(what.filter.anyOf[0]!, st, { det: 'a' });
+}
+
+/**
+ * trek-7: `move` of the rest of the cards another player's `exileUntil` exiled (`{each: {is: <exiled>, not: {is: <the card it stopped at>}, zone: 'exile'}}`) to the bottom of
+ * their owners' library in a random order, said by the player who exiled them ("they put the rest on the bottom in a random order"): that player. Null for any other move.
+ */
+function exiledRestOfOtherPlayer(s: StepOf<'move'>, st: RenderState): PlayerRef | null {
+  if (s.what.ref !== 'each' || !restOfExiled(s.what.filter)) return null;
+  const d = s.to;
+  if (d.zone !== 'library' || d.position !== 'bottom' || d.order !== 'random' || d.owner !== undefined || Object.keys(d).length !== 3 || s.until !== undefined || s.as !== undefined || s.guard !== undefined) return null;
+  const group = (s.what.filter.is as { ref?: string; name?: string } | undefined)?.name;
+  const info = group === undefined ? undefined : st.info.get(`b:${group}`);
+  if (info?.exiledBy === undefined || info.exiledBy.ref === 'you') return null;
+  return info.exiledBy;
 }
 
 /**
@@ -465,6 +479,11 @@ export const CLAUSES_ZONES = {
     // r5-moved (CR 701.25a, 608.2c, 400.7; template eff.r5moved.surveil.putThisWay.hand): "If you put a land card into your graveyard this way, put that card into your hand"
     const surveilled = surveilledToHand(s, st);
     if (surveilled !== null) return plain(surveilled, { standalone: true });
+    // trek-7 (CR 401.4, 406.1, 400.3; The Borg Queen): "They put the rest on the bottom in a random order." after another player's "exiles cards from the top of their library
+    // until they exile ...": the cards that exile left in exile (the group `exiled` less the card it stopped at) go to the bottom of THEIR owner's library, the player who
+    // exiled them being the one who puts them; no "of their library" in Oracle's words. Another player's only (yours is the plain move below)
+    const restOfOthers = exiledRestOfOtherPlayer(s, st);
+    if (restOfOthers !== null) return byPlayer(restOfOthers, st, 'put', 'the rest on the bottom in a random order', { standalone: true });
     // r5-moved (CR 608.2c, 400.7, 110.2a; template eff.r5moved.eachPlayer.returnsAll.notPutThere): "each player returns all creature cards from their graveyard that weren't put
     // there this way to the battlefield" (Bringer of the Last Gift)
     const notPut = notPutThereReturn(s, st);
@@ -964,6 +983,15 @@ export const CLAUSES_ZONES = {
     return plain(`${p.text} ${p.plural ? 'become' : 'becomes'} blocked`);
   },
 
+  // trek-8 (CR 120.6, 614.1a): "remove all damage from it" and "all damage already dealt to it is healed"
+  removeDamage: (s: StepOf<'removeDamage'>, st: RenderState): Clause => {
+    const [removed, healed] = withVariants(st, [
+      (v) => `remove all damage from ${K.obj(s.what, v, 'object').text}`,
+      (v) => `all damage already dealt to ${K.obj(s.what, v, 'object').text} is healed`,
+    ]);
+    return plain(alt(removed!, healed!));
+  },
+
   exchange: (s: StepOf<'exchange'>, st: RenderState): Clause => {
     // p2-pt-1 (CR 701.12a, 613.4b): "exchange your life total with ~'s toughness" (Tree of Redemption), one player and one permanent (said before the shared
     // references below name either)
@@ -1015,9 +1043,29 @@ export const CLAUSES_ZONES = {
       const free = s.free === true ? ' without paying its mana cost' : '';
       const c = byPlayer(s.who, st, 'copy', () => what.text);
       const tail = what.plural ? '. you may cast any number of the copies' : alt(`. you may cast the copy${free}`, `, then you may cast the copy${free}`);
+      // trek-12 (CR 707.12; family create-a-copy-of-self): the copy of the card the ability is on, in exile, is "Create a copy of ~" as well as "Copy ~" (Q, Stacking the Deck)
+      if (s.what.ref === 'self' && !what.plural && s.free !== true) {
+        const made = byPlayer(s.who, st, 'create', () => `a copy of ${what.text}`);
+        return { ...c, imp: alt(c.imp, made.imp) + tail, sub: alt(c.sub, made.sub) + tail };
+      }
       return { ...c, imp: c.imp + tail, sub: c.sub + tail };
     }
-    if (s.select !== undefined) throw new NoRenderer('a choice of cards to cast other than among copies'); // std-cardcopy-7
+    // trek-7 (CR 608.2d, 601.2, 202.3; Captain Benjamin Sisko, template eff.trek7.cast.anyNumber.free.mvLte.fromAmong): one choice, among the cards of an exiled group that can be
+    // cast now (each as a face or half of at most that mana value), of any number of spells cast without paying their mana costs: "You may cast any number of spells with
+    // mana value less than or equal to N from among those cards without paying their mana costs." Only the nonland cards of one bound group in exile, and nothing else
+    if (s.select !== undefined) {
+      const f = s.what.ref === 'each' ? s.what.filter : undefined;
+      const groupOnly = f !== undefined && f.is !== undefined && f.zone === 'exile' && f.notTypes?.length === 1 && f.notTypes[0] === 'Land'
+        && Object.keys(f).filter((k) => (f as Record<string, unknown>)[k] !== undefined).length === 3;
+      if (!groupOnly || s.select.max !== undefined || s.select.totalManaValue !== undefined || s.maxManaValue === undefined || s.free !== true || s.who.ref !== 'you' || s.optional !== undefined || s.copyIn !== undefined
+        || s.play !== undefined || s.anyManaType !== undefined || s.costChange !== undefined || s.transformed !== undefined || s.graveyardInstead !== undefined || s.as !== undefined || s.guard !== undefined) {
+        throw new NoRenderer('a choice of cards to cast other than among copies, or other than any number of the nonland cards of an exiled group under a mana value limit'); // std-cardcopy-7
+      }
+      const them = K.obj(f!.is as ObjRef, st, 'object');
+      if (!them.plural || them.text === AMBIGUOUS) throw new NoRenderer('the group of cards to cast from is not one named plural reference');
+      const text = `you may cast any number of spells with mana value less than or equal to ${K.qty(s.maxManaValue, st)} from among ${them.text} without paying their mana costs`;
+      return acting('you', text, text, { closesScope: true });
+    }
     const rest = (): string => {
       let t = K.obj(s.what, st, 'object').text;
       if (s.copyIn !== undefined) t = `a copy of ${t}`; // FAST5X E26 (CR 707.12): paradigm's copy, created in exile and cast
@@ -1029,7 +1077,11 @@ export const CLAUSES_ZONES = {
       if (typeof s.maxManaValue === 'number') t += ` if ${alt("that spell's", "the resulting spell's")} mana value is ${s.maxManaValue} or less`;
       // std-rx31 (CR 601.2, 202.3, 608.2h; family cast-max-mana-value): a cap read as the step runs, "if the spell's mana value is less than or equal to the amount of
       // life you gained this turn" (the parser's template eff.stdrx31.cast.free.maxManaValue.qty)
-      else if (s.maxManaValue !== undefined) t += ` if ${alt("that spell's", "the resulting spell's", "the spell's")} mana value is less than or equal to ${K.qty(s.maxManaValue, st)}`;
+      // trek-5 (family cast-free-mv-at-most): ... and "equal to or less than" says it too (the parser's eff.trek5.cast.free.ifSpellMvAtMost; Commander Spock)
+      else if (s.maxManaValue !== undefined) {
+        const cap = K.qty(s.maxManaValue, st);
+        t += ` if ${alt(...["that spell's", "the resulting spell's", "the spell's"].flatMap((who) => [`${who} mana value is less than or equal to ${cap}`, `${who} mana value is equal to or less than ${cap}`]))}`;
+      }
       return t;
     };
     // std-rj (CR 608.2c, 601.2): "If you don't cast that card this way" says that the cast of one card (render/cond.ts#did)

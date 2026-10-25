@@ -42,7 +42,7 @@ const TYPE_BEFORE = new Set(['a', 'an', 'other', 'another', 'each', 'attacking',
 const TYPE_AFTER = new Set(['creature', 'creatures', 'card', 'cards', 'token', 'tokens', 'permanent', 'permanents', 'spell', 'spells', 'you', 'your', 'planeswalker', 'planeswalkers']);
 
 /** Titles that a name may start with and that are kept in its short form ("Captain Kirk"). */
-const TITLES = new Set(['Dr.', 'Captain', 'Commander', 'Lord', 'Lady', 'King', 'Queen', 'General', 'Admiral', 'Doctor', 'Professor', 'Sir', 'Chief', 'Agent']);
+const TITLES = new Set(['Dr.', 'Captain', 'Commander', 'Lord', 'Lady', 'King', 'Queen', 'General', 'Admiral', 'Doctor', 'Professor', 'Sir', 'Chief', 'Agent', 'Ensign']);
 /** First words that are not a name. */
 const NOT_A_NAME = new Set(['The', 'A', 'An', 'Of', 'And', 'Or', 'To', 'In', 'On']);
 
@@ -114,6 +114,10 @@ export function shortNames(ctx: FaceContext, ix: LexiconIndex): string[] {
     out.push(cand);
   };
   const comma = shortName(full);
+  // trek-12 (CR 201.5c; Q, Stacking the Deck): a legendary character whose name is a letter or two before the comma and is also the creature type of the card itself ("Q, Stacking the
+  // Deck", a Legendary Creature -- Q) is known by it ("When Q enters"); no other name that short is (X, Me, Ao, MJ, Uh are words or symbols the text may mean otherwise).
+  // Its type positions ("another Q", "a Q") stay types (typePosition).
+  if (comma && comma.length < 3 && known && /^\p{Lu}/u.test(comma) && ctx.subtypes.includes(comma.toLowerCase())) return [comma];
   // FAST5X E24: a legendary character's short name that is also a subtype ("Huatli, Poet of Unity", "Kaito, Bane of Nightmares", "Wolverine, Fierce
   // Fighter") is the character (CR 201.5c); its type positions ("a Wolverine", "Huatli planeswalker") stay types (typePosition, CR 205.3m)
   if (comma && known && ix.subtypes.has(comma.toLowerCase()) && !ix.cardTypes.has(comma.toLowerCase()) && !ix.keywordNames.has(comma.toLowerCase())) {

@@ -122,6 +122,12 @@ export function costPartForms(p: CostPart): string[] {
       if (p.totalManaValue !== undefined) out.push('cost:exileFrom.totalManaValue'); // std-costs-1: an exact total mana value (CR 118.3, 107.3a)
       if (p.symbolTotal !== undefined) out.push('cost:exileFrom.symbolTotal'); // std-cardcopy-7 (CR 118.3, 107.4)
       break;
+    case 'returnToHand':
+      if (p.beamUp === true) out.push('cost:returnToHand.beamUp'); // trek-1: a beam me up cost, which a "can't be beamed up" permanent can't pay (rules/cant.ts)
+      break;
+    case 'putIntoLibrary': // trek-9 (CR 118.3, 401.4): the source itself from your graveyard is paid, nothing else (rules/cost.ts#toPlanPart)
+      if (p.zone !== 'graveyard') out.push('cost:putIntoLibrary.zone');
+      break;
     default:
   }
   return out;
@@ -178,6 +184,11 @@ function quantityAnnounceForms(q: Quantity, where: AnnounceWhere): string[] {
       if (q.poisonIs !== undefined) {
         return q.controlsVs === undefined && q.sizeVs === undefined && q.sizeIs === undefined && q.lifeVs === undefined && q.lifeIs === undefined && q.lostLifeThisTurn === undefined && q.lostLifeIs === undefined && q.controlsIs === undefined && q.didNot === undefined && q.of.ref === 'each'
           ? ['feature:announce.qty.countPlayers.poisonIs'] : ['feature:announce.qty.countPlayers'];
+      }
+      // opp-port-1 (OPP1 of 2026-10-17; CR 102.3, 602.5b): "an opponent controls four or more lands", each player's own permanents against a fixed number (announce-cond.ts)
+      if (q.controlsIs !== undefined) {
+        return q.controlsVs === undefined && q.sizeVs === undefined && q.sizeIs === undefined && q.lifeVs === undefined && q.lifeIs === undefined && q.poisonIs === undefined && q.lostLifeThisTurn === undefined && q.lostLifeIs === undefined && q.didNot === undefined && q.speedVs === undefined && q.of.ref === 'each'
+          ? ['feature:announce.qty.countPlayers.controlsIs'] : ['feature:announce.qty.countPlayers'];
       }
       return q.controlsVs !== undefined && q.sizeVs === undefined && q.sizeIs === undefined && q.lifeVs === undefined && q.lifeIs === undefined && q.lostLifeThisTurn === undefined && q.lostLifeIs === undefined && q.controlsIs === undefined && q.of.ref === 'each'
         ? ['feature:announce.qty.countPlayers.controlsVs', ...playerRefForms(q.controlsVs.than, 'cond')]
@@ -425,7 +436,7 @@ export function selfCostZones(cost: CostDef | undefined): ZoneName[] {
     switch (p.kind) {
       case 'sacrifice': case 'returnToHand': case 'putCounters': out.add('battlefield'); break;
       case 'discard': out.add('hand'); break;
-      case 'reveal': case 'exileFrom': out.add(p.zone); break;
+      case 'reveal': case 'exileFrom': case 'putIntoLibrary': out.add(p.zone); break;
       default:
     }
   }

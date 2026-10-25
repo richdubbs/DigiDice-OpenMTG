@@ -1,0 +1,390 @@
+[
+  {
+    "id": "eff.trek7.self.castFromExile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 406.1",
+      "CR 113.6"
+    ],
+    "pattern": "you may cast ~ from exile",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "exile"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "exile"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast this creature from exile."
+      },
+      {
+        "text": "You may cast this permanent from exile."
+      }
+    ],
+    "counterExamples": [
+      "You may cast this creature from your hand.",
+      "You may cast this creature from your graveyard or from exile.",
+      "You may cast this creature from exile if you control a creature.",
+      "You may cast another creature from exile."
+    ]
+  },
+  {
+    "id": "eff.trek7.ownerMayPlay.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 108.3",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , its owner may play {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "ownerOf",
+            "object": "$o"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it."
+      },
+      {
+        "text": "Look at target opponent's hand. You may exile a creature card from it. Until end of turn, its owner may play it."
+      }
+    ],
+    "counterExamples": [
+      "Look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, you may play it.",
+      "Look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may cast it.",
+      "Look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its controller may play it."
+    ]
+  },
+  {
+    "id": "rid.trek7.spellCastThisWay.costsMore",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 608.2c",
+      "CR 611.2a"
+    ],
+    "pattern": "a spell cast this way costs {m:ManaCost} more to cast",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.s": "permit",
+          "effects.1": null,
+          "effects.0.costChange": null
+        },
+        "effects": [
+          {
+            "costChange": {
+              "@new": {
+                "kind": "increase",
+                "mana": "$m"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} more to cast."
+      },
+      {
+        "text": "Look at target opponent's hand. You may exile a creature card from it. Until end of turn, its owner may play it. A spell cast this way costs {1} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} less to cast.",
+      "Look at target opponent's hand. You may exile a nonland card from it. For as long as that card remains exiled, its owner may play it. A creature spell cast this way costs {2} more to cast.",
+      "Look at target opponent's hand. You may exile a nonland card from it. A spell cast this way costs {2} more to cast."
+    ]
+  },
+  {
+    "id": "eff.trek7.they.putRest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 406.1",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} put {r:Rest} on the bottom in a random order",
+    "build": {
+      "op": "move",
+      "what": "$r",
+      "to": {
+        "zone": "library",
+        "position": "bottom",
+        "order": "random"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent exiles cards from the top of their library until they exile a creature card. Assimilate that card. They put the rest on the bottom in a random order."
+      },
+      {
+        "text": "Target opponent exiles cards from the top of their library until they exile an artifact card. Assimilate that card. They put the rest on the bottom in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles cards from the top of their library until they exile a creature card. Assimilate that card. They put the rest on the bottom in any order.",
+      "Target opponent exiles cards from the top of their library until they exile a creature card. Assimilate that card. They put the rest on top of their library in a random order.",
+      "Target opponent exiles cards from the top of their library until they exile a creature card. Assimilate that card. They put the rest into their graveyard."
+    ]
+  },
+  {
+    "id": "eff.trek7.cast.anyNumber.free.mvLte.fromAmong",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 608.2d"
+    ],
+    "pattern": "you may cast any number of spells with mana value less than or equal to {n:Qty} from among {g:Them} without paying their mana costs",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "each",
+        "filter": {
+          "notTypes": [
+            "Land"
+          ],
+          "is": "$g",
+          "zone": "exile"
+        }
+      },
+      "free": true,
+      "maxManaValue": "$n",
+      "select": {}
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number",
+      "without",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top five cards of your library. You may cast any number of spells with mana value less than or equal to the number of Officers you control from among those cards without paying their mana costs."
+      },
+      {
+        "text": "Exile the top four cards of your library. You may cast any number of spells with mana value less than or equal to 3 from among those cards without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top five cards of your library. You may cast any number of spells with mana value greater than or equal to the number of Officers you control from among those cards without paying their mana costs.",
+      "Exile the top five cards of your library. You may cast any number of spells with mana value less than the number of Officers you control from among those cards without paying their mana costs.",
+      "Exile the top five cards of your library. You may cast a spell with mana value less than or equal to 3 from among those cards without paying its mana cost.",
+      "Exile the top five cards of your library. You may cast any number of spells with mana value less than or equal to 3 from among those cards."
+    ]
+  },
+  {
+    "id": "sta.trek7.duringMain.each.beamMeUp.manaCost",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 118.9",
+      "CR 505.1",
+      "CR 500.1"
+    ],
+    "pattern": "during your main phase , each {f:Filter} has beam me up . the beam me up cost is equal to ( its | that card 's | that spell 's ) mana cost",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you",
+        "step": [
+          "main1",
+          "main2"
+        ]
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "beam me up",
+                  "text": "beam me up",
+                  "costIsManaCost": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "during",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "During your main phase, each instant card in your graveyard has beam me up. The beam me up cost is equal to that spell's mana cost."
+      },
+      {
+        "text": "During your main phase, each noncreature, nonland card in your graveyard has beam me up. The beam me up cost is equal to its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "During your main phase, each instant card in your graveyard has beam me up. The beam me up cost is equal to its power.",
+      "During your main phase, each instant card in your graveyard has beam me up {2}. The beam me up cost is equal to its mana cost.",
+      "Each instant card in your graveyard has beam me up. The beam me up cost is equal to that spell's mana cost."
+    ]
+  },
+  {
+    "id": "sta.trek7.duringMain.each.beamMeUp.manaCost.selfCantBeamedUp",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 118.9",
+      "CR 505.1",
+      "CR 101.2",
+      "CR 614.17b"
+    ],
+    "pattern": "during your main phase , each {f:Filter} has beam me up . the beam me up cost is equal to ( its | that card 's | that spell 's ) mana cost . ~ can't be beamed up to cast a spell this way",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you",
+        "step": [
+          "main1",
+          "main2"
+        ]
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "beam me up",
+                  "text": "beam me up",
+                  "costIsManaCost": true,
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "not": {
+                      "is": {
+                        "ref": "grantor"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "during",
+      "equal",
+      "can't",
+      "up to",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "During your main phase, each instant card in your graveyard has beam me up. The beam me up cost is equal to that spell's mana cost. ~ can't be beamed up to cast a spell this way."
+      },
+      {
+        "text": "During your main phase, each sorcery card in your graveyard has beam me up. The beam me up cost is equal to its mana cost. ~ can't be beamed up to cast a spell this way."
+      }
+    ],
+    "counterExamples": [
+      "During your main phase, each instant card in your graveyard has beam me up. The beam me up cost is equal to that spell's mana cost. ~ can't be beamed up.",
+      "During your main phase, each instant card in your graveyard has beam me up. The beam me up cost is equal to that spell's mana cost. ~ can be beamed up to cast a spell this way.",
+      "During your main phase, each instant card in your graveyard has beam me up. The beam me up cost is equal to that spell's mana cost. Creatures you control can't be beamed up to cast a spell this way."
+    ]
+  }
+]

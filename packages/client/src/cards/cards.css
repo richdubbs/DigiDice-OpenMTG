@@ -84,6 +84,8 @@
   height: 100%;
 }
 
+/* The lights get a layer of their own: sharing one with the still back, every frame of them redrew the back under them (blurs and all). 6 lit backs
+   in view ran at 12 fps and 32 at 5; on their own layer, 60 and 20-60. */
 .card-back-tracers {
   position: absolute;
   inset: 0;
@@ -92,6 +94,7 @@
   height: 100%;
   object-fit: contain;
   pointer-events: none;
+  will-change: transform;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -141,6 +144,24 @@
 .automation-manual {
   background: #8b2b2b;
   color: #ffffff;
+}
+
+/* A partly automated card's warning that it may not work as written (AutomationBadge.tsx PartialWarning): amber, with an icon, never on the picture. */
+.automation-warning {
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #e0a030;
+  background: rgba(58, 38, 0, 0.94);
+  color: #ffe2a8;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.automation-warning-icon {
+  color: #ffc04d;
+  font-weight: 800;
 }
 
 /*

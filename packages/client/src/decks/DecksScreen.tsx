@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNav } from '../app/nav';
 import type { SoundId } from '../audio/catalog';
 import { sfx } from '../audio/sfx';
+import { deckSleeve } from '../branding/sleeves';
 import { ColorPips, DeckBox, Icon, Modal, TitleBar } from './chrome';
 import { localDate, nowIso, useDecksEnv } from './context';
 import { ExportPanel } from './ExportPanel';
@@ -255,7 +256,7 @@ function DeckTile({
     <li className="deck-row" aria-label={label} data-deck-id={deck.id}>
       <div className="deck-tile deck-box-host hud-panel">
         <button type="button" className="deck-tile-open" onClick={onOpen} aria-label={label} aria-describedby={`deck-meta-${deck.id}`} title={`Open ${label}`}>
-          <DeckBox size="md" cover={info?.cover ?? null} sleeve={deck.sleeve} />
+          <DeckBox size="md" cover={info?.cover ?? null} sleeve={deckSleeve(info?.colors)} />
           <span className="deck-tile-name">{label}</span>
           <span className="deck-tile-colors">
             <ColorPips colors={info?.colors ?? []} />

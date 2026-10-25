@@ -337,6 +337,17 @@ export type ManualOp =
   | { op: 'mana'; player: PlayerId; types: ManaType[]; snow?: boolean }
   /** Create a token (CR 111): its characteristics are the ones the effect states. `typeLine` as printed on a token ("Token Creature - Soldier" with an em dash), `text` is its rules text. */
   | { op: 'token'; player: PlayerId; name: string; typeLine: string; power?: string; toughness?: string; colors?: ('W' | 'U' | 'B' | 'R' | 'G')[]; text?: string; tapped?: boolean }
+  /**
+   * INTERFACE CHANGE (additive): discard a card from its owner's hand (CR 701.9a). A discard, not a plain move: "whenever a player discards" triggers and madness
+   * (CR 702.35a) see it, as for a card's own discard.
+   */
+  | { op: 'discard'; object: ObjectId }
+  /**
+   * INTERFACE CHANGE (additive): a token that's a copy of a permanent (CR 707.2, 111.1), created under `player`'s control. `haste`: "except it has haste" (CR 707.9a,
+   * 702.10). `atNextEndStep`: "Sacrifice it" or "Exile it at the beginning of the next end step", a delayed triggered ability (CR 603.7): Kiki-Jiki, Splinter Twin,
+   * Saheeli Rai.
+   */
+  | { op: 'tokenCopy'; object: ObjectId; player: PlayerId; haste?: boolean; atNextEndStep?: 'sacrifice' | 'exile' }
   | { op: 'note'; text: string };
 
 export type DecisionAnswer =

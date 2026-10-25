@@ -137,6 +137,9 @@ export function describeOps(state: GameState, ops: readonly ManualOp[], viewer: 
       case 'attach': return op.to === null ? `Unattach ${object(op.object)}.` : `Attach ${object(op.object)} to ${object(op.to)}.`;
       case 'mana': return `${player(op.player)} adds ${op.types.join('') || 'no mana'}${op.snow ? ' (snow)' : ''}.`;
       case 'token': return `${player(op.player)} creates a ${op.name} token (${op.typeLine}${op.power !== undefined ? `, ${op.power}/${op.toughness ?? '?'}` : ''}).`;
+      case 'discard': return `Discard ${object(op.object)}.`;
+      case 'tokenCopy':
+        return `${player(op.player)} creates a token copy of ${object(op.object)}${op.haste ? ' with haste' : ''}${op.atNextEndStep ? `; ${op.atNextEndStep === 'sacrifice' ? 'sacrifice' : 'exile'} it at the beginning of the next end step` : ''}.`;
       case 'note': return `Note: ${op.text}`;
       default: return `Unknown operation ${JSON.stringify(op)}.`;
     }

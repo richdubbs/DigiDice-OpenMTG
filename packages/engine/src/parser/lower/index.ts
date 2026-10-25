@@ -13,6 +13,7 @@
  *   8 optionality   lower/optionality.ts  every may / pay names its actor (design 1.1.3)
  *   9 sequencing    lower/sequencing.ts   steps in text order, manual sentences in place (CR 608.2c)
  *  8b same-for       lower/same-for.ts     "Do the same for <keywords>": the sentence before it once more per keyword (std-combat-2)
+ *  8c delay-tail     lower/delay-tail.ts   the sentences after a delayed trigger written in front of its instructions are its instructions too (trek-8, CR 603.7)
  *  10 normalize     lower/normalize.ts    no marker survives; unstated zones are manual
  *
  * The taint pass (parser/taint.ts) runs next on the LoweredProgram.
@@ -20,6 +21,7 @@
 import { lowerAnaphora } from './anaphora';
 import { lowerChoose } from './choose';
 import { lowerConditions } from './conditions';
+import { lowerDelayTail } from './delay-tail';
 import { lowerDurations } from './durations';
 import { lowerNormalize } from './normalize';
 import { lowerOptionality } from './optionality';
@@ -47,6 +49,7 @@ export const DRAFT_PASSES = [
   ['conditions', lowerConditions],
   ['optionality', lowerOptionality],
   ['sameFor', lowerSameFor], // std-combat-2
+  ['delayTail', lowerDelayTail], // trek-8
 ] as const;
 
 /** Run the ten passes. Pure. */
@@ -56,5 +59,5 @@ export function lowerProgram(draft: Draft): { program: LoweredProgram; draft: Dr
   return { program: lowerNormalize(lowerSequencing(d)), draft: d };
 }
 
-export { lowerAnaphora, lowerChoose, lowerConditions, lowerLinks, lowerDurations, lowerNormalize, lowerOptionality, lowerQuantities, lowerRiders, lowerScope, lowerSequencing, lowerTargets };
+export { lowerAnaphora, lowerChoose, lowerConditions, lowerDelayTail, lowerLinks, lowerDurations, lowerNormalize, lowerOptionality, lowerQuantities, lowerRiders, lowerScope, lowerSequencing, lowerTargets };
 export type * from './types';

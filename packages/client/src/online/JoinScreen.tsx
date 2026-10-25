@@ -1,8 +1,8 @@
 /**
- * Join an online game (milestone 9, docs/design/online.md): this player's name and deck, the host's address ("ip:port", "[ipv6]:port" or "name:port";
- * the port may be left out: 47620) and the join code the host gave. The local server connects to the host over UDP, sends the deck by names (the host
- * resolves and checks it with its own card data) and the game opens with the first view. Errors say what to check: a wrong code, no answer (the host's
- * port forwarding and firewall), different versions, a deck the host refused, a host that has a guest already.
+ * Join an online game (milestone 9, docs/design/online.md): this player's name and deck, and one box for the host's address ("ip:port", "[ipv6]:port"
+ * or "name:port"; the port may be left out: 47620) and the join code the host gave, in any order (readInvite). The local server connects to the host
+ * over UDP, sends the deck by names (the host resolves and checks it with its own card data) and the game opens with the first view. Errors say what to
+ * check: a wrong code, no answer (the host's port forwarding and firewall), different versions, a deck the host refused, a host that has a guest already.
  *
  * M12-5b (docs/design/m12-multiplayer.md 6): in a game of 3-4 players the code is the one of this player's own seat; once seated, the player waits in
  * the lobby (who sits where, how many more the table waits for) until every seat is taken, and the game opens by itself. Leaving the lobby gives the
@@ -39,6 +39,66 @@ export function addressProblem(address: string): string | null {
   return null;
 }
 
+/** The join codes' alphabet, Crockford base32 (packages/net wire/codes.ts, which the server reads a code with). */
+const CODE_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+/** A typed join code in canonical form, as net's normalizeJoinCode reads it (case, spaces and dashes ignored, O read as 0, I and L as 1), or null. */
+export function canonicalJoinCode(input: string): string | null {
+  const s = input.toUpperCase().replace(/[\s-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
+  return s.length === 16 && [...s].every((ch) => CODE_ALPHABET.includes(ch)) ? s : null;
+}
+
+export interface Invite {
+  /** The host's address as found, with a port given on its own added; null when none was found. */
+  address: string | null;
+  /** The join code in groups of four, null when none was found. */
+  code: string | null;
+}
+
+/** A word that can only be part of an address: it has a dot, a colon or a bracket (no join code has any). */
+const ADDRESS_LIKE = /[.:[\]]/;
+
+/**
+ * What the Join screen's one box holds: the host's address ("ip:port", "[ipv6]:port", "name:port", or with no port: 47620) and the join code, typed or
+ * pasted together in any order ("203.0.113.7:47621 7KQ2-M9XD-4TRB-HC8P"), with words such as "IP:" or "code" around them. The code is one word that
+ * reads as a code, or else a run of up to four (its groups split by spaces); the address is the first word with a dot, a colon or brackets that is not a
+ * label ("IP:"); a bare number beside an address that has no port is its port (the Host screen shows the port on a line of its own).
+ */
+export function readInvite(text: string): Invite {
+  const words = text.split(/[\s,;]+/).filter((w) => w !== '');
+  const used = new Set<number>();
+  let code: string | null = null;
+  // Groups split by spaces are first read only as the Host screen shows them (four characters of the alphabet, which has no O, I, L or U), so a word
+  // such as "code" before them is not taken for the first group; then, for a code typed by hand, any words.
+  const strictGroup = /^[0-9A-HJKMNP-TV-Z]{4}$/i;
+  for (const strict of [true, false]) {
+    for (let n = 1; n <= 4 && code === null; n++) {
+      for (let i = 0; i + n <= words.length && code === null; i++) {
+        const run = words.slice(i, i + n);
+        if (run.some((w) => ADDRESS_LIKE.test(w)) || (strict && n > 1 && !run.every((w) => strictGroup.test(w)))) continue;
+        code = canonicalJoinCode(run.join(''));
+        if (code !== null) for (let k = i; k < i + n; k++) used.add(k);
+      }
+    }
+  }
+  const rest = words.filter((w, i) => !used.has(i) && !w.endsWith(':'));
+  const candidates = rest.filter((w) => ADDRESS_LIKE.test(w));
+  let address = candidates.find((w) => addressProblem(w) === null) ?? candidates[0] ?? null;
+  const port = rest.find((w) => /^\d{1,5}$/.test(w));
+  if (address !== null && port !== undefined && !/(^[^:]*|\]):\d+$/.test(address)) address = `${address}:${port}`;
+  return { address, code: code === null ? null : (code.match(/.{4}/g) ?? []).join('-') };
+}
+
+/** Why the box cannot be joined with yet (what is missing or wrong), or null. */
+export function inviteProblem(text: string, invite: Invite = readInvite(text)): string | null {
+  if (text.trim() === '') return 'Enter the host\'s address and the join code.';
+  if (invite.address === null) return 'Add the host\'s address to the box: their IP address and port, like 203.0.113.7:47620.';
+  const bad = addressProblem(invite.address);
+  if (bad) return bad;
+  if (invite.code === null) return 'Add the join code the host gave you (16 letters and digits, like XXXX-XXXX-XXXX-XXXX).';
+  return null;
+}
+
 export function JoinScreen({ services = defaultOnlineServices, settings = settingsStore() }: { services?: OnlineServices; settings?: SettingsStore }) {
   const s = useSettings(settings);
   const nav = useNav();
@@ -46,8 +106,10 @@ export function JoinScreen({ services = defaultOnlineServices, settings = settin
   const [decks, setDecks] = useState<GameDeck[] | null>(null);
   const [name, setName] = useState(s.playerNames[0]);
   const [deckId, setDeckId] = useState('');
-  const [address, setAddress] = useState('');
-  const [code, setCode] = useState('');
+  // One box for the host's address and the join code, in any order (readInvite): there is only one thing to type in, and nothing goes in the wrong box.
+  const [box, setBox] = useState('');
+  const invite = useMemo(() => readInvite(box), [box]);
+  const address = invite.address ?? '';
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ e: OnlineError; port?: number } | null>(null);
   const [leaving, setLeaving] = useState(false);
@@ -75,14 +137,14 @@ export function JoinScreen({ services = defaultOnlineServices, settings = settin
       :
       (name.trim() === ''
         ? 'Enter your name.'
-        : addressProblem(address) ?? (code.trim() === '' ? 'Enter the join code the host gave you.' : !connected ? 'Connecting to the local OpenMTG server…' : null));
+        : inviteProblem(box, invite) ?? (!connected ? 'Connecting to the local OpenMTG server…' : null));
 
   const join = async () => {
-    if (!deck || blocked) return;
+    if (!deck || blocked || invite.code === null) return;
     setBusy(true);
     setError(null);
     startedHere.current = true;
-    const r = await link.join({ address: address.trim(), code: code.trim(), name: name.trim(), deck: toOnlineDeck(deck.deck) });
+    const r = await link.join({ address: address.trim(), code: invite.code, name: name.trim(), deck: toOnlineDeck(deck.deck) });
     setBusy(false);
     if (!r.ok) {
       startedHere.current = false;
@@ -139,30 +201,23 @@ export function JoinScreen({ services = defaultOnlineServices, settings = settin
               </select>
             </label>
             <label>
-              Host address
+              Host address and join code
               <input
                 type="text"
-                value={address}
-                placeholder={`203.0.113.7:${DEFAULT_GAME_PORT}`}
+                value={box}
+                placeholder={`203.0.113.7:${DEFAULT_GAME_PORT} XXXX-XXXX-XXXX-XXXX`}
                 autoComplete="off"
                 spellCheck={false}
                 disabled={joining}
-                onChange={(e) => setAddress(e.target.value)}
-              />
-            </label>
-            <label>
-              Join code
-              <input
-                type="text"
-                value={code}
-                placeholder="XXXX-XXXX-XXXX-XXXX"
-                autoComplete="off"
-                spellCheck={false}
-                disabled={joining}
-                onChange={(e) => setCode(e.target.value)}
+                aria-describedby="online-join-found"
+                onChange={(e) => setBox(e.target.value)}
               />
             </label>
           </div>
+          {/* What the box was read as, so a player sees at once which part is still missing */}
+          <p id="online-join-found" className="online-note online-join-found">
+            Address: {invite.address ?? 'not found yet'} · Join code: {invite.code ?? 'not found yet'}
+          </p>
           {unplayable && <p className="online-error">{unplayable}</p>}
           {notes.length > 0 && (
             <ul className="online-notes">
@@ -172,8 +227,9 @@ export function JoinScreen({ services = defaultOnlineServices, settings = settin
             </ul>
           )}
           <p className="online-note">
-            Ask the host for their public IP address, the port and the join code (in a game of 3 or 4 players, the code of your own seat). You need nothing
-            forwarded on your own router to join. The host&apos;s server checks your deck for the host&apos;s format with the host&apos;s card data.
+            Ask the host for their public IP address, the port and the join code (in a game of 3 or 4 players, the code of your own seat), and paste or
+            type them all into the box above, in any order. You need nothing forwarded on your own router to join. The host&apos;s server checks your
+            deck for the host&apos;s format with the host&apos;s card data.
           </p>
           <div className="online-buttons">
             {joining ? (

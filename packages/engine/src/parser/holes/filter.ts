@@ -14,6 +14,7 @@
  */
 import type { NumberCmp, ObjectFilter, ObjRef, PlayerPred, Quantity, ZoneName } from '../../types/ability';
 import type { Alt, HoleCtx, HoleFn } from './core';
+import { attachedWithAt } from './trek9'; // trek-9
 import { P, anaphorObj, anyPhraseAt, cmpAt, dedupe, mergeFilter, multiAt, phraseAt, predOf } from './core';
 import type { PlayerRef } from '../../types/ability';
 import { MOVED_MARK, movedFragAt } from './moved-words';
@@ -547,6 +548,8 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
     }
   };
   kwWalk(pos, []);
+  // trek-9 (CR 301.5, 303.4): "with a Communicator attached to them"
+  if (!negate) for (const a of attachedWithAt(ctx, pos)) out.push(a);
   // FAST3 T18: "with the same name as that creature" (CR 201.2: objects share a name; a nameless face-down object shares none): the `sharesWith` of
   // "that shares a name with it", the object named by an Obj ("that creature", "target creature"); only "with", never "without"
   const same = negate ? -1 : phraseAt(ctx, pos, W_SAME_NAME_AS);
@@ -724,6 +727,8 @@ const REL: [string[], ObjectFilter][] = [
   [P('attacked this turn'), { attackedThisTurn: true }], [P('blocked this turn'), { blockedThisTurn: true }],
   // p2-damage-2 (CR 508.1a): "creatures that player controls that didn't attack this turn" (Kratos, God of War): never declared as an attacker this turn
   [P("didn't attack this turn"), { attackedThisTurn: false }],
+  // p2-damage-3 (CR 303.4b): "all creatures that aren't enchanted" (Winds of Rath), "target creature that isn't enchanted" (Brainspoil): no Aura is attached to it
+  [P("isn't enchanted"), { enchanted: false }], [P("aren't enchanted"), { enchanted: false }],
   [P('entered the battlefield this turn'), { enteredThisTurn: true }], [P('entered this turn'), { enteredThisTurn: true }],
   // r3-choose (CR 400.7): "a card in your graveyard that was put there from anywhere this turn" (render/np.ts says it only after a named zone)
   [P('was put there from anywhere this turn'), { putThereThisTurn: true }], [P('were put there from anywhere this turn'), { putThereThisTurn: true }],
@@ -939,12 +944,21 @@ function controlForms(ctx: HoleCtx, pos: number): Frag[] {
       if (e >= 0) out.push({ end: e, frag: { controller: f.pred, not: { owner: f.pred } } });
     }
   }
+  // p2-damage-3 (CR 109.4, 115.1): "each creature that player or that planeswalker's controller controls" after "target player or planeswalker" (Searing Blaze, Chandra's
+  // Fury): controlled by the targeted player, or by the controller of the targeted planeswalker (one of the two is the target; the other names nobody)
+  const pp = phraseAt(ctx, pos, W_THAT_PLAYER_OR_PLANESWALKERS_CONTROLLER);
+  if (pp >= 0) {
+    const player = anaphorObj({ sort: 'player', number: 'singular', head: 'player', text: 'that player' }) as PlayerRef;
+    const walker = anaphorObj({ sort: 'object', number: 'singular', head: 'planeswalker', text: 'that planeswalker' }) as ObjRef;
+    out.push({ end: pp, frag: { anyOf: [{ controller: player }, { controller: { ref: 'controllerOf', object: walker } }] } });
+  }
   // r4-copy (CR 108.3, 109.4): "target permanent you own but don't control" (Coveted Falcon): owned by you and controlled by another player
   const ob = phraseAt(ctx, pos, W_YOU_OWN_BUT_DONT_CONTROL);
   if (ob >= 0) out.push({ end: ob, frag: { owner: 'you', not: { controller: 'you' } } });
   return out;
 }
 const W_BUT_DONT_OWN = P("but don't own");
+const W_THAT_PLAYER_OR_PLANESWALKERS_CONTROLLER = P("that player or that planeswalker 's controller controls"); // p2-damage-3
 const W_YOU_OWN_BUT_DONT_CONTROL = P("you own but don't control");
 const W_YOU_OWN_IN_EXILE_AND_GY = P('you own in exile and in your graveyard'); // r5-mech
 

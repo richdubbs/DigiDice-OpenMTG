@@ -35,7 +35,9 @@ export function possessiveStep(step: TurnStep, whose: PlayerPred | PlayerRef | u
   if (step === 'beginCombat' || step === 'endCombat') {
     const label = step === 'beginCombat' ? 'combat' : 'end of combat';
     if (whose === 'you' || (typeof whose === 'object' && whose.ref === 'you')) return step === 'beginCombat' ? `${next ? 'next ' : ''}${label} on your turn` : `${nx}${label}`;
-    if (whose === undefined || whose === 'any') return step === 'beginCombat' ? alt(`each ${label}`, `the ${nx}${label}`) : `${nx}${label}`;
+    // trek-8 (CR 603.2, 506.1): "At the beginning of combat on each player's turn" / "on each opponent's turn" is the same trigger as "each combat" / "each opponent's combat"
+    if (whose === undefined || whose === 'any') return step === 'beginCombat' ? alt(`each ${label}`, `the ${nx}${label}`, ...(next ? [] : [`${label} on each player's turn`])) : `${nx}${label}`;
+    if (whose === 'opponent' && step === 'beginCombat' && !next) return alt(`${label} on each opponent's turn`, `${label} on an opponent's turn`);
     return step === 'beginCombat' ? `${nx}${label} on ${K.player(whose, st, 'possessive').text} turn` : `${nx}${label}`;
   }
   if (whose === 'you' || (typeof whose === 'object' && whose.ref === 'you')) return `your ${nx}${name}`;

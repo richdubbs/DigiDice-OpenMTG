@@ -114,7 +114,9 @@ export function notSelfReplacement(y: unknown, x: unknown, castChoice = false): 
   if (castChoice && op === 'effect' && x['op'] === 'effect' && replacesPartOfEffect(y, x)) return 'X changes only some of the layers of the continuous effect it replaces';
   // r4-repl (CR 608.2c, 601.2b): the new instructions may include a choice of objects that a later one of them acts on ("untap up to five lands"): it is part of
   // doing them, not an option to do them or not (a `may` or a payment on either side is still refused)
-  if (castChoice) return typeof x['op'] !== 'string' || (NOT_ONE_INSTRUCTION.has(x['op']) && x['op'] !== 'chooseObjects') ? `the new instruction is a ${String(x['op'])} step, not one instruction` : null;
+  // trek-8 (CR 614.15, 601.2c, 608.2c): or a "for each" over the objects it names ("If this spell was kicked, instead for each creature target opponent controls, create
+  // a token that's a copy of that creature"): the loop is the whole of what is done in place of Y, chosen at announcement like any other instruction
+  if (castChoice) return typeof x['op'] !== 'string' || (NOT_ONE_INSTRUCTION.has(x['op']) && x['op'] !== 'chooseObjects' && x['op'] !== 'forEach') ? `the new instruction is a ${String(x['op'])} step, not one instruction` : null;
   if (x['op'] !== op) return `another instruction (${String(x['op'])} for ${op})`;
   for (const k of new Set([...Object.keys(y), ...Object.keys(x)])) {
     if (REPLACEABLE_FIELDS.has(k)) continue;

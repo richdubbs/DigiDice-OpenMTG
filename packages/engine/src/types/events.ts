@@ -4,7 +4,7 @@
  * stored in the state (the log is).
  */
 import type { CardId, ObjectId, PlayerId } from './ids';
-import type { LastKnown, Step, ZoneKind } from './state';
+import type { CastOrigin, LastKnown, Step, ZoneKind } from './state';
 import type { ManaType } from './mana';
 
 export type GameEvent =
@@ -68,7 +68,7 @@ export type GameEvent =
   | { type: 'resolved'; objectId: ObjectId }
   | { type: 'countered'; objectId: ObjectId }
   /** Cloud std-spm ADDITION (optional): `from`, the zone the land was played from (CR 305.1: "whenever you play a land from exile"). */
-  | { type: 'landPlayed'; objectId: ObjectId; player: PlayerId; from?: ZoneKind }
+  | { type: 'landPlayed'; objectId: ObjectId; player: PlayerId; from?: CastOrigin /* trek-11: or 'outside', a land played from outside the game (CR 400.11b) */ }
   | { type: 'attackersDeclared'; attackers: { attacker: ObjectId; defender: PlayerId | ObjectId }[] }
   /** std-rx35 ADDITION (optional): `unblocked`, the attacking creatures of that defending player no blocker was declared for (CR 509.1h). */
   | { type: 'blockersDeclared'; blocks: { blocker: ObjectId; attacker: ObjectId }[]; unblocked?: ObjectId[] }
@@ -94,6 +94,8 @@ export type GameEvent =
   | { type: 'actionPerformed'; verb: string; actor: PlayerId; objectId?: ObjectId; owner?: PlayerId; zone?: ZoneKind; spent?: { before: number; after: number };
     /** std-lci (CR 701.44a): an `explore` that revealed a card says whether it was a land card (absent: no card was revealed). */
     revealed?: 'land' | 'nonland'; x?: number;
+    /** p2-player-rules-3 (CR 701.30c): a `clash` says whether its actor won it. */
+    won?: boolean;
     /** std-rx17 (CR 702.110b): for the verb `exploit`, the creature sacrificed (`objectId` is the exploiting creature). */
     exploited?: ObjectId }
   | { type: 'tokenCreated'; player: PlayerId; objectId: ObjectId }

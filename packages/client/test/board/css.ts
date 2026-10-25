@@ -8,11 +8,13 @@ import path from 'node:path';
 import { themeVars } from '../../src/theme/theme';
 
 export const BOARD_CSS = readFileSync(path.resolve(__dirname, '../../src/board/board.css'), 'utf8');
+/** C2's card stylesheet (our own text frame), for rules that relate the two. */
+export const CARDS_CSS = readFileSync(path.resolve(__dirname, '../../src/cards/cards.css'), 'utf8');
 
 export interface CssRule {
   selectors: string[];
   decls: Record<string, string>;
-  /** The @media prelude the rule sits in, if any. */
+  /** The @media (or @container, @supports) prelude the rule sits in, if any. */
   media?: string;
 }
 
@@ -26,7 +28,7 @@ function parseDecls(body: string): Record<string, string> {
   return out;
 }
 
-/** Every style rule, with one level of @media nesting. */
+/** Every style rule, with one level of @media, @container or @supports nesting. */
 export function cssRules(css = BOARD_CSS): CssRule[] {
   const text = css.replace(/\/\*[\s\S]*?\*\//g, '');
   const out: CssRule[] = [];
@@ -42,7 +44,7 @@ export function cssRules(css = BOARD_CSS): CssRule[] {
       if (open < 0) return;
       const prelude = text.slice(i, open).trim();
       i = open + 1;
-      if (prelude.startsWith('@media')) {
+      if (/^@(media|container|supports)\b/.test(prelude)) {
         readBlock(prelude);
         continue;
       }

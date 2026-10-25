@@ -35,6 +35,18 @@ function exclaimedTitle(prefix: string): boolean {
 }
 
 /**
+ * trek-2 (CR 207.2d): a flavor word of two or more words in title case ("Shaka, When the Walls Fell", "Make Them Pay", "Gather Your Courage") is a name even with
+ * a word of NOT_A_TITLE in it, as long as that word is capitalized: rules text writes "when", "them", "your" in lower case after its first word, so a prefix where
+ * every word after the first is capitalized (but a few short function words) is never a piece of rules text. "Each opponent faces a villainous choice" and
+ * "Bring it Down!" stay text.
+ */
+function titleCased(prefix: string): boolean {
+  const words = prefix.split(/\s+/);
+  if (words.length < 2) return false;
+  return words.every((w, i) => /^\p{Lu}/u.test(w) || (i > 0 && TITLE_SMALL.has(w)));
+}
+
+/**
  * A keyword ability inside the prefix with its parameter ("Commander Suspend 4", "Thing Kicker {2}") or written in lower case ("Fixed commander ninjutsu"):
  * that is rules text, and calling it a label (CR 207.2d: no rules meaning) would hide it. A title that merely contains a keyword word ("Gift of Chaos",
  * "Wild Magic Surge") is a name and stays one.
@@ -97,7 +109,7 @@ export function detectLead(parse: string, line: Range, ix: LexiconIndex): Lead {
   // 2. An ability word, 3. an unknown prefix that reads like a name.
   const words = prefix.split(/\s+/);
   if (words.length > MAX_FLAVOR_WORDS) return { body: trimmed };
-  if (!ix.abilityWords.has(lower) && ((/^\p{N}/u.test(prefix) && !NUMBER_TITLE.test(prefix)) || hidesKeyword(ix, prefix) || (!exclaimedTitle(prefix) && words.some((w) => NOT_A_TITLE.has(w.toLowerCase().replace(/[^\p{L}']/gu, '')))))) return { body: trimmed };
+  if (!ix.abilityWords.has(lower) && ((/^\p{N}/u.test(prefix) && !NUMBER_TITLE.test(prefix)) || hidesKeyword(ix, prefix) || (!exclaimedTitle(prefix) && !titleCased(prefix) && words.some((w) => NOT_A_TITLE.has(w.toLowerCase().replace(/[^\p{L}']/gu, '')))))) return { body: trimmed };
   if (!/^[\p{Lu}\p{N}]/u.test(prefix) || /[{}:.;()"~]/.test(prefix) || !/\p{L}/u.test(prefix)) return { body: trimmed };
   const label: LineLabel = { text: prefix, range: [trimmed[0], bodyStart], kind: ix.abilityWords.has(lower) ? 'ability-word' : 'flavor-word' };
   return { label, body };

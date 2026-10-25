@@ -3,12 +3,19 @@
  * (CR 305.7, 205.3d), an object that loses a card type loses the subtypes that only that type has (CR 205.3d), and changeling means every creature type
  * (CR 702.73a). Generated from rules/cr/2-parts-of-a-card/205-type-line.md (effective 2026-09-25); a subtype in no list is kept as it is.
  *
+ * TWO LISTS OF CREATURE TYPES (trek-10). `CR_CREATURE_TYPES` is CR 205.3m as the edition above lists it. `PRINTED_CREATURE_TYPES` is the creature types that cards
+ * of the game's own sets print and that edition does not list yet (the Star Trek types: Borg, Klingon, Vulcan, Officer, Tribble...), read from the Oracle index
+ * by scripts/gen-lexicon.ts into printed-creature-types.generated.json, certain ones only (see `printedCreatureTypes` there). `CREATURE_TYPES` is both, so a
+ * changeling is a Borg (a "non-Borg" filter leaves it out), "choose a creature type" offers them, "loses all creature types" and "becomes a Klingon" replace them,
+ * and a count of creature types counts them. When a CR edition lists one, the generator drops it from the printed list and the CR list has it.
+ *
  * THE ONE LIST (WP30). Every rules module that needs a subtype class reads it here: the layers (statics/mods.ts), the filters (rules/filter.ts: creature and land
  * types of an object), the evaluators (rules/creature-types.ts, `ALL_CREATURE_TYPES`). Apostrophes are straight, as in the Oracle data ("Urza's", "C'tan").
  * test/m5/statics/wp30-subtypes.test.ts checks every class against the lexicon that scripts/gen-lexicon.ts generates from the Comprehensive Rules, so a new
  * edition that adds a type makes that test fail until this file is updated (planeswalker and planar types are not needed by any rule here and are not listed).
  */
 import type { CardType } from '../types/card';
+import printed from './printed-creature-types.generated.json';
 
 /** r4-cost (CR 110.4): the permanent types, the card types a permanent can have (`distinct permanentTypes`: effects/eval.ts, statics/match.ts). */
 export const PERMANENT_TYPES: readonly string[] = ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'];
@@ -20,8 +27,8 @@ export const ARTIFACT_TYPES: readonly string[] = [
 ];
 export const ENCHANTMENT_TYPES: readonly string[] = ["Aura", "Background", "Cartouche", "Case", "Class", "Curse", "Plan", "Role", "Room", "Rune", "Saga", "Shard", "Shrine"];
 export const SPELL_TYPES: readonly string[] = ["Adventure", "Arcane", "Lesson", "Omen", "Trap"];
-/** CR 205.3m: creature types (shared by creatures and kindreds). "Time Lord" is the one two-word type. */
-export const CREATURE_TYPES: readonly string[] = [
+/** CR 205.3m: creature types (shared by creatures and kindreds), as the CR edition above lists them. "Time Lord" is the one two-word type. */
+export const CR_CREATURE_TYPES: readonly string[] = [
   "Advisor", "Aetherborn", "Alien", "Ally", "Angel", "Antelope", "Ape", "Archer", "Archon", "Armadillo", "Army", "Artificer", "Assassin",
   "Assembly-Worker", "Astartes", "Atog", "Aurochs", "Avatar", "Azra", "Badger", "Balloon", "Barbarian", "Bard", "Basilisk", "Bat", "Bear",
   "Beast", "Beaver", "Beeble", "Beholder", "Berserker", "Bird", "Bison", "Blinkmoth", "Boar", "Bringer", "Brushwagg", "Camarid", "Camel",
@@ -48,6 +55,13 @@ export const CREATURE_TYPES: readonly string[] = [
   "Varmint", "Vedalken", "Villain", "Volver", "Wall", "Walrus", "Warlock", "Warrior", "Weasel", "Weird", "Werewolf", "Whale", "Wizard",
   "Wolf", "Wolverine", "Wombat", "Worm", "Wraith", "Wurm", "Yeti", "Zombie", "Zubera", "Time Lord",
 ];
+/**
+ * trek-10 (CR 205.3m): creature types printed on cards of the game's own sets that `CR_CREATURE_TYPES` does not list yet (printed-creature-types.generated.json,
+ * written by scripts/gen-lexicon.ts from the Oracle index: only types no card of another class uses, from sets that are not funny or playtest sets). Sorted.
+ */
+export const PRINTED_CREATURE_TYPES: readonly string[] = printed.creatureTypes.filter((t) => !CR_CREATURE_TYPES.includes(t));
+/** Every creature type this build knows: the rules' list, then the printed ones. The one list the layers, filters, evaluators and choices read. */
+export const CREATURE_TYPES: readonly string[] = [...CR_CREATURE_TYPES, ...PRINTED_CREATURE_TYPES];
 
 /** CR 205.3q: the one battle type. */
 export const BATTLE_TYPES: readonly string[] = ['Siege'];
@@ -84,6 +98,19 @@ export const hasTypeFor = (cls: SubtypeClass | undefined, types: readonly string
 
 /** CR 205.3m: is this subtype one of the creature types? */
 export const isCreatureType = (t: string): boolean => CLASS_OF.get(t) === 'creature';
+
+/**
+ * CR 702.73a, 205.3m: does an object with these subtypes have EVERY creature type this build knows? Read from the subtypes the layers computed, not from the
+ * changeling keyword: the layer 4 effect of changeling gives them all (statics/mods.ts), and a later layer 4 effect that sets or takes away creature types
+ * ("becomes a Klingon", "loses all creature types", assimilate) leaves the creature with only what that effect says, while it still has changeling (Maskwood
+ * Nexus ruling, 2021-02-05: "If an effect causes a creature with changeling to become a new creature type, it will be only that new creature type. It will
+ * still have changeling."). The readers that ask "is it every creature type" (statics/party.ts, rules/filter.ts#creatureTypesOf) use this.
+ */
+export function hasEveryCreatureType(subtypes: readonly string[]): boolean {
+  if (subtypes.length < CREATURE_TYPES.length) return false;
+  const have = new Set(subtypes);
+  return CREATURE_TYPES.every((t) => have.has(t));
+}
 
 /**
  * Does this subtype belong to a class OTHER than creature types (a land, artifact, enchantment, spell, battle or dungeon type)? A subtype in no list is not: a

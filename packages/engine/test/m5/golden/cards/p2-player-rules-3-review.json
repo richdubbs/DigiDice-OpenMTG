@@ -1,0 +1,3 @@
+[
+{"card": "Sylvan Echoes", "expect": "full", "verified": "p2-player-rules-3, by hand against the Oracle text and the rules: whenever you clash and win (also as the opponent of another player's clash, CR 701.30b-c), you may draw a card; it triggers after the clash ends (trg.p2pr3.youClashAndWin)", "faces": [{"abilities": [{"effect": {"steps": [{"do": [{"count": 1, "op": "draw", "who": {"ref": "you"}}], "op": "may", "who": {"ref": "you"}}], "targets": []}, "kind": "triggered", "trigger": {"on": [{"actor": "you", "ev": "action", "verb": "clash", "won": true}]}}]}]}
+]

@@ -1,0 +1,353 @@
+[
+  {
+    "id": "sta.trek8.pump.goaded.plural",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 701.15c"
+    ],
+    "pattern": "[all] {f:Filter} get {pt:PT} and are goaded",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "mods": [
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "mode": "mustIfAble",
+        "action": "attack",
+        "goad": true
+      }
+    ],
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "All Goblins get +1/+0 and are goaded."
+      },
+      {
+        "text": "Creatures your opponents control get +2/+2 and are goaded."
+      }
+    ],
+    "counterExamples": [
+      "All Goblins get +1/+0 until end of turn and are goaded.",
+      "All Goblins get +1/+0 and aren't goaded.",
+      "All Goblins get +1/+0 and are tapped."
+    ]
+  },
+  {
+    "id": "eff.trek8.player.cant.attack.andYouPutCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1",
+      "CR 508.4",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 101.2",
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} can't attack {d:Dur} and you put {n:Qty} {k:CounterKind} counter[s] on ~",
+    "build": [
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "restrict",
+            "subject": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "$p"
+              }
+            },
+            "mode": "cant",
+            "action": "attack"
+          }
+        ]
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "self"
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Target player can't attack this turn and you put a charge counter on ~."
+      },
+      {
+        "text": "Target opponent can't attack this turn and you put three time counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "Target player can't attack this turn and you put a charge counter on target creature.",
+      "Target player can't attack this turn and you put a charge counter on ~ for each Elf you control.",
+      "Target player can't attack this turn and you put a charge counter on ~ unless it is red.",
+      "Target player can't attack this turn and you may put a charge counter on ~.",
+      "Target player can't attack this turn."
+    ]
+  },
+  {
+    "id": "eff.trek8.becomes.addtype.gains.plural",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} become {st:PluralSubtype} in addition to their other types and gain {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, creatures you control become Warriors in addition to their other types and gain haste."
+      },
+      {
+        "text": "Until end of turn, up to two target creatures become Angels in addition to their other types and gain flying and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, creatures you control become Warriors in addition to their other types and lose haste.",
+      "Until end of turn, creatures you control become Warriors and gain haste.",
+      "Creatures you control become Warriors in addition to their other types and gain haste."
+    ]
+  },
+  {
+    "id": "eff.trek8.becomes.addtype.gains.they",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:They} become {st:PluralSubtype} in addition to their other types and gain {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Untap up to two target creatures. Until end of turn, they become Angels in addition to their other types and gain flying."
+      },
+      {
+        "text": "Untap all creatures you control. Until end of turn, they become Warriors in addition to their other types and gain haste and trample."
+      }
+    ],
+    "counterExamples": [
+      "Untap up to two target creatures. Until end of turn, they become Angels in addition to their other types and lose flying.",
+      "Untap up to two target creatures. Until end of turn, they become Angels and gain flying.",
+      "Untap up to two target creatures. They become Angels in addition to their other types and gain flying."
+    ]
+  },
+  {
+    "id": "rep.trek8.destroyed.instead.removeCountersAndHeal",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 701.8a",
+      "CR 122.1",
+      "CR 120.6"
+    ],
+    "pattern": "if {f:Filter} would be destroyed , instead remove all {k:CounterKind} counters from it and all damage already dealt to it is healed",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "action",
+            "verb": "destroy",
+            "object": "$f"
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "removeCounters",
+                "from": {
+                  "ref": "event",
+                  "role": "subject"
+                },
+                "kind": "$k",
+                "count": "all"
+              },
+              {
+                "op": "removeDamage",
+                "what": {
+                  "ref": "event",
+                  "role": "subject"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "If a Goblin you control with a +1/+1 counter on it would be destroyed, instead remove all +1/+1 counters from it and all damage already dealt to it is healed."
+      },
+      {
+        "text": "If another creature you control with a charge counter on it would be destroyed, instead remove all charge counters from it and all damage already dealt to it is healed."
+      }
+    ],
+    "counterExamples": [
+      "If a Goblin you control with a +1/+1 counter on it would be destroyed, instead remove all +1/+1 counters from it.",
+      "If a Goblin you control with a +1/+1 counter on it would be destroyed, remove all +1/+1 counters from it and all damage already dealt to it is healed.",
+      "If a Goblin you control with a +1/+1 counter on it would be exiled, instead remove all +1/+1 counters from it and all damage already dealt to it is healed."
+    ]
+  },
+  {
+    "id": "rep.trek8.enters.tappedAttacking.while",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 508.4",
+      "CR 506.3"
+    ],
+    "pattern": "if {f:Filter} would enter while {c:Cond} , instead it enters tapped and attacking",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "condition": "$c",
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "attacking": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "while",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a creature an opponent controls would enter while you control an attacking creature, instead it enters tapped and attacking."
+      },
+      {
+        "text": "If a Goblin you control would enter while you control an attacking Elf, instead it enters tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "If a creature you control would enter while you control an attacking creature, instead it enters tapped.",
+      "If a creature you control would enter while you control an attacking creature, it enters tapped and attacking.",
+      "If a creature you control would enter while you control an attacking creature, instead it enters untapped and attacking."
+    ]
+  }
+]

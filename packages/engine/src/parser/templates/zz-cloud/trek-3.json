@@ -1,0 +1,205 @@
+[
+  {
+    "id": "eff.trek3.grant.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} [also] gains {a:Abilities} {d:Dur} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ],
+      "guard": "$c"
+    },
+    "subject": "object",
+    "consumes": [
+      "also",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. Then that creature gains trample until end of turn if you control an Elf."
+      },
+      {
+        "text": "When ~ enters, target creature you control gains vigilance until end of turn if it's your turn."
+      },
+      {
+        "text": "Target creature gains first strike until end of turn. That creature also gains lifelink until end of turn if you control a Knight."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target creature you control gains vigilance until end of turn unless it's your turn.",
+      "When ~ enters, target creature you control gains vigilance if it's your turn.",
+      "When ~ enters, target creature you control loses vigilance until end of turn if it's your turn.",
+      "Target creature gains first strike until end of turn. That creature also gets +1/+1 until end of turn if you control a Knight."
+    ]
+  },
+  {
+    "id": "eff.trek3.grant.each.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Objs} gain {a:Abilities} {d:Dur} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ],
+      "guard": "$c"
+    },
+    "subject": "object",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, Goblins you control gain menace until end of turn if you control an artifact."
+      },
+      {
+        "text": "Creatures you control gain reach until end of turn if it's your turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control gain reach until end of turn unless it's your turn.",
+      "Creatures you control gain reach if it's your turn.",
+      "Creatures you control lose reach until end of turn if it's your turn."
+    ]
+  },
+  {
+    "id": "eff.trek3.player.exiles.chosen.thenDraws",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} exiles {o:ChosenCard} , then draw[s] {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Look at target player's hand. You may choose an artifact card from it. If you do, that player exiles that card, then draws a card."
+      },
+      {
+        "text": "Target opponent reveals their hand. You may choose a creature card from it. If you do, that player exiles that card, then draws two cards."
+      }
+    ],
+    "counterExamples": [
+      "Look at target player's hand. You may choose an artifact card from it. If you do, that player exiles that card, then you draw a card.",
+      "Look at target player's hand. You may choose an artifact card from it. If you do, that player discards that card, then draws a card.",
+      "Look at target player's hand. You may choose an artifact card from it. If you do, that player exiles that card, then mills a card."
+    ]
+  },
+  {
+    "id": "eff.trek3.player.may.search.reveal.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} may search their library for ( a | an ) {f:Filter} card , reveal it , put it into their hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "search",
+          "who": "$p",
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact. Its controller may search their library for a basic Plains card, reveal it, put it into their hand, then shuffle."
+      },
+      {
+        "text": "Return target creature to its owner's hand. That creature's controller may search their library for an Aura card, reveal it, put it into their hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target artifact. Its controller may search their library for a basic Plains card, put it into their hand, then shuffle.",
+      "Destroy target artifact. Its controller may search their library for a basic Plains card, reveal it, put it onto the battlefield, then shuffle.",
+      "Destroy target artifact. Its controller searches their library for a basic Plains card, reveals it, puts it into their hand, then shuffles."
+    ]
+  }
+]

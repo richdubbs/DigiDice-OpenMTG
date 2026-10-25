@@ -29,9 +29,10 @@ You can also play the computer, or two people at one screen (hot-seat), from the
 
 ## Change the look
 
-**Settings**, **Look and feel**: pick **Neon Grid** (the standard look) or **LCARS** (a starship console, with a space battle behind the
-Home screen). Save one as a profile of your own to change its colors, text size and backgrounds; keep as many profiles as you like and
-switch between them there. Every look plays the same.
+**Settings**, **Look and feel**: pick **Neon Grid** (the standard look), **LCARS** (a starship console, with a space battle behind the
+Home screen) or **Reality Fracture** (a hall of broken mirrors after the Reality Fracture set: sections hanging from a crack like glass pendants,
+card sleeves of broken glass with the DigiDice logo breaking through, and a mirror broken round the logo behind the Home screen). Save one as a profile of your own to change its colors, text size and backgrounds; keep as many profiles as
+you like and switch between them there. Every look plays the same.
 
 ## Report a bug
 

@@ -22,6 +22,9 @@ import { IllegalAction, type DecisionInput, type Game } from './game';
 import { createToken, drawCards, moveObject, shuffleLibrary } from './zones';
 import { ringControlChanged } from './ring-state';
 import { randomInt } from '../rng';
+import { copiableOrWhy } from '../statics/copy';
+import { makeCtx } from '../effects/ctx';
+import { proposeNested, runNested } from '../effects/nested';
 
 /**
  * A random index in [0, n) from the game's own RNG (design 8.8 rule 2: "at random" is never Math.random), for choices made at random while a spell or ability
@@ -84,7 +87,7 @@ export function chooseManualSteps(g: Game, input: ManualInput, apply: (ops: Manu
 
 /** `chooseManualSteps` applying each step's ops with `applyManualOps` (logged, CR 400.2 for hidden cards). */
 export function resolveManually(g: Game, player: PlayerId, input: ManualInput, sourceId?: ObjectId): ManualOp[] {
-  return chooseManualSteps(g, input, (ops) => applyManualOps(g, player, ops, sourceId));
+  return chooseManualSteps(g, input, (ops) => applyManualOps(g, player, ops, sourceId, input.subjectId));
 }
 
 /**
@@ -98,14 +101,20 @@ function followRenewed(g: Game, op: ManualOp): ManualOp {
     case 'move': return { ...op, object: r(op.object), ...(op.attachTo !== undefined ? { attachTo: r(op.attachTo) } : {}) };
     case 'counters':
     case 'tap':
-    case 'control': return { ...op, object: r(op.object) };
+    case 'control':
+    case 'discard':
+    case 'tokenCopy': return { ...op, object: r(op.object) };
     case 'damage': return { ...op, target: r(op.target) };
     case 'attach': return { ...op, object: r(op.object), to: op.to === null ? null : r(op.to) };
     default: return op;
   }
 }
 
-export function applyManualOps(g: Game, player: PlayerId, ops: ManualOp[], sourceId?: ObjectId): void {
+/**
+ * `sourceId`: the spell or ability being resolved (it can't be moved, CR 608.2n). `subjectId`: the object whose text is applied by hand when nothing resolves
+ * (a static ability, counters a permanent enters with): the source of a delayed triggered ability a `tokenCopy` creates (CR 603.7d-g).
+ */
+export function applyManualOps(g: Game, player: PlayerId, ops: ManualOp[], sourceId?: ObjectId, subjectId?: ObjectId): void {
   const who = g.player(player).name;
   for (const given of ops) {
     const op = followRenewed(g, given);
@@ -225,6 +234,64 @@ export function applyManualOps(g: Game, player: PlayerId, ops: ManualOp[], sourc
         g.player(op.player);
         addMana(g, op.player, op.types, undefined, op.snow === true);
         g.log(`${who} adds ${manaText(op.types)} to ${g.player(op.player).name}'s mana pool by hand.`, { rules: ['CR 106.3'], level: 'manual' });
+        break;
+      }
+      case 'discard': {
+        need(g, op.object);
+        const o = g.obj(op.object);
+        if (o.zone !== 'hand') throw new IllegalAction('Only a card in a hand can be discarded.', ['CR 701.9a']);
+        const owner = g.player(o.owner).name;
+        const name = g.nameOf(op.object);
+        // CR 701.9a, 614.1: a discard through the proposal pipeline, as a card's own discard (effects/handlers/cards-util.ts#moveAsAction), so a replacement
+        // such as madness (CR 702.35a) can change where it goes and discard triggers see it
+        proposeNested(g, { ev: 'zoneChange', object: { id: o.id, zone: 'hand' }, from: 'hand', to: 'graveyard', destination: { cause: 'discard', causedBy: player } });
+        g.log(`${owner} discards ${name} by hand.`, { rules: ['CR 701.9a'], level: 'manual' });
+        break;
+      }
+      case 'tokenCopy': {
+        need(g, op.object);
+        g.player(op.player);
+        const o = g.obj(op.object);
+        const name = g.nameOf(op.object);
+        if (o.zone !== 'battlefield') throw new IllegalAction('Only a permanent on the battlefield can be copied this way.', ['CR 707.2']);
+        // CR 603.7d, 701.21a: the delayed trigger is the resolving player's, who sacrifices only a permanent they control
+        if (op.atNextEndStep === 'sacrifice' && op.player !== player) throw new IllegalAction("A token another player gets can't be sacrificed by you at the next end step; choose to exile it instead.", ['CR 603.7d', 'CR 701.21a']);
+        // What the copy step would hand back to be done by hand (effects/handlers/tokens-copy.ts) is refused here with its reason, so the player creates the
+        // token with a `token` adjustment instead of meeting a second, unexplained prompt
+        if (o.phasedOut) throw new IllegalAction(`${name} is phased out: it is treated as though it doesn't exist.`, ['CR 702.26b']);
+        const copiable = copiableOrWhy(g.s, o);
+        if ('reason' in copiable) throw new IllegalAction(`A token copy of ${name} can't be made automatically (${copiable.reason}): create it with "Create a token" instead.`, ['CR 707.2']);
+        const def = g.s.defs[o.defId];
+        if (op.haste === true && def && (def.layout === 'flip' || (def.faces.length === 2 && ['transform', 'modal_dfc', 'double_faced_token'].includes(def.layout)))) {
+          throw new IllegalAction(`A token copy of ${name} with haste can't be made automatically (a double-faced or flip card with an exception, CR 707.8a, 707.9): create it with "Create a token" instead.`, ['CR 707.8a', 'CR 707.9']);
+        }
+        // The steps a card's own text compiles to (Kiki-Jiki, Mirror Breaker; Saheeli Rai): `copy` makes the token with the copiable values and the exception
+        // (CR 707.9a) for `op.player`, `delay` the delayed triggered ability of the next end step (CR 603.7), controlled by the resolving player and with the
+        // resolving spell or ability, else the object whose text is applied by hand, else the copied permanent, as its source (CR 603.7d-g)
+        const anchor = (sourceId !== undefined ? g.maybeObj(sourceId) : undefined) ?? (subjectId !== undefined ? g.maybeObj(subjectId) : undefined) ?? o;
+        const cx = makeCtx(g, anchor, { targets: [], steps: [] });
+        cx.controller = player;
+        cx.bindings.set('copied', { objects: [{ id: o.id, zone: 'battlefield' }], players: [], snapshots: {} });
+        runNested(cx, [{
+          op: 'copy', what: { ref: 'bound', name: 'copied' }, result: 'token', who: { ref: 'fixed', players: [op.player] }, as: 'them',
+          except: op.haste === true ? [{ layer: 6, add: [{ kind: 'keyword', keyword: 'haste', text: 'Haste' }] }] : [],
+          span: `Create a token that's a copy of ${name}${op.haste === true ? ', except it has haste' : ''}.`,
+        }]);
+        // Logged and given its end step only when a token was made (a replacement effect, or a player who left the game, can stop it)
+        const made = cx.bindings.get('them')?.objects.length ?? 0;
+        if (made === 0) {
+          g.log(`${who} tries to create a token that's a copy of ${name} by hand, but no token is created.`, { rules: ['CR 707.2', 'CR 111.1'], level: 'manual' });
+          break;
+        }
+        const them = { ref: 'bound', name: 'them' } as const;
+        if (op.atNextEndStep !== undefined) {
+          runNested(cx, [{ op: 'delay', when: { at: 'step', step: 'end', next: true }, capture: ['them'], do: [op.atNextEndStep === 'sacrifice' ? { op: 'sacrifice', what: them } : { op: 'move', what: them, to: { zone: 'exile' } }] }]);
+        }
+        const later = op.atNextEndStep === 'sacrifice' ? ' It is sacrificed at the beginning of the next end step.' : op.atNextEndStep === 'exile' ? ' It is exiled at the beginning of the next end step.' : '';
+        g.log(`${who} creates a token that's a copy of ${name}${op.haste === true ? ', with haste,' : ''} under ${g.player(op.player).name}'s control by hand.${later}`, {
+          rules: ['CR 707.2', 'CR 111.1', ...(op.haste === true ? ['CR 702.10'] : []), ...(later ? ['CR 603.7'] : [])],
+          level: 'manual',
+        });
         break;
       }
       case 'note':

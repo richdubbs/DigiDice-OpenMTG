@@ -19,13 +19,12 @@ import type { Cmp, Condition, Count, ObjectFilter, ObjRef, PlayerRef, Quantity }
 import { isPrime } from '../types/ability';
 import type { PlayerId } from '../types/ids';
 import { colorSymbolCount, manaValue as costManaValue, spentAtLeast, type ManaSymbol } from '../types/mana';
-import type { BeheldSnapshot, CostsPaid, GameObject, LastKnown, ObjHandle, ZoneKind } from '../types/state';
+import type { BeheldSnapshot, CastOrigin, CostsPaid, GameObject, LastKnown, ObjHandle } from '../types/state';
 import { charsOfObject, controllerOf, ptNumbers, type Chars } from '../rules/characteristics';
 import { spellTargetTotal } from '../rules/target-total';
 import { hasSharedTypeLine, unlockedHalves } from '../rules/base-parts/room';
 import { creatureTypesOf, landTypesOf, matchesFilter, planeswalkerTypesOf } from '../rules/filter';
 import { baseManaValue, faceIndexOf, sourceChars } from '../rules/base-chars';
-import { ALL_CREATURE_TYPES } from '../rules/creature-types';
 import { countHistory, distinctHistory, firstTimeThisTurn, happenedCountOf, HISTORY_WRITTEN, type FactsEnv } from '../rules/history';
 import { installHistoryCounter, wasCastKept } from '../statics/match';
 import { partyCreatureOf, partySize, type PartyCreature } from '../statics/party';
@@ -333,9 +332,9 @@ const QTY: QtyTable = {
         case 'colorPairs': if (c.colors.length === 2) seen.add([...c.colors].sort().join('')); break; // r4-mech (CR 105.2a): only an object of exactly two colors
         case 'counterKinds': for (const [k, n] of Object.entries(o.counters)) if (n > 0) seen.add(k); break; // r4-static (CR 122.1): each kind of counter on the objects
         case 'creatureTypes': {
-          const t = creatureTypesOf(c);
-          if (t.all) ALL_CREATURE_TYPES.forEach((x) => seen.add(x)); // a changeling is every creature type (CR 702.73a, 205.3m)
-          t.set.forEach((x) => seen.add(x));
+          // CR 702.73a, 205.3m: a changeling is every creature type because layer 4 gave it all of them, so the types it HAS count (trek-10: read from the computed
+          // subtypes, not from the keyword: one that "becomes a Klingon" or "loses all creature types" is only what that effect says, Maskwood Nexus ruling 2021-02-05)
+          creatureTypesOf(c).set.forEach((x) => seen.add(x));
           break;
         }
       }
@@ -474,13 +473,24 @@ const QTY: QtyTable = {
     for (const v of r.values()) n += v;
     return n;
   },
+  // trek-6 (CR 122.6, 608.2c): the counters the named step actually put (of one kind when given); a step that did not run put none
+  countersPut: (cx, q) => {
+    const r = cx.results.get(q.step)?.countersPut;
+    if (r === undefined) return 0;
+    if (q.kind !== undefined) return r.get(q.kind) ?? 0;
+    let n = 0;
+    for (const v of r.values()) n += v;
+    return n;
+  },
   // M12-3 (CR 702.121a, melee): the different opponents the controller attacked with creatures this combat (the history's player attacks of this combat phase)
-  opponentsAttacked: (cx) => {
+  // trek-7 (CR 506.3, 508.1; Worf, Defiant Commander): `scope: 'turn'`, every combat of the turn so far, whether or not a combat is under way
+  opponentsAttacked: (cx, q) => {
     const s = cx.g.s;
-    if (s.combat === null) return 0;
+    const wholeTurn = q.scope === 'turn';
+    if (!wholeTurn && s.combat === null) return 0;
     const attacked = new Set<string>();
     for (const e of s.history) {
-      if (e.ev !== 'attacks' || e.turn !== s.turn.number || e.combat !== s.combat.number || e.actor !== cx.controller || e.facts['defenderKind'] !== 'player') continue;
+      if (e.ev !== 'attacks' || e.turn !== s.turn.number || (!wholeTurn && e.combat !== s.combat!.number) || e.actor !== cx.controller || e.facts['defenderKind'] !== 'player') continue;
       const p = e.facts['defendingPlayer'];
       if (typeof p === 'string' && p !== cx.controller) attacked.add(p);
     }
@@ -628,7 +638,7 @@ function stackCastRecord(o: GameObject): ReturnType<typeof castRecord> {
   return { costsPaid: st.costsPaid, ...(st.x !== undefined ? { x: st.x } : {}), ...(st.castFrom !== undefined ? { from: st.castFrom } : {}), ...(st.costsPaid.alternative !== undefined ? { via: st.costsPaid.alternative } : {}), ...(st.caster !== undefined ? { by: st.caster } : {}) };
 }
 
-function castRecord(cx: ExecCtx): { costsPaid: CostsPaid; x?: number; from?: ZoneKind; via?: string; by?: PlayerId } | undefined {
+function castRecord(cx: ExecCtx): { costsPaid: CostsPaid; x?: number; from?: CastOrigin; via?: string; by?: PlayerId } | undefined {
   const src = sourceObject(cx);
   if (!src) return undefined;
   const onStack = stackCastRecord(src);
@@ -688,6 +698,20 @@ function firstNamedResolution(cx: ExecCtx): boolean {
   });
 }
 
+/**
+ * trek-2 (CR 601.2i, 707.10): is the resolving source a spell whose own `cast` history entry is the first `cast` entry of this resolution's controller this game
+ * ("If this spell is the first spell you've cast this game")? The entries are in the order the spells became cast (triggers/history.ts, never pruned), so a spell
+ * cast in response to this one comes after it. A copy that was not cast (CR 707.10) has no cast entry: false. Outside the resolution of a spell it is false.
+ */
+function firstSpellCast(cx: ExecCtx): boolean {
+  const src = sourceObject(cx);
+  if (!src || src.zone !== 'stack' || src.kind === 'ability' || src.kind === 'emblem') return false;
+  const h = cx.g.s.history;
+  const own = h.findIndex((e) => e.ev === 'cast' && e.subject === src.id);
+  if (own < 0 || h[own]!.actor !== cx.controller) return false;
+  return !h.slice(0, own).some((e) => e.ev === 'cast' && e.actor === cx.controller);
+}
+
 const COND: CondTable = {
   all: (cx, c) => c.of.every((x) => evalCond(cx, x)),
   any: (cx, c) => c.of.some((x) => evalCond(cx, x)),
@@ -716,7 +740,9 @@ const COND: CondTable = {
       seen.add(o.id);
       for (const t of new Set<string>(c.what === 'color' ? ch.colors : ch.types)) tally.set(t, (tally.get(t) ?? 0) + 1);
     }
-    return [...tally.values()].some((n) => n >= c.count);
+    // trek-9: `all`, a type (color) every one of them has, with at least one object (an empty set has nothing in common)
+    const need = c.count === 'all' ? seen.size : c.count;
+    return (c.count !== 'all' || seen.size > 0) && [...tally.values()].some((n) => n >= need);
   },
   matches: (cx, c) => {
     const hs = resolveObjs(cx, c.object);
@@ -792,6 +818,8 @@ const COND: CondTable = {
   },
   // FAST5X E26 (CR 702.192a, paradigm): "if this is the first time a spell you control with this spell's name has resolved this game"
   firstNamedResolution: (cx) => firstNamedResolution(cx),
+  // trek-2 (CR 601.2i): "if this spell is the first spell you've cast this game"
+  firstSpellCast: (cx) => firstSpellCast(cx),
   // CMD3 (CR 702.30a, echo): no player gets priority in an untap step (CR 502.4), so nothing comes under a player's control between the beginning of their turn
   // and the beginning of its upkeep: "during or after the turn of that upkeep" is "since the beginning of that upkeep"
   controlledSinceUpkeep: (cx, c) => {

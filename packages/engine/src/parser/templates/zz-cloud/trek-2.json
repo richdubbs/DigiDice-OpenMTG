@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sta.trek2.triggerMod.youGainingLife",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 603.2d", "CR 119.9"],
+    "pattern": "if you gaining life causes a triggered ability of a permanent you control to trigger , ( that ability | it ) triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {"ev": "life", "change": "gain", "player": "you"},
+          "abilitiesOf": {"controller": "you"},
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": ["if", "additional"],
+    "examples": [
+      {"text": "If you gaining life causes a triggered ability of a permanent you control to trigger, it triggers an additional time."},
+      {"text": "Lifelink\nIf you gaining life causes a triggered ability of a permanent you control to trigger, it triggers an additional time."}
+    ],
+    "counterExamples": [
+      "If you losing life causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If an opponent gaining life causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If you gaining life causes a triggered ability of a permanent an opponent controls to trigger, that ability triggers an additional time.",
+      "If you gaining life causes a triggered ability of a permanent you control to trigger, that ability triggers two additional times."
+    ]
+  }
+]

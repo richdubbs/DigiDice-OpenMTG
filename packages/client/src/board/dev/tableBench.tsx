@@ -26,6 +26,7 @@ import { GameBoard } from '../GameBoard';
 import '../../theme/styles.css';
 import '../../theme/neon-grid.css';
 import '../../theme/lcars.css';
+import '../../theme/fracture.css';
 
 const q = new URLSearchParams(location.search);
 const players = Math.min(4, Math.max(2, Number(q.get('players') ?? 4)));

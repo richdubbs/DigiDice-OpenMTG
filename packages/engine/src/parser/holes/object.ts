@@ -354,6 +354,16 @@ function selfAndPronouns(ctx: HoleCtx, pos: number): Alt[] {
   if (W_HER.some((w) => phraseAt(ctx, pos, w) >= 0)) out.push({ end: pos + 1, value: { ref: 'self' } });
   const that = phraseAt(ctx, pos, W_THAT);
   if (that >= 0) for (const h of headNounAt(ctx, that)) if (!h.plural) out.push({ end: h.end, value: anaphorObj({ sort: 'object', number: 'singular', head: h.head, text: spanOf(ctx, pos, h.end).toLowerCase() }) });
+  // trek-12 (CR 608.2c, 400.7; Q, Stacking the Deck): "That nonland card gains ..." after "exile cards from the top of your library until you exile a nonland card":
+  // "that card" with its card description said again (one card type, or "non-" one card type), as std-exile-play-1-1's "the exiled nonland card" below. The renderer
+  // names the one card an exile-until stopped at "that nonland card" only for that step's own description (render/steps-cards.ts#exileUntil), so no other antecedent fits
+  if (that >= 0) {
+    for (const n of npAlts(ctx, that)) {
+      const keys = Object.keys(n.filter).filter((k) => (n.filter as Record<string, unknown>)[k] !== undefined && k !== 'isCard');
+      const oneType = keys.length === 1 && ((keys[0] === 'notTypes' && n.filter.notTypes!.length === 1) || (keys[0] === 'types' && n.filter.types!.length === 1));
+      if (n.number === 'singular' && n.head === 'card' && oneType) out.push({ end: n.end, value: anaphorObj({ sort: 'object', number: 'singular', head: 'card', text: spanOf(ctx, pos, n.end).toLowerCase() }) });
+    }
+  }
   // FAST3 T14: "that spell or ability" (what targeted the object, CR 115.1, 115.2): an object on the stack, named by both of its heads
   const sa = that >= 0 ? phraseAt(ctx, that, W_SPELL_OR_ABILITY) : -1;
   if (sa >= 0) out.push({ end: sa, value: anaphorObj({ sort: 'object', number: 'singular', head: 'spell', text: spanOf(ctx, pos, sa).toLowerCase() }) });
@@ -692,12 +702,25 @@ function perPlayerTarget(ctx: Parameters<HoleFn>[0], pos: number, each: 'opponen
     for (const n of npAlts(ctx, d.end)) {
       if (n.number !== 'singular' || n.filter.controller !== undefined || n.filter.owner !== undefined || n.filter.zone !== undefined) continue;
       // (r5-cost: "that opponent controls" only in a sentence for each opponent; merge wave 8 with r5-fxb's "for each player,")
-      const e = Math.max(phraseAt(ctx, n.end, W_THAT_PLAYER_CONTROLS), each === 'opponent' ? phraseAt(ctx, n.end, W_THAT_OPPONENT_CONTROLS) : -1);
-      if (e < 0) continue;
-      const s = spec(each === 'opponent' ? { ...n.filter, controller: 'opponent' } : n.filter, n.head);
-      if (s.kind !== 'object') continue;
-      const phrase: TargetPhrase = { kind: 'object', ...(s.filter ? { filter: s.filter } : {}), min: d.min, max: d.max, text: spanOf(ctx, pos, e), ...(each === 'opponent' ? { perOpponent: true } : { perPlayer: true }), ...(d.another ? { another: true } : {}) };
-      out.push({ end: e, value: targetRef(phrase), ...(n.weak ? { weak: n.weak } : {}), ...(n.flags.length > 0 ? { flags: n.flags } : {}) });
+      const e0 = Math.max(phraseAt(ctx, n.end, W_THAT_PLAYER_CONTROLS), each === 'opponent' ? phraseAt(ctx, n.end, W_THAT_OPPONENT_CONTROLS) : -1);
+      if (e0 < 0) continue;
+      // trek-8 (CR 115.1, 601.2c, 202.3): and a feature said after "that player controls" ("up to one target creature that player controls with mana value 3 or less"):
+      // a "with" description, never another controller, owner or zone
+      const tails: { end: number; frag: ObjectFilter; weak?: number }[] = [{ end: e0, frag: {} }];
+      for (const pm of postModAt(ctx, e0)) {
+        const keys = Object.keys(pm.frag);
+        if (keys.length > 0 && keys.every((k) => k === 'manaValue' || k === 'power' || k === 'toughness') && (pm.flags ?? []).length === 0) tails.push({ end: pm.end, frag: pm.frag, ...(pm.weak ? { weak: pm.weak } : {}) });
+      }
+      for (const tail of tails) {
+        const filter = mergeFilter(each === 'opponent' ? { ...n.filter, controller: 'opponent' } : n.filter, tail.frag);
+        if (filter === null) continue;
+        const s = spec(filter, n.head);
+        if (s.kind !== 'object') continue;
+        const e = tail.end;
+        const phrase: TargetPhrase = { kind: 'object', ...(s.filter ? { filter: s.filter } : {}), min: d.min, max: d.max, text: spanOf(ctx, pos, e), ...(each === 'opponent' ? { perOpponent: true } : { perPlayer: true }), ...(d.another ? { another: true } : {}) };
+        const weak = Math.max(n.weak ?? 0, tail.weak ?? 0);
+        out.push({ end: e, value: targetRef(phrase), ...(weak > 0 ? { weak } : {}), ...(n.flags.length > 0 ? { flags: n.flags } : {}) });
+      }
     }
   }
   return dedupe(out);

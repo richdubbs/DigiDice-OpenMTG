@@ -131,7 +131,7 @@ function readsResolutionState(v: unknown): boolean {
   if (Array.isArray(v)) return v.some(readsResolutionState);
   if (v === null || typeof v !== 'object') return false;
   const r = v as Record<string, unknown>;
-  if (r['ref'] === 'bound' || r['q'] === 'var' || r['q'] === 'resultCount' || r['q'] === 'excessDamage' || r['q'] === 'lifeLost' || r['q'] === 'countersRemoved' || r['q'] === 'votes' || r['q'] === 'damageDealt') return true;
+  if (r['ref'] === 'bound' || r['q'] === 'var' || r['q'] === 'resultCount' || r['q'] === 'excessDamage' || r['q'] === 'lifeLost' || r['q'] === 'countersRemoved' || r['q'] === 'countersPut' || r['q'] === 'votes' || r['q'] === 'damageDealt') return true;
   for (const k in r) if (readsResolutionState(r[k])) return true;
   return false;
 }

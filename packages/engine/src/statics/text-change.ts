@@ -110,7 +110,8 @@ function wordRegex(ch: WordChange): RegExp {
   let re = REGEX.get(key);
   if (!re) {
     const suffix = ch.kind === 'landType' ? '(walk|cycling)?' : '()';
-    re = new RegExp(`(?<![A-Za-z'’-])(non-?)?(${spellings(ch).map(escapeRe).join('|')})${suffix}(?![A-Za-z'’])`, 'gi');
+    // trek-10: not inside braces either: "Q" is a creature type and "{Q}" is the untap symbol, which is no word (CR 107.7)
+    re = new RegExp(`(?<![A-Za-z'’{-])(non-?)?(${spellings(ch).map(escapeRe).join('|')})${suffix}(?![A-Za-z'’}])`, 'gi');
     REGEX.set(key, re);
   }
   re.lastIndex = 0;

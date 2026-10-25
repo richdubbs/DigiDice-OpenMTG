@@ -8,7 +8,7 @@ import { isSuspendedCard } from './suspended';
 import { isPlayerOnlyRef, TARGETED_PLAYER_LINK } from '../types/ability';
 import { EVENT_ROLES, implicitRole, mixedCombatRole, opponentTargets, silentRole, TARGETING_CONTROLLER } from '../model/lint-roles';
 import { K, type NpOpts } from './kernel';
-import { objKey, personOf, playerKey, type Form, type Phrase, type RefInfo, type RenderState } from './state';
+import { cloneState, objKey, personOf, playerKey, type Form, type Phrase, type RefInfo, type RenderState } from './state';
 import { alt, displayFirst, joinList, NoRenderer, numWord, pluralize, withArticle } from './text';
 
 const POSSESSIVE = (text: string): string => (/s$/.test(text) && !/'s$/.test(text) ? `${text}'` : `${text}'s`);
@@ -144,7 +144,8 @@ function candidateCheck(st: RenderState, key: string, info: RefInfo): { pronoun:
   const targeted = (ownEnters && (mine.startsWith('t:') || others.some((a) => a.id.startsWith('t:') && a.implicit !== true))) || (st.inOwnEnters === true && mine.startsWith('t:'));
   // FAST5 T76 (the parser's rule, parser/lower/anaphora.ts#focusOf): the object the instruction right before created or put counters on is "it", whatever else was named
   const focused = info.player !== true && st.focus !== undefined && identityOf(st, st.focus) === mine
-    && antecedents(st).every((a) => a.id === mine || a.id === st.notAntecedent || st.focusSeen === undefined || st.focusSeen.has(a.id));
+    // trek-7: a player named since the instruction began ("its owner", the owner of the very object in focus) is no candidate of an object's pronoun
+    && antecedents(st).every((a) => a.id === mine || a.id === st.notAntecedent || st.focusSeen === undefined || st.focusSeen.has(a.id) || a.player);
   // Cloud std-eoe (the parser's rule, parser/lower/anaphora.ts#chosenFocus): the target "Choose up to one target creature." announced is what the first instruction
   // after it names, by a pronoun or by a noun
   const chosen = st.chosen !== undefined && st.chosen.key === key && info.player !== true;
@@ -160,7 +161,7 @@ function candidateCheck(st: RenderState, key: string, info: RefInfo): { pronoun:
   const saidToken = (n: string): boolean => n === 'token' && info.nouns.includes('token') && !others.some((a) => a.nouns.includes('token'));
   // std-exile-play-1-1: the player who looked at a card and exiled it face down is "they" in the permission to play it (RenderState.theyFocus)
   const theyFocus = info.player === true && !info.plural && st.theyFocus !== undefined && st.theyFocus === key;
-  return { pronoun: chosen || focused || ownSubject || theyFocus || others.every((a) => a.implicit === true || (targeted && a.id === 'self')), noun: (n) => chosen || (focused && n === 'card') || n === iterates || saidToken(n) || !others.some((a) => canBeCalled(a.nouns, n) && !((selfStays || namedSelfStays) && a.id === 'self') && !(a.implicit === true && IMPLICIT_SILENT_NOUNS.has(n))) };
+  return { pronoun: chosen || focused || ownSubject || theyFocus || others.every((a) => a.implicit === true || (targeted && a.id === 'self')), noun: (n) => chosen || (focused && n === 'card') || (typeof iterates === 'string' ? n === iterates : iterates?.includes(n) === true) || saidToken(n) || !others.some((a) => canBeCalled(a.nouns, n) && !((selfStays || namedSelfStays) && a.id === 'self') && !(a.implicit === true && IMPLICIT_SILENT_NOUNS.has(n))) };
 }
 
 /** p2-damage-1 (the parser's rule, parser/lower/anaphora.ts#compatible): "that creature" never names an event role the clause leaves unnamed (Repercussion's damage source). */
@@ -318,6 +319,9 @@ function otherRoleObject(role: EventRole, slot: string, st: RenderState): { filt
   return (st.trigger ?? []).map((e) => roleIn(e, role)).find((o) => o !== null && o.kind !== 'player' && o.slot === slot && !selfOnly(o.filter ?? {})) ?? undefined;
 }
 
+/** trek-7: the slots of a combat event that name a creature in combat (roleIn). */
+const COMBAT_SLOT = /^(attacks|attacksUnblocked|blocks|becomesBlocked)\.(attacker|blocker)$/;
+
 /** The role as the trigger exposes it, or null when no event of the trigger has that role. */
 function roleLookup(role: EventRole, st: RenderState): RoleInfo | null {
   for (const ev of st.trigger ?? []) {
@@ -345,6 +349,10 @@ function roleLookup(role: EventRole, st: RenderState): RoleInfo | null {
     const refKey = !self && f.is !== undefined && Object.keys(f).every((k) => k === 'is' || k === 'controller' || (f as Record<string, unknown>)[k] === undefined) ? objKey(f.is as ObjRef) : null;
     const refInfo = refKey === null ? undefined : st.info.get(refKey);
     let nouns = self ? ['permanent'] : refInfo !== undefined && refInfo.nouns.length > 0 ? [...refInfo.nouns] : K.nounsOf(otherObject?.filter ?? f);
+    // trek-7 (CR 508.1, 509.1; the parser's rule, parser/lower/scope.ts#roleObject): the attacker or blocker of a combat event is a creature on the battlefield, never a
+    // card, whatever its description leaves open ("Whenever you attack, exile the top two cards of your library. ... you may play those cards": "those cards" are the
+    // exiled ones, not the attackers)
+    if (!self && refInfo === undefined && COMBAT_SLOT.test(r.slot) && !nouns.includes('creature')) nouns = [...new Set(['creature', ...nouns.filter((n) => n !== 'card'), 'permanent'])];
     // Standard round 5, r5-trig (CR 702.122b, 702.171c; Canyon Vaulter): the permanent of "~ saddles a Mount or crews a Vehicle" is either one: "that Mount or Vehicle"
     const trig = st.trigger ?? [];
     if (r.slot === 'becomes.subject' && trig.length === 2 && trig.some((x) => x.ev === 'becomes' && x.what === 'saddleCostPaid') && trig.some((x) => x.ev === 'becomes' && x.what === 'crewCostPaid')) nouns = ['mount or vehicle'];
@@ -662,7 +670,13 @@ export function specPhrase(spec: TargetSpec, st: RenderState, extra: NpOpts = {}
         // FAST5 T66 (CR 115.1, 601.2c): "for each opponent, exile up to one target nonland permanent that player controls": the controller is the opponent the target is for (the
         // sentence says "for each opponent," in front, render/steps-zones.ts#move); one target at most
         if (spec.filter?.controller !== 'opponent' || spec.groupLimit !== undefined || spec.sharedCardType === true || spec.sharedCreatureType === true) throw new NoRenderer(`target ${spec.id}: one target for each opponent other than a permanent an opponent controls`);
-        return `${K.np({ ...f, ...other, controller: undefined }, st, { ...opts, noController: true })} ${alt('that player', 'that opponent')} controls`; // r5-cost: "that opponent" names the same opponent
+        const base = `${K.np({ ...f, ...other, controller: undefined }, st, { ...opts, noController: true })} ${alt('that player', 'that opponent')} controls`; // r5-cost: "that opponent" names the same opponent
+        // trek-8 (CR 115.1, 202.3): the mana value limit also after the controller, "up to one target creature that player controls with mana value 3 or less"
+        if (f.manaValue !== undefined && f.manaValue.op === '<=' && Object.keys(f).filter((k) => k !== 'manaValue' && k !== 'controller' && k !== 'types' && k !== 'subtypes' && (f as Record<string, unknown>)[k] !== undefined).length === 0) {
+          const bare = `${K.np({ ...f, ...other, controller: undefined, manaValue: undefined }, cloneState(st), { ...opts, noController: true })} ${alt('that player', 'that opponent')} controls`;
+          return alt(base, `${bare} with mana value ${limitPhrase(f.manaValue, st)}`);
+        }
+        return base;
       }
       // std-cardcopy-7 (CR 115.1, 205.2a): "up to one target nonland card of each card type from your graveyard": the words before the zone, one target of a card in your graveyard
       if (spec.perCardType === true) {

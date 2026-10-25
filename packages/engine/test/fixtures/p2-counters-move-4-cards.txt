@@ -1,0 +1,2 @@
+# p2-counters-move-4 (lane p2-counters-move): the round's golden cards (test/m5/golden/cards/p2-counters-move-4-review.json)
+Forgotten Ancient

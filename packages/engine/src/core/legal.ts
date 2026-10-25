@@ -12,6 +12,7 @@ import type { GameState } from '../types/state';
 import { activationDenial, manualManaDenial } from '../actions/activate';
 import { castCheck, castMethods } from '../actions/cast';
 import { landCheck } from '../actions/land';
+import '../actions/play-outside'; // trek-11: installs the playOutside special action's checker and performer (core/special/play-outside.ts, CR 400.11)
 import { activatedAbilities, activatesFrom, enumerateAbilities } from '../rules/abilities';
 import { charsOfObject, faceChars, readingStable } from '../rules/characteristics';
 import { assumingManaPayable, costText, planFromCostDef } from '../rules/cost';
@@ -183,7 +184,10 @@ function* listIn(s: GameState, player: PlayerId, publicOnly = false): Generator<
   // Activated abilities: of permanents the player controls, and of cards in other zones that function there. M11-1 (`feature:zone.command`, CR 113.6,
   // 702.49d): the player's cards in the command zone (commander ninjutsu); emblems are not cards and keep their abilities out of this list.
   const commandCards = z.command.filter((id) => s.objects[id]?.kind === 'card' && s.objects[id]?.owner === player);
-  const holders: ObjectId[] = [...z.battlefield, ...(publicOnly ? [] : z.hand[player] ?? []), ...(z.graveyard[player] ?? []), ...commandCards];
+  // trek-12 (CR 113.6, 602.2, 108.3): an ability granted to a card in exile that says it functions there ("... Activate only during your turn and only if this card is
+  // exiled.", Q, Stacking the Deck): its owner activates it (a card in exile has no controller); only a face-up card, its abilities being public (CR 406.3)
+  const exileCards = z.exile.filter((id) => { const o = s.objects[id]; return o?.kind === 'card' && o.owner === player && !o.faceDown; });
+  const holders: ObjectId[] = [...z.battlefield, ...(publicOnly ? [] : z.hand[player] ?? []), ...(z.graveyard[player] ?? []), ...commandCards, ...exileCards];
   for (const id of holders) {
     const o = s.objects[id];
     if (!o) continue;
@@ -219,13 +223,14 @@ function* listIn(s: GameState, player: PlayerId, publicOnly = false): Generator<
   if (SPECIAL_ACTION_HANDLERS.length > 0) {
     const g = new Game(s); // a reading view: listing changes nothing
     for (const h of SPECIAL_ACTION_HANDLERS) {
+      if (publicOnly && h.hidden === true) continue; // trek-11: a card outside the game is in a hidden place (CR 400.11a)
       for (const x of h.list(g, player)) {
         const o = x.object !== undefined ? s.objects[x.object] : undefined;
         if (publicOnly && o !== undefined && HIDDEN_ZONES.includes(o.zone)) continue;
         const via = x.via as Extract<Action, { type: 'special' }>['via'] | undefined;
         // CMP1: an action about no object (the companion, CR 116.2g) is listed without one
         const at = x.object !== undefined ? { object: x.object } : {};
-        yield { action: { type: 'special', player, kind: h.kind, ...at, ...(via !== undefined ? { via } : {}), ...(x.door !== undefined ? { door: x.door } : {}), ...(x.option !== undefined ? { option: x.option } : {}) }, kind: 'special', label: x.label, isMana: false, ...at };
+        yield { action: { type: 'special', player, kind: h.kind, ...at, ...(via !== undefined ? { via } : {}), ...(x.door !== undefined ? { door: x.door } : {}), ...(x.option !== undefined ? { option: x.option } : {}), ...(x.outside !== undefined ? { outside: x.outside } : {}) }, kind: 'special', label: x.label, isMana: false, ...at };
       }
     }
   }

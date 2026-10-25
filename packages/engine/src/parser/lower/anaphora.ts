@@ -224,6 +224,16 @@ function lookBack(a: AnaphorInfo, all: readonly Mention[], tokens: readonly Tok[
 /** The reference to write for a resolved mention; a step mention gets an `as` name on its step if it has none. */
 function bind(m: Mention, d: Draft): Rec {
   if (m.origin !== 'step') return clone(m.ref);
+  // trek-7 (CR 406.1, 608.2c; lower/mentions.ts#exiledRestOf): "the rest" of the cards an `exileUntil` exiled: every card it exiled (`exiled`) less the one it stopped at
+  // (`as`), still in exile; the step gets both names now that a reference reads them
+  if (m.bindKey === 'exiledRest') {
+    const sm = m as StepMention;
+    const at = stepsInOrder(sm.unitRef.steps).find((s) => s.path === sm.path);
+    if (at === undefined) return clone(m.ref);
+    if (typeof at.step['as'] !== 'string') at.step['as'] = freshName(d, 'hit');
+    if (typeof at.step['exiled'] !== 'string') at.step['exiled'] = freshName(d, 'exiledCards');
+    return { ref: 'each', filter: { is: { ref: 'bound', name: at.step['exiled'] }, not: { is: { ref: 'bound', name: at.step['as'] } }, zone: 'exile' } };
+  }
   if (m.ref['ref'] === 'each') return clone(m.ref); // FAST5 T43: "the rest" of a choice is the group less the chosen cards, written out (lower/mentions.ts#restOf)
   // r5-refs: the player of an option named through an object ("its controller may ..."): that reference itself, never a name of the option (lower/mentions.ts)
   if (m.sort === 'player' && m.ref['ref'] !== 'bound') return clone(m.ref);
@@ -1574,9 +1584,13 @@ function resolveUnit(u: Unit, seq: Unit[], at: number, d: Draft, prefix: Unit[])
   return true;
 }
 
-/** p2-typechange-1: is the trigger's intervening "if" one condition about the object itself (`matches` of `self`, CR 603.4)? */
+/**
+ * p2-typechange-1: is the trigger's intervening "if" one condition about the object itself (`matches` of `self`, CR 603.4)? TREK-6: "if this Spacecraft isn't a creature" is
+ * the same test denied (`not` of the `matches`), still about the object alone (Romulan Bird-of-Prey: "..., if this Spacecraft isn't a creature, put two charge counters on it.").
+ */
 function interveningSelf(d: Draft): boolean {
-  const c = d.condition;
+  let c: unknown = d.condition;
+  while (isRec(c) && c['cond'] === 'not') c = c['of'];
   return isRec(c) && c['cond'] === 'matches' && isRec(c['object']) && c['object']['ref'] === 'self' && Object.keys(c['object']).length === 1;
 }
 
@@ -2005,6 +2019,47 @@ function controllersDisjoint(a: Rec, b: Rec): boolean {
   return pair === 'opponent you';
 }
 
+/**
+ * trek-9 (CR 109.2, 608.2c, design 6.4; Starfleet Communicator: "draw X cards, then you may put up to X land cards from your hand onto the battlefield tapped, where X is
+ * the number of other creatures you control with a Communicator attached to them"): the cards an instruction takes from a zone other than the battlefield, the NUMBER of
+ * which that same instruction's count bounds (`max`, `count`), are no antecedent of an "other" that is only COUNTED there. The count is known before any card is chosen,
+ * so the cards are still in that zone when "other" is applied: they are never among the objects it counts, and "other" is other than ~. It holds for the whole sentence
+ * only when EVERY "other" group is counted (inside a quantity, never acted on: "then tap all other creatures" is another thing) and every count is the same group
+ * (the one `where X is` defines, used at each X); then the source group of such an instruction is taken out of what `namesObjects` looks at. The kind of the cards is not
+ * looked at (a land card may be a creature card, a Zombie is a creature): the argument is where they are, not what they are.
+ */
+function withoutSizedOffFieldSources(parts: unknown): unknown {
+  const groups = collectFilters(parts, true);
+  if (groups.length === 0) return parts;
+  const key = (f: Rec): string => JSON.stringify(f);
+  const counted: Rec[] = [];
+  const walkCounted = (v: unknown): void => {
+    if (Array.isArray(v)) { v.forEach(walkCounted); return; }
+    if (!isRec(v)) return;
+    if (typeof v['q'] === 'string' && isRec(v['of'])) { counted.push(...collectFilters(v['of'], true)); return; }
+    Object.values(v).forEach(walkCounted);
+  };
+  walkCounted(parts);
+  if (counted.length !== groups.length || new Set(counted.map(key)).size !== 1) return parts;
+  const only = key(counted[0]!);
+  const isOnly = (n: unknown): boolean => {
+    const fs = collectFilters(n, true);
+    return fs.length > 0 && fs.every((f) => key(f) === only);
+  };
+  // `x`: the `{q:'X'}` of the steps in hand is the count of that group (the `whereX` node of the sentence defines it, lower/quantities.ts substitutes it at each use)
+  const bounded = (n: unknown, x: boolean): boolean => isOnly(n) || (x && isRec(n) && n['q'] === 'X' && Object.keys(n).length === 1);
+  const strip = (v: unknown, x: boolean): unknown => {
+    if (Array.isArray(v)) return v.map((e) => strip(e, x));
+    if (!isRec(v)) return v;
+    const inner = v['lower'] === 'whereX' ? isOnly(v['value']) : x;
+    const from = v['from'];
+    const own = isRec(from) && from['ref'] === 'each' && isRec(from['filter']) && typeof from['filter']['zone'] === 'string' && from['filter']['zone'] !== 'battlefield'
+      && (bounded(v['max'], x) || bounded(v['count'], x));
+    return Object.fromEntries(Object.entries(v).filter(([k]) => !(own && k === 'from')).map(([k, e]) => [k, strip(e, k === 'steps' ? inner : x)]));
+  };
+  return strip(parts, false);
+}
+
 /** Could two filters' objects overlap by kind: a card type or subtype in common, or either says neither (no way to tell them apart)? */
 function sharesKind(a: Rec, b: Rec): boolean {
   const kinds = (f: Rec): string[] => [...(Array.isArray(f['types']) ? f['types'] : []), ...(Array.isArray(f['subtypes']) ? f['subtypes'] : [])].map((x) => String(x).toLowerCase());
@@ -2094,7 +2149,7 @@ function anaphoricOther(u: Unit, seq: readonly Unit[], i: number, d: Draft, pref
   if (named) return `"other" may refer to what the earlier sentence "${named.text}" named, not to ~ (design 6.4: two candidates); not resolved`;
   // (r4-refs, CR 109.2: a group the sentence names only to count it, "Other creatures you control get +X/+X until end of turn, where X is the number of Towns you
   // control", is no group "other" leaves out: it says how much, not which objects; one that could share objects with the "other" group stays a candidate)
-  if (namesObjects(parts, true, true, collectFilters(parts, true))) return '"other" may refer to a group the same sentence names, not to ~ (design 6.4: two candidates); not resolved';
+  if (namesObjects(withoutSizedOffFieldSources(parts), true, true, collectFilters(parts, true))) return '"other" may refer to a group the same sentence names, not to ~ (design 6.4: two candidates); not resolved';
   const spell = d.selfHeads.includes('instant') || d.selfHeads.includes('sorcery');
   if ((u.targetIds?.length ?? 0) > 0) {
     if (spell && !bareOther(parts)) return null;

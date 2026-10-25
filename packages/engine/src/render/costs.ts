@@ -112,6 +112,10 @@ function part(p: CostPart, st: RenderState): string {
       }
       return `Exile ${counted(f, p.count, st, { noZone: true })} from ${zone}`;
     }
+    case 'putIntoLibrary': { // trek-9 (CR 118.3, 401.4; parser/holes/trek9.ts#putSelfIntoLibrary): "Put ~ from your graveyard on the bottom of your library"
+      if (p.zone !== 'graveyard') throw new NoRenderer('a cost that puts ~ into a library from a zone other than your graveyard');
+      return p.position === 'top' ? 'Put ~ from your graveyard on top of your library' : 'Put ~ from your graveyard on the bottom of your library';
+    }
     case 'tapUntapped': return `Tap ${counted({ ...p.filter, tapped: false, other: p.other === true || p.filter.other }, p.count, st)}`;
     case 'untapTapped': return `Untap ${counted({ ...p.filter, tapped: true }, p.count, st)}`; // p2-cost-parts-1 (CR 701.26b)
     case 'tapPower': {

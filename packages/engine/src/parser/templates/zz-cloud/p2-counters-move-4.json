@@ -1,0 +1,43 @@
+[
+  {
+    "id": "eff.p2cm4.counters.move.anyNumber.group",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.5",
+      "CR 608.2d"
+    ],
+    "pattern": "move any number of {k:CounterKind} counters from {a:Obj} ( onto | to ) {b:Objs}",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": "$b",
+      "kind": "$k",
+      "count": "all",
+      "upTo": true,
+      "distribute": true
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:moveCounters.distribute"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may move any number of +1/+1 counters from ~ onto other creatures you control."
+      },
+      {
+        "text": "{2}{G}: Move any number of +1/+1 counters from ~ onto other creatures."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: Move any number of counters from ~ onto other creatures.",
+      "{2}{G}: Move all +1/+1 counters from ~ onto other creatures.",
+      "{2}{G}: Move any number of +1/+1 counters from ~ onto other creatures for each Elf you control."
+    ]
+  }
+]

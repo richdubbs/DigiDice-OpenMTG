@@ -785,6 +785,7 @@ const ACTION_VERB: Record<string, [string, string, string]> = {
   forage: ['forage', 'foraged', 'forage'], // FAST5X E28, CR 701.61a: "whenever you forage"
   commitCrime: ['commit a crime', 'committed a crime', 'commit a crime'], // FAST5X E20, CR 700.13: "whenever you commit a crime"
   exert: ['exert', 'exerted', 'exert'], // std-ry8, CR 701.43a: "whenever you exert a creature" (the player who exerts is the subject)
+  faceDilemma: ['face a dilemma', 'faced a dilemma', 'face a dilemma'], // trek-2 (CR 700.2): "whenever you face a dilemma"
 };
 
 /** Actions where the thing that does it is the subject ("a creature you control explores"). */
@@ -797,6 +798,7 @@ function actionParts(ev: Extract<EventPattern, { ev: 'action' }>, st: RenderStat
   if (ev.n !== undefined || verbWord === 'expend') return expendParts(ev, st, tense, o);
   if (verbWord === 'tap' && ev.actor !== undefined) return tapActionParts(ev, st, tense, o);
   if (verbWord === 'exploit') return exploitParts(ev, st, tense, o);
+  if (verbWord === 'clash') return clashParts(ev, st, tense, o); // p2-player-rules-3 (CR 701.30)
   if (ev.exploited !== undefined) throw new NoRenderer(`an exploited creature on the action ${verbWord}`);
   const camel = verbWord.replace(/([A-Z])/g, ' $1').toLowerCase();
   if (SUBJECT_ACTIONS.has(verbWord) && ev.object && !(verbWord === 'exert' && ev.actor !== undefined)) { // std-ry8: a player exerts (CR 701.43a)
@@ -866,6 +868,20 @@ function exploitParts(ev: Extract<EventPattern, { ev: 'action' }>, st: RenderSta
   const s = subjectOf(ev.object, st, o);
   const what = ev.exploited === undefined ? 'a creature' : K.np(ev.exploited, st, { det: 'a' });
   return { subject: s.text, predicate: `${s.plural ? 'exploit' : 'exploits'} ${what}`, plural: s.plural };
+}
+
+/**
+ * p2-player-rules-3 (CR 701.30b-c): "whenever you clash", "whenever you clash and win" (also printed "whenever you win a clash", family clash-and-win). No object,
+ * one player at a time, present tense only.
+ */
+function clashParts(ev: Extract<EventPattern, { ev: 'action' }>, st: RenderState, tense: Tense, o: EventOpts): Parts {
+  if (ev.object !== undefined || o.batch || tense !== 'present' || ev.won === false) throw new NoRenderer('a clash with an object, "one or more", another tense or a lost clash');
+  const p = playerSubject(ev.actor ?? 'any', st);
+  if (p.person !== 'you') throw new NoRenderer('a clash by another player than you');
+  st.mentioned.add('e:player');
+  const clash = personVerb('clash', 'clashed', tense, p.person);
+  if (ev.won !== true) return { subject: p.text, predicate: clash, plural: false };
+  return { subject: p.text, predicate: alt(`${clash} and ${personVerb('win', 'won', tense, p.person)}`, `${personVerb('win', 'won', tense, p.person)} a clash`), plural: false };
 }
 
 /** FAST5X E20 (CR 700.14): "you expend 4". Only with its N and no object. */

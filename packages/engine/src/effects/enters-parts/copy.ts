@@ -30,7 +30,7 @@ import { replacementCtx } from '../instead';
 const COPY_PART: EntersPart = {
   field: 'copy',
   capability: 'body:enters.copy',
-  extraCapabilities: ['body:enters.copy.then'],
+  extraCapabilities: ['body:enters.copy.then', 'body:enters.copy.copiedCounters'],
   apply(g, e, body, c) {
     const spec = body.copy;
     const o = g.s.objects[e.object.id];
@@ -67,7 +67,11 @@ const COPY_PART: EntersPart = {
     }
     // CR 707.9e, 107.3: the numbers of the additional effects are worked out now, for the entering object (Altered Ego's X is its spell's X)
     const self = contextFor(g, o, chooser);
-    const additional = spec.additional?.map((a) => ({ ...a, counters: a.counters.map((k) => ({ ...k, count: evalQty(self, k.count) ?? k.count })) }));
+    const additional0 = spec.additional?.map((a) => ({ ...a, counters: a.counters.map((k) => ({ ...k, count: evalQty(self, k.count) ?? k.count })) }));
+    // trek-4 (CR 614.1c, 707.9; unverified): "If you do, it enters with additional counters on it equal to the same number and kinds of counters the copied
+    // permanent has on it": the counters on the chosen object now, as it enters, each kind with its number
+    const copied = spec.copiedCounters === true ? Object.entries(of.counters).filter(([, n]) => n > 0).map(([kind, count]) => ({ kind, count })) : [];
+    const additional = copied.length > 0 ? [...(additional0 ?? []), { counters: copied }] : additional0;
     const facts: Partial<DestinationFacts> = { copyOf: { id: of.id, zone: of.zone }, copyExcept: spec.except, copyAdditional: additional, ...(spec.tapped === true ? { tapped: true } : {}) };
     // r4-copy (CR 603.12, 614.12): "When you do, exile that card.": once the object entered, the steps run in the replacement's context with the copied object bound
     if (spec.then !== undefined) {

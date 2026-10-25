@@ -323,7 +323,7 @@ export function moveObject(g: Game, id: ObjectId, to: ZoneKind, opts: MoveOption
     // core/move-parts/components.ts): the event says where it is. Outside that case `o.zone` is `to`.
     const cause = o.zone !== to && o.zone === 'command' ? 'commander' : opts.cause;
     g.emit({
-      type: 'zoneChanged', oldId: id, newId: o.id, from, to: o.zone, owner: o.owner, controller: o.controller,
+      type: 'zoneChanged', oldId: id, newId: o.id, from: old.fromOutside === true ? null : from, to: o.zone, owner: o.owner, controller: o.controller, // trek-11 (CR 400.11b): a card from outside the game comes from no zone
       name: g.nameOf(o.id), ...(cause ? { cause } : {}), ...(o.faceDown ? { faceDown: true as const } : {}), // FAST5X E25 (CR 708.3, 406.3)
     });
   }
@@ -434,6 +434,25 @@ export function bringIntoGame(g: Game, owner: PlayerId, defId: DefId, to: 'hand'
   if (to === 'library') zoneArray(g, 'library', owner).unshift(o.id);
   else zoneArray(g, 'hand', owner).push(o.id);
   g.emit({ type: 'zoneChanged', oldId: o.id, newId: o.id, from: null, to, owner, controller: owner, name: g.nameOf(o.id), cause: 'from outside the game' });
+  return o.id;
+}
+
+/**
+ * trek-11 INTERFACE CHANGE (additive), CR 400.11, 400.11b, 305.1, 601.3: the card `owner` owns outside the game (`GameState.outside`), as the card they are about to play
+ * from there (The Holodeck: "play a permanent card you own from outside the game"; core/special/play-outside.ts). It leaves `outside` and becomes a new card object in its
+ * owner's hand marked `fromOutside`, with NO event (it is put in no zone: the move that follows, to the stack or the battlefield, is the card entering the game and says
+ * it comes from no zone). The caller runs the cast or land checks on it and moves it at once, or throws away the state it staged it in (a check, a refusal and a
+ * cancelled action all leave the state they began with, CR 733.1); nothing keeps the marker or the hand place past that. Null when the owner has no such card outside.
+ */
+export function stageFromOutside(g: Game, owner: PlayerId, defId: DefId): ObjectId | null {
+  const side = g.s.outside?.[owner];
+  const i = side?.indexOf(defId) ?? -1;
+  if (!side || i < 0 || !g.s.defs[defId] || g.s.defs[defId]!.isToken) return null;
+  side.splice(i, 1);
+  const o = freshObject(g, { kind: 'card', defId, owner, cardId: `c${g.s.counters.card++}` }, 'hand');
+  o.fromOutside = true;
+  g.s.objects[o.id] = o;
+  zoneArray(g, 'hand', owner).push(o.id);
   return o.id;
 }
 

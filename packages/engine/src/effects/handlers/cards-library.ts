@@ -126,6 +126,8 @@ export function clashHandler(cx: ExecCtx, step: Step<'clash'>): StepResult {
   const mine = mv(me);
   const won = mine !== undefined && clashers.every((p) => p === me || (mv(p) ?? -Infinity) < mine);
   g.log(`${g.player(me).name} clashes with ${g.player(them[0]!).name}: ${clashers.map((p) => `${g.player(p).name} reveals ${top.get(p) === undefined ? 'nothing' : `${g.nameOf(top.get(p)!)} (mana value ${mv(p)})`}`).join(', ')}. ${g.player(me).name} ${won ? 'wins' : "doesn't win"} the clash.`, { rules: ['CR 701.30'], level: 'action' });
+  // p2-player-rules-3 (CR 701.30c): each clashing player's own result, read before a card moves (a card put on the bottom is a new object, CR 701.20d)
+  const results = new Map<PlayerId, boolean>(clashers.map((p) => { const v = mv(p); return [p, v !== undefined && clashers.every((q) => q === p || (mv(q) ?? -Infinity) < v)]; }));
   const bottom: PlayerId[] = [];
   for (const p of clashers) {
     const id = top.get(p);
@@ -137,6 +139,9 @@ export function clashHandler(cx: ExecCtx, step: Step<'clash'>): StepResult {
     reorderLibrary(g, p, [], [top.get(p)!]);
     g.log(`${g.player(p).name} puts the revealed card on the bottom of their library.`, { rules: ['CR 701.30a'], level: 'info' });
   }
+  // p2-player-rules-3 (CR 701.30b-c): both players clashed; each one's clash ends here with its own result ("whenever you clash and win", "This ability triggers
+  // after the clash ends"): a player won with a card of greater mana value than every other card revealed
+  for (const p of clashers) performAction(g, { verb: 'clash', actor: p, won: results.get(p) === true });
   const branch = won ? step.onWin : step.onLose;
   if (branch && branch.length > 0) runSteps(cx, branch);
   return { performed: true, count: won ? 1 : 0 };

@@ -10,7 +10,7 @@
 
 /*
  * The top bar: slim (44px), a dark glass strip with a neon edge. Its buttons are compact slabs (a 2px side), so every click still sinks. It never wraps:
- * the turn text gives way (ellipsis) before anything else does.
+ * the turn text gives way (ellipsis) before anything else does. While its menu or a confirm is open it stacks higher (`.game-bar[data-open]`, below).
  */
 .game-bar {
   --btn-depth: 2px;
@@ -265,6 +265,17 @@
 .pass-cover > * {
   position: relative;
   z-index: 1;
+}
+
+/*
+ * While its menu or a confirm is open (`data-open`, GameBar.tsx) the top bar stacks over the whole board. The board's layers share the bar's stacking
+ * context, so the decision stage (20: the opening hand), the zoom and the result (30), the log and the fx layer (40), an open zone viewer and the zoom
+ * over it (41-43) would otherwise cover the panel, dim it and take its clicks. On the pass cover it lifts the covered bar's confirm over the cover's
+ * body, which the rule above puts level with the bar and after it. It comes after that rule so it also wins where only the order counts (jsdom, which
+ * the tests draw with, ignores specificity).
+ */
+.game-bar[data-open] {
+  z-index: 45;
 }
 
 .pass-cover-body {

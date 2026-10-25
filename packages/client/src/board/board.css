@@ -59,8 +59,10 @@
 /*
  * Card widths from the table's size (the table is the size container; these are registered lengths in arena.css, so they are computed here, against the
  * table, and inherited as pixels): the far side a little smaller than the near side, the hand largest. These are the creatures' widths; the row behind them is drawn a little smaller (`.bf-support`).
+ * The zone layer beside the stage (GameBoard.tsx) takes the same widths: a zone viewer's cards are drawn at the hand's size.
  */
-.arena-stage {
+.arena-stage,
+.zone-layer {
   /* less a fixed part: the labels, the band and the paddings take the same pixels on a short table, which leaves less room per card */
   --cw-far: clamp(40px, min(calc(14cqh - 29px), 9.4cqw), 142px);
   --cw-near: clamp(50px, min(calc(17.5cqh - 35px), 11.6cqw), 176px);
@@ -70,6 +72,9 @@
   --back-w: clamp(22px, 4.6cqh, 40px);
   --cw-s: var(--cw-near);
   --cw-n: var(--cw-hand);
+}
+
+.arena-stage {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -586,10 +591,13 @@
  * On the card (CardOverlay.tsx): the current P/T on the card's own P/T corner, coloured when it differs from the printed one, and
  * the counters as small icons with their numbers on the art's left edge. Sized from the card's width (the image box is an inline-size container); they
  * turn with the card when it is tapped. Never over the artist and copyright line at the bottom edge.
+ * Above every layer of our own text frame (cards.css: its name bar, P/T box and type emblem have z-index 1 to 3, and the frame's inline-size container
+ * does not keep them to itself): the frame's printed P/T box covered the current one (a 0/0 Germ token at 12/12 read 0/0).
  */
 .card-overlay {
   position: absolute;
   inset: 0;
+  z-index: 4;
   pointer-events: none;
   line-height: 1.1;
   text-align: left;
@@ -832,6 +840,14 @@
 }
 .marker-target { border: 1px solid var(--danger); }
 .marker-automation { border: 1px dashed var(--accent-2); }
+/* A partly automated card in hand or on the stack: it may not work as written (Markers.tsx), so its marker reads as a warning. */
+.marker-automation.is-warning {
+  border: 1px solid #e0a030;
+  background: rgba(58, 38, 0, 0.94);
+  color: #ffe2a8;
+  font-weight: 700;
+}
+.marker-automation.is-warning .marker-icon { color: #ffc04d; }
 /* "Fully automated" is on almost every card: a quiet tick beside the other markers, not a chip of its own. */
 .marker-automation.is-compact {
   border: 0;
@@ -1713,6 +1729,62 @@
     -14px 0 34px rgba(0, 0, 0, 0.55);
 }
 
+/*
+ * The handles the player sizes the rail with (RailResize.tsx): its left edge, and the edge above the prompt. Thin strips that light up when pointed at or
+ * focused; the one above the prompt takes no room of its own (its margins eat the rail's gaps around it).
+ */
+.rail-resize {
+  flex: none;
+  position: relative;
+  z-index: 3;
+  touch-action: none;
+  outline: none;
+}
+
+.rail-resize::after {
+  content: '';
+  position: absolute;
+  border-radius: 2px;
+  background: transparent;
+  transition: background 120ms ease;
+}
+
+.rail-resize:hover::after,
+.rail-resize:focus-visible::after,
+.rail-resize.is-dragging::after {
+  background: rgba(var(--neon-rgb), 0.7);
+  box-shadow: 0 0 10px rgba(var(--neon-rgb), 0.6);
+}
+
+.rail-resize-x {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 8px;
+  cursor: col-resize;
+}
+
+.rail-resize-x::after {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+}
+
+.rail-resize-y {
+  height: 10px;
+  margin: -9px 0;
+  cursor: row-resize;
+}
+
+.rail-resize-y::after {
+  left: 20%;
+  right: 20%;
+  top: 4px;
+  height: 3px;
+}
+
 .panel-title {
   margin: 0 0 4px;
   font-size: 11px;
@@ -2278,7 +2350,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;
+  /* the player's share (RailResize.tsx, Settings.railPromptShare): half each by default */
+  flex: var(--rail-top-grow, 1) 1 0;
   gap: 8px;
   min-height: 0;
   overflow-y: auto;
@@ -2449,7 +2522,7 @@
      (prompts.css); anything else too tall scrolls here, the actions pinned at the bottom edge. */
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;
+  flex: var(--rail-prompt-grow, 1) 1 0;
   min-height: 0;
   overflow-y: auto;
   border-radius: 12px;
@@ -2566,7 +2639,9 @@
   right: 10px;
 }
 
+/* The picture is the printed card: a permanent's current P/T, loyalty or defense and its counters are drawn on it as on the battlefield (CardOverlay). */
 .zoom-card {
+  position: relative;
   container-type: inline-size;
   --card-w: 100cqw;
   width: 100%;
@@ -2647,18 +2722,22 @@
   font-size: 0.72rem;
 }
 
-/* Zone viewer: a modal over a backdrop */
+/*
+ * Zone viewer: a modal over a backdrop, in the table's zone layer (GameBoard.tsx), over the whole table: the cards, the hand, the discs, the stage, the
+ * result screen, the log and the fx layer (up to 40), and the top bar at rest. While one is open (`data-zone` on the board) the zoom comes over it, so a
+ * card in it can still be pointed at and read. The top bar's open menu or confirm (45, game.css) stays over both.
+ */
 .zone-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 59;
+  z-index: 41;
   background: rgba(0, 0, 0, 0.6);
 }
 
 .zone-viewer {
   position: fixed;
   inset: 8vh 10vw;
-  z-index: 60;
+  z-index: 42;
   display: flex;
   flex-direction: column;
   padding: 14px;
@@ -2666,6 +2745,10 @@
   border: 1px solid rgba(var(--neon-rgb), 0.45);
   background: linear-gradient(180deg, #0a1832, #040a18);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 0 0 40px rgba(var(--neon-rgb), 0.2), 0 20px 60px rgba(0, 0, 0, 0.7);
+}
+
+.game-board[data-zone] .zoom {
+  z-index: 43;
 }
 
 .zone-viewer-header {

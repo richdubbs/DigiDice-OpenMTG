@@ -6,12 +6,12 @@
  * static ability, "[cost]: [effect]", "[trigger], [effect]"); anything else returns null, so the sentence that grants it does not parse and stays manual:
  * granting half an ability would be granting a different ability.
  */
-import type { AbilityDef, Condition, CostDef, EffectProgram, StaticAbilityDef, StaticEffect, TriggerDef, TriggeredAbilityDef } from '../../types/ability';
+import type { AbilityDef, Condition, CostDef, EffectProgram, StaticAbilityDef, StaticEffect, TriggerDef, TriggeredAbilityDef, ZoneName } from '../../types/ability';
 import { canonicalJson, runHole } from '../holes';
 import type { Tok } from '../holes/tok';
 import { spanText } from '../holes/tok';
 import { applyTaint } from '../taint';
-import { activationLimits } from './activation';
+import { activationLimits, activationZone, requiresSelfExiled } from './activation';
 import { costMentionsOf, interveningIfReads, triggerLimitOf } from './ability';
 import { lowerProgram } from './index';
 import type { Draft, Mention, Unit } from './types';
@@ -171,7 +171,15 @@ export function parseQuoted(tokens: readonly Tok[], ue: UnitEnv, printedHeads: s
     // FAST5 T68 (CR 605.1a, 606.1): a loyalty ability ("[+1]: Add {R}.") is never a mana ability, whatever it does; it is a loyalty ability (activated once per turn at sorcery speed, CR 606.3)
     const loyalty = cost.loyalty !== undefined;
     const change = lim.extras.costChange === undefined ? {} : { costChange: lim.extras.costChange, ...(lim.extras.costChangeIf !== undefined ? { costChangeIf: lim.extras.costChangeIf } : {}) };
-    return done([{ kind: 'activated', text, cost, effect, ...lim.fields, ...change, ...(mana && effect.targets.length === 0 && !loyalty ? { isMana: true } : {}), ...(loyalty ? { isLoyalty: true } : {}) }]);
+    // trek-12 (CR 113.6, 602.5b; Q, Stacking the Deck): "Activate only if this card is exiled" says where the quoted ability functions: in exile (parser/lower/activation.ts#activationZone).
+    // Only that zone is stated for a quoted ability; its cost or effect naming the card in another zone is no ability that could be activated, so it is not understood
+    let zone: { zone?: ZoneName[] } = {};
+    if (requiresSelfExiled(lim.fields.onlyIf)) {
+      const where = activationZone(cost, `${lim.pieces.map((p) => spanText(p, 0, p.length)).join(' ')} ${lim.text}`, lim.fields.onlyIf);
+      if ('manual' in where) return null;
+      zone = where;
+    }
+    return done([{ kind: 'activated', text, cost, effect, ...lim.fields, ...change, ...zone, ...(mana && effect.targets.length === 0 && !loyalty ? { isMana: true } : {}), ...(loyalty ? { isLoyalty: true } : {}) }]);
   }
   // "[When/Whenever/At] [event], [effect]" (CR 603.1), read as the ability driver reads a printed trigger (lower/ability.ts): every comma is tried, two
   // readings are ambiguous (guard G5). cmd1: an "if" right after the trigger clause is an intervening "if" (CR 603.4), read as lower/ability.ts#triggered

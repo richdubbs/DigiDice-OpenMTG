@@ -18,7 +18,7 @@ import { turnPermanentFaceDown, turnPermanentFaceUp } from '../rules/face-down';
 import { makeBlocked, removeFromCombat } from '../rules/combat-state';
 import { phaseOutPermanent } from '../rules/phasing';
 import { createCardCopy, putCopyOnStack, removeFromStack } from '../rules/stack-objects';
-import { addAttacker, attachPermanent, entersAttackingAsReturned, flipPermanent, tapPermanent, transformPermanent, unattachPermanent, untapPermanent } from '../rules/status';
+import { addAttacker, attachPermanent, enterAttackingChoosing, entersAttackingAsReturned, flipPermanent, tapPermanent, transformPermanent, unattachPermanent, untapPermanent } from '../rules/status';
 
 /** CR 701.26a: tap an untapped permanent; whether it changed. */
 export const performTap = (g: Game, id: ObjectId, by?: PlayerId): boolean => tapPermanent(g, id, by); // FAST5X E20: `by`, the player whose effect taps it
@@ -49,6 +49,19 @@ export const performMakeBlocked = (g: Game, id: ObjectId): boolean => makeBlocke
 
 /** CR 508.4: a permanent put onto the battlefield attacking becomes an attacking creature (the handler checked CR 506.3, 508.4a). */
 export const performAddAttacker = (g: Game, id: ObjectId, defender: PlayerId | ObjectId, defendingPlayer: PlayerId): void => addAttacker(g, id, defender, defendingPlayer);
+/** trek-8 (CR 508.4): the creatures just put onto the battlefield attacking become attacking creatures; each one's controller chooses what it attacks (rules/status.ts#enterAttackingChoosing). */
+export const performEnterAttacking = (g: Game, ids: readonly ObjectId[], named?: PlayerId, walkersOnly = false): ObjectId[] => enterAttackingChoosing(g, ids, named, walkersOnly);
+
+/** trek-8 review (CR 508.4): run `f` (the proposals of an effect that puts permanents onto the battlefield attacking) with `by` as the way they join the combat. */
+export const performWithEnterAttacking = <T>(g: Game, by: (ids: readonly ObjectId[]) => ObjectId[], f: () => T): T => {
+  const before = g.enterAttackingBy;
+  g.enterAttackingBy = by;
+  try {
+    return f();
+  } finally {
+    g.enterAttackingBy = before;
+  }
+};
 
 /** std-typechange-1 (CR 702.49c, 508.4, 508.4a): a permanent put onto the battlefield attacking what the creature returned for the cost attacked; true when it attacks. */
 export const performEntersAttackingAsReturned = (g: Game, id: ObjectId, how: { defender: PlayerId | ObjectId | null; defendingPlayer: PlayerId | null }, rule: string): boolean =>

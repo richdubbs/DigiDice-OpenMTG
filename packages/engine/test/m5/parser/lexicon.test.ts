@@ -15,9 +15,14 @@ import {
   INDEX_LEXICON_PATH,
   LEXICON_PATH,
   pluralize,
+  printedCreatureEvidence,
+  printedCreatureProblems,
+  printedCreatureTypes,
+  PRINTED_CREATURE_TYPES_PATH,
   readIndexCards,
   serializeIndexLexicon,
   serializeLexicon,
+  serializePrintedCreatureTypes,
 } from '../../../../../scripts/gen-lexicon';
 import { CR_LEXICON, GENERATED_LEXICON, keywordAt, lexiconIndex } from '../../../src/parser/front/lexicon-index';
 import { localIndex } from './support';
@@ -217,6 +222,96 @@ describe('scripts/gen-lexicon.ts', () => {
       { singular: 'Cavern', plural: 'Caverns', class: 'land' },
     ]);
     expect(indexSubtypes([...cards].reverse(), base)).toEqual(out); // the order of the cards does not matter
+  });
+
+  // trek-10: the creature types the rules engine adds to CR 205.3m's list (statics/printed-creature-types.generated.json). ONE WAY: the archive's default index (2026-10-11,
+  // before the Star Trek cards) proves fewer types than the list has and must pass; a newer index that proves a type the list lacks fails until the generator reruns.
+  it.skipIf(!cardsFile)('STALENESS (one way): every creature type the local Oracle index proves is in the checked-in list, and none listed is another class\'s subtype there or in the rules (CR words: the checked-in lexicon)', () => {
+    const listed = (JSON.parse(readFileSync(PRINTED_CREATURE_TYPES_PATH, 'utf8')) as { creatureTypes: string[] }).creatureTypes;
+    expect(printedCreatureProblems(listed, readIndexCards(cardsFile!), CR_LEXICON), 'run: npx tsx scripts/gen-lexicon.ts (--index-only without rules/cr)').toEqual([]);
+  });
+
+  describe('printedCreatureTypes (trek-10, CR 205.3m): only creature types that are certain, from the game\'s own sets (synthetic cards)', () => {
+    const base = {
+      cardTypes: ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Instant', 'Kindred', 'Land', 'Planeswalker', 'Sorcery'],
+      supertypes: ['Legendary', 'Snow'],
+      colors: [{ word: 'white', color: 'W' }, { word: 'black', color: 'B' }],
+      subtypes: [{ singular: 'Elf', plural: 'Elves', class: 'creature' as const }, { singular: 'Vehicle', plural: 'Vehicles', class: 'artifact' as const }, { singular: 'Gideon', plural: 'Gideons', class: 'planeswalker' as const }],
+    };
+    const game = (type_line: string, extra: Record<string, unknown> = {}) => ({ type_line, set_type: 'expansion', ...extra });
+    const printed = (cards: object[], previous: string[] = []) => printedCreatureTypes(cards, base, previous);
+
+    it('a creature (or kindred) type line of a game set gives its unknown words; sorted; the rules\' words and supertypes are not repeated', () => {
+      expect(printed([game('Legendary Creature — Elf Zorgian'), game('Creature — Quux Elf'), game('Creature — Zorgian'), game('Creature — Elves Gideon')])).toEqual(['Quux', 'Zorgian']);
+      expect(printed([...[game('Creature — Quux'), game('Creature — Zorgian')]].reverse())).toEqual(['Quux', 'Zorgian']);
+    });
+
+    it('a token description in the rules text of a card of a game set gives its creature type (Romulan, Mindless-One)', () => {
+      expect(printed([game('Saga — Chapter', { oracle_text: 'III — Create two 2/2 black Romulan creature tokens.' }), game('Sorcery', { oracle_text: 'Create a 3/1 black Mindless-One creature token for each card.' })]))
+        .toEqual(['Mindless-One', 'Romulan']);
+      expect(printed([game('Enchantment', { oracle_text: 'Create a 1/1 white Zorgian artifact creature token.' })])).toEqual(['Zorgian']);
+    });
+
+    it('an artifact, enchantment or land creature is read like a creature, as an artifact creature token is (Android, Medusan): a word counts unless a card prints it as another class\'s subtype', () => {
+      expect(printed([game('Legendary Artifact Creature — Zorgian Elf'), game('Enchantment Creature — Quux'), game('Land Creature — Blork')])).toEqual(['Blork', 'Quux', 'Zorgian']);
+      expect(printed([game('Artifact Creature — Zorgian'), game('Artifact — Zorgian Vehicle')])).toEqual([]); // a noncreature artifact prints it too: it may be the artifact type
+      expect(printed([game('Artifact Creature — Zorgian'), { type_line: 'Land — Zorgian', set_type: 'funny' }])).toEqual([]);
+      expect(printed([game('Artifact Creature — Zorgian'), game('Legendary Creature — Zorgian')])).toEqual(['Zorgian']);
+    });
+
+    it('FAIL CLOSED: a funny, playtest (masters), memorabilia or alchemy card alone does not make a creature type, nor does a token description on one', () => {
+      for (const set_type of ['funny', 'masters', 'memorabilia', 'alchemy', 'promo', 'vanguard']) {
+        expect(printed([{ type_line: 'Creature — Zorgian', set_type }]), set_type).toEqual([]);
+        expect(printed([{ type_line: 'Artifact Creature — Zorgian', set_type }]), set_type).toEqual([]);
+        expect(printed([{ type_line: 'Sorcery', set_type, oracle_text: 'Create a 1/1 white Zorgian creature token.' }]), set_type).toEqual([]);
+      }
+      expect(printed([{ type_line: 'Creature — Zorgian', set_type: 'funny' }, game('Creature — Zorgian')])).toEqual(['Zorgian']); // one card of a game set is enough
+    });
+
+    it('FAIL CLOSED: a word that any card (a funny one too) prints as another class\'s subtype is not a creature type: artifact, land, spell, enchantment, planeswalker, battle', () => {
+      for (const other of ['Artifact — Zorgian', 'Land — Zorgian', 'Sorcery — Zorgian', 'Enchantment — Zorgian', 'Legendary Planeswalker — Zorgian', 'Battle — Zorgian']) {
+        expect(printed([game('Creature — Zorgian'), { type_line: other, set_type: 'funny' }]), other).toEqual([]);
+        expect(printed([{ type_line: other, set_type: 'expansion' }, game('Creature — Zorgian')]), other).toEqual([]);
+      }
+    });
+
+    it('FAIL CLOSED: a type line with a planeswalker, battle, instant or sorcery beside the creature (a kindred spell) is not read: its subtypes are of other classes too', () => {
+      expect(printed([game('Kindred Sorcery — Gizmo Elf'), game('Legendary Planeswalker Creature — Testwalker'), game('Creature Battle — Quux')])).toEqual([]);
+    });
+
+    it('a type line with a word that is no card type of the rules (Plane, Conspiracy, an Un-card\'s invention) is not read', () => {
+      expect(printed([game('Plane — Zorgia'), game('Creature Conspiracy — Zorgian'), game('Creature Zork — Quux')])).toEqual([]);
+    });
+
+    it('Time Lord is one type and the rules list it (not split into two words); a lower-case word is not a type; faces are read one by one', () => {
+      expect(printed([game('Creature — Time Lord Zorgian'), game('Creature — human')])).toEqual(['Zorgian']);
+      expect(printed([game('Creature // Creature', { card_faces: [{ type_line: 'Creature — Quux' }, { type_line: 'Creature — Zorgian' }] })])).toEqual(['Quux', 'Zorgian']);
+    });
+
+    it('regenerating keeps the types already listed, so an older index cannot take one away; a listed type leaves when the rules list it or a card prints it as another class\'s subtype', () => {
+      const old = [game('Creature — Quux')]; // an older index: it has no card of Zorgian
+      expect(printed(old, ['Quux', 'Zorgian'])).toEqual(['Quux', 'Zorgian']);
+      expect(printed(old, ['Zorgian', 'Elf'])).toEqual(['Quux', 'Zorgian']); // the rules list Elf
+      expect(printed([...old, { type_line: 'Artifact — Zorgian', set_type: 'expansion' }], ['Zorgian'])).toEqual(['Quux']);
+    });
+
+    it('the one-way check: an older index (it proves fewer types than listed) passes; a type it proves that the list lacks, a listed type the rules list and one the index prints as another class\'s subtype fail', () => {
+      const listed = ['Quux', 'Zorgian'];
+      expect(printedCreatureProblems(listed, [game('Creature — Quux')], base)).toEqual([]);
+      expect(printedCreatureProblems(listed, [], base)).toEqual([]);
+      expect(printedCreatureProblems(listed, [game('Creature — Quux Blork')], base)).toEqual(['Blork: the index proves it a creature type, the list lacks it']);
+      expect(printedCreatureProblems([...listed, 'Elf'], [game('Creature — Quux')], base)).toEqual(['Elf: the rules list it now']);
+      expect(printedCreatureProblems(listed, [game('Creature — Quux'), { type_line: 'Artifact — Zorgian', set_type: 'funny' }], base)).toEqual(["Zorgian: the index prints it as another class's subtype"]);
+      expect(printedCreatureProblems(listed, [{ type_line: 'Creature — Blork', set_type: 'funny' }], base)).toEqual([]); // a funny card proves nothing
+    });
+
+    it('is deterministic and the file format has the list under "creatureTypes"', () => {
+      const cards = [game('Creature — Zorgian'), game('Creature — Quux')];
+      expect(serializePrintedCreatureTypes(printed(cards))).toBe(serializePrintedCreatureTypes(printed([...cards].reverse())));
+      expect(JSON.parse(serializePrintedCreatureTypes(['Quux', 'Zorgian']))).toMatchObject({ creatureTypes: ['Quux', 'Zorgian'] });
+      expect(JSON.parse(serializePrintedCreatureTypes([]))).toMatchObject({ creatureTypes: [] });
+      expect([...printedCreatureEvidence(cards, base).proved].sort()).toEqual(['Quux', 'Zorgian']);
+    });
   });
 
   it('a lexicon that differs from what the rules produce is detected (the comparison the staleness test makes)', () => {

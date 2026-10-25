@@ -3,6 +3,7 @@
  * render/mods.ts) continuous. With a duration they are the effect of a step ("... this turn"); without one they are the text of a static ability.
  */
 import type { AmountChange, AbilityDef, Condition, ContinuousEffectDef, Destination, EffectStep, Duration, EventPattern, ObjectFilter, ObjRef, PlayerPred, PlayerRef, Quantity, ReplacementDef, RestrictionDef, RuleAction, RuleModDef, StaticEffect, TriggerModDef, ZoneName } from '../types/ability';
+import { isLifeGainCause } from '../types/ability'; // trek-2 (CR 603.2d)
 import { formatManaCost, type ManaCost } from '../types/mana';
 import { K } from './kernel';
 import { copyExceptText } from './copy-except';
@@ -53,7 +54,7 @@ const durationSuffix = (d: Duration | undefined, st: RenderState): string => {
 const isLimited = (d: Duration | undefined): d is Duration => d !== undefined && d.d !== 'permanent';
 
 /** CR 611.2a: a stated duration of a sentence, trailing ("... this turn") or leading ("Until end of turn, ..."). */
-function lasting(base: string, d: Duration | undefined, st: RenderState): string {
+export function lasting(base: string, d: Duration | undefined, st: RenderState): string {
   const suffix = durationSuffix(d, st);
   return suffix === '' ? base : alt(`${base}${suffix}`, `${suffix.trim()}, ${base}`);
 }
@@ -562,6 +563,8 @@ const ACTION_CANT: Partial<Record<RuleAction, string>> = {
   beTurnedFaceUp: 'be turned face up', // FAST5X E25 (CR 708.7)
   beSuspected: 'become suspected', // std-mkm (CR 701.60a)
   beCopied: 'be copied', // std-copy-1 (CR 707.10)
+  phaseIn: 'phase in', // trek-4 (CR 702.26c)
+  beBeamedUp: 'be beamed up', // trek-1 (Star Trek beam me up; CR 702 rule number unverified)
 };
 
 /**
@@ -836,7 +839,7 @@ function restrictFor(e: RestrictionDef, st: RenderState, sj: string, pl: boolean
     const spells = e.other !== undefined ? K.np({ ...e.other, stackKind: 'spell' }, st, { det: 'none', plural: true }) : 'spells';
     return `${sj} can't cast ${spells} from ${words.join(' or ')}`;
   }
-  if (e.other !== undefined && !blockOnly && !blocksSelfOnly(e) && !blockFiltered && !(e.mode === 'cant' && (e.action === 'beBlockedBy' || e.action === 'beTargeted' || e.action === 'cast' || e.action === 'activate'))) {
+  if (e.other !== undefined && !blockOnly && !blocksSelfOnly(e) && !blockFiltered && !(e.mode === 'cant' && (e.action === 'beBlockedBy' || e.action === 'beTargeted' || e.action === 'cast' || e.action === 'activate' || e.action === 'sacrifice'))) {
     throw new NoRenderer(`a filter on ${e.mode} ${e.action}`);
   }
   if (blockOnly) return `${sj} can block only ${K.np(e.other!, st, { det: 'none', plural: true })}`;
@@ -902,6 +905,8 @@ function restrictFor(e: RestrictionDef, st: RenderState, sj: string, pl: boolean
       text = passive === null ? active : alt(active, passive);
     }
     else if (e.action === 'activate' && other) text = `${sj} ${cant} activate abilities of ${K.np(other, st, { det: 'none', plural: true })}`;
+    // trek-5 (CR 701.21a, 101.2): "You can't sacrifice Treasure tokens." bans the sacrifice of the permanents `other` describes (rules/cant.ts#costUseDenial asks it of every sacrifice)
+    else if (e.action === 'sacrifice' && other) text = `${sj} ${cant} sacrifice ${K.np(other, st, { det: 'none', plural: true })}`;
     else text = `${sj} ${cant} ${cantWords(e.action, pl)}`;
   } else if (e.mode === 'mustIfAble') {
     switch (e.action) {
@@ -1024,6 +1029,8 @@ function enters(body: Extract<ReplacementDef['body'], { b: 'enters' }>, subject:
   const sentences: string[] = [];
   // M6-1: a plural noun phrase that does not end in "s" ("creatures your opponents control") takes "enter" too
   const verb = subject === '~' ? 'enters' : /s$/.test(subject) ? 'enter' : alt('enters', 'enter');
+  // trek-8 (CR 508.4): entering attacking has its own sentence (#tappedAndAttackingWhile); in any other reading it would be dropped, never silently
+  if (body.attacking === true) throw new NoRenderer('an entering body that makes the permanent attack, outside "instead it enters tapped and attacking"');
   // CMD3: counters that depend on the permanent as it would exist on the battlefield (sunburst, CR 702.44a) have no template wording yet
   if (body.countersIf !== undefined) throw new NoRenderer('enters with counters that depend on what the permanent is as it enters');
   if (body.lookAtHand !== undefined && !(body.choose && body.choose.length > 0)) throw new NoRenderer('a look at a hand with no choice after it');
@@ -1099,6 +1106,12 @@ function enters(body: Extract<ReplacementDef['body'], { b: 'enters' }>, subject:
       const expect = { as: then.as, do: [{ op: 'reflexive', when: { did: then.as }, targets: [], do: [{ op: 'move', what: { ref: 'bound', name: then.as }, to: { zone: 'exile' } }] }] };
       if (!body.copy.optional || JSON.stringify(then) !== JSON.stringify(expect) || body.copy.of.isCard !== true) throw new NoRenderer('steps after an enters-as-a-copy choice other than exiling the copied card');
       after = '. when you do, exile that card';
+    }
+    // trek-4 (CR 614.1c, 707.9): "If you do, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has
+    // on it." (Dominion Saboteur): only after an optional choice ("if you do"), and not together with a reflexive step
+    if (body.copy.copiedCounters === true) {
+      if (!body.copy.optional || then !== undefined) throw new NoRenderer('copied counters after a copy that is not optional, or with steps after the choice');
+      after = '. if you do, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it';
     }
     return body.copy.optional ? `you may have ${subject} enter${tapped} as a copy of ${of}${exc}${after}` : `${subject} ${verb}${tapped} as a copy of ${of}${exc}`;
   }
@@ -1475,8 +1488,15 @@ function bodyWords(r: ReplacementDef, subjectIt: string, st: RenderState): strin
           const many = less !== undefined && ev.kind ? `that many ${ev.kind} counters minus ${K.qty(less, st)}` : b.count.mul === 2 && b.count.add === undefined ? `twice that many ${noun}` : b.count.add !== undefined && b.count.mul === undefined && b.count.set === undefined ? `that many plus ${K.qty(b.count.add, st)} ${noun}` : null;
           // r4-repl (CR 614.1a, 122.6): the counters YOU put, "put that many plus one of each of those kinds of counters on that permanent instead" (Doc Samson),
           // "put that many plus one +1/+1 counters on it instead" (Prairie Dog)
+          // TREK-6 (CR 614.1a, 122.6): the counters YOU put, twice as many, "put twice that many charge counters on that artifact instead" (Lt. Cmdr. Geordi La Forge), "put twice that
+          // many of each of those kinds of counters on that creature instead" (Dr. Joseph M'Benga): Oracle repeats the object as "that <its one card type>" (the filter's) as well
+          const onTypes = ev.by === 'you' && ev.change === 'put' && !('player' in ev.on) ? (ev.on as ObjectFilter).types : undefined;
+          const that = onTypes !== undefined && onTypes.length === 1 ? `that ${onTypes[0]!.toLowerCase()}` : undefined;
           const yours = ev.by === 'you' && ev.change === 'put' && !('player' in ev.on) && b.count.add !== undefined && b.count.mul === undefined && b.count.set === undefined
-            ? [`put that many plus ${K.qty(b.count.add, st)} ${ev.kind ? `${ev.kind} counters on it` : 'of each of those kinds of counters on that permanent'} instead`] : [];
+            ? [`put that many plus ${K.qty(b.count.add, st)} ${ev.kind ? `${ev.kind} counters on it` : 'of each of those kinds of counters on that permanent'} instead`]
+            : ev.by === 'you' && ev.change === 'put' && !('player' in ev.on) && b.count.mul === 2 && b.count.add === undefined && b.count.set === undefined
+              ? (ev.kind ? ['it', 'that permanent', ...(that !== undefined ? [that] : [])].map((to) => `put twice that many ${ev.kind} counters on ${to} instead`)
+                : ['that permanent', ...(that !== undefined ? [that] : [])].map((to) => `put twice that many of each of those kinds of counters on ${to} instead`)) : [];
           bits.push(many && ev.change === 'put' && !('player' in ev.on) ? alt(active, `${many} are put on ${alt('it', 'that creature', 'that permanent')} instead`, ...yours) : yours.length > 0 ? yours[0]! : active);
         } else if (ev.ev === 'action' && ev.verb === 'mill' && (ev.actor === 'opponent' || ev.actor === 'you')) {
           // Cloud r3-repl (CR 701.17a, 614.1a): "they mill that many cards plus four instead" (The Water Crystal)
@@ -1568,9 +1588,29 @@ function destinationText(d: Destination, it: string, st: RenderState): string {
   return `${MOVE_VERB[d.zone]} ${it} ${destPhrase(d, st, false)} instead`;
 }
 
+/**
+ * trek-8 (CR 614.1c, 614.12, 508.4, 506.3; Kira Nerys, Firebrand): "If a creature you control would enter while you control an attacking creature, instead it enters
+ * tapped and attacking." One replacement effect of the entering of the objects its description names, applying only while its condition holds (checked as the
+ * object would enter), whose body makes them enter tapped and attacking (and nothing else). Null for any other replacement.
+ */
+function tappedAndAttackingWhile(e: ReplacementDef, st: RenderState): string | null {
+  const ev = e.replaces;
+  const b = e.body;
+  if (b.b !== 'enters' || b.attacking !== true || b.tapped !== true || Object.keys(b).length !== 3 || e.condition === undefined || e.optional === true || e.shield !== undefined || e.selfReplacement === true) return null;
+  if (ev.ev !== 'zoneChange' || [ev.to].flat().join() !== 'battlefield' || ev.from !== undefined || ev.subject.self === true) return null;
+  const what = K.events([ev], st, 'would');
+  return `if ${what} while ${K.cond(e.condition, st)}, instead it enters tapped and attacking`;
+}
+
 function replace(e: ReplacementDef, st: RenderState, duration: Duration | undefined): string {
   const ev = e.replaces;
   const b = e.body;
+  if (b.b === 'enters' && b.attacking === true) {
+    // (a duration has no words here: refused, never dropped)
+    const text = isLimited(duration) ? null : tappedAndAttackingWhile(e, st);
+    if (text === null) throw new NoRenderer('an entering body that makes the permanent attack, outside "instead it enters tapped and attacking"');
+    return text;
+  }
   if (b.b === 'during') {
     // M6-0 (m6 design 2.1): "As this creature is turned face up, ..." / "As this permanent transforms into ..., ..." (CR 708.11, 712.20)
     if (ev.ev !== 'becomes' || (ev.what !== 'turnedFaceUp' && ev.what !== 'transformed') || ev.object.self !== true || duration !== undefined) {
@@ -2075,6 +2115,14 @@ function duringTurnCounter(cond: Condition | undefined, d: Duration | undefined,
  * cast ~ from your graveyard. if you do, it enters with ...", "you may play cards from your graveyard". Only the forms the engine honors have words here.
  */
 function graveyardPermit(e: Extract<StaticEffect, { s: 'permit' }>, st: RenderState): string {
+  // trek-11 (CR 400.11, 305.1, 601.3): "Once during each of your turns, you may play a permanent card you own from outside the game or from your graveyard" (The Holodeck):
+  // the one form statics/play-permits.ts#isPermanentPlayPermit honors (the once-each-turn words are render/abil.ts's, with the static's "your turn" condition)
+  if (e.alsoOutside !== undefined) {
+    const fine = e.alsoOutside === true && e.action === 'play' && e.from === 'graveyard' && e.oncePerTurn === true && JSON.stringify(e.who) === '{"ref":"you"}'
+      && JSON.stringify(e.of) === '{"types":["Artifact","Battle","Creature","Enchantment","Land","Planeswalker"]}' && Object.keys(e).every((k) => ['s', 'who', 'action', 'of', 'from', 'alsoOutside', 'oncePerTurn'].includes(k));
+    if (!fine) throw new NoRenderer('a permission that covers cards outside the game, outside its one form');
+    return `once each turn, you may play a permanent card you own ${alt('from outside the game or from your graveyard', 'from your graveyard or from outside the game')}`; // trek-11: the two places in either order (family play-outside-or-graveyard)
+  }
   for (const k of ['asThough', 'count', 'costChange', 'grants', 'laterTurn', 'fromTop', 'anyManaType', 'while', 'graveyardInstead'] as const) if (e[k] !== undefined) throw new NoRenderer(`a graveyard permission with ${k}`);
   if (e.who.ref !== 'you' || Object.keys(e.who).length !== 1) throw new NoRenderer('a graveyard permission of another player');
   if (e.action === 'play') {
@@ -2681,6 +2729,8 @@ function causeText(ev: EventPattern, st: RenderState): string {
   if (ev.ev === 'zoneChange' && ev.from === 'battlefield' && ev.to === 'graveyard') return `${K.np(ev.subject, st, { det: 'a' })} dying`;
   // std-rx2 (CR 508.1m, 603.2d): "if a creature attacking causes a triggered ability ... to trigger" (Isshin, Two Heavens as One): the creature declared as an attacker
   if (ev.ev === 'attacks' && ev.attacker !== undefined && Object.keys(ev).length === 2) return `${K.np(ev.attacker, st, { det: 'a' })} attacking`;
+  // trek-2 (CR 603.2d): "if you gaining life causes a triggered ability ... to trigger" (Dr. Beverly Crusher): a life gain of the doubler's controller
+  if (isLifeGainCause(ev)) return 'you gaining life';
   return K.event(ev, st, 'present');
 }
 
@@ -2858,6 +2908,11 @@ export function staticEffects(effects: StaticEffect[], st: RenderState): string 
   const ex = effects.length === 1 ? effects[0] : undefined;
   if (ex?.s === 'permit' && (ex.action === 'play' || ex.action === 'cast') && ex.from === 'exile' && ex.of !== undefined && ex.of.is === undefined && ex.of.zone === undefined
     && Object.keys(ex).every((k) => ['s', 'who', 'action', 'from', 'of', 'anyManaType'].includes(k)) && JSON.stringify(ex.who) === '{"ref":"you"}') {
+    // trek-7 (CR 113.6, 601.3; Khan, Vengeful Heart): "You may cast this card from exile": the card itself, where it is (`of` exactly `{self: true}`)
+    if (ex.of.self !== undefined) {
+      if (ex.of.self !== true || Object.keys(ex.of).filter((k) => (ex.of as Record<string, unknown>)[k] !== undefined).length !== 1 || ex.anyManaType !== undefined) throw new NoRenderer('a permission for the card itself in exile with something more');
+      return `you may ${ex.action} ${K.obj({ ref: 'self' }, st, 'object').text} from exile`;
+    }
     const cards = K.np({ ...ex.of, zone: 'exile' }, st, { det: 'none', plural: true, noZone: true });
     return `you may ${ex.action} ${cards} from exile${ex.anyManaType === true ? ', and mana of any type can be spent to cast those spells' : ''}`;
   }
@@ -3316,14 +3371,16 @@ const ATTACK_YOU = "can't attack you or planeswalkers you control";
  */
 function goadRiders(effects: readonly StaticEffect[], i: number, st: RenderState): { extra: string[]; n: number } | null {
   const e = effects[i]!;
-  if (e.s !== 'continuous' || e.cda === true || !isOneObject(e.affects, st)) return null;
+  // trek-8: also a group ("All Tribbles get +1/+0 and are goaded": the same description changed and goaded, "are goaded" for the plural subject)
+  const group = e.s === 'continuous' && isEachGroup(e.affects);
+  if (e.s !== 'continuous' || e.cda === true || !(group || isOneObject(e.affects, st))) return null;
   const same = (r: RestrictionDef): boolean => JSON.stringify(r.subject) === JSON.stringify(e.affects)
     && r.other === undefined && r.otherPlayer === undefined && r.max === undefined && r.min === undefined && r.when === undefined && r.alone === undefined && r.exceptMana === undefined;
   const extra: string[] = [];
   for (let j = i + 1; j < effects.length; j++) {
     const r = effects[j]!;
     if (r.s !== 'restrict' || !same(r) || r.mode !== 'mustIfAble') return null;
-    if (r.goad === true && r.action === 'attack') return { extra: [...extra, 'is goaded'], n: j - i + 1 };
+    if (r.goad === true && r.action === 'attack') return { extra: [...extra, group ? 'are goaded' : 'is goaded'], n: j - i + 1 };
     if (r.goad === undefined && r.action === 'beBlocked' && extra.length === 0) extra.push('must be blocked if able');
     else return null;
   }
@@ -3416,6 +3473,12 @@ function sharedSubject(e: StaticEffect, r: StaticEffect, st: RenderState): strin
       (v) => [staticEffect(e, v), staticEffect(r, v)].join(alt('. ', ' and ')),
     ]);
     return alt(merged!, apart!);
+  }
+  // trek-1 (CR 502.3, 101.2; Star Trek beam me up, CR 702 rule number unverified): "Enchanted permanent doesn't untap during its controller's untap step and can't be
+  // beamed up" (Marooned): the untap restriction and the beam me up restriction of the same object, the subject said once
+  if (e.s === 'restrict' && e.mode === 'cant' && e.action === 'untapDuringUntapStep' && e.other === undefined && e.max === undefined && e.when === undefined
+    && r.s === 'restrict' && r.mode === 'cant' && r.action === 'beBeamedUp' && Object.keys(r).length === 4 && JSON.stringify(r.subject) === JSON.stringify(e.subject)) {
+    return `${staticEffect(e, st)} and can't be beamed up`;
   }
   // FAST3 T15: "~ enters tapped and doesn't untap during your untap step": the object's own entering replacement (CR 614.1d) and its untap restriction
   // (CR 502.3) with the subject said once (family shared-subject)
@@ -3670,6 +3733,16 @@ export function staticEffect(e: StaticEffect, st: RenderState, o: { duration?: D
           || Object.keys(e.of).length !== 1 || o.duration === undefined) throw new NoRenderer('a life cost on a permission other than "pay life equal to its mana value" for named objects');
         const { costChange: _cc, ...bare } = e;
         return `${staticEffect(bare, st, o)}. if you cast a spell this way, pay life equal to its mana value rather than ${alt('pay', 'paying')} its mana cost`;
+      }
+      // trek-7 (CR 601.2f, 601.3, 611.2a; Zero, Incorporeal Sensate): a resolved permission for ONE named object with the rider "A spell cast this way costs {2} more to
+      // cast." after the permission and its duration (statics/play-permits.ts#namedPermitIncrease: a fixed increase of generic mana)
+      if (e.costChange?.kind === 'increase' && e.of?.is !== undefined && e.of.is.ref !== 'linked') {
+        const cc = e.costChange as unknown as Record<string, unknown>;
+        if (e.costChange.mana === undefined || e.costChange.mana.length === 0 || Object.keys(cc).some((k) => cc[k] !== undefined && k !== 'kind' && k !== 'mana')
+          || Object.keys(e.of).length !== 1 || o.duration === undefined) throw new NoRenderer('a cost increase on a permission other than "a spell cast this way costs {N} more to cast" for a named object');
+        if (K.obj(e.of.is, cloneState(st), 'object').plural) throw new NoRenderer('the cost increase of a permission for several named objects: only the one-card rider has words here');
+        const { costChange: increase, ...bare } = e;
+        return `${staticEffect(bare, st, o)}. a spell cast this way costs ${formatManaCost(increase.mana!)} more to cast`;
       }
       // std-exile-play-2-3 (CR 118.9, 701.67a, 611.2b; Hama, the Bloodbender): "For as long as you control ~, you may cast the exiled card during your turn by
       // waterbending {X} rather than paying its mana cost, where X is its mana value." (statics/play-permits.ts#isWaterbendCost)

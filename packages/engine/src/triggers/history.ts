@@ -181,6 +181,7 @@ export function historyEntry(s: GameState, e: SemEvent, combat: number, turn: nu
       primary('subject');
       put('verb', e.data['verb'] as string | undefined);
       put('revealed', e.data['revealed'] as string | undefined); // std-lci: an explore's revealed card (CR 701.44a)
+      if (typeof e.data['won'] === 'boolean') put('won', e.data['won'] as boolean); // p2-player-rules-3: a clash's result (CR 701.30c)
       put('from', e.data['from'] as string | undefined); // Standard round 4, r4-trig (CR 305.1): the zone a land was played from
       break;
     case 'createToken':

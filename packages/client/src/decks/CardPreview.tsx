@@ -6,7 +6,7 @@
  */
 import { useMemo, type ComponentType, type Ref } from 'react';
 import type { CardDetailResponse, CardSummary, ManualPart } from '@openmtg/server/api';
-import { AutomationBadge, Card, ManaCost, SymbolText, modelFromSummary } from '../cards';
+import { AutomationBadge, Card, ManaCost, PartialWarning, SymbolText, modelFromSummary } from '../cards';
 import { keywordReminders } from './keywords';
 
 /** What the deckbuilder hands the card component. */
@@ -90,6 +90,7 @@ export function CardPreview({
         <p className="card-preview-badges">
           <AutomationBadge level={card.automation} />
         </p>
+        <PartialWarning level={card.automation} />
         {reminders.length > 0 && (
           <ul className="card-preview-keywords" aria-label="Keywords">
             {reminders.map((k) => (

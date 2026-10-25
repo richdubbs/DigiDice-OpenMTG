@@ -274,6 +274,22 @@
   padding: 7px 16px;
 }
 
+/*
+ * A window's row of a field and buttons (Rename): the field gives up its width before the buttons wrap. Wrapping depended on the 10px of the window's
+ * scrollbar, which the link button's hover glow brought in (Chrome counts a text-shadow as overflow of the scrolling window, even with paint containment):
+ * pointing at Cancel showed the scrollbar, the row wrapped, Cancel moved off the pointer, the scrollbar went, the row unwrapped, and again, every frame.
+ * In a window a link button is underlined when pointed at instead of glowing.
+ */
+.deck-modal .panel-row input {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.deck-modal .button-link:hover {
+  text-shadow: none;
+  text-decoration: underline;
+}
+
 .link-steps,
 .import-review {
   margin-top: 12px;
@@ -2019,69 +2035,4 @@
   .deck-titlebar {
     flex-wrap: wrap;
   }
-}
-
-/* ---------- Sleeves ---------- */
-
-/* The Sleeve pill carries a tiny picture of the deck's sleeve. */
-.deck-pill-sleeve {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.deck-pill-sleeve img {
-  width: 14px;
-  height: 20px;
-  border-radius: 2px;
-}
-
-.sleeve-picker h3 {
-  margin: 14px 0 6px;
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  letter-spacing: 0.04em;
-}
-
-.sleeve-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 10px;
-}
-
-.deck-modal .sleeve-option {
-  --btn-depth: 0px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 6px;
-  border-radius: 10px;
-  background: transparent;
-  box-shadow: none;
-  font-size: 0.75rem;
-  line-height: 1.2;
-  text-align: center;
-}
-
-.sleeve-option-art {
-  display: block;
-  width: 100%;
-  aspect-ratio: 745 / 1040;
-  transition: transform 120ms ease-out;
-}
-
-.sleeve-option:hover .sleeve-option-art,
-.sleeve-option:focus-visible .sleeve-option-art {
-  transform: translateY(-3px);
-}
-
-.sleeve-option[aria-pressed='true'] {
-  outline: 2px solid rgba(var(--neon-rgb), 0.9);
-  box-shadow: 0 0 16px rgba(var(--neon-rgb), 0.45);
-}
-
-.sleeve-option-match {
-  color: rgb(var(--neon-rgb));
-  font-weight: 600;
 }

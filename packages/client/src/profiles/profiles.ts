@@ -1,8 +1,9 @@
 /**
  * UI profiles (docs/design/ui-profiles.md): the look and feel of the interface, saved under a name. Every profile is built on a template, one of the
- * complete looks the client ships: Neon Grid (the DigiDice neon room every screen was designed in) and LCARS (a flat starship-console look:
- * theme/lcars.css). A profile keeps its template's palette with any colors the player changed, a text size, whether backgrounds move and whether the
- * template's background scene is shown. Only the look changes: every screen works the same in every profile.
+ * complete looks the client ships: Neon Grid (the DigiDice neon room every screen was designed in), LCARS (a flat starship-console look:
+ * theme/lcars.css) and Reality Fracture (a shattered-mirror world after the Reality Fracture set's Echoverse: theme/fracture.css). A profile keeps its
+ * template's palette with any colors the player changed, a text size, whether backgrounds move and whether the template's background scene is shown.
+ * Only the look changes: every screen works the same in every profile.
  *
  * The templates are read-only profiles of their own (ids `template:<id>`), so a player can switch to either without saving anything; the player's own
  * profiles are kept in this browser's localStorage. Like the settings (settings/settings.ts) every read and write is wrapped in try/catch, and anything
@@ -11,8 +12,8 @@
 import { BRAND } from '../branding/brand';
 import { contrastRatio, rgbChannels } from '../theme/theme';
 
-export type TemplateId = 'neonGrid' | 'lcars';
-export const TEMPLATE_IDS: readonly TemplateId[] = ['neonGrid', 'lcars'];
+export type TemplateId = 'neonGrid' | 'lcars' | 'fracture';
+export const TEMPLATE_IDS: readonly TemplateId[] = ['neonGrid', 'lcars', 'fracture'];
 
 /** One color of a template's palette that a profile can change. */
 export interface ColorSlot {
@@ -70,6 +71,28 @@ export const TEMPLATES: Readonly<Record<TemplateId, ProfileTemplate>> = {
       { name: 'Gold', colors: { frame: '#e8b53d', button: '#ffe0a3', panel: '#c9a86b', highlight: '#f07f3c', alert: '#d9534f', text: '#fff1d6' } },
     ],
     sceneLabel: 'Space battle behind the Home screen',
+  },
+  fracture: {
+    id: 'fracture',
+    name: 'Reality Fracture',
+    description:
+      'The broken mirrors of the Reality Fracture set: sections hanging from a crack like glass pendants, panes with stepped corners, gems split gold and violet, card sleeves of broken glass with the DigiDice logo breaking through, and a mirror broken round the logo behind Home.',
+    slots: [
+      { key: 'mind', label: 'Mind', hint: 'Links, the focus ring and the pale light in the glass', default: '#4cb8ff' },
+      { key: 'echo', label: 'Echo', hint: "The dark half: echoes, rims, chosen cards and the opponent's side of the table", default: '#a463ff' },
+      { key: 'memory', label: 'Memory', hint: 'The light half: titles, the main actions, chosen items, highlights and your side of the table', default: '#ffc965' },
+      { key: 'alert', label: 'Alert', hint: 'Danger buttons, warnings and errors', default: '#ff4d73' },
+      { key: 'text', label: 'Text', hint: 'Body text', default: '#eef0ff' },
+      { key: 'void', label: 'Void', hint: 'The darkness behind everything', default: '#0a0920' },
+    ],
+    presets: [
+      { name: 'Echoverse', colors: { mind: '#4cb8ff', echo: '#a463ff', memory: '#ffc965', alert: '#ff4d73', text: '#eef0ff', void: '#0a0920' } },
+      { name: 'Mirror image', colors: { mind: '#ff9f43', echo: '#ff4fa3', memory: '#62e6ff', alert: '#ff3b3b', text: '#fff1e3', void: '#170a12' } },
+      { name: 'Shattered glass', colors: { mind: '#9fdcff', echo: '#8f9cff', memory: '#f3f6ff', alert: '#ff6680', text: '#f4f7ff', void: '#0b0e17' } },
+      { name: 'Hexhaven', colors: { mind: '#35dcb0', echo: '#5a7cff', memory: '#f2c14e', alert: '#ff5d5d', text: '#e9fff7', void: '#06140f' } },
+      { name: 'Theorist', colors: { mind: '#3d7bff', echo: '#ff3fae', memory: '#f2f4ff', alert: '#ff2e55', text: '#eef1ff', void: '#05061a' } },
+    ],
+    sceneLabel: 'The broken mirror behind every screen and round the logo on Home',
   },
 };
 
@@ -349,11 +372,40 @@ export function inkOn(hex: string): string {
 
 /**
  * The CSS variables of a look. Neon Grid's colors replace the brand blue and magenta its stylesheets are drawn with (the `-rgb` channel variables carry
- * every translucent glow); LCARS has its own palette (`--lc-*`, theme/lcars.css) and also lends it to the grid variables, so a rule the LCARS sheet
- * does not restyle still takes the profile's colors.
+ * every translucent glow); LCARS has its own palette (`--lc-*`, theme/lcars.css) and so has Reality Fracture (`--rf-*`, theme/fracture.css), and both
+ * also lend theirs to the grid variables, so a rule their sheet does not restyle still takes the profile's colors.
  */
 export function lookVars(look: Look): Record<string, string> {
   const c = look.colors;
+  if (look.template === 'fracture') {
+    return {
+      '--rf-mind': c.mind!,
+      '--rf-echo': c.echo!,
+      '--rf-memory': c.memory!,
+      '--rf-alert': c.alert!,
+      '--rf-text': c.text!,
+      '--rf-void': c.void!,
+      '--rf-mind-ink': inkOn(c.mind!),
+      '--rf-echo-ink': inkOn(c.echo!),
+      '--rf-memory-ink': inkOn(c.memory!),
+      '--rf-alert-ink': inkOn(c.alert!),
+      '--neon-rgb': rgbChannels(c.memory!),
+      '--neon-2-rgb': rgbChannels(c.echo!),
+      '--brand-blue': c.memory!,
+      '--brand-blue-deep': c.memory!,
+      '--brand-magenta': c.echo!,
+      '--accent': c.memory!,
+      '--accent-text': inkOn(c.memory!),
+      '--accent-2': c.echo!,
+      '--focus': c.mind!,
+      '--text': c.text!,
+      '--text-muted': `rgba(${rgbChannels(c.text!)}, 0.74)`,
+      '--surface': `rgba(${rgbChannels(c.text!)}, 0.06)`,
+      '--surface-strong': `rgba(${rgbChannels(c.text!)}, 0.12)`,
+      '--table-bg': c.void!,
+      '--border': `rgba(${rgbChannels(c.echo!)}, 0.4)`,
+    };
+  }
   if (look.template === 'lcars') {
     return {
       '--lc-frame': c.frame!,
@@ -403,7 +455,10 @@ export function isTemplatePalette(look: Look): boolean {
 }
 
 /** Every variable a look may set, so switching templates removes the other template's. */
-const ALL_VARS = [...new Set([...Object.keys(lookVars(templateLook('neonGrid'))), ...Object.keys(lookVars(templateLook('lcars')))])];
+const ALL_VARS = [...new Set(TEMPLATE_IDS.flatMap((id) => Object.keys(lookVars(templateLook(id)))))];
+
+/** The root's `data-ui` for each template: the attribute its stylesheet's rules are scoped to. */
+export const UI_ATTRIBUTE: Readonly<Record<TemplateId, string>> = { neonGrid: 'grid', lcars: 'lcars', fracture: 'fracture' };
 
 /**
  * Apply a look to an element (the document root in main.tsx): `data-ui` picks the template's stylesheet rules, `data-motion` and `data-scene` its
@@ -412,7 +467,7 @@ const ALL_VARS = [...new Set([...Object.keys(lookVars(templateLook('neonGrid')))
  */
 export function applyLook(el: HTMLElement, look: Look, base: Record<string, string> = {}): void {
   const vars = lookVars(look);
-  el.dataset.ui = look.template === 'lcars' ? 'lcars' : 'grid';
+  el.dataset.ui = UI_ATTRIBUTE[look.template];
   el.dataset.motion = look.motion ? 'on' : 'off';
   el.dataset.scene = look.scene ? 'on' : 'off';
   if (isTemplatePalette(look)) delete el.dataset.tint;

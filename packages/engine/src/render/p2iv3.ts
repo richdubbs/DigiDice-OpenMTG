@@ -30,5 +30,6 @@ export function p2iv3AllAny(c: Extract<Condition, { cond: 'all' | 'any' }>): str
 export function p2iv3Moved(c: Extract<Condition, { cond: 'happened' }>, generic: string): string {
   const mine = json(c) === json({ cond: 'happened', event: { ev: 'zoneChange', subject: { owner: 'you' }, from: 'battlefield', to: 'hand' }, scope: 'turn' })
     ? 'a permanent was put into your hand from the battlefield this turn' : null;
-  return mine === null ? generic : alt(generic, mine);
+  // trek-5 (CR 400.3, 603.4; parser/holes/cond.ts#zoneHistory): and "a permanent was returned to your hand from the battlefield this turn" (Miles O'Brien, Transporter Ops), the same history
+  return mine === null ? generic : alt(generic, mine, 'a permanent was returned to your hand from the battlefield this turn');
 }

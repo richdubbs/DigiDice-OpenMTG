@@ -108,6 +108,8 @@ export const SUPPORTED: readonly string[] = [
   // std-lci: CR 701.44a-b, explore (effects/handlers/explore.ts) emits `actionPerformed` 'explore' after each complete explore, with the exploring permanent and
   // whether the revealed card was a land card or a nonland card ("whenever a creature you control explores a land card")
   'ev.action.explore', 'ev.action.explore.revealed',
+  // p2-player-rules-3 (CR 701.30c): "whenever you clash" / "whenever you clash and win", emitted as a clash ends (effects/handlers/cards-library.ts#clashHandler)
+  'ev.action.clash', 'ev.action.clash.won',
   // std-lci (CR 106.3): "whenever you cast a permanent spell using mana produced by ~": actions/cast.ts names the sources of the mana spent (triggers/match.ts)
   'ev.cast.manaFromSelf',
   // M12F: CR 701.38a, "whenever players finish voting": the vote action (effects/handlers/actions-native.ts) emits `votesFinished` once per vote with the
@@ -116,6 +118,9 @@ export const SUPPORTED: readonly string[] = [
   // p2-counters-move-1: CR 701.34a, "whenever you proliferate": each proliferate (effects/handlers/actions-native-counters.ts#proliferateOnce) emits `actionPerformed`
   // 'proliferate' with the proliferating player once it is done, also when nothing was chosen
   'ev.action.proliferate',
+  // trek-2 (CR 700.2, 601.2b, 602.2b, 603.3c; "face a dilemma" is a new term, its rule number unverified): actions/announce.ts#chooseModes emits `actionPerformed`
+  // 'faceDilemma' for the player who chooses one or more modes of a spell being cast, an ability being activated or a triggered ability being put on the stack
+  'ev.action.faceDilemma',
 ];
 
 const isQuantityCmp = (c: NumberCmp | undefined): boolean => c !== undefined && typeof c.value !== 'number';
@@ -128,6 +133,7 @@ export function eventPatternForms(p: EventPattern): string[] {
       out.push(`feature:ev.action.${p.verb}`);
       // std-lci (CR 701.44a): only an explore says what it revealed; on any other verb the field is never registered (fail closed)
       if (p.revealed !== undefined) out.push(p.verb === 'explore' ? 'feature:ev.action.explore.revealed' : 'feature:ev.action.revealed.other');
+      if (p.won !== undefined) out.push(p.verb === 'clash' && p.won === true ? 'feature:ev.action.clash.won' : 'feature:ev.action.won.other'); // p2-player-rules-3 (CR 701.30c)
       // FAST5X E20 (never registered: the matcher fails closed for them): "expend" without its N or an N on another verb (CR 700.14), and a `tap` action of
       // anything but an opponent's permanent (a mana ability's {T} cost and convoke do not report who tapped: rules/crime.ts)
       if ((p.verb === 'expend') !== (p.n !== undefined)) out.push('feature:ev.action.n.other');

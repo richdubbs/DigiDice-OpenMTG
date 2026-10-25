@@ -242,6 +242,11 @@
   background-color: var(--menu-hover);
 }
 
+/* A choice that cannot be made (a deck the format cannot play) stays greyed out, as in the other looks. */
+:root[data-ui='lcars'] select option:disabled {
+  color: var(--lc-muted);
+}
+
 :root[data-ui='lcars'] input[type='checkbox'],
 :root[data-ui='lcars'] input[type='radio'],
 :root[data-ui='lcars'] input[type='range'],

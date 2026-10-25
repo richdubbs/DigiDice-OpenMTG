@@ -1,10 +1,10 @@
 /**
- * The manual-adjustment panel: build one `ManualOp` at a time (move, life, counters, tap, draw, shuffle, control, damage, mana, attach, token, note) and add
- * it to the list. Objects are picked from a list or by clicking them on the board.
+ * The manual-adjustment panel: build one `ManualOp` at a time (move, discard, exile, life, counters, tap, draw, shuffle, control, damage, mana, attach, token,
+ * token copy, note) and add it to the list. Objects are picked from a list or by clicking them on the board.
  */
 import { useState } from 'react';
 import { MANUAL_MOVE_ZONES, type GameView, type ManualOp, type ObjectId } from '@openmtg/engine';
-import { buildOp, emptyDraft, FIELDS, MANUAL_KINDS, pickableObjects, type ManualDraft, type ManualKind } from './manualOps';
+import { buildOp, emptyDraft, FIELDS, kindZone, MANUAL_KINDS, pickableObjects, type ManualDraft, type ManualKind } from './manualOps';
 import { playerName } from './names';
 import { usePublishSelection } from './selection';
 
@@ -19,7 +19,9 @@ const ZONE_LABELS: Record<string, string> = {
 export function ManualPanel({ view, exclude, busy, onAdd }: { view: GameView; exclude?: ObjectId; busy: boolean; onAdd: (op: ManualOp) => string | null }) {
   const [draft, setDraft] = useState<ManualDraft>(() => emptyDraft(view));
   const [error, setError] = useState<string | null>(null);
-  const objects = pickableObjects(view, exclude);
+  // Discard offers the cards in hands, a token copy the permanents (manualOps.ts#kindZone); every other operation any card it can name.
+  const zone = kindZone(draft.kind);
+  const objects = pickableObjects(view, exclude).filter((o) => zone === null || view.objects[o.id]?.zone === zone);
   const fields = FIELDS[draft.kind];
   const set = <K extends keyof ManualDraft>(k: K, v: ManualDraft[K]) => setDraft((d) => ({ ...d, [k]: v }));
   const has = (f: keyof ManualDraft) => fields.includes(f);
@@ -35,7 +37,7 @@ export function ManualPanel({ view, exclude, busy, onAdd }: { view: GameView; ex
       : null,
   );
   const add = () => {
-    const r = buildOp(draft);
+    const r = buildOp(draft, view.viewer ?? undefined);
     if ('error' in r) {
       setError(r.error);
       return;
@@ -69,7 +71,7 @@ export function ManualPanel({ view, exclude, busy, onAdd }: { view: GameView; ex
           {MANUAL_KINDS.map((k) => <option key={k.kind} value={k.kind}>{k.label}</option>)}
         </select>
       </label>
-      {has('object') && objectSelect('object', draft.kind === 'attach' ? 'Attachment' : 'Card', false)}
+      {has('object') && objectSelect('object', draft.kind === 'attach' ? 'Attachment' : draft.kind === 'tokenCopy' ? 'Copy of' : 'Card', false)}
       {has('target') && objectSelect('target', draft.kind === 'damage' ? 'Damage to' : 'Counters on', true)}
       {has('zone') && (
         <label className="prompt-field">
@@ -82,7 +84,7 @@ export function ManualPanel({ view, exclude, busy, onAdd }: { view: GameView; ex
       {has('attachTo') && (draft.kind === 'attach' || draft.zone === 'battlefield') && objectSelect('attachTo', 'Attached to', true, draft.kind === 'attach' ? '(nothing: unattach)' : '(not attached)')}
       {has('player') && (
         <label className="prompt-field">
-          {draft.kind === 'control' ? 'New controller' : 'Player'}
+          {draft.kind === 'control' ? 'New controller' : draft.kind === 'tokenCopy' ? 'Created by' : 'Player'}
           <select aria-label="Player" value={draft.player} disabled={busy} onChange={(e) => set('player', e.target.value)}>
             {inGame(view).map((p) => <option key={p.id} value={p.id}>{playerName(view, p.id)}</option>)}
           </select>
@@ -100,6 +102,22 @@ export function ManualPanel({ view, exclude, busy, onAdd }: { view: GameView; ex
         <label className="prompt-field">
           <input type="checkbox" checked={draft.tapped} disabled={busy} onChange={(e) => set('tapped', e.target.checked)} />
           {draft.kind === 'tap' ? 'Tapped (untick to untap)' : 'Enters tapped'}
+        </label>
+      )}
+      {has('haste') && (
+        <label className="prompt-field">
+          <input type="checkbox" checked={draft.haste} disabled={busy} onChange={(e) => set('haste', e.target.checked)} />
+          With haste
+        </label>
+      )}
+      {has('atNextEndStep') && (
+        <label className="prompt-field">
+          At the next end step
+          <select aria-label="At the next end step" value={draft.atNextEndStep} disabled={busy} onChange={(e) => set('atNextEndStep', e.target.value as ManualDraft['atNextEndStep'])}>
+            <option value="sacrifice">Sacrifice it</option>
+            <option value="exile">Exile it</option>
+            <option value="">Keep it</option>
+          </select>
         </label>
       )}
       {has('text') && text('text', 'Note text')}

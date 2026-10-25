@@ -214,6 +214,40 @@ describe('manualResolve: the manual-adjustment panel', () => {
     expect(conn.state.zones.graveyard.p2).toHaveLength(1);
   });
 
+  it('discard, exile and a hasty token copy sacrificed at the next end step: each picker offers only the cards it can take', async () => {
+    let s = scenario(['Lightning Bolt', 'Mountain', 'Grizzly Bears', 'Forest'], {
+      manual: ['Lightning Bolt'], p1: { hand: ['Lightning Bolt', 'Forest'], battlefield: ['Mountain', 'Grizzly Bears'] }, p2: { battlefield: ['Grizzly Bears'] },
+    });
+    s = passBoth(castAuto(s, 'Lightning Bolt'));
+    const forest = find(s, 'Forest', 'hand');
+    const [mine, theirs] = [find(s, 'Grizzly Bears', 'battlefield', 'p1'), find(s, 'Grizzly Bears', 'battlefield', 'p2')];
+    const { conn } = renderPrompt(s);
+    const offered = () => [...(screen.getByLabelText(/^(Card|Copy of)$/) as HTMLSelectElement).options].map((o) => o.value).filter(Boolean);
+    await change('Operation', 'discard');
+    expect(offered()).toEqual([forest]);
+    await change('Card', forest);
+    await click('Add adjustment');
+    await change('Operation', 'exile');
+    expect(offered()).toContain(theirs);
+    await change('Card', theirs);
+    await click('Add adjustment');
+    await change('Operation', 'tokenCopy');
+    expect(offered()).not.toContain(forest);
+    expect((screen.getByLabelText('With haste') as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText('At the next end step') as HTMLSelectElement).value).toBe('sacrifice');
+    await change('Copy of', mine);
+    await click('Add adjustment');
+    expect(screen.getByRole('list', { name: 'Adjustments to apply' }).textContent).toMatch(/Discard Forest.*Move Grizzly Bears.* to exile.*creates a token copy of Grizzly Bears.* with haste; sacrifice it at the beginning of the next end step/);
+    await click(/^Done: apply 3 adjustments/);
+    expect(conn.lastAnswer()).toEqual({
+      kind: 'manualResolve',
+      ops: [{ op: 'discard', object: forest }, { op: 'move', object: theirs, to: 'exile' }, { op: 'tokenCopy', object: mine, player: 'p1', haste: true, atNextEndStep: 'sacrifice' }],
+    });
+    expect(conn.errors).toEqual([]);
+    expect(conn.state.zones.graveyard.p1!.some((id) => conn.state.objects[id]!.defId === 'Forest')).toBe(true);
+    expect(conn.state.zones.battlefield.filter((id) => conn.state.objects[id]!.kind === 'token')).toHaveLength(1);
+  });
+
   it('"Done (no changes)" asks to confirm before resolving without adjustments; an adjustment can be removed before confirming', async () => {
     const { conn } = renderPrompt(manualBolt());
     await change('Operation', 'life');
@@ -278,6 +312,9 @@ describe('manual operations', () => {
     });
     expect('error' in buildOp({ ...emptyDraft(view, 'token'), name: 'Clue', typeLine: 'Token' })).toBe(true);
     expect(buildOp({ ...emptyDraft(view, 'life'), amount: 'x' })).toMatchObject({ error: expect.stringContaining('CR 119') });
+    // a token copy given to another player can be exiled at the next end step, not sacrificed by the resolving player (CR 701.21a)
+    expect(buildOp({ ...emptyDraft(view, 'tokenCopy'), object: 'o5', player: 'p2' }, 'p1')).toMatchObject({ error: expect.stringContaining('Exile it instead') });
+    expect(buildOp({ ...emptyDraft(view, 'tokenCopy'), object: 'o5', player: 'p2', atNextEndStep: 'exile' }, 'p1')).toEqual({ op: { op: 'tokenCopy', object: 'o5', player: 'p2', haste: true, atNextEndStep: 'exile' } });
   });
 
   it('describes operations and offers the top and bottom card of a library by position only', () => {

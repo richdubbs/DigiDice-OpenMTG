@@ -458,6 +458,12 @@ const OPTIONAL_PARAMS: Readonly<Record<string, readonly string[]>> = { equip: ['
 const LEADING_OPTIONAL_PARAMS: Readonly<Record<string, readonly string[]>> = { devour: ['filter'] };
 
 /**
+ * trek-7: parameters of a keyword that only a grant gives and its words never write: a granted beam me up's `filter` (the creatures it may return, "Scotty can't be
+ * beamed up to cast a spell this way", template sta.trek7.duringMain.each.beamMeUp.manaCost.selfCantBeamedUp), so "Beam me up {2}{W}" stays a keyword with a cost only.
+ */
+const GRANT_ONLY_PARAMS: Readonly<Record<string, readonly string[]>> = { 'beam me up': ['filter'] };
+
+/**
  * FAST5X E27: the keywords whose cost may be a choice between costs here: ward, whose cost is paid as its trigger resolves (CR 702.21a, 118.12a; the `pay` op
  * resolves the choice). A cost paid while casting or activating has its cost changes applied to the total before the choice could be made, so no other keyword
  * reads one (equip's "Pay {3} or discard a card" is a template of its own, zz-fast5x/e27.json, with no cost change to apply).
@@ -473,6 +479,7 @@ function paramParses(ctx: HoleCtx, pos: number, params: string[], keyword = '', 
   for (const prm of params) {
     const next: typeof states = [];
     for (const s of states) {
+      if (GRANT_ONLY_PARAMS[keyword]?.includes(prm)) { next.push(s); continue; }
       const dashSkip = phraseAt(ctx, s.end, DASH);
       if (prm === 'amount') for (const a of amountAt(ctx, s.end)) next.push({ end: a.end, fields: { ...s.fields, amount: a.amount } });
       else if (prm === 'cost') {

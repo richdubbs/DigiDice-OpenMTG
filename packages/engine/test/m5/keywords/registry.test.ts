@@ -28,9 +28,9 @@ describe('KeywordRegistry.get and names', () => {
     const names = keywordRegistry.names();
     expect(names).toEqual([...names].sort());
     expect(new Set(names).size).toBe(names.length);
-    expect(names).toHaveLength(202); // 194 rules (daybound and nightbound are two keywords; storied, FAST5X E18, is CR 702.195 since the 2026-09-25 edition) + multikicker + typecycling + megamorph (M6-3, CR 702.37b) + commander ninjutsu (CR 702.49d) and partner with (CR 702.124j), M11-4 + choose a Background and Doctor's companion (cmd1, CR 702.124k, 702.124m)
+    expect(names).toHaveLength(203); // 194 rules (daybound and nightbound are two keywords; storied, FAST5X E18, is CR 702.195 since the 2026-09-25 edition) + multikicker + typecycling + megamorph (M6-3, CR 702.37b) + commander ninjutsu (CR 702.49d) and partner with (CR 702.124j), M11-4 + choose a Background and Doctor's companion (cmd1, CR 702.124k, 702.124m) + beam me up (trek-1, Star Trek reminder text)
     names.pop();
-    expect(keywordRegistry.names()).toHaveLength(202);
+    expect(keywordRegistry.names()).toHaveLength(203);
   });
 
   it('the loaded data is frozen: a data file cannot be edited at run time', () => {

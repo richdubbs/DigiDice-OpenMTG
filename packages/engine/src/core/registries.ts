@@ -38,6 +38,7 @@ import { PLOT_HANDLERS } from './special/plot';
 import { FORETELL_HANDLERS } from './special/foretell';
 import { SUSPEND_HANDLERS } from './special/suspend';
 import { COMPANION_HANDLERS } from './special/companion';
+import { PLAY_OUTSIDE_HANDLERS } from './special/play-outside';
 import { ROOM_MOVE_PARTS, ROOM_SPECIAL_HANDLERS } from './rooms';
 import { KEYWORD_SPECIAL_HANDLERS } from './special-actions';
 import { COPY_DEFS_VIEW_PARTS } from './view-parts/copy-defs';
@@ -90,13 +91,15 @@ export interface SpecialActionHandler {
    * FAST5X E8 INTERFACE CHANGE (additive): `door`, the half of a Room the action is for (the unlock cost, CR 709.5e, 116.2m). CMP1 INTERFACE CHANGE: `object`
    * may be absent for an action about no object (the companion, a card outside the game, CR 400.11, 116.2g); the listed action then has no `object`.
    */
-  list(g: Game, player: PlayerId): { object?: ObjectId; via?: string; door?: number; option?: number; label: string; cost: CostDef | null }[]; // std-freecast-5: `option` (core/special/plot.ts)
+  list(g: Game, player: PlayerId): { object?: ObjectId; via?: string; door?: number; option?: number; outside?: DefId; label: string; cost: CostDef | null }[]; // std-freecast-5: `option` (core/special/plot.ts); trek-11: `outside`, the card outside the game the action plays (core/special/play-outside.ts)
+  /** trek-11 INTERFACE CHANGE (additive): the action depends on a hidden place (cards outside the game): core/legal.ts leaves it out of the public questions (`hasPublicPriorityActions`). */
+  hidden?: true;
   perform(g: Game, action: Extract<Action, { type: 'special' }>): void; // throws IllegalAction when not listed
 }
 // FAST5X E6: plot (CR 702.170a-b, 116.2k), core/special/plot.ts, ahead of the adapted keyword stub, which lists nothing; ROOM: FAST5X E8 (CR 116.2m)
-// CMP1: the companion special action (CR 702.139a, 116.2g), core/special/companion.ts
+// CMP1: the companion special action (CR 702.139a, 116.2g), core/special/companion.ts; trek-11: playing a card from outside the game (CR 400.11), core/special/play-outside.ts
 // cloud r3-mech: foretell (CR 702.143a-b, 116.2h), core/special/foretell.ts, ahead of the keyword stub, as plot; std-rx22: suspend (CR 702.62a, 116.2f), the same
-export const SPECIAL_ACTION_HANDLERS: readonly SpecialActionHandler[] = [...TURN_FACE_UP_HANDLERS, ...PLOT_HANDLERS, ...FORETELL_HANDLERS, ...SUSPEND_HANDLERS, ...ROOM_SPECIAL_HANDLERS, ...COMPANION_HANDLERS, ...KEYWORD_SPECIAL_HANDLERS];
+export const SPECIAL_ACTION_HANDLERS: readonly SpecialActionHandler[] = [...TURN_FACE_UP_HANDLERS, ...PLOT_HANDLERS, ...FORETELL_HANDLERS, ...SUSPEND_HANDLERS, ...ROOM_SPECIAL_HANDLERS, ...COMPANION_HANDLERS, ...PLAY_OUTSIDE_HANDLERS, ...KEYWORD_SPECIAL_HANDLERS];
 
 /** View parts (core/view.ts#viewFor). */
 export interface ViewPart {

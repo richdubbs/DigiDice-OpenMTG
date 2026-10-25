@@ -20,14 +20,17 @@ import { ArenaBackdrop } from './ArenaBackdrop';
 import { Battlefield } from './Battlefield';
 import { BoardContext, PromptSlotsContext, useBoard, type BoardContextValue, type BoardInteraction } from './context';
 import { BoardCredit } from './BoardCredit';
+import { CardOverlay, hasOverlay, overlayOf } from './CardOverlay';
 import { defaultCardRenderer, noArtist, type ArtistHook, type CardRenderer } from './cardRenderer';
 import { FxLayer } from './fx/FxLayer';
 import { TargetArrows } from './fx/TargetArrows';
 import { GameLog, LogButton } from './GameLog';
 import { HiddenHand, OtherHand, OwnHand } from './Hand';
+import { PartialWarning } from '../cards/AutomationBadge';
 import { faceDownHow, hasOtherFace, isFaceDownProfile, statusLines } from '../cards/objectStatus';
 import { charsOf, defOf, isHidden, isKnownFaceDown, isTokenCopy, objectName, playableObjects, playerName, seating, shownFace, targetedBy } from './model';
 import { CenterLine, PhaseBar } from './PhaseBar';
+import { RailShareHandle, RailWidthHandle, railStyle } from './RailResize';
 import { Piles, PlayerPanel } from './PlayerPanel';
 import { OwnerSleeve, PlayerSleevesContext, type PlayerSleeves } from './sleeves';
 import { StackPanel, TableStack } from './StackPanel';
@@ -227,6 +230,10 @@ function Zoom({ zoom }: { zoom: ZoomState | null }) {
   const own = o.controller === view.viewer;
   const lines = statusLines(view, o);
   const how = faceDownHow(o);
+  const chars = faceDown ? null : charsOf(view, o);
+  // The picture shows the printed card: a permanent's current values go on it as on the battlefield (CR 208.3, 306.5b, 310.4b, 613.4), so a 0/0 Germ
+  // token equipped to 12/12 reads 12/12 here too. Not on a face-down card's real face, whose values are the 2/2's (CR 708.2a).
+  const overlay = o.zone === 'battlefield' && !faceDown ? overlayOf(o, def, face, chars, chars?.types.includes('Creature') === true) : null;
   return (
     <div className={`zoom zoom-${zoom.side}`} aria-label="Card zoom">
       {!faceDown && isTokenCopy(o, def) && <div className="zoom-label zoom-token">Token copy of {def?.name ?? 'a card'} (CR 111.10, 707.2)</div>}
@@ -238,10 +245,13 @@ function Zoom({ zoom }: { zoom: ZoomState | null }) {
         </div>
       )}
       <div className="zoom-card">
-        <OwnerSleeve owner={o.owner}>{ctx.renderCard({ def, face, chars: faceDown ? null : charsOf(view, o), size: 'large', faceDown: o.faceDown === true })}</OwnerSleeve>
+        <OwnerSleeve owner={o.owner}>{ctx.renderCard({ def, face, chars, size: 'large', faceDown: o.faceDown === true })}</OwnerSleeve>
+        {hasOverlay(overlay) && <CardOverlay overlay={overlay} />}
       </div>
       {/* The Scryfall picture's artist, under the picture, never on it */}
       <BoardCredit def={def} face={face} className="zoom-credit" />
+      {/* A partly automated card, in any zone (the battlefield too): it may not work as written */}
+      <PartialWarning level={faceDown ? null : def?.automation.level} className="zoom-warning" />
       {lines.length > 0 && (
         <ul className="zoom-status" aria-label="Status">
           {lines.map((l) => (
@@ -411,6 +421,8 @@ export function GameBoard({
   // The zoom lives in its own store, read only by <ZoomHost>: pointing at a card must not draw the whole board again (ui/arena perf).
   const [zoomStore] = useState(() => new ZoomStore());
   const [openZone, setOpenZone] = useState<string | null>(null);
+  const [zoneLayer, setZoneLayer] = useState<HTMLDivElement | null>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
   const [logOpen, setLogOpen] = useState(false);
   const [actionsSlot, setActionsSlot] = useState<HTMLDivElement | null>(null);
   const [stageSlot, setStageSlot] = useState<HTMLDivElement | null>(null);
@@ -433,8 +445,8 @@ export function GameBoard({
   const targeted = useMemo(() => targetedBy(view), [view]);
   // One context value per change of what it holds: a draw of the board for another reason does not make every card on it draw again.
   const ctx = useMemo<BoardContextValue>(
-    () => ({ view, renderCard, useArtist, legalActions, playable, manaOnly, byHand, selectable, selected, targeted, focusStack, setFocusStack, setZoom, openZone, setOpenZone, interaction, handOrders }),
-    [view, renderCard, useArtist, legalActions, playable, manaOnly, byHand, selectable, selected, targeted, focusStack, setZoom, openZone, interaction, handOrders],
+    () => ({ view, renderCard, useArtist, legalActions, playable, manaOnly, byHand, selectable, selected, targeted, focusStack, setFocusStack, setZoom, openZone, setOpenZone, zoneLayer, interaction, handOrders }),
+    [view, renderCard, useArtist, legalActions, playable, manaOnly, byHand, selectable, selected, targeted, focusStack, setZoom, openZone, zoneLayer, interaction, handOrders],
   );
   // The seat at the bottom stays put while a hot-seat hand-off plays out on the spectator view (the cover comes right after).
   const lastViewer = useRef<string | null>(null);
@@ -482,6 +494,8 @@ export function GameBoard({
       <BoardContext.Provider value={ctx}>
         <div
           className="game-board"
+          ref={boardRef}
+          style={railStyle(settings.railWidth, settings.railPromptShare)}
           data-viewer={view.viewer ?? 'spectator'}
           data-step={view.turn.step}
           data-active={started ? (view.turn.activePlayer === view.viewer ? 'me' : 'them') : 'none'}
@@ -490,6 +504,7 @@ export function GameBoard({
           data-layout={layout}
           data-over={view.result ? '' : undefined}
           data-decision={view.pending && decidingPlayer(view.pending) === view.viewer ? view.pending.kind : undefined}
+          data-zone={openZone ?? undefined}
         >
           {/* The table makes its own sounds (zoom, picks, piles, drag): the page's generic click and hover sounds stay out of it (audio/uiSounds.ts). */}
           <div className="board-main" ref={mainRef} data-sfx-scope="manual">
@@ -544,6 +559,8 @@ export function GameBoard({
             )}
             {/* A decision drawn large over the table (the opening hand, assigning combat damage): the prompt fills it (prompts/stage.tsx). */}
             <div className="decision-stage" ref={setStageSlot} />
+            {/* The open graveyard, exile or command zone viewer (ZoneViewer.tsx), over the whole table: the result and the log below too (board.css) */}
+            <div className="zone-layer" ref={setZoneLayer} />
             <ResultScreen view={view} seats={seats} />
             <ZoomHost store={zoomStore} anchor={zoomAnchor} shown={zoomedId} />
             {logOpen && <GameLog onClose={() => setLogOpen(false)} />}
@@ -551,12 +568,15 @@ export function GameBoard({
           {/* The rail never moves: the stack's half above, the prompt's half below, each the same fixed height and scrolling
               inside itself, so the turn structure between them always sits in the middle of the rail. */}
           <aside className="board-side" aria-label="Stack and log">
+            {/* The player sizes the rail: its width at its left edge, the prompt's share above the prompt (RailResize.tsx) */}
+            <RailWidthHandle board={boardRef} width={settings.railWidth} share={settings.railPromptShare} />
             <div className="rail-top">
               <LogButton open={logOpen} onToggle={() => setLogOpen((o) => !o)} />
               <StackPanel />
               <Reminders view={view} />
             </div>
             <PhaseBar />
+            <RailShareHandle board={boardRef} width={settings.railWidth} share={settings.railPromptShare} />
             <div className="board-prompt" {...(prompt !== undefined ? { role: 'region', 'aria-label': 'Prompt' } : {})}>
               <PromptSlotsContext.Provider value={slots}>{prompt}</PromptSlotsContext.Provider>
             </div>

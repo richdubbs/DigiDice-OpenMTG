@@ -10,6 +10,8 @@
  *  - "for each", "twice", "half ..., rounded down" are built by the Qty hole and the templates (`math`); nothing is left to do for them here.
  */
 import { shieldShape } from '../taint';
+import { patternsHaveAmount } from '../../model/lint-roles';
+import type { EventPattern } from '../../types/ability';
 import { COUNTED_OPS, stepsInOrder } from './mentions';
 import { MOVED_MARK, MOVED_TO, movedBy, type MovedKind } from '../holes/moved-words';
 import type { Draft, Rec, Unit } from './types';
@@ -367,6 +369,22 @@ function movedReflexive(step: Rec, path: string, node: Rec): { participle: strin
   return kind === undefined ? null : { participle: `moved:${kind}`, kind: kind as MovedKind, which: when['which'] };
 }
 
+/**
+ * trek-8 (CR 603.7, 603.2c, 608.2h): "that many" / "that much" inside the instructions of an event-timed delayed trigger ("Whenever it deals combat damage to a
+ * player this turn, you draw that many cards", The Inner Light) is the amount of the event that triggers it (damage dealt), read as the delayed trigger resolves
+ * (`{q:'eventAmount'}`, the delayed trigger keeps its event, effects/handlers/lasting.ts#delay): what the sentences before it did happened in another resolution,
+ * so none of their numbers is a candidate (resolveNumbers uses this only when no candidate exists). Undefined when `step` is no such delay, the instruction is not
+ * in its `do`, the phrase is a participle one ("cards discarded this way") or the unit is a batch trigger ("one or more": the amount is the whole batch's); null
+ * when the delayed event has no amount.
+ */
+function delayedEventAmount(step: Rec, path: string, anaphor: Rec, u: Unit): Rec | null | undefined {
+  // (only in the first instruction of the delayed trigger: after "..., mill three cards, then draw that many cards" the number is what an instruction of the trigger made)
+  if (step['op'] !== 'delay' || !/^\/do\/0(\/|$)/.test(path) || anaphor['participle'] !== undefined || u.flags.includes('batch')) return undefined;
+  const when = step['when'];
+  if (!isRec(when) || when['at'] !== 'event' || !isRec(when['event'])) return undefined;
+  return patternsHaveAmount([when['event'] as unknown as EventPattern]) ? { q: 'eventAmount' } : null;
+}
+
 function resolveNumbers(u: Unit, seq: Unit[], at: number, d: Draft, prefix: Unit[]): boolean {
   let ok = true;
   let failure = '';
@@ -442,6 +460,13 @@ function resolveNumbers(u: Unit, seq: Unit[], at: number, d: Draft, prefix: Unit
         // more cards, target creature gets +2/+0 until end of turn for each card discarded this way"): "this way" is the triggering discard, its amount the cards
         // discarded (as "that many" reads it, eventAmount). Only every card of it: a narrower description ("nonland card discarded this way") is not that amount.
         if (participle === 'moved:discarded' && plainCards(node['which']) && discardBatchTrigger(d) && all.some((s) => !s.step && !s.opaque && isRec(s.ref) && s.ref['q'] === 'eventAmount')) return { q: 'eventAmount' };
+      }
+      // trek-8 (CR 603.7, 603.2c, 608.2h): in the instructions of an event-timed delayed trigger, when nothing before supplies a number ("Whenever it deals combat
+      // damage to a player this turn, you draw that many cards"), the number is the delayed trigger's own event's amount (read as it resolves). A candidate that
+      // exists is never overridden (G10: every reading that parsed before is the same).
+      if (srcs.length === 0) {
+        const delayed = delayedEventAmount(steps[i]!, path, node['$anaphor'] as Rec, u);
+        if (delayed !== undefined && delayed !== null) return delayed;
       }
       if (srcs.length !== 1 || srcs[0]!.opaque) {
         ok = false;

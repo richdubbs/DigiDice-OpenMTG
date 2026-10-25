@@ -17,6 +17,23 @@ import { copyExceptText, retainThisText } from './copy-except';
 import { cloneState, objKey, type RenderState } from './state';
 import { alt, article, COLOR_WORD, conj, firstAlt, joinList, mapEnds, parseMarked, lowerType, NoRenderer, numWord, pluralize, signed, withArticle } from './text';
 
+/**
+ * trek-7 (CR 101.2, 614.17b, 118.9; Scotty, Miracle Worker): the sentence "~ can't be beamed up to cast a spell this way", which a granted beam me up says with the creatures
+ * it may return other than its grantor (`filter`: your creatures that are not `{ref:'grantor'}`, the object whose static ability grants it; statics/mods.ts#withGrantor),
+ * after the sentence of its cost. Nothing else about the creatures has words: any other filter refuses.
+ */
+function beamMeUpRider(kw: Extract<AbilityDef, { kind: 'keyword' }>, cost: string, st: RenderState): string {
+  const f = kw.filter as Record<string, unknown> | undefined;
+  if (f === undefined) return cost;
+  const not = f['not'] as { is?: { ref?: string } } | undefined;
+  const keys = Object.keys(f).filter((k) => f[k] !== undefined).sort().join();
+  const types = f['types'] as unknown;
+  if (keys !== 'controller,not,types' || f['controller'] !== 'you' || !Array.isArray(types) || types.length !== 1 || types[0] !== 'Creature' || not?.is?.ref !== 'grantor' || Object.keys(not).length !== 1 || Object.keys(not.is).length !== 1) {
+    throw new NoRenderer('a beam me up grant that lets only some creatures be returned, other than "~ can\'t be beamed up to cast a spell this way"');
+  }
+  return `${cost}. ${K.obj({ ref: 'self' }, st, 'subject').text} can't be beamed up to cast a spell this way`;
+}
+
 type ModOf<L extends Modification['layer']> = Extract<Modification, { layer: L }>;
 
 const find = <L extends Modification['layer']>(mods: Modification[], layer: L): ModOf<L>[] => mods.filter((m): m is ModOf<L> => m.layer === layer);
@@ -356,6 +373,11 @@ interface Pieces {
   /** FAST4 T29: a static ability's "is a Samurai in addition to its other types" (preds[index]), which Oracle may say after the other changes. */
   typeAdd?: number;
   /**
+   * trek-1 (family type-set-anywhere): a resolved effect's "becomes a Doctor" (preds[index]): creature types SET and nothing else in layers 4 and 5, which Oracle
+   * may say after the other changes ("Until end of turn, it gets +1/+1 and becomes a Doctor").
+   */
+  typeSet?: number;
+  /**
    * FAST5 T69: the predicates of a named identity say their subject again, "it becomes a legendary creature named Mileva, the Stalwart, it has base power and
    * toughness 5/5, and it gains ..." (CR 201.2, 613.1d): each one after the first begins "it".
    */
@@ -609,7 +631,8 @@ function identity(e: ContinuousEffectDef, pl: boolean, st: RenderState, isStatic
       out.typeAdd = out.preds.length; // FAST5 T41: a resolved effect says it last too ("gets +3/+1 and becomes a Dinosaur in addition to its other types")
       // r4-fxb (family self-by-name, CR 201.5): of the object itself a character card says "in addition to his other types", which the front end reads as "~'s"
       const selfTypes = (e.affects as { ref?: string }).ref === 'self' ? [`${verbBe} ${art(desc)}${plural(desc)}${withTypes} in addition to ~'s other types`] : [];
-      out.preds.push(alt(`${verbBe} ${art(desc)}${plural(desc)}${withTypes} in addition to its other types`, `${verbBe} ${art(desc)}${plural(desc)}${withTypes}`, ...selfTypes));
+      // trek-8 (CR 205.1b): "Creatures you control become Warriors in addition to their other types and gain haste until end of turn": a group says "their"
+      out.preds.push(alt(`${verbBe} ${art(desc)}${plural(desc)}${withTypes} in addition to ${pl ? 'their' : 'its'} other types`, `${verbBe} ${art(desc)}${plural(desc)}${withTypes}`, ...selfTypes));
       out.inAddition = `${verbBe} ${art(desc)}${plural(desc)}${withTypes} in addition to ${pl ? 'their' : 'its'} other types`; // FAST5 T77
     }
     else {
@@ -619,6 +642,9 @@ function identity(e: ContinuousEffectDef, pl: boolean, st: RenderState, isStatic
         // r5-fxz: several objects too, "They are Food artifacts with "..."" (Supper for Spiders)
         out.loseOthers = pl ? { index: out.preds.length, text: `are ${plural(desc)}`, plural: true } : { index: out.preds.length, text: `is ${art(desc)}${desc}` };
       }
+      // trek-1 (family type-set-anywhere; CR 205.1a, 613.1d, 613.4c): a resolved effect that only SETS subtypes ("becomes a Doctor") may be said after the other changes
+      if (!isStatic && subs.set.length > 0 && subs.add.length === 0 && types.set.length === 0 && types.add.length === 0 && supers.set.length === 0 && supers.add.length === 0
+        && colorSet.length === 0 && colorAdd === '' && !allTypes && !bp) out.typeSet = out.preds.length;
       out.preds.push(`${verbBe} ${art(desc)}${plural(desc)}${withTypes}`);
     }
   } else if (colorSet.length > 0) {
@@ -831,7 +857,10 @@ function pieces(e: ContinuousEffectDef, pl: boolean, st: RenderState, isStatic: 
     preds.push(typeLoss);
   }
   // abilities that are granted come last
-  for (const m of l6) {
+  for (const m0 of l6) {
+    // trek-7: a granted beam me up's `filter` (the creatures it may return) is said by beamMeUpRider after the sentence of its cost, never as the keyword's own words
+    const m = m0.add?.some((a) => a.kind === 'keyword' && a.keyword === 'beam me up' && a.filter !== undefined)
+      ? { ...m0, add: m0.add.map((a) => (a.kind === 'keyword' && a.keyword === 'beam me up' ? { ...a, filter: undefined } : a)) } : m0;
     if (m.add && m.add.length > 0) {
       // FAST5 T56 (CR 702.34a, 118.9): "gains flashback until end of turn. The flashback cost is equal to its mana cost." is one granted flashback whose cost is the card's
       // own mana cost; the second sentence is its rider. Only that one keyword alone: the sentence names "the flashback cost", so it says nothing about another ability.
@@ -839,13 +868,17 @@ function pieces(e: ContinuousEffectDef, pl: boolean, st: RenderState, isStatic: 
         // cloud r3-mech (CR 702.187b): "has mayhem. The mayhem cost is equal to its mana cost." the same way; r5-cost (CR 702.180a, 702.128a): and harmonize and
         // embalm, "Its harmonize cost is equal to its mana cost", "The embalm cost is equal to its mana cost"
         const kw = m.add[0]?.kind === 'keyword' ? m.add[0].keyword : undefined;
-        const only = m.add.length === 1 && (kw === 'flashback' || kw === 'mayhem' || kw === 'harmonize' || kw === 'embalm') && (m.add[0] as { cost?: unknown }).cost === undefined;
+        // trek-7 (Star Trek, CR 118.9): and beam me up, "The beam me up cost is equal to that spell's mana cost." (Scotty, Miracle Worker), with at most the filter that keeps
+        // its grantor from being returned for it ("~ can't be beamed up to cast a spell this way", said after the cost sentence)
+        const only = m.add.length === 1 && (kw === 'flashback' || kw === 'mayhem' || kw === 'harmonize' || kw === 'embalm' || kw === 'beam me up') && (m.add[0] as { cost?: unknown }).cost === undefined;
         // std-tla (CR 702.34a, 604.1): a static ability grants it the same way, "During your turn, each non-Lesson instant and sorcery card in your graveyard has flashback.
         // The flashback cost is equal to that card's mana cost." (the rider sentence follows the static sentence, as it follows a resolved one)
         if (!only || out.rider !== undefined) throw new NoRenderer('a cost equal to its mana cost beside other changes');
         out.rider = kw === 'flashback' || kw === 'mayhem'
           ? alt(`the ${kw} cost is equal to its mana cost`, `the ${kw} cost is equal to that card's mana cost`)
-          : alt(`${alt('its', 'the')} ${kw!} cost is equal to its mana cost`, `${alt('its', 'the')} ${kw!} cost is equal to that card's mana cost`);
+          : alt(`${alt('its', 'the')} ${kw!} cost is equal to its mana cost`, `${alt('its', 'the')} ${kw!} cost is equal to that card's mana cost`,
+            ...(kw === 'beam me up' ? [`the beam me up cost is equal to that spell's mana cost`] : []));
+        if (kw === 'beam me up') out.rider = beamMeUpRider(m0.add![0] as Extract<AbilityDef, { kind: 'keyword' }>, out.rider, st);
       }
       const list = abilityList(m.add, st, granteeNoun(subject, e, st));
       if (!isStatic && out.granted === undefined && l6.filter((x) => x.add && x.add.length > 0).length === 1) out.granted = { index: preds.length, list };
@@ -1247,11 +1280,14 @@ function continuousOne(e: ContinuousEffectDef, st: RenderState, duration: Durati
     // the base power and toughness of one object set by a resolved effect, said with "become" after the duration, alone or followed by the abilities it gains;
     // "they gain" only for this object, whose name may name two characters (CR 201.5)
     const b7 = e.mods.length === p.preds.length ? e.mods.find((m) => m.layer === '7b') as { power?: Quantity; toughness?: Quantity } | undefined : undefined;
-    if (dur && !isStatic && !pl && !have && b7 !== undefined && isNum(b7.power) && isNum(b7.toughness) && /^has base power and toughness /.test(p.preds[0]!)
+    if (!isStatic && !pl && !have && b7 !== undefined && isNum(b7.power) && isNum(b7.toughness) && /^has base power and toughness /.test(p.preds[0]!)
       && p.forEach === undefined && p.sized === undefined && p.where.length === 0 && p.rider === undefined && e.affects.ref !== 'each' && !isPlayerRef(e.affects as ObjRef | PlayerRef, st)) {
-      const become = `${dur}, ${subject}'s base power and toughness become ${b7.power}/${b7.toughness}`;
-      if (p.preds.length === 1) text = alt(text, become);
-      else if (p.preds.length === 2 && gr !== undefined && gr.index === 1) text = alt(text, `${become} and ${subject === '~' ? alt('it gains', 'they gain') : 'it gains'} ${gr.list}`);
+      // trek-5 (CR 613.4b, 611.2a; family base-pt-become-for-good): a base power and toughness that lasts for good ("{6}{U}: ~'s base power and toughness become 7/9.")
+      // and one with its duration last ("Its base power and toughness become 1/1 until end of turn") are the same effect; one reading group with the std-msh one
+      const core = `${subject}'s base power and toughness become ${b7.power}/${b7.toughness}`;
+      const become = dur ? `${dur}, ${core}` : core;
+      if (p.preds.length === 1) text = alt(text, become, ...(dur ? [`${core} ${dur}`] : []));
+      else if (dur && p.preds.length === 2 && gr !== undefined && gr.index === 1) text = alt(text, `${become} and ${subject === '~' ? alt('it gains', 'they gain') : 'it gains'} ${gr.list}`);
     }
     // FAST5 T69 (CR 205.1a, 613.1d): "It's a Treasure artifact with "{T}, Sacrifice this artifact: Add one mana of any color," and it loses all other card types."
     // (Vraska, the Silencer): the card types set by a resolved effect that lasts for good, with the abilities it grants said after the type words, and the types it
@@ -1321,9 +1357,11 @@ function continuousOne(e: ContinuousEffectDef, st: RenderState, duration: Durati
     // FAST5 T41: a resolved effect too ("Until end of turn, target creature gets +2/+2, gains flying, and becomes a Horror enchantment creature in addition to its other types")
     // FAST5 T77: ... or anywhere in that list ("Equipped creature gets +1/+1, is a Ninja in addition to its other types, and has "..."", "Equipped creature is a Shaman in addition
     // to its other types and has "..."": the Equipment of Final Fantasy say it first or second); the layers order the changes, not the words
-    if (ta !== undefined && p.preds.length > 1 && p.forEach === undefined && p.sized === undefined && p.where.length === 0 && p.rider === undefined) {
-      const rest = p.preds.filter((_, i) => i !== ta);
-      text = alt(text, ...rest.map((_, k) => sentence([...rest.slice(0, k), p.preds[ta]!, ...rest.slice(k)], p.where)), sentence([...rest, p.preds[ta]!], p.where));
+    // trek-1 (family type-set-anywhere): a resolved effect's creature types SET too ("Until end of turn, it gets +1/+1 and becomes a Doctor"), in the same group
+    const tw = ta ?? p.typeSet;
+    if (tw !== undefined && p.preds.length > 1 && p.forEach === undefined && p.sized === undefined && p.where.length === 0 && p.rider === undefined) {
+      const rest = p.preds.filter((_, i) => i !== tw);
+      text = alt(text, ...rest.map((_, k) => sentence([...rest.slice(0, k), p.preds[tw]!, ...rest.slice(k)], p.where)), sentence([...rest, p.preds[tw]!], p.where));
     }
     // FAST5 T57 (CR 613.1d, 613.1f, 613.4b): "Enchanted creature is a Citizen with base power and toughness 1/1. It has defender and loses all other
     // abilities." (a static ability): the identity change is one sentence, the gift of abilities with the loss of the others is the next one

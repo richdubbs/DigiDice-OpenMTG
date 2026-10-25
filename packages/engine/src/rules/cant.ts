@@ -16,7 +16,7 @@ export function cantDo(s: GameState, action: RuleAction, subject: ObjectId | Pla
 }
 
 /** How a cost part uses an object (rules/cost-pick.ts). */
-export type CostUse = 'sacrifice' | 'returnToHand' | 'exile' | 'discard' | 'putCounters';
+export type CostUse = 'sacrifice' | 'returnToHand' | 'exile' | 'discard' | 'putCounters' | 'beamUp'; // trek-1: 'beamUp', returned for a beam me up cost
 
 /**
  * CR 614.17b: may this object pay a part of a cost of `player`? A sacrifice is the player sacrificing (`sacrifice`), the permanent being sacrificed
@@ -31,6 +31,10 @@ export function costUseDenial(s: GameState, player: PlayerId, id: ObjectId, use:
       return cantDo(s, 'sacrifice', player, id) ?? cantDo(s, 'beSacrificed', id) ?? cantDo(s, 'leave', id);
     case 'returnToHand':
       return onBattlefield ? cantDo(s, 'leave', id) : null;
+    // trek-1 (Star Trek beam me up, CR 702 rule number unverified; CR 614.17b): returning a creature to pay a beam me up cost beams it up; a permanent that
+    // "can't be beamed up" can't be returned for it (Marooned)
+    case 'beamUp':
+      return (onBattlefield ? cantDo(s, 'leave', id) : null) ?? cantDo(s, 'beBeamedUp', id);
     case 'exile':
       return cantDo(s, 'beExiled', id) ?? (onBattlefield ? cantDo(s, 'leave', id) : null);
     case 'discard':

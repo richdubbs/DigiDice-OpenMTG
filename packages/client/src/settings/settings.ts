@@ -59,7 +59,19 @@ export interface Settings {
    * zoom and pan by keys and buttons (GameBoardProps.cameraFollow).
    */
   cameraFollow: boolean;
+  /**
+   * The game board's right rail as the player sized it by dragging its left edge (board/RailResize.tsx): its width in pixels, RAIL_WIDTH_MIN to
+   * RAIL_WIDTH_MAX; null for the default width. The rail never changes size by itself.
+   */
+  railWidth: number | null;
+  /** The share of the rail's two halves the bottom one (the prompt: attackers, blockers, choices) takes, RAIL_SHARE_MIN to RAIL_SHARE_MAX; null for half. */
+  railPromptShare: number | null;
 }
+
+export const RAIL_WIDTH_MIN = 220;
+export const RAIL_WIDTH_MAX = 720;
+export const RAIL_SHARE_MIN = 0.2;
+export const RAIL_SHARE_MAX = 0.8;
 
 /** M12-4b: the four default player names (Settings.playerNames). */
 export type PlayerNames = [string, string, string, string];
@@ -82,7 +94,14 @@ export const DEFAULT_SETTINGS: Settings = {
   playerNames: ['Player 1', 'Player 2', 'Player 3', 'Player 4'],
   tableLayout: 'shared',
   cameraFollow: true,
+  railWidth: null,
+  railPromptShare: null,
 };
+
+/** A stored number kept to [min, max], or null when it is not a finite number. */
+function cleanRange(v: unknown, min: number, max: number): number | null {
+  return typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : null;
+}
 
 /** Milliseconds of one board animation at a speed (the game screen publishes it as the CSS variable --anim-ms). */
 export function animationMs(speed: AnimationSpeed): number {
@@ -134,6 +153,8 @@ export function sanitizeSettings(raw: unknown): Settings {
     playerNames: [cleanName(names[0], d.playerNames[0]), cleanName(names[1], d.playerNames[1]), cleanName(names[2], d.playerNames[2]), cleanName(names[3], d.playerNames[3])],
     tableLayout: TABLE_LAYOUTS.includes(r.tableLayout as TableLayout) ? (r.tableLayout as TableLayout) : d.tableLayout,
     cameraFollow: r.cameraFollow !== false,
+    railWidth: cleanRange(r.railWidth, RAIL_WIDTH_MIN, RAIL_WIDTH_MAX),
+    railPromptShare: cleanRange(r.railPromptShare, RAIL_SHARE_MIN, RAIL_SHARE_MAX),
   };
 }
 

@@ -137,6 +137,32 @@ describe('the opening hand screen (CR 103.5)', () => {
     expect(st.querySelector('.prompt-mulligan-hint')!.textContent).toMatch(/put 1 card from it on the bottom/);
   });
 
+  it('after a mulligan the new hand is on the stage the same way: a click picks the card for the bottom, a second takes it back, the button answers', async () => {
+    let s = toMulliganDecision('stage-bottom');
+    const me = s.pending!.player;
+    s = drive(s, [{ kind: 'mulligan', keep: false }]);
+    // The other player declares too before the mulligans are taken together (CR 103.5).
+    while (s.pending?.kind === 'mulligan' && s.pending.player !== me) s = drive(s, [{ kind: 'mulligan', keep: true }]);
+    expect(s.pending).toMatchObject({ kind: 'chooseObjects', player: me, min: 1, max: 1 });
+    const { conn } = renderOnBoard(s);
+    const st = stage();
+    expect(st.querySelector('.prompt-stage-title')!.textContent).toBe('Put 1 card on the bottom');
+    expect(st.querySelector('.prompt-stage-sub')!.textContent).toMatch(/^Your new hand after a mulligan: click the card/);
+    const slots = [...st.querySelectorAll<HTMLElement>('.prompt-fan-pick')];
+    expect(slots).toHaveLength(s.zones.hand[me]!.length);
+    const ok = within(st).getByRole('button', { name: 'Put on the bottom' }) as HTMLButtonElement;
+    expect(ok.disabled).toBe(true);
+    await clickIn(slots[0]!);
+    await clickIn(slots[0]!);
+    expect(slots[0]!.getAttribute('aria-pressed')).toBe('false');
+    await clickIn(slots[2]!);
+    expect(slots[2]!.getAttribute('aria-pressed')).toBe('true');
+    expect(within(slots[2]!).getByText('Bottom')).toBeTruthy();
+    await clickIn(ok);
+    expect(conn.lastAnswer()).toEqual({ kind: 'chooseObjects', ids: [slots[2]!.querySelector('[data-stage-id]')!.getAttribute('data-stage-id')] });
+    expect(conn.errors).toEqual([]);
+  });
+
   it('"View battlefield" steps the stage aside and keeps the buttons; Back brings it back', async () => {
     renderOnBoard(toMulliganDecision('stage-peek'));
     const st = stage();

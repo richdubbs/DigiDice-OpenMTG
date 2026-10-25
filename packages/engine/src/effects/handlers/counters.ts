@@ -102,14 +102,16 @@ const putCounters: StepHandler<Step<'putCounters'>> = (cx, st) => {
   const shares = putShares(cx, st, n); // 2. resolve
   if (shares === null) return askManual(cx, st.span ?? 'Put the counters as divided on casting.', 'the announced division of the counters is missing (CR 601.2d)');
   const acted: Holder[] = [];
+  const tally = new Map<string, number>(); // trek-6 (CR 122.6, 608.2c): what was actually put, for "if you put two or more +1/+1 counters on creatures this way"
   for (const { to, amount } of shares) { // 4. act (CR 122.6: a replacement may modify it)
     if (amount <= 0 || !canHold(cx, to)) continue;
     const put = proposeMeasured(cx, { ev: 'counters', change: 'put', on: to, kind: st.kind, count: amount });
     if (put <= 0) continue;
+    tally.set(st.kind, (tally.get(st.kind) ?? 0) + put);
     acted.push(to);
     cx.g.log(`${counterWords(put, st.kind)} put on ${holderName(cx, to)}.`, { rules: ['CR 122.1', 'CR 122.6', ...(amount !== n ? ['CR 601.2d'] : [])], level: 'action' });
   }
-  return recordActed(cx, st.as, acted); // 5. record
+  return { ...recordActed(cx, st.as, acted), countersPut: tally }; // 5. record
 };
 
 // ---- remove (CR 122.1) ------------------------------------------------------------------------------------------------------------------------------------
@@ -123,7 +125,7 @@ const STOP = '__stop';
 
 /** The value forms of the counter ops this module runs (model/cap-walk.ts emits them; model/capabilities.ts registers them). */
 export const OP_FORMS: readonly string[] = ['op:removeCounters.upTo', 'op:moveCounters.every' /* FAST5X E21 */, 'op:putCounters.distribute' /* std-rx26 */, 'op:putCounters.upTo' /* std-mana-2 */,
-  'op:moveCounters.anyKind' /* p2-counters-move-1 */, 'op:moveCounters.upTo' /* p2-counters-move-1 */];
+  'op:moveCounters.anyKind' /* p2-counters-move-1 */, 'op:moveCounters.upTo' /* p2-counters-move-1 */, 'op:moveCounters.distribute' /* p2-counters-move-4 */];
 
 function removalPlan(cx: ExecCtx, st: Step<'removeCounters'>, on: Holder, n: number | 'all'): Record<string, number> {
   const present = countersOn(cx, on);
@@ -247,6 +249,7 @@ function leftWithCounters(cx: ExecCtx, from: ObjHandle): { info: LastKnown; rule
  * number an object that left had (`leftWithCounters`).
  */
 const moveCounters: StepHandler<Step<'moveCounters'>> = (cx, st) => {
+  if (st.distribute === true) return moveDistributed(cx, st); // p2-counters-move-4
   if (st.kind === 'any' || st.upTo === true) return moveEveryCounter(cx, st);
   const n = st.count === 'all' ? 'all' : amountOf(cx, st.count); // 1. evaluate
   if (n === undefined || n === 0) return NOTHING;
@@ -392,6 +395,58 @@ function movePlan(cx: ExecCtx, st: Step<'moveCounters'>, fromName: string, had: 
     plan[kind] = (plan[kind] ?? 0) + 1;
   }
   return Object.fromEntries(Object.keys(plan).sort().map((k) => [k, plan[k]!]));
+}
+
+/**
+ * p2-counters-move-4 (CR 122.5, 608.2d; cites unverified): "you may move any number of +1/+1 counters from ~ onto other creatures" (Forgotten Ancient). One object
+ * gives, a group receives: the controller chooses how many counters of the step's kind move (none to all it has, `upTo` with `count: 'all'`; a number caps it), then
+ * which objects of the group get them (one to that many) and how many each gets, at least one (as a distribution, std-rx26). Each share is one move, all or nothing
+ * (CR 122.5); a share whose object left or is the giver itself moves nothing. Only a fixed kind and a giver on the battlefield: anything else is asked by hand.
+ */
+function moveDistributed(cx: ExecCtx, st: Step<'moveCounters'>): ReturnType<StepHandler<Step<'moveCounters'>>> {
+  if (st.kind === 'any') return askManual(cx, st.span ?? 'Move the counters.', 'counters of any kind divided among a group (CR 122.5)');
+  const cap = st.count === 'all' ? 'all' : amountOf(cx, st.count); // 1. evaluate
+  if (cap === undefined || cap === 0) return NOTHING;
+  const froms = resolveObjs(cx, st.from); // 2. resolve
+  if (froms.length !== 1) return askManual(cx, st.span ?? 'Move the counters.', 'counters divided from more than one object (CR 122.5)');
+  const from = froms[0]!;
+  if (!isCurrent(cx, from) || from.zone !== 'battlefield') return NOTHING; // CR 122.5: no longer in the correct zone
+  const among = resolveObjs(cx, st.to).filter((h) => isCurrent(cx, h) && h.id !== from.id);
+  const have = countOf(countersOn(cx, from), st.kind);
+  const most = cap === 'all' ? have : Math.min(cap, have);
+  if (most === 0 || among.length === 0) return NOTHING;
+  let n = most;
+  if (st.upTo === true) { // 3. decide: how many, then where (design 8.6)
+    n = cx.g.choose({ kind: 'chooseNumber', player: cx.controller, prompt: `Move how many ${st.kind} counters from ${cx.g.nameOf(from.id)}? (up to ${most})`, min: 0, max: most, rules: ['CR 122.5', 'CR 608.2d'] }).n;
+    n = Math.max(0, Math.min(n, most));
+    if (n === 0) return NOTHING;
+  }
+  const max = Math.min(n, among.length);
+  const ids = cx.g.choose({ kind: 'chooseObjects', player: cx.controller, prompt: `Move ${counterWords(n, st.kind)} onto which of them? Choose 1 to ${max}.`, options: among.map((h) => h.id), min: 1, max, rules: ['CR 122.5', 'CR 608.2d'] }).ids;
+  const chosen = among.filter((h) => ids.includes(h.id));
+  if (chosen.length === 0) return NOTHING;
+  const amounts = chosen.length === 1 ? [n] : cx.g.choose({
+    kind: 'chooseDivision', player: cx.controller, prompt: `Divide ${counterWords(n, st.kind)} among ${chosen.map((h) => cx.g.nameOf(h.id)).join(', ')}; each gets at least 1.`, what: 'counters', total: n,
+    targets: chosen.map((h) => ({ id: h.id, label: cx.g.nameOf(h.id) })), rules: ['CR 608.2d', 'CR 122.5'],
+  }).amounts;
+  const acted: ObjHandle[] = [];
+  chosen.forEach((to, i) => { // 4. act: each share is one move, all or nothing
+    const want = Math.max(0, Math.min(amounts[i] ?? 0, countOf(countersOn(cx, from), st.kind)));
+    if (want === 0 || !isCurrent(cx, to) || !isCurrent(cx, from)) return;
+    const removal: Proposed = { ev: 'counters', change: 'removed', on: from, kind: st.kind, count: want };
+    const put: Proposed = { ev: 'counters', change: 'put', on: to, kind: st.kind, count: want };
+    if (forbidden(cx.g, put) || forbidden(cx.g, removal)) {
+      cx.g.log(`No ${st.kind} counters are moved onto ${cx.g.nameOf(to.id)}: one of the two actions can't happen.`, { rules: ['CR 122.5', 'CR 614.17'], level: 'action' });
+      return;
+    }
+    const removed = proposeMeasured(cx, removal);
+    if (removed <= 0) return;
+    const moved = proposeMeasured(cx, { ...put, count: removed });
+    if (moved <= 0) return;
+    acted.push(to);
+    cx.g.log(`${counterWords(moved, st.kind)} moved from ${cx.g.nameOf(from.id)} onto ${cx.g.nameOf(to.id)}.`, { rules: ['CR 122.5', 'CR 122.1'], level: 'action' });
+  });
+  return recordActed(cx, st.as, acted); // 5. record
 }
 
 export const COUNTERS_HANDLERS: OpHandlers = {

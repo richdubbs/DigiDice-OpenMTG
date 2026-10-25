@@ -59,14 +59,21 @@ export interface RefInfo {
   sameAs?: string;
   /**
    * cmd1 (CR 608.2f; the parser's rule, parser/lower/anaphora.ts, Mention.iterates): the player of the current iteration of "for each opponent" / "for each player":
-   * "that opponent" names it inside the body whatever other player was named (the idiom).
+   * "that opponent" names it inside the body whatever other player was named (the idiom). trek-8 (CR 608.2f): also the object of the current iteration of "for each
+   * creature ...": "that creature" names it inside the body, whatever other creature an earlier sentence named ("... create a token that's a copy of that creature").
    */
-  iterates?: 'opponent' | 'player';
+  iterates?: string | readonly string[];
   /**
    * FAST5 T46 ADDITION (optional): the binding is a whole hand a step revealed or looked at (CR 701.20a, 701.20e): "You choose a nonland card from it" says "it" for
    * it (steps-flow.ts#chooseObjects, written by steps-cards.ts reveal and look).
    */
   hand?: boolean;
+  /**
+   * trek-3 ADDITION (optional): the player whose hand it is (the `owner` of the hand a step revealed or looked at, as JSON), on the binding of the whole hand and on the
+   * binding of the one card "You may choose a nonland card from it" chose there (steps-cards.ts reveal and look, steps-flow.ts#chooseObjects). That player is the one who
+   * "exiles that card" in Oracle's "If you do, that player exiles that card, then draws a card" (render/fold-trek3.ts).
+   */
+  handOwner?: string;
   /**
    * std-ro ADDITION (optional): the binding is the top cards of a library a `reveal` step revealed (not only looked at): they are also "<cards> revealed this way"
    * (fold.ts#putAllFromGroupAndRest, written by steps-cards.ts reveal).
@@ -92,6 +99,12 @@ export interface RefInfo {
    * as a subject and "<noun> who can't" after "for each" (render/refs.ts#player, render/steps-flow.ts forEach; written by render/steps-util.ts#bindCant).
    */
   cant?: 'opponent' | 'player';
+  /**
+   * trek-7 ADDITION (optional): the binding is every card an `exileUntil` exiled (`exiled`, CR 406.1), and this is who exiled them: "They put the rest on the bottom in a
+   * random order" says that player (render/steps-zones.ts#move, written by steps-cards.ts exileUntil). Not an antecedent of its own (the parser's rest mention is
+   * participle-only, parser/lower/mentions.ts#exiledRestOf).
+   */
+  exiledBy?: PlayerRef;
 }
 
 /** std-tla: the info key (RenderState.info) of a mill step's name, for "<card> milled this way" (render/cond.ts#existsPhrase; set by steps-cards.ts and fold.ts). */

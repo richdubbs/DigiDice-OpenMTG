@@ -202,7 +202,9 @@ describe.skipIf(!SLOW || !index)(slowTitle('the whole local Oracle index (corpus
         if (l.label.kind === 'ability-word') abilityWords++;
         // merge wave 6: r4-mech reads a title-case flavor word that ends in "!" or "?" as a label (CR 207.2d: no rules meaning), and Oracle prints one
         // with a game word, The Unbeatable Squirrel Girl's "Do You Like Squirrels?"; every word of such a label is capitalized, so it is never a sentence
-        else if (!/^(?:[A-Z][\w'-]*\s+)*[A-Z][\w'-]*[!?]$/.test(l.label.text)) {
+        // trek-2: so does a flavor word of two or more words in title case ("Shaka, When the Walls Fell", "Make Them Pay"); its game words are capitalized,
+        // which rules text never does after its first word
+        else if (!/^(?:[A-Z][\w'-]*\s+)*[A-Z][\w'-]*[!?]$/.test(l.label.text) && !/^[A-Z][\w'-]*,?(?:\s+(?:[A-Z][\w'-]*|a|an|the|of|to|in|on|for|and|with|up|at|by),?)+$/.test(l.label.text)) {
           expect(l.label.text, f.pre.context.name).not.toMatch(/\b(each|you|when|whenever|target|opponent)\b/i);
         }
       }

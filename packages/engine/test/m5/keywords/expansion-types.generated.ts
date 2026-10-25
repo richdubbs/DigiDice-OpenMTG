@@ -7468,4 +7468,51 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       }
     }
   ],
+  "beam me up {2}{U}": [
+    {
+      "kind": "static",
+      "text": "Beam me up {2}{U}",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "name": "beam me up",
+          "cost": {
+            "mana": [
+              {
+                "kind": "generic",
+                "amount": 2
+              },
+              {
+                "kind": "colored",
+                "color": "U"
+              }
+            ],
+            "other": [
+              {
+                "kind": "returnToHand",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                },
+                "count": 1,
+                "beamUp": true
+              }
+            ]
+          },
+          "from": "graveyard",
+          "exileOnLeave": true
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "beam me up",
+        "reviewed": true
+      }
+    }
+  ],
 };

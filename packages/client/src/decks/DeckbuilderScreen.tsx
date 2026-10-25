@@ -14,6 +14,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { CardDetailResponse, CardSummary } from '@openmtg/server/api';
 import { useNav } from '../app/nav';
 import { sfx } from '../audio/sfx';
+import { deckSleeve } from '../branding/sleeves';
 import { DeckBox, Modal, TitleBar } from './chrome';
 import { CardPreview } from './CardPreview';
 import { nowIso, useDecksEnv } from './context';
@@ -25,7 +26,6 @@ import { afterRemoval, applyFocus, type FocusRequest } from './focus';
 import { FormatSelect } from './FormatSelect';
 import { DEFAULT_FORMAT, formatOption } from './formats';
 import { deckColors, deckSize } from './look';
-import { SleevePicker } from './SleevePicker';
 import { addCard, countOf, deckNames, emptyDeck, moveCard, sectionCount, SECTION_LABEL, SECTIONS, type Deck, type DeckSection } from './model';
 import { SearchPanel } from './SearchPanel';
 import { commanderIdentity } from './searchQuery';
@@ -207,9 +207,10 @@ function Builder({
   const problems = useMemo(() => problemsByCard(shown?.problems ?? []), [shown]);
   const stats = useMemo(() => deckStats(deck, data.cards), [deck, data.cards]);
   const cover = deck.cover ? (data.cards.get(deck.cover) ?? null) : null;
+  // The deck's sleeve is the one of its colors; it follows the cards as they are added (branding/sleeves.ts).
+  const sleeve = useMemo(() => deckSleeve(deckColors(deck, data.cards)), [deck, data.cards]);
   const identity = commanderIdentity(deck.commander.map((e) => data.cards.get(e.name)?.colorIdentity).filter((c): c is NonNullable<typeof c> => c !== undefined));
   const [view, setView] = useState<BuilderView>(() => requestedView(deck.id));
-  const [choosingSleeve, setChoosingSleeve] = useState(false);
   /** The card pinned large (a name was clicked) and the card under the pointer (floating preview). */
   const [pinned, setPinned] = useState<string | null>(null);
   const [previewAsked, setPreviewAsked] = useState(0);
@@ -337,7 +338,7 @@ function Builder({
           onFormat={onFormat}
           onEdit={() => setView('build')}
           onExport={() => setExporting(true)}
-          onSleeve={() => setChoosingSleeve(true)}
+          sleeve={sleeve}
           validation={check(true)}
         />
       ) : (
@@ -359,7 +360,7 @@ function Builder({
           <aside className="deck-list-panel hud-panel" aria-label="Deck list">
             <header className="deck-list-head">
               <div className="deck-list-thumb">
-                <DeckBox size="sm" cover={cover} sleeve={deck.sleeve} />
+                <DeckBox size="sm" cover={cover} sleeve={sleeve} />
               </div>
               <div className="deck-list-id">
                 <DeckNameField name={deck.name} onRename={onRename} />
@@ -420,16 +421,6 @@ function Builder({
         <Modal label={`Export ${deck.name}`} wide onClose={() => setExporting(false)}>
           <ExportPanel deck={deck} onClose={() => setExporting(false)} />
         </Modal>
-      )}
-      {choosingSleeve && (
-        <SleevePicker
-          current={deck.sleeve}
-          colors={deckColors(deck, data.cards)}
-          onPick={(sleeve) =>
-            update(({ sleeve: _old, ...d }) => (sleeve ? { ...d, sleeve } : d))
-          }
-          onClose={() => setChoosingSleeve(false)}
-        />
       )}
       {pinnedCard && (
         <Modal label={`${pinnedCard.name}, large`} wide onClose={() => setPinned(null)}>

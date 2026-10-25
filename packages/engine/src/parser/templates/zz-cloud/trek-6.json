@@ -1,0 +1,255 @@
+[
+  {
+    "id": "rep.trek6.counters.double.byYou.eachKind",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 122.6a",
+      "CR 616.1e"
+    ],
+    "pattern": "if you would put one or more counters on {f:Filter} , put twice that many of each of those kinds of counters on ( that permanent | that creature | that artifact | that land | that enchantment | that planeswalker | that battle ) instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "on": "$f",
+        "by": "you"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that many",
+      "each",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would put one or more counters on a land you control, put twice that many of each of those kinds of counters on that land instead."
+      },
+      {
+        "text": "If you would put one or more counters on a creature or artifact you control, put twice that many of each of those kinds of counters on that permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would put one or more counters on a land you control, put three times that many of each of those kinds of counters on that land instead.",
+      "If an opponent would put one or more counters on a land you control, put twice that many of each of those kinds of counters on that land instead.",
+      "If you would put one or more counters on a land you control, put twice that many of each of those kinds of counters on that creature instead.",
+      "If you would put one or more counters on a land you control, put twice that many of each of those kinds of counters on that land."
+    ]
+  },
+  {
+    "id": "rep.trek6.counters.double.byYou.kind",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 122.6a",
+      "CR 616.1e"
+    ],
+    "pattern": "if you would put one or more {k:CounterKind} counters on {f:Filter} , put twice that many {k2:CounterKind} counters on ( it | that permanent | that creature | that artifact | that land | that enchantment | that planeswalker | that battle ) instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "counters",
+        "change": "put",
+        "kind": "$k",
+        "on": "$f",
+        "by": "you"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would put one or more time counters on a land you control, put twice that many time counters on that land instead."
+      },
+      {
+        "text": "If you would put one or more -1/-1 counters on a creature or artifact you control, put twice that many -1/-1 counters on it instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would put one or more time counters on a land you control, put twice that many fade counters on that land instead.",
+      "If you would put one or more time counters on a land you control, put three times that many time counters on that land instead.",
+      "If an opponent would put one or more time counters on a land you control, put twice that many time counters on that land instead.",
+      "If you would put one or more time counters on a land you control, put twice that many time counters on that creature instead."
+    ]
+  },
+  {
+    "id": "eff.trek6.put.bf.counters.n",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 400.7",
+      "CR 614.1c",
+      "CR 122.6"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield [under your control] with {n:Qty} {k:CounterKind} counters on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target artifact card from your graveyard onto the battlefield with three time counters on it."
+      },
+      {
+        "text": "Put target creature card with mana value 3 or less from a graveyard onto the battlefield under your control with two +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Put target artifact card from your graveyard onto the battlefield with a time counter on it.",
+      "Put target artifact card from your graveyard onto the battlefield with three time counters on each creature you control.",
+      "Put target artifact card from your graveyard onto your battlefield with three time counters on it.",
+      "Put target artifact card from your graveyard onto the battlefield under its owner's control with three time counters on it."
+    ]
+  },
+  {
+    "id": "eff.trek6.counters.put.twoObjects.n",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 115.1"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on {a:Obj} and {m:Qty} {j:CounterKind} counter[s] on {b:Obj}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$a",
+        "kind": "$k",
+        "count": "$n"
+      },
+      {
+        "op": "putCounters",
+        "on": "$b",
+        "kind": "$j",
+        "count": "$m"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}: Put two +1/+1 counters on target creature and a time counter on target land."
+      },
+      {
+        "text": "{3}: Put a +1/+1 counter on up to one other target creature and three charge counters on up to one target artifact."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Put two +1/+1 counters on target creature or a time counter on target land.",
+      "{2}: Put two +1/+1 counters on target creature and a time counter on each land.",
+      "{2}: Put two +1/+1 counters on target creature and a time counter.",
+      "{2}: Put two +1/+1 counters on target creature, then a time counter on target land."
+    ]
+  },
+  {
+    "id": "eff.trek6.assimilate.linkedCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.1",
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 122.6"
+    ],
+    "pattern": "assimilate ( a | an ) {f:Filter} card exiled with ( it | ~ )",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true,
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "assimilated"
+      },
+      {
+        "op": "action",
+        "action": "assimilate",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "bound",
+          "name": "assimilated"
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:assimilate"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to one target creature an opponent controls.\nWhenever ~ attacks, assimilate a creature card exiled with it."
+      },
+      {
+        "text": "Whenever ~ dies, exile target creature an opponent controls.\n{2}, {T}: Assimilate a Human creature card exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to one target creature an opponent controls.\nWhenever ~ attacks, assimilate each creature card exiled with it.",
+      "When ~ enters, exile up to one target creature an opponent controls.\nWhenever ~ attacks, assimilate target creature card exiled with it.",
+      "When ~ enters, exile up to one target creature an opponent controls.\nWhenever ~ attacks, assimilate a creature card from your graveyard.",
+      "Whenever ~ attacks, assimilate a creature card exiled with it."
+    ]
+  }
+]

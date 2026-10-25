@@ -435,7 +435,19 @@ export type CostPart =
    */
   | { kind: 'removeCounters'; counter: CounterKind; count: Quantity; self?: boolean; filter?: ObjectFilter; among?: true; anyNumber?: true; all?: true }
   | { kind: 'putCounters'; counter: CounterKind; count: Quantity; self?: boolean; filter?: ObjectFilter }
-  | { kind: 'returnToHand'; filter: ObjectFilter; count: Count; self?: boolean }
+  /**
+   * trek-1 INTERFACE CHANGE (additive): `beamUp`, the creature returned to its owner's hand to pay a beam me up cost (Star Trek keyword, reminder text: "You may cast
+   * this card from your graveyard for [cost] if you also return a creature you control to its owner's hand"; CR 702, rule number unverified): a permanent that
+   * "can't be beamed up" (a `cant` restriction of `beBeamedUp`) can't be returned for it (CR 614.17b; rules/cant.ts#costUseDenial). Written only by
+   * keywords/data/beam-me-up.json. Capability `cost:returnToHand.beamUp`.
+   */
+  | { kind: 'returnToHand'; filter: ObjectFilter; count: Count; self?: boolean; beamUp?: true }
+  /**
+   * trek-9 INTERFACE CHANGE (additive): "Put this card from your graveyard on the bottom of your library" as a cost (Daniels, Temporal Agent; CR 118.3, 602.2b, 113.6j,
+   * 401.4; cites unverified): the source itself, in `zone`, goes to the `position` of its owner's library (a single card, so no order to choose). Only the source
+   * itself (`self: true`) and only from your graveyard are paid; any other zone is an unregistered form (the cost stays manual). Capability `cost:putIntoLibrary`.
+   */
+  | { kind: 'putIntoLibrary'; zone: ZoneName; self: true; position: 'top' | 'bottom' }
   | { kind: 'reveal'; zone: 'hand'; filter?: ObjectFilter; count: Count; self?: boolean }
   | { kind: 'mill'; count: Quantity }
   | { kind: 'payEnergy'; amount: Quantity }
@@ -976,6 +988,13 @@ export interface ObjectFilter {
   /** FAST4 T33 INTERFACE CHANGE (additive): an Equipment is attached to it ("target attacking equipped creature", CR 301.5): the object is equipped. */
   equipped?: boolean;
   /**
+   * trek-9 INTERFACE CHANGE (additive): a permanent with this subtype is attached to it ("creatures you control with a Communicator attached to them", Starfleet
+   * Communicator; CR 301.5, 303.4, 205.3g-h; cites unverified): the Equipment, Aura or Fortification type word named (an artifact or enchantment subtype). The
+   * attachments as they are when the filter is read (a static ability reads it continuously, CR 611.3a); a phased-out one is not attached (CR 702.26b).
+   * rules/filter.ts and statics/match.ts read it.
+   */
+  attachedWith?: string;
+  /**
    * FAST5 T39 INTERFACE CHANGE (additive), CR 303.4b: the object is enchanted (an Aura is attached to it, whoever controls the Aura): "enchanted creatures you
    * control get +1/+1". The plural description; the singular "enchanted creature" is the object the source Aura is attached to (`ref: 'attachedTo'`).
    */
@@ -1362,6 +1381,13 @@ export type Quantity =
    */
   | { q: 'countersRemoved'; step: Name; kind?: CounterKind }
   /**
+   * trek-6 INTERFACE CHANGE (additive), CR 122.1, 122.6, 608.2c: "if you put two or more +1/+1 counters on creatures this way": the counters the `putCounters` step
+   * named `step` actually put (as the event came out of the replacement effects that applied: twice as many under a doubling effect), of `kind` only when given, summed
+   * over everything it put them on. The step may also be a `may` whose optional action put counters (`StepResult.countersPut`). A step that did not run put none (0).
+   * Capability `q:countersPut`.
+   */
+  | { q: 'countersPut'; step: Name; kind?: CounterKind }
+  /**
    * M12-3 INTERFACE CHANGE (additive), CR 701.38a-b: the number of votes the vote named `step` gave the word `choice` ("for each money vote"; "if carnage gets
    * more votes" compares two of these). A vote that did not happen gave none (0). Capability `q:votes`.
    */
@@ -1371,8 +1397,11 @@ export type Quantity =
    * the controller that creatures the controller controlled were declared attacking in this combat phase (a planeswalker or a battle attacked is not its player;
    * creatures that left combat or the battlefield since still count: read from the game history, CR 508.1). Outside a combat phase it is 0. Capability
    * `q:opponentsAttacked`.
+   * trek-7 INTERFACE CHANGE (additive): `scope: 'turn'`, "the number of opponents you attacked this turn" (Worf, Defiant Commander; the Star Trek set is newer than the
+   * rules in rules/cr, CR 506.2-506.3 and 508.1 from memory): the same count over every combat of the turn so far, still read from the history (a combat's attackers
+   * are written as they are declared); a planeswalker or battle attacked is not its player (CR 506.3). Same capability `q:opponentsAttacked`.
    */
-  | { q: 'opponentsAttacked' }
+  | { q: 'opponentsAttacked'; scope?: 'turn' }
   | { q: 'targetCount'; id: string } // number of targets announced for a spec of the SAME ability (CR 115.9a)
   /**
    * The number of targets of the spell this static ability is on; only in self cost modifiers (CR 601.2c, 601.2f: costs are determined after targets).
@@ -1504,8 +1533,11 @@ export type Condition =
    * color were milled this way" (Sphinx's Tutelage; CR 205.2a, 105.2, 608.2c): `count` of the objects `of` stands for have a card type (`what: 'cardType'`) or a
    * color (`what: 'color'`; a colorless object has none, CR 105.2c) in common: some card type or color is one of those of at least `count` of them, each read where it
    * is now, or as it last existed (CR 608.2h). Evaluated while an ability resolves (effects/eval.ts); capability `cond:share`.
+   * trek-9 INTERFACE CHANGE (additive): `count: 'all'`, "if all cards exiled with this Saga share a card type" (All Good Things...; CR 205.2a, 607.2a, 608.2c; cites unverified):
+   * some card type (or color) is one of those of EVERY object `of` stands for, and there is at least one object (nothing to share with no card: false, never a free
+   * "yes"); a single object shares its own types with all of them.
    */
-  | { cond: 'share'; what: 'cardType' | 'color'; of: ObjRef; count: number }
+  | { cond: 'share'; what: 'cardType' | 'color'; of: ObjRef; count: number | 'all' }
   /** "if it's a creature card", "if that creature has flying", "if enchanted creature is red". */
   | { cond: 'matches'; object: ObjRef; filter: ObjectFilter }
   | { cond: 'turnOf'; whose: PlayerPred; step?: TurnStep | TurnStep[] }
@@ -1619,7 +1651,14 @@ export type Condition =
    * Journey): at least one of the objects `object` stands for matches the filter (each read as it last existed); `matches` is every one of them. Capability
    * `cond:someMatch`.
    */
-  | { cond: 'someMatch'; object: ObjRef; filter: ObjectFilter };
+  | { cond: 'someMatch'; object: ObjRef; filter: ObjectFilter }
+  /**
+   * trek-2 INTERFACE CHANGE (additive), CR 601.2i, 707.10: "If this spell is the first spell you've cast this game" (First Contact): the resolving source is a spell
+   * that was cast (a copy that was not cast has no cast entry) by the controller of this resolution, and no spell that player cast this game was cast before it
+   * (the `cast` entries of the game history, triggers/history.ts; a spell cast in response, after it, does not count). Only `scope: 'game'`. Evaluated only while a
+   * spell resolves (effects/eval.ts); false anywhere else. Capability `cond:firstSpellCast`.
+   */
+  | { cond: 'firstSpellCast'; scope: 'game' };
 
 /**
  * The scopes of the history conditions (CR 603.4 style). M6-0: `lastTurn` = the previous turn's entries (the werewolf transforms "if no spells were cast last
@@ -1874,7 +1913,12 @@ export type EffectStep =
    * counted card exiled this way reaches `atLeast` (or the library is empty). `as` then names EVERY card exiled this way ("You may cast any number of spells from
    * among them"), not one card. Capability `op:exileUntil.total`.
    */
-  | (StepBase & { op: 'exileUntil'; who: PlayerRef; filter: ObjectFilter; total?: { stat: 'manaValue'; atLeast: Quantity }; link?: LinkId })
+  /**
+   * trek-7 INTERFACE CHANGE (additive): `exiled`, the name every card it exiled is bound under, the card it stopped at included ("Target opponent exiles cards from the top
+   * of their library until they exile a creature card. Assimilate that card. They put the rest on the bottom in a random order.", The Borg Queen; CR 406.1, 608.2c): "the
+   * rest" is `exiled` less `as` that is still in exile. Written by the parser when a later sentence says "the rest" (parser/lower/mentions.ts#exiledRestOf). Capability `op:exileUntil`.
+   */
+  | (StepBase & { op: 'exileUntil'; who: PlayerRef; filter: ObjectFilter; total?: { stat: 'manaValue'; atLeast: Quantity }; link?: LinkId; exiled?: Name })
   /**
    * r3-dig INTERFACE CHANGE (additive): "reveal cards from the top of your library until you reveal a land card" (CR 701.20a-b, 401.1, 608.2c): `who` reveals
    * the top card of their library, then the next, until `count` (default 1) cards that match `filter` are revealed or the library has no more; the cards stay
@@ -1965,6 +2009,12 @@ export type EffectStep =
    */
   | (StepBase & { op: 'becomeBlocked'; what: ObjRef })
   /**
+   * trek-8 INTERFACE CHANGE (additive), CR 120.6, 614.1a (unverified cites): "remove all damage from it", "all damage already dealt to it is healed" (Dr. McCoy, Surly
+   * Surgeon; the reminder of umbra armor says the first): all the damage marked on each permanent `what` names is removed (and with it the mark of deathtouch damage,
+   * CR 704.5h). It is not regeneration: nothing is tapped and nothing leaves combat. Capability `op:removeDamage`.
+   */
+  | (StepBase & { op: 'removeDamage'; what: ObjRef })
+  /**
    * p2-damage-2 INTERFACE CHANGE (additive): `pairs`, "each of those tokens fights a different one of those creatures" (Ezuri's Predation; CR 701.14a, 608.2d): each
    * object of `a` fights a different object of `b`, the controller pairing them (as many fights as the smaller side has creatures that can fight). Capability
    * `op:fight.pairs`.
@@ -2040,8 +2090,11 @@ export type EffectStep =
    * p2-counters-move-1 INTERFACE CHANGE (additive; CR 122.5, 608.2d, cites unverified): `kind: 'any'` with a number is "move a counter / N counters from <obj> onto
    * <obj>": the controller chooses each counter's kind (capability `op:moveCounters.anyKind`); `upTo` with `count: 'all'` is "move any number of [<kind>] counters
    * from <obj> onto <obj>": the controller chooses how many of each kind, none to all (capability `op:moveCounters.upTo`).
+   * p2-counters-move-4 INTERFACE CHANGE (additive; CR 122.5, 608.2d, cites unverified): `distribute`, "move any number of +1/+1 counters from ~ onto other creatures":
+   * `to` is a group; the controller chooses how many of one fixed kind (with `upTo` and `count: 'all'`), then which objects of the group get them and how they are
+   * divided, each at least one (effects/handlers/counters.ts#moveDistributed). Capability `op:moveCounters.distribute`.
    */
-  | (StepBase & { op: 'moveCounters'; from: ObjRef; to: ObjRef; kind: CounterKind; count: Quantity | 'all'; upTo?: true })
+  | (StepBase & { op: 'moveCounters'; from: ObjRef; to: ObjRef; kind: CounterKind; count: Quantity | 'all'; upTo?: true; distribute?: true })
   // --- mana ----------------------------------------------------------------------------
   /** `units` is the shape M3 already runs (one entry per unit, each a list of the types it may be). */
   /**
@@ -2231,6 +2284,12 @@ export type KeywordActionName =
    * nonland card was discarded, create a 1/1 white Human Soldier creature token (keywords/actions/library.ts#RECRUIT, modelled on connive, CR 701.50a).
    */
   | 'recruit'
+  /**
+   * trek-1 ADDITION (INTERFACE CHANGE, additive): "assimilate <card>" (Star Trek; not in the CR edition of rules/cr, its reminder text defines it): put the card onto the
+   * battlefield under your control with a +1/+1 counter; it's a Borg artifact creature and loses all other creature types (keywords/actions/assimilate.ts). Listed
+   * here, not last, so that other rounds appending to the union do not touch the same line.
+   */
+  | 'assimilate'
   /**
    * cloud std-spm ADDITION (INTERFACE CHANGE, additive): "double the number of each kind of counter on <subject>" (CR 701.10e for each kind the object has):
    * every kind of counter on each permanent or player of `subject` is doubled, the kinds and their numbers read before any counter is put
@@ -2623,7 +2682,8 @@ export type EventPattern =
     | 'votesFinished' /* M12F: "whenever players finish voting" (CR 701.38a), the `votesFinished` GameEvent; no actor and no object */
     | 'exploit' /* std-rx17: "<object> exploits a creature" (CR 702.110b); `object` is the exploiting creature */
     | 'payLife' /* std-library-4: a replacement's "if you would pay life" only (effects/proposal-kinds/pay-life.ts, CR 119.4, 614.1a) */
-    | 'firebend' /* std-mana-12: "whenever you firebend", a firebending ability of yours resolved (CR 702.189; op reportAction) */; actor?: PlayerPred; object?: ObjectFilter;
+    | 'firebend' /* std-mana-12: "whenever you firebend", a firebending ability of yours resolved (CR 702.189; op reportAction) */
+    | 'faceDilemma' /* trek-2: "whenever you face a dilemma", the player chose one or more modes for a spell or ability (CR 700.2, 601.2b, 602.2b, 603.3c; actions/announce.ts#chooseModes) */; actor?: PlayerPred; object?: ObjectFilter;
     /**
      * std-rx17 INTERFACE CHANGE (additive): with the verb `exploit`, the creature sacrificed ("exploits a nontoken creature", CR 702.110b), judged as it last
      * existed on the battlefield (the event's `object` role). Capability `feature:ev.action.exploit`; on any other verb the matcher has nothing to read.
@@ -2652,7 +2712,12 @@ export type EventPattern =
      * std-lci INTERFACE CHANGE (additive): only with the verb `explore`, "explores a land card" / "explores a nonland card" (CR 701.44a: the card the explore
      * revealed was a land card, or a nonland card; with no card revealed, neither). Capability `feature:ev.action.explore.revealed`.
      */
-    revealed?: 'land' | 'nonland' }
+    revealed?: 'land' | 'nonland';
+    /**
+     * p2-player-rules-3 INTERFACE CHANGE (additive): with the verb `clash`, whether the actor won the clash ("whenever you clash and win", "whenever you win a clash",
+     * CR 701.30c; the event is emitted as the clash ends, effects/handlers/cards-library.ts#clashHandler). Capability `feature:ev.action.clash.won`.
+     */
+    won?: boolean }
   | { ev: 'createToken'; player?: PlayerPred; token?: ObjectFilter; byEffect?: true /* M6-0, CR 614.16 */ }
   | { ev: 'dieRoll'; player?: PlayerPred; result?: NumberCmp }
   /**
@@ -2958,10 +3023,23 @@ export type RuleAction =
    */
   | 'preventCombatDamage'
   /**
+   * trek-1 INTERFACE CHANGE (additive): "can't be beamed up" (Marooned; Star Trek, CR 702 beam me up, rule number unverified; CR 101.2, 614.17b): the permanent can't
+   * be returned to its owner's hand to pay a beam me up cost (`CostPart` returnToHand `beamUp`, rules/cant.ts#costUseDenial). Nothing else beams a permanent up.
+   * Listed here, not last, so that other rounds appending to the union do not touch the same line.
+   */
+  | 'beBeamedUp'
+  /**
    * std-copy-1 INTERFACE CHANGE (additive): "This spell can't be copied." (CR 707.10, 101.2): a static ability of a spell (zone `stack`, subject `self`); the copy op
    * puts no copy of the spell onto the stack (effects/handlers/tokens-copy.ts#copySpells asks statics/hooks.ts#ruleDenial).
    */
-  | 'beCopied';
+  | 'beCopied'
+  /**
+   * trek-4 INTERFACE CHANGE (additive): "Permanents can't phase in." (CR 702.26c, 502.1, 101.2; cites unverified): a phased-out permanent the restriction's
+   * subject includes stays phased out when it would phase in (its controller's untap step, rules/phasing.ts#phaseInForUntapStep, the only phase-in the engine
+   * performs). The subject is matched against the permanent as it would be phased in (statics/hooks.ts#phaseInDenied): a phased-out permanent is otherwise
+   * treated as though it doesn't exist (CR 702.26b), but this rule names phasing in itself.
+   */
+  | 'phaseIn';
 
 /** Replacement (CR 614), prevention (CR 615) and redirection (CR 614.9) effects. Event ordering: CR 616. Executed by the proposal pipeline (M6; design 8.5). */
 export interface ReplacementDef {
@@ -3046,6 +3124,12 @@ export type ReplacementBody =
      * CR 616.1, so it is never order-free). Capability `body:enters.untapped`.
      */
     untapped?: true;
+    /**
+     * trek-8 INTERFACE CHANGE (additive), CR 614.1c, 508.4 (cites from memory, unverified): "it enters tapped and attacking" (Kira Nerys, Firebrand): the permanent enters
+     * as an attacking creature of the current combat, its controller choosing what it attacks (CR 508.4); it enters tapped and not attacking when there is no combat,
+     * its controller is not the attacking player or it is no creature (CR 506.3a-b, 508.4a). Used with `tapped`. Capability `body:enters.attacking`.
+     */
+    attacking?: true;
     tappedUnless?: Condition;
     tappedUnlessPay?: CostDef;
     counters?: CounterSpec[];
@@ -3086,6 +3170,13 @@ export type ReplacementBody =
        * copy was chosen. Capability `body:enters.copy.then`.
        */
       then?: { as: Name; do: EffectStep[] };
+      /**
+       * trek-4 INTERFACE CHANGE (additive), CR 614.1c, 707.9 (unverified): "If you do, it enters with additional counters on it equal to the same number and
+       * kinds of counters the copied permanent has on it." (Dominion Saboteur): once a copy is chosen, the counters on the chosen object as the permanent enters
+       * are added, kind by kind, to the additional effects of the copy (`additional`, applied as it enters; none when no copy is chosen). Capability
+       * `body:enters.copy.copiedCounters`.
+       */
+      copiedCounters?: true;
     };
     attachTo?: ObjRef;
     faceDown?: boolean;
@@ -3290,6 +3381,15 @@ export interface PermissionDef {
    * statics/play-permits.ts with `entersWith` (capability `feature:permit.cast.entersSubtypes`).
    */
   entersSubtypes?: string[];
+  /**
+   * trek-11 INTERFACE CHANGE (additive), CR 400.11, 400.11a-b, 305.1, 601.3, 404.1: "Once during each of your turns, you may play a permanent card you own from outside the game or
+   * from your graveyard" (The Holodeck): with `from: 'graveyard'`, `action: 'play'`, an `of` of the permanent card types and `oncePerTurn`, the permission covers the cards the
+   * player owns outside the game too (`GameState.outside`: their sideboard, CR 400.11a). ONE permission for both places: the once-each-turn use is counted once for the two
+   * together (the counter of the graveyard permission). A land card is played as a land (CR 305.1: a land play), any other permanent card is cast with its mana cost
+   * and the timing of its type; it is no object until the player does (core/special/play-outside.ts, the `playOutside` special action). Honored by
+   * statics/play-permits.ts#isPermanentPlayPermit only (capability `feature:permit.play.zone.outside`); on any other permission a form nothing registers.
+   */
+  alsoOutside?: true;
   /**
    * std-rx27 INTERFACE CHANGE (additive), CR 614.1c, 601.3e: "If you cast a creature spell this way, that creature enters with an additional +1/+1 counter on it"
    * on a top-card cast permission (Mikey & Don, Party Planners): `entersWith` applies only to a spell this filter describes, judged on the spell as it is cast
@@ -3508,6 +3608,16 @@ export function diesCause(cause: EventPattern | undefined): boolean {
   if (cause === undefined || cause.ev !== 'zoneChange') return false;
   const c = cause as { from?: unknown; to?: unknown; subject?: unknown };
   return c.from === 'battlefield' && c.to === 'graveyard' && Object.keys(cause).every((k) => k === 'ev' || k === 'from' || k === 'to' || k === 'subject');
+}
+
+/**
+ * trek-2 (CR 603.2d, 119.9; cites unverified): a cause that is YOU GAINING LIFE ("If you gaining life causes a triggered ability of a permanent you control to trigger,
+ * that ability triggers an additional time", Dr. Beverly Crusher): a `life` gain event of the controller of the doubler, with no amount. Nothing leaves the
+ * battlefield with it, so it is matched without looking back, like a permanent entering (triggers/collect.ts#timesTriggered).
+ */
+export function isLifeGainCause(cause: EventPattern | undefined): boolean {
+  if (cause === undefined || cause.ev !== 'life') return false;
+  return cause.change === 'gain' && cause.player === 'you' && Object.keys(cause).every((k) => k === 'ev' || k === 'change' || k === 'player');
 }
 
 /** "As an additional cost to cast this spell, ..." (CR 118.8, 601.2b, 604.5). */

@@ -169,6 +169,11 @@ function happened(q: Extract<Quantity, { q: 'happenedCount' }>, st: RenderState)
     const what = ev.object === undefined ? { plural: 'permanents', singular: 'permanent' } : { plural: K.np(ev.object, st, { det: 'none', plural: true }), singular: K.np(ev.object, st, { det: 'none', forEach: true }) };
     return { plural: `${what.plural} you've sacrificed ${scope}`, singular: `${what.singular} you've sacrificed ${scope}` };
   }
+  // trek-7 (CR 700.2; parser/holes/qty.ts#historyCounts): "the number of dilemmas you've faced this turn", "for each dilemma you've faced this turn" (Captain Benjamin Sisko):
+  // the player's modes chosen for a spell or ability this turn, one history entry each (rules/crime.ts#emitDilemma); only your own
+  if (ev.ev === 'action' && ev.verb === 'faceDilemma' && ev.actor === 'you' && Object.keys(ev).every((k) => k === 'ev' || k === 'verb' || k === 'actor') && q.by === undefined && !before) {
+    return { plural: `dilemmas you've faced ${scope}`, singular: `dilemma you've faced ${scope}` };
+  }
   const text = K.event(ev, st, 'past');
   return { plural: `times ${text} ${scope}`, singular: `time ${text} ${scope}` };
 }
@@ -396,6 +401,11 @@ export function countParts(q: Quantity, st: RenderState): { plural: string; sing
     case 'countersRemoved': {
       const k = q.kind === undefined ? '' : `${q.kind} `;
       return { plural: `${k}counters removed this way`, singular: `${k}counter removed this way` };
+    }
+    // trek-6 (CR 122.6, 608.2c): "the number of +1/+1 counters put this way"
+    case 'countersPut': {
+      const k = q.kind === undefined ? '' : `${q.kind} `;
+      return { plural: `${k}counters put this way`, singular: `${k}counter put this way` };
     }
     // FAST5 T37 (CR 601.2h; converge): "for each color of mana spent to cast it" (a permanent that enters with counters for it)
     case 'colorsSpent': return { plural: 'colors of mana spent to cast it', singular: 'color of mana spent to cast it' };
@@ -803,13 +813,17 @@ export function qty(q: Quantity, st: RenderState, _o: QtyOpts = {}): string {
     }
     case 'damageDealt': return 'the damage dealt this way'; // std-rx20 (CR 120.3, 608.2c)
     case 'countersRemoved': return `the number of ${countParts(q, st)!.plural}`; // std-rx14 (CR 122.1, 608.2c)
+    case 'countersPut': return `the number of ${countParts(q, st)!.plural}`; // trek-6 (CR 122.6, 608.2c)
     case 'lifeLost': {
       if (q.who === undefined) return 'the life lost this way'; // M12-3 (CR 119.3, 608.2c)
       // cloud std-spm: the life one player lost this way; "that much" / "that many" after the condition that named it ("If you lost life this way, ...")
       return alt(`the life ${K.player(q.who, st, 'subject').text} lost this way`, 'that much', 'that many');
     }
     case 'votes': return `the number of ${q.choice} votes`; // M12-3 (CR 701.38a-b)
-    case 'opponentsAttacked': return 'the number of opponents you attacked with a creature this combat'; // M12-3 (CR 702.121a, melee)
+    case 'opponentsAttacked':
+      // trek-7 (CR 506.3, 508.1): the whole turn's count, "the number of opponents you attacked this turn" (Worf, Defiant Commander)
+      if (q.scope === 'turn') return alt('the number of opponents you attacked this turn', "the number of opponents you've attacked this turn", 'the number of opponents you have attacked this turn');
+      return 'the number of opponents you attacked with a creature this combat'; // M12-3 (CR 702.121a, melee)
     case 'faceUpX': return 'X'; // CR 702.37f: the X of the cost paid to turn it face up
     // M11-0 (m11 design 4.5), CR 903.8: the casts of the controller's commander(s) from the command zone
     // CMDF: "a commander" (Jirina Kudro, Font of Magic) counts the same casts (equivalence a-commander-casts)

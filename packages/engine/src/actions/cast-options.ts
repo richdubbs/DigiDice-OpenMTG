@@ -17,7 +17,8 @@ import type { ObjectId, PlayerId } from '../types/ids';
 import type { GameObject } from '../types/state';
 import type { Game } from '../core/game';
 import type { BaseChars, Chars } from '../rules/characteristics';
-import { printedKeywordExpansions } from '../statics/abilities';
+import { MANA_COST_OF_FACE_CAST } from '../keywords/expand';
+import { expansionOf, printedKeywordExpansions } from '../statics/abilities';
 import { BACK_FACE_CAST_OPTIONS } from './cast-opt/back-face';
 import { FACE_DOWN_CAST_OPTIONS } from './cast-opt/face-down';
 import { MUTATE_CAST_OPTIONS } from './cast-opt/mutate';
@@ -147,9 +148,14 @@ export function castOptionsOf(c: Chars): CastOptions {
   const expanded = new Set(c.abilities.flatMap((a) => (a.parent !== undefined ? [a.parent] : [])));
   const abilities = [...c.abilities, ...printedKeywordExpansions(c.abilities.filter((a) => !expanded.has(a.key)), c)];
   const castWith: CastWithDef[] = [];
-  for (const a of abilities) {
-    if (a.def.kind !== 'static') continue;
-    for (const e of a.def.effects) {
+  // trek-7 (CR 118.9, 601.2b; Scotty, Miracle Worker, "The beam me up cost is equal to that spell's mana cost"): a granted beam me up whose cost is the mana cost has the mana
+  // cost of the face cast now (Fire // Ice cast as Fire: {1}{R}; an Adventurer cast as its Adventure: that half's), expanded here and not when it was granted, as a granted
+  // flashback's is read below (keywords/expand.ts#MANA_COST_OF_FACE_CAST)
+  const ofFace = c.manaCost === null ? [] : c.keywords.filter((k) => k.costIsManaCost === true && k.cost === undefined && MANA_COST_OF_FACE_CAST.has(k.keyword))
+    .flatMap((k, i) => expansionOf(k, { granted: true, faceName: c.names[c.face] ?? c.name, types: c.types, keyPrefix: `g:face:${i}`, manaCost: c.manaCost! }));
+  for (const def of [...abilities.map((a) => a.def), ...ofFace]) {
+    if (def.kind !== 'static') continue;
+    for (const e of def.effects) {
       if (isAdditional(e)) additional.push({ name: e.name, cost: e.cost, optional: e.optional === true, repeatable: e.repeatable === true, ...(e.choiceGroup !== undefined ? { choiceGroup: e.choiceGroup } : {}), ...(e.choosePlayer !== undefined ? { choosePlayer: e.choosePlayer } : {}), ...(e.chooseType !== undefined ? { chooseType: e.chooseType } : {}), ...(e.xMax !== undefined ? { xMax: e.xMax } : {}), ...(e.announceCount === true && e.name !== undefined ? { announceCount: true as const } : {}) });
       else if (isAlternative(e)) {
         alternatives.push({

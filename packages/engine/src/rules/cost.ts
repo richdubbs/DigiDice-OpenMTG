@@ -45,7 +45,9 @@ export type PlanPart =
   /** r3-cost: `among`, "from among <permanents>": `count` counters in all from any of them (rules/pay-parts.ts#removeCountersAmong, CR 118.3). */
   | { kind: 'removeCounters'; counter: string; count: number; filter?: ObjectFilter; among?: true }
   | { kind: 'putCounters'; counter: string; count: number; self?: boolean; filter?: ObjectFilter }
-  | (Chosen & { kind: 'returnToHand'; filter: ObjectFilter; count: number; self?: boolean })
+  | (Chosen & { kind: 'returnToHand'; filter: ObjectFilter; count: number; self?: boolean; beamUp?: true }) // trek-1: `beamUp`, a beam me up cost (rules/cant.ts)
+  /** trek-9 (CR 118.3, 401.4): the source itself, from your graveyard, to the top or the bottom of its owner's library. */
+  | (Chosen & { kind: 'putIntoLibrary'; zone: 'graveyard'; self: true; position: 'top' | 'bottom' })
   | (Chosen & { kind: 'reveal'; filter?: ObjectFilter; count: number; self?: boolean })
   | { kind: 'mill'; count: number }
   | { kind: 'payEnergy'; amount: number }
@@ -85,6 +87,7 @@ export const COST_PART_IMPLS: Readonly<Record<CostPart['kind'], true>> = {
   chooseObject: true, // std-costs-2 (CR 601.2b, 601.2h)
   revealChosen: true, // std-combat-5
   untapTapped: true, // p2-cost-parts-1 (CR 118.3, 701.26b)
+  putIntoLibrary: true, // trek-9 (CR 118.3, 401.4)
 };
 
 /** The keyword actions this build can pay as a cost (capabilities `cost:action.<name>`). `exert`, `behold` and the like stay manual until their keyword action exists. */
@@ -120,6 +123,8 @@ export const COST_FORMS: readonly string[] = [
   'exileFrom.totalManaValue',
   // std-cardcopy-7: "with fifteen or more black mana symbols among their mana costs" (CR 118.3, 107.4): a threshold part (rules/cost-pick.ts)
   'exileFrom.symbolTotal',
+  // trek-1: the creature returned for a beam me up cost (Star Trek; CR 702 rule number unverified): rules/cost-pick.ts#costUse asks rules/cant.ts for `beBeamedUp`
+  'returnToHand.beamUp',
 ];
 
 /**
@@ -259,8 +264,10 @@ export function toPlanPart(part: CostPart, xs: CostX): PlanPart {
     }
     case 'returnToHand': {
       const c = counted(part.count);
-      return c === null ? manual() : { kind: 'returnToHand', filter: fx(part.filter), ...c, ...(part.self ? { self: true } : {}) };
+      return c === null ? manual() : { kind: 'returnToHand', filter: fx(part.filter), ...c, ...(part.self ? { self: true } : {}), ...(part.beamUp === true ? { beamUp: true as const } : {}) }; // trek-1: beam me up
     }
+    case 'putIntoLibrary': // trek-9 (CR 118.3, 401.4): the source itself from your graveyard only
+      return part.zone === 'graveyard' && part.self === true ? { kind: 'putIntoLibrary', zone: 'graveyard', self: true, position: part.position } : manual();
     case 'reveal': {
       const c = counted(part.count);
       return c === null ? manual() : { kind: 'reveal', ...(part.filter ? { filter: fx(part.filter) } : {}), ...c, ...(part.self ? { self: true } : {}) };
@@ -522,6 +529,7 @@ export function partText(p: PlanPart): string {
     case 'putCounters': return `Put ${plural(p.count, `${p.counter} counter`)} on ${p.self ? 'this permanent' : 'a permanent you control'}`;
     case 'returnToHand': return p.self ? 'Return this permanent to its owner\'s hand' : `Return ${plural(p.count, 'permanent')} to your hand`;
     case 'reveal': return p.self ? 'Reveal this card from your hand' : `Reveal ${plural(p.count, 'card')} from your hand`;
+    case 'putIntoLibrary': return `Put this card from your ${p.zone} on the ${p.position} of your library`; // trek-9
     case 'mill': return `Mill ${plural(p.count, 'card')}`;
     case 'payEnergy': return `Pay ${p.amount} energy`;
     case 'collectEvidence': return `Collect evidence ${p.amount}`;

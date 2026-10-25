@@ -146,7 +146,7 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         // r4-fxz (CR 107.3, 601.2b): the X announced for the spell, for "whenever you cast a spell with {X} in its mana cost, ... X ..." (triggers/stack.ts)
         // Standard round 3, r3-trig (CR 700.2, 601.2b): whether modes were chosen for the spell as it was cast (a modal spell), and how many
         const modes = o?.stack?.modes;
-        push('cast', { spell: objects({ id: e.objectId, zone: 'stack' }), player: players(e.player) }, data({ copy: false, from: o?.stack?.castFrom, spellsBefore: e.spellsBefore, manaSpent: e.manaSpent, nth, via: o?.stack?.costsPaid.alternative, x: o?.stack?.x, ...from, modal: modes !== undefined, modesChosen: modes?.length }), gone(e.objectId));
+        push('cast', { spell: objects({ id: e.objectId, zone: 'stack' }), player: players(e.player) }, data({ copy: false, from: o?.stack?.castFrom /* trek-11 (CR 400.11): 'outside' for a card cast from outside the game: it is no zone, so "from your hand" does not match it and "from anywhere other than your hand" does */, spellsBefore: e.spellsBefore, manaSpent: e.manaSpent, nth, via: o?.stack?.costsPaid.alternative, x: o?.stack?.x, ...from, modal: modes !== undefined, modesChosen: modes?.length }), gone(e.objectId));
         break;
       }
       case 'spellCopied': {
@@ -304,7 +304,7 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         // FAST5X E20 (CR 700.14): an `expend` action carries the mana spent this turn to cast spells before and after the payment (triggers/match.ts reads N)
         // CLOUD std-dft: `x`, the X announced for the cycling cost of a `cycle` action (actions/activate.ts); std-lci: `revealed` of an explore (CR 701.44a)
         // std-rx26: a `discover` action's N is also its amount (CR 701.57a: "discover again for the same value", `{q:'eventAmount'}`)
-        push('action', roles, data({ verb: e.verb, spentBefore: e.spent?.before, spentAfter: e.spent?.after, x: e.x, revealed: e.revealed, ...(e.verb === 'discover' ? { amount: e.x } : {}), ...(e.verb === 'search' ? { zone: e.zone, zoneOwner: e.owner } : {}) }), { ...(e.objectId ? gone(e.objectId) : {}), ...(e.exploited ? gone(e.exploited) : {}) }); // r4-trig: the zone a search searched and its owner (CR 701.23a)
+        push('action', roles, data({ verb: e.verb, spentBefore: e.spent?.before, spentAfter: e.spent?.after, x: e.x, revealed: e.revealed, won: e.won /* p2-player-rules-3 (CR 701.30c) */, ...(e.verb === 'discover' ? { amount: e.x } : {}), ...(e.verb === 'search' ? { zone: e.zone, zoneOwner: e.owner } : {}) }), { ...(e.objectId ? gone(e.objectId) : {}), ...(e.exploited ? gone(e.exploited) : {}) }); // r4-trig: the zone a search searched and its owner (CR 701.23a)
         // "becomes monstrous / renowned / saddled / crewed" are the same happenings seen as a state change of the permanent (CR 701.37, 702.112, 702.171, 702.122).
         const became = BECOMES_VERBS[e.verb];
         if (became && e.objectId) push('becomes', { subject: objects(handle(e.objectId)), player: players(e.actor) }, data({ what: became }), gone(e.objectId));

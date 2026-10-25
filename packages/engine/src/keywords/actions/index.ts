@@ -23,6 +23,7 @@ import { EARTHBEND, EMPOWER, ENDURE } from './bending';
 import { RING_MACROS } from './ring';
 import { EVIDENCE_MACROS } from './evidence';
 import { EXERT, FORAGE } from './exert-forage';
+import { ASSIMILATE } from './assimilate';
 
 const MACROS: readonly ActionMacro[] = [
   INVESTIGATE, INCUBATE, POPULATE, AMASS, EXPLORE, CONNIVE, ADAPT, SUPPORT, DOUBLE_COUNTERS, DETAIN, CASCADE, DISCOVER, VOTE, PROLIFERATE, BOLSTER, MONSTROSITY, RENOWN,
@@ -44,6 +45,7 @@ const MACROS: readonly ActionMacro[] = [
   GOAD, // M12-3: goad (CR 701.15), effects/handlers/goad.ts; the requirements in statics/requirements.ts#goadHits
   DOUBLE_EACH_KIND, // cloud std-spm: "double the number of each kind of counter on X" (CR 701.10e), effects/handlers/actions-native-counters.ts
   ANOTHER_OF_EACH_KIND, // r5-refs: "for each kind of counter on X, give that permanent or player another counter of that kind" (CR 122.6)
+  ASSIMILATE, // trek-1: assimilate (Star Trek reminder text; CR 701, number unverified), keywords/actions/assimilate.ts
 ];
 
 export const ACTION_MACROS: Readonly<Partial<Record<KeywordActionName, ActionMacro>>> = Object.fromEntries(MACROS.map((m) => [m.name, m]));

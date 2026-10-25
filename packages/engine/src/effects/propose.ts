@@ -75,6 +75,20 @@ export const FEATURES: readonly string[] = [
   'replace.beginTurn.extra', // p2-replace-events-3: "would begin an extra turn" (the turn proposal's `extra`, triggers/match.ts#beginTurn, CR 500.7, 614.10)
 ];
 
+/**
+ * trek-8 review (CR 608.2f, 704.3): several events that happen at the same time, each proposed before any of them is performed (effects/funnels.ts installs
+ * `proposeSimultaneous`; a handler reaches it here, as it reaches `propose`): "destroy all creatures" with a replacement effect that protects some of them.
+ */
+type Together = (g: Game, events: readonly Proposed[]) => (Performed | null)[];
+let together: Together | null = null;
+export function installProposeTogether(f: Together | null): void {
+  together = f;
+}
+export function proposeTogether(g: Game, events: readonly Proposed[]): (Performed | null)[] {
+  if (!together) throw new Error('proposeTogether: the funnels are not installed (effects/funnels.ts was not loaded)');
+  return together(g, events);
+}
+
 /** Returns whether the (possibly modified) event should now be performed. */
 export const propose: Propose = (g, e) => proposeResult(g, e) !== null;
 

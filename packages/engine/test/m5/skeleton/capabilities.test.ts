@@ -46,6 +46,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       P2_PLAYER_RULES_2: ['clash'], // p2-player-rules-2: clash with an opponent, "if you win" / "otherwise" (effects/handlers/cards-library.ts#clashHandler, CR 701.30)
       STD_CONTROL3: ['controlPlayer'], // std-control-3: "you control target opponent during their next turn / combat phase" (effects/handlers/game.ts, core/player-control.ts, CR 723.1)
       P2_COMBAT_FLOW_2: ['becomeBlocked'], // p2-combat-flow-2: "target unblocked attacking creature becomes blocked" (effects/handlers/become-blocked.ts, CR 509.1h)
+      TREK_8: ['removeDamage'], // trek-8: "all damage already dealt to it is healed" (effects/handlers/remove-damage.ts, CR 120.6)
     };
     const ops = Object.values(MERGED_OPS).flat();
     // M6-2 (m6 design 7): the value forms of the copy op its handler runs (effects/handlers/tokens-copy.ts#OP_FORMS); M6-3: the changeFace forms (effects/handlers/face-ops.ts);
@@ -108,6 +109,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       'op:flipCoin.untilLose' /* p2-coinflip-1: "flip a coin until you lose a flip", CR 705.1-705.2 (effects/handlers/game.ts#OP_FORMS) */,
       'op:draw.perPlayerCount' /* p2-zone-moves-1: "each player discards their hand, then draws that many cards", each player's own count, CR 121.2, 608.2e (cards-draw.ts#OP_FORMS) */,
       'op:moveCounters.anyKind', 'op:moveCounters.upTo' /* p2-counters-move-1: "move a counter from ...", "move any number of counters from ...", CR 122.5, 608.2d (effects/handlers/counters.ts#movePlan) */,
+      'op:moveCounters.distribute' /* p2-counters-move-4: "move any number of +1/+1 counters from ~ onto other creatures", divided, CR 122.5, 608.2d (effects/handlers/counters.ts#moveDistributed) */,
       'op:fight.pairs' /* p2-damage-2: "each of those tokens fights a different one of those creatures", CR 701.14a, 608.2d (effects/handlers/lifedamage.ts#OP_FORMS) */,
       'op:flipCoin.called' /* p2-coinflip-3: "flip three coins. For each flip you win, ...", each flip called, CR 705.2 (effects/handlers/game.ts#OP_FORMS) */];
     expect((byPrefix.get('op') ?? []).sort(), 'op').toEqual([...ops.map((op) => `op:${op}`), ...forms].sort());
@@ -135,6 +137,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       'feature:announce.qty.distinct.colors', // FAST5X E12: "activate only if there are five colors among permanents you control" (CR 105.1, 602.5b)
       'feature:announce.qty.descendedThisTurn', // FAST5X E22: "if you descended this turn, you may choose both instead" (CR 700.11, 700.2)
       'feature:announce.qty.countPlayers.controlsVs', // merge line D (std-sos's controlsVs): "activate only if an opponent controls more lands than you" (CR 102.3, 602.5b)
+      'feature:announce.qty.countPlayers.controlsIs', // opp-port-1: "activate only if an opponent controls four or more lands", one opponent's own (CR 102.3, 602.5b)
       'feature:announce.cref.active', 'feature:announce.cref.anOpponent', 'feature:announce.cref.controllerOf.self', 'feature:announce.cref.ownerOf.self', 'feature:announce.cref.you',
       'feature:announce.sref.active', 'feature:announce.sref.anOpponent', 'feature:announce.sref.controllerOf.self', 'feature:announce.sref.controllerOf.target',
       'feature:announce.sref.ownerOf.self', 'feature:announce.sref.ownerOf.target', 'feature:announce.sref.target', 'feature:announce.sref.you',
@@ -276,6 +279,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       // std-rx27 batch 2: the any-type rider of a static exile permission by description (statics/play-permits.ts#isExileFilterPermit)
       'feature:permit.play.exile.anyManaType', 'feature:permit.cast.exile.anyManaType',
       'feature:permit.cast.oncePerTurn', // FAST5X E14: "Once each turn, you may cast ... from the top of your library" (CR 601.3, statics/play-permits.ts)
+      'feature:permit.play.zone.outside', // trek-11: "Once during each of your turns, you may play a permanent card you own from outside the game or from your graveyard" (CR 400.11, 305.1, 601.3, statics/play-permits.ts)
       // FAST5X E29: "and mana of any type can be spent to cast it" (CR 609.4b) and "you may play it if you control a Wizard" (statics/play-permits.ts)
       'feature:permit.play.anyManaType', 'feature:permit.cast.anyManaType', 'feature:permit.play.while', 'feature:permit.cast.while',
       // FAST5 T37: monstrosity (effects/handlers/actions-native-counters.ts) and the events it and cycling emit (triggers/forms.ts), adamant's cast-history condition (CR 601.2h)
@@ -465,6 +469,11 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       // p2-cost-statics-1: "if an opponent cast three or more spells this turn" read at announcement from each opponent's turnStats (actions/announce-cond.ts, CR 601.2i, 118.9)
       'feature:announce.qty.happenedCount.opponentSpellsPerPlayer',
       'feature:modes.random', // p2-modal-2: "choose one at random --" and "you choose one instead" (actions/announce.ts#chooseModes, CR 700.2)
+      // p2-player-rules-3: "whenever you clash" / "whenever you clash and win" (CR 701.30b-c; effects/handlers/cards-library.ts#clashHandler emits the action)
+      'feature:ev.action.clash', 'feature:ev.action.clash.won',
+      'feature:ev.action.faceDilemma', // trek-2: "whenever you face a dilemma", one or more modes chosen (actions/announce.ts#chooseModes emits it; CR 700.2)
+      'feature:triggerMod.lifeGain', // trek-2: "if you gaining life causes a triggered ability ... to trigger" (triggers/collect.ts#TRIGGER_MOD_CAPABILITIES, CR 603.2d)
+      'feature:announce.qty.distinct.names.each', // trek-5: "activate only if you control seven or more differently named lands" (actions/announce-cond.ts, CR 201.2, 602.5b)
     ].sort());
   });
 
@@ -477,7 +486,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
   it('what milestones 3 and 4 implement is listed: the cost parts, target kinds, filter fields and every decision kind', () => {
     // WP7: every cost part kind of the model and every target kind is payable / announceable; the value forms are listed in COST_FORMS.
     expect(byPrefix.get('cost')!.filter((c) => !c.includes('.')).sort()).toEqual([
-      'cost:action', 'cost:behold' /* FAST5X E11, CR 701.4a */, 'cost:chooseObject' /* std-costs-2, CR 601.2b */, 'cost:discard', 'cost:exileFrom', 'cost:getCounters' /* FAST5X E27, CR 122.1f */, 'cost:manual', 'cost:mill', 'cost:oneOf' /* FAST5X E27, CR 601.2b */, 'cost:payEnergy', 'cost:payLife', 'cost:putCounters', 'cost:removeCounters', 'cost:returnToHand', 'cost:reveal', 'cost:revealChosen' /* std-combat-5, CR 608.2d */,
+      'cost:action', 'cost:behold' /* FAST5X E11, CR 701.4a */, 'cost:chooseObject' /* std-costs-2, CR 601.2b */, 'cost:discard', 'cost:exileFrom', 'cost:getCounters' /* FAST5X E27, CR 122.1f */, 'cost:manual', 'cost:mill', 'cost:oneOf' /* FAST5X E27, CR 601.2b */, 'cost:payEnergy', 'cost:payLife', 'cost:putCounters', 'cost:putIntoLibrary' /* trek-9, CR 118.3, 401.4 */, 'cost:removeCounters', 'cost:returnToHand', 'cost:reveal', 'cost:revealChosen' /* std-combat-5, CR 608.2d */,
       'cost:sacrifice', 'cost:tapPower', 'cost:tapUntapped',
       'cost:untapTapped' /* p2-cost-parts-1, CR 701.26b */,
     ]);

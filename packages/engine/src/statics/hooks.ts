@@ -251,6 +251,7 @@ export const RULE_HOOK_ACTIONS: Readonly<Record<string, true>> = {
   'rule:beTurnedFaceUp': true,
   'rule:beSuspected': true, // std-mkm: effects/handlers/levels.ts, the `suspected` designation of every suspect instruction (CR 701.60a, 101.2)
   'rule:beCopied': true, // std-copy-1: effects/handlers/tokens-copy.ts#copySpells, the one place a copy of a spell is put onto the stack (CR 707.10, 101.2)
+  'rule:beBeamedUp': true, // trek-1: rules/cant.ts#costUseDenial, the returnToHand part of a beam me up cost (rules/cost-pick.ts), the one way to beam a permanent up
   // Permissions.
   'permit:haveFlash': true, // rules/timing.ts via hookpoints.castsAsInstant (CR 601.3b, 702.8a)
   'permit:attackAsThoughNoDefender': true, // hookpoints.permits (CR 609.4, 702.3b)
@@ -329,6 +330,7 @@ export const RULE_HOOK_ACTIONS: Readonly<Record<string, true>> = {
   'feature:restrict.alone.attack': true,
   'feature:restrict.alone.block': true,
   'rulemod:diceAdvantage': true, // p2-c-dieroll-1: effects/handlers/game.ts#rollDie via diceAdvantage (CR 706.6, 614.1a, unverified), the source's controller
+  'rule:phaseIn': true, // trek-4: rules/phasing.ts#phaseInForUntapStep via phaseInDenied, the only phase-in the engine performs (CR 502.1, 702.26c, 101.2; unverified)
 };
 
 /**
@@ -354,6 +356,8 @@ const ACTION_RULES: Partial<Record<RuleAction, string[]>> = {
   sacrifice: ['CR 701.21a'], beSacrificed: ['CR 701.21a'], beTurnedFaceUp: ['CR 708.7', 'CR 101.2'],
   beSuspected: ['CR 701.60a', 'CR 101.2'], // std-mkm
   beCopied: ['CR 707.10', 'CR 101.2'], // std-copy-1
+  phaseIn: ['CR 702.26c', 'CR 502.1', 'CR 101.2'], // trek-4 (unverified)
+  beBeamedUp: ['CR 101.2', 'CR 614.17b'], // trek-1 (beam me up: Star Trek, CR 702 rule number unverified)
 };
 
 const deny = (message: string, rules: string[]): Denial => ({ message, rules });
@@ -870,6 +874,20 @@ export function untapPrevented(s: GameState, id: ObjectId): Denial | null {
   const ctx = ruleContext(s);
   if (!ctx) return null;
   return denialIn(ctx, { action: 'untapDuringUntapStep', subject: id }) ?? denialIn(ctx, { action: 'untap', subject: id });
+}
+
+/**
+ * trek-4 (CR 702.26c, 502.1, 101.2; unverified): is this phased-out permanent kept from phasing in ("Permanents can't phase in.")? A phased-out permanent is
+ * treated as though it doesn't exist (CR 702.26b), so the restriction's subject is matched against an overlay of the state in which this one permanent is
+ * phased in: the rule names phasing in itself. The restrictions are those of the state as it is (a phased-out source has none, CR 702.26b).
+ */
+export function phaseInDenied(s: GameState, id: ObjectId): Denial | null {
+  const o = s.objects[id];
+  if (!o || o.zone !== 'battlefield' || !o.phasedOut || !actionMayBeRestricted(s, 'phaseIn')) return null;
+  const ctx = ruleContext(s);
+  if (!ctx) return null;
+  const view = ctx.view.with({ ...s, objects: { ...s.objects, [id]: { ...o, phasedOut: false } } }, new Map());
+  return denialIn(ctx, { action: 'phaseIn', subject: id, view });
 }
 
 /**

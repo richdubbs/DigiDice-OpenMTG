@@ -18,7 +18,7 @@ import { attackerState, isAttacking, isBlocked, isBlocking, isUnblocked } from '
 import { KEYWORD_ABILITY_KINDS } from './ability-kinds';
 import { attackedThisTurn, blockedThisTurn, controllerDealtCombatDamageBySourceThisTurn, crewedBySourceThisTurn, enteredFromThisTurn, dealtDamageAsSourceThisTurn, dealtDamageBySourceThisTurn, dealtDamageThisTurn, enteredThisTurn, countersPutThisTurn, HISTORY_FILTER_FIELDS, HISTORY_WRITTEN, putThereThisTurn } from './history';
 import { compareNumbers, playerPredMatches } from './predicates';
-import { BASIC_LAND_TYPES, isLandType, isNonCreatureSubtype, subtypeClass } from '../statics/subtypes';
+import { BASIC_LAND_TYPES, CREATURE_TYPES, hasEveryCreatureType, isLandType, isNonCreatureSubtype, subtypeClass } from '../statics/subtypes';
 import { isTransformedPermanent } from '../statics/match';
 import { holdStill } from '../statics/stable-scope';
 import { charsThroughLayer7b } from '../statics/layers';
@@ -118,6 +118,7 @@ const FIELD_KEYS: Record<keyof ObjectFilter, true> = {
   crewedBySourceThisTurn: true, // Standard round 5, r5-trig (CR 702.122c)
   castWithMana: true, enteredFrom: true, // Standard round 5, r5-trig (CR 601.2h, 603.6a)
   lockedDoor: true, // r5-fxz (CR 709.5c)
+  attachedWith: true, // trek-9 (CR 301.5, 303.4)
 };
 
 /** p2-combat-flow-1: the last known combat of an object that left the battlefield, under its old id or the new object it became (CR 400.7, `LastKnown.newId`). */
@@ -265,7 +266,10 @@ const cannot = (why: string): never => {
  */
 export function creatureTypesOf(c: Chars): { all: boolean; set: Set<string> } {
   const creaturish = c.types.includes('Creature') || c.types.includes('Kindred');
-  return { all: hasKeyword(c, 'changeling'), set: new Set(creaturish ? c.subtypes.filter((t) => !isNonCreatureSubtype(t)) : []) };
+  const set = new Set(creaturish ? c.subtypes.filter((t) => !isNonCreatureSubtype(t)) : []);
+  // trek-10 (CR 702.73a, 205.3m): `all` is read from the subtypes the layers computed (statics/subtypes.ts#hasEveryCreatureType), not from the changeling keyword:
+  // a changeling whose creature types a later layer 4 effect replaced or removed is only what that effect says (Maskwood Nexus ruling, 2021-02-05)
+  return { all: set.size >= CREATURE_TYPES.length && hasEveryCreatureType([...set]), set };
 }
 /** Land types of an object (CR 205.3i). */
 export const landTypesOf = (c: Chars): Set<string> => new Set(c.subtypes.filter(isLandType));
@@ -585,6 +589,8 @@ function test(s: GameState, o: GameObject, f: ObjectFilter, ctx: FilterContext, 
   }
   // FAST4 T33: equipped (CR 301.5) and modified (CR 700.9), as statics/match.ts reads them
   if (f.equipped !== undefined && isEquipped(s, o) !== f.equipped) return false;
+  // trek-9 (CR 301.5, 303.4): a permanent with this subtype is attached to it, as statics/match.ts reads it
+  if (f.attachedWith !== undefined && !attachmentsOf(s, o).some((a) => a.chars.subtypes.includes(f.attachedWith!))) return false;
   if (f.modified !== undefined && isModified(s, o) !== f.modified) return false;
   // MX3, CR 701.54e: the Ring-bearer of a player the predicate names (only its controller can have it as Ring-bearer: core/ring-state.ts)
   if (f.ringBearer !== undefined) {

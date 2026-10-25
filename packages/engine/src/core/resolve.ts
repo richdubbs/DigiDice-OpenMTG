@@ -120,7 +120,16 @@ function resolvePermanentSpell(g: Game, obj: GameObject, c: Chars): void {
   for (const p of RESOLVE_PERMANENT_PARTS) if (p.options) opts = p.options(g, obj, opts);
   if (info.entersAttacking) opts = { ...opts, tapped: true }; // FAST5X E7, CR 702.190b: "enters the battlefield tapped and attacking"
   const cast = castRecordOf(obj, g.s.turn.number); // CR 400.7d, 607.2i: the permanent remembers how its spell was cast (kicker, alternative cost, X)
-  const moved = moveObject(g, oldId, 'battlefield', opts);
+  // trek-8 re-review (CR 702.190b, 508.4): a replacement effect that makes it enter attacking (Kira Nerys) joins the combat the way the sneak cost says
+  const byBefore = g.enterAttackingBy;
+  const how = info.entersAttacking;
+  if (how) g.enterAttackingBy = (ids) => ids.filter((id) => entersAttackingAsReturned(g, id, how));
+  let moved: ObjectId | null;
+  try {
+    moved = moveObject(g, oldId, 'battlefield', opts);
+  } finally {
+    g.enterAttackingBy = byBefore;
+  }
   // WP11 INTERFACE CHANGE (review): the move goes through the proposal pipeline, which may forbid it ("can't enter", CR 614.17) or send it elsewhere (CR
   // 303.4g, 614.1a). CR 608.3e: a permanent spell that can't be put onto the battlefield is put into its owner's graveyard.
   if (moved === null && g.maybeObj(oldId)?.zone === 'stack') moveObject(g, oldId, 'graveyard', { cause: 'resolve' });

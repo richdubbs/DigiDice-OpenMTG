@@ -816,11 +816,16 @@ export const CLAUSES_FLOW = {
     if (trio !== null) return trio;
     st.leadingIf = false;
     const hasElse = s.else !== undefined && s.else.length > 0;
+    // trek-5 (CR 608.2c, 201.2): "then discard a card unless you control five or more differently named lands": the names among a set, at least N (render/cond.ts)
+    const namesCond = s.cond.cond === 'not' && s.cond.of.cond === 'compare' && typeof s.cond.of.left === 'object' && s.cond.of.left.q === 'distinct' && s.cond.of.left.what === 'names';
     // FAST5X E19 (CR 601.2h; opus): "then discard a card unless five or more mana was spent to cast that spell" (eff.e19.then.unless)
     const manaSpentCond = s.cond.cond === 'not' && s.cond.of.cond === 'compare' && typeof s.cond.of.left === 'object' && s.cond.of.left.q === 'spellManaSpent';
     // cloud std-dsk (CR 608.2c): "then discard a card unless you control another creature with power 2 or less" (eff.e19.then.unless with a control condition)
     const existsCond = s.cond.cond === 'not' && s.cond.of.cond === 'exists';
-    if (!hasElse && s.cond.cond === 'not' && (s.cond.of.cond === 'wasCast' || turnHistory(s.cond.of) || manaSpentCond || existsCond)) {
+    // trek-9 (CR 608.2c, 122.1; family unless-counters): "then discard a card unless there are three or more quest counters on ~": the negation of a count of counters on
+    // one object reaching a number (the parser's eff.e19.then.unless over the condition "there are N or more <kind> counters on <object>")
+    const countersCond = s.cond.cond === 'not' && s.cond.of.cond === 'compare' && typeof s.cond.of.left === 'object' && s.cond.of.left.q === 'counters';
+    if (!hasElse && s.cond.cond === 'not' && (namesCond || s.cond.of.cond === 'wasCast' || turnHistory(s.cond.of) || manaSpentCond || existsCond || countersCond)) {
       // M6-5 (CR 608.2c, 702.138b): "sacrifice it unless it escaped" is "if it didn't escape, sacrifice it": the instruction, then "unless" and the condition
       // it does not happen under. Only for a cast-history condition, the one family the parser builds this way (eff.m6.sacrifice.unlessEscaped)
       const negated = s.cond.of;
@@ -1023,7 +1028,8 @@ export const CLAUSES_FLOW = {
     let lead = 'for each'; // FAST5 T39: "for each of those creatures" (a group named before; "them" or "those creatures")
     if (over.ref === 'each' && 'filter' in over) {
       thing = K.np(over.filter, st, { det: 'none', forEach: true }); // FAST5 T39: also "for each creature your opponents control" (NpOpts.forEach)
-      bind(st, s.as, { nouns: K.nounsOf(over.filter), plural: false });
+      const loopNouns = K.nounsOf(over.filter);
+      bind(st, s.as, { nouns: loopNouns, plural: false, iterates: loopNouns }); // trek-8: RefInfo.iterates
     } else if (over.ref === 'each' && 'who' in over && (over.who === 'opponent' || over.who === 'player')) {
       // "For each opponent, that player ..." (CR 608.2f; WP23): the players one at a time, each named "that player" in the body
       thing = over.who;
@@ -1125,7 +1131,9 @@ export const CLAUSES_FLOW = {
     // FAST5 T46 (CR 701.20a, 701.20e, 608.2d): "You choose a nonland card from it", out of a hand an earlier step revealed or looked at
     const inHand = handChoiceFromIt(s, st);
     if (inHand !== null) {
-      bind(st, s.as, { nouns: ['card'], plural: false, optional: min === 0 });
+      // trek-3: and whose hand the card was chosen from (RefInfo.handOwner; render/fold-trek3.ts)
+      const handOwner = from.ref === 'each' && from.filter.is?.ref === 'bound' ? st.info.get(`b:${from.filter.is.name}`)?.handOwner : undefined;
+      bind(st, s.as, { nouns: ['card'], plural: false, optional: min === 0, ...(handOwner !== undefined ? { handOwner } : {}) });
       return min === 0 ? modal(s.who, st, `may choose ${inHand}`) : byPlayer(s.who, st, 'choose', inHand);
     }
     // C6 (CR 608.2c, 101.4): "for each player, choose a creature with power 2 or less that player controls": one choice for each player, the objects read with that
@@ -1136,7 +1144,8 @@ export const CLAUSES_FLOW = {
         throw new NoRenderer('a choice for each player other than "for each player / opponent, choose a <thing> that player controls"');
       }
       const what = K.np(from.filter, st, { det: 'a' });
-      bind(st, s.as, { nouns: K.nounsOf(from.filter), plural: true, thisWay: 'chosen this way', alts: ['the chosen permanents'] });
+      // trek-5 (CR 608.2c; family chosen-cards-named): cards chosen out of a zone (not permanents) are "the chosen cards" later (Ensign Pavel Chekov: "You may play the chosen cards")
+      bind(st, s.as, { nouns: K.nounsOf(from.filter), plural: true, thisWay: 'chosen this way', alts: [from.filter.isCard === true ? 'the chosen cards' : 'the chosen permanents'] });
       return plain(alt(`for each ${per.who}, choose ${what}`, `for each ${per.who}, you choose ${what}`)); // r3-refs: "For each player, you choose a creature that player controls" (Winnowing)
     }
     // std-rx30 (CR 101.4, 608.2d): "Starting with you, each player chooses up to one permanent with mana value 3 or greater from among permanents your opponents control":

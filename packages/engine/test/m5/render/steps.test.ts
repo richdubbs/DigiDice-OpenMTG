@@ -174,6 +174,7 @@ describe('design 5.2: RENDERERS covers every op of the model', () => {
     'clash', // p2-player-rules-2 (CR 701.30)
     'controlPlayer', // std-control-3: you control a player during their next turn or combat phase (CR 723.1)
     'becomeBlocked', // p2-combat-flow-2: an unblocked attacking creature becomes blocked (CR 509.1h)
+    'removeDamage', // trek-8: all damage marked on a permanent is removed (CR 120.6)
   ];
   it('has a renderer for each of the ops', () => {
     expect(Object.keys(RENDERERS).sort()).toEqual([...OPS].sort());

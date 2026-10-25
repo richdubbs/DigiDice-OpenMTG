@@ -1,0 +1,226 @@
+[
+  {
+    "id": "eff.trek1.pump.becomes.subtype.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1a",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets {pt:PT} and becomes ( a | an ) {st:Subtypes}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control gets +2/+2 and becomes a Giant."
+      },
+      {
+        "text": "Until end of turn, target creature gets -1/+3 and becomes an Elf Warrior."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control gets +2/+2 and becomes a Giant in addition to its other types.",
+      "Until end of turn, target creature you control gets +2/+2 or becomes a Giant.",
+      "Target creature you control gets +2/+2 and becomes a Giant."
+    ]
+  },
+  {
+    "id": "eff.trek1.pump.becomes.subtype.trail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1a",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} and becomes ( a | an ) {st:Subtypes} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}{G}: ~ gets +2/+2 and becomes a Wolf Warrior until end of turn."
+      },
+      {
+        "text": "Target creature gets +1/+0 and becomes a Goblin until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}{G}: ~ gets +2/+2 and becomes a Wolf Warrior in addition to its other types until end of turn.",
+      "{3}{G}: ~ gets +2/+2 and becomes a Wolf Warrior.",
+      "{3}{G}: ~ gets +2/+2 or becomes a Wolf Warrior until end of turn."
+    ]
+  },
+  {
+    "id": "eff.trek1.assimilate",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.1",
+      "CR 110.2a",
+      "CR 122.6",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 611.2a",
+      "CR 613.1d"
+    ],
+    "pattern": "assimilate {o:Obj}",
+    "build": {
+      "op": "action",
+      "action": "assimilate",
+      "who": {
+        "ref": "you"
+      },
+      "subject": "$o"
+    },
+    "subject": "none",
+    "needs": [
+      "action:assimilate"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, assimilate target creature card from a graveyard."
+      },
+      {
+        "text": "Assimilate target creature card from your graveyard, then draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, assimilate target creature.",
+      "When ~ dies, assimilate target creature card from a graveyard unless an opponent pays {2}.",
+      "When ~ dies, return target creature card from a graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "rst.trek1.untapstep.cantBeamUp",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 502.3",
+      "CR 101.2",
+      "CR 614.17b"
+    ],
+    "pattern": "{o:Obj} doesn't untap during its controller 's untap step and can't be beamed up",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "untapDuringUntapStep"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beBeamedUp"
+      }
+    ],
+    "consumes": [
+      "not",
+      "can't",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature doesn't untap during its controller's untap step and can't be beamed up."
+      },
+      {
+        "text": "Equipped creature doesn't untap during its controller's untap step and can't be beamed up."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature doesn't untap during its controller's untap step and can be beamed up.",
+      "Enchanted creature doesn't untap during its controller's untap step or can't be beamed up.",
+      "Enchanted creature doesn't untap during your untap step and can't be beamed up."
+    ]
+  },
+  {
+    "id": "rst.trek1.cantBeamUp",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 604.1",
+      "CR 101.2",
+      "CR 614.17b"
+    ],
+    "pattern": "{o:Objs} can't be beamed up",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beBeamedUp"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't be beamed up."
+      },
+      {
+        "text": "Creatures your opponents control can't be beamed up."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can be beamed up.",
+      "Enchanted creature can't be beamed down.",
+      "Creatures your opponents control can't be beamed up this turn."
+    ]
+  }
+]

@@ -277,7 +277,10 @@ function buildProgram(pieces: ProgramPiece[], face: FaceInfo, ue: UnitEnv, acc: 
   // FAST5 T75: the pronoun holes read what the sentences before this one (of the same sequence) made (holes/core.ts#Discourse)
   const unitOf = (p: ProgramPiece, before: readonly Unit[]): Unit => {
     const r = span(p.tokens);
-    return parseEffectUnit({ index: index++, tokens: p.tokens, text: textAt(face, r), discourse: discourseOf(before) }, ue);
+    const unit = parseEffectUnit({ index: index++, tokens: p.tokens, text: textAt(face, r), discourse: discourseOf(before) }, ue);
+    // trek-8: the Oracle line of the sentence (a paragraph; lower/delay-tail.ts keeps a delayed trigger's tail to its own paragraph)
+    const line = face.pre.lines.findIndex((l) => r[0] >= l.range[0] && r[0] < l.range[1]);
+    return line >= 0 ? { ...unit, line } : unit;
   };
   const sequence = (ps: readonly ProgramPiece[], prior: readonly Unit[] = []): Unit[] => {
     const us: Unit[] = [];
@@ -989,7 +992,9 @@ const STATION_CREATURE_AT = /\bcreature at (\d+)\+/i;
  * for the row whose striation holds the P/T box, "and is a creature with base power and toughness [P/T] in addition to its other types" (CR 721.2b). The Scryfall
  * data gives that box as the card's power and toughness and names its threshold only in the reminder text of the Station line ("It's an artifact creature at
  * 8+."): the reminder names the one symbol whose striation holds the box, so every other symbol is understood without it (T54, CR 721.2b); a card whose
- * reminder does not name a threshold the rows have, or whose P/T is not a number, has all its rows manual. T54: every ability printed in a row's striation (the
+ * reminder does not name a threshold the rows have, or whose P/T is not a number, has all its rows manual. trek-6: a Station line printed with no reminder text at all
+ * (the Star Trek cards: "Station" alone) names nothing, but with exactly one symbol the box can only be in its striation (CR 721.2b), so that symbol is the one; with
+ * two or more symbols and no reminder the rows stay manual. T54: every ability printed in a row's striation (the
  * text after the symbol and the lines under it, CR 721.2: parser/segment.ts#stationSeg) is lowered like any ability of its kind (keywords, static, triggered,
  * activated and mana abilities) and is one of the abilities the row adds in layer 6, the one form FAST5X-4 (max speed) introduced for "has [ability]" under a
  * condition; a row with an ability that is not understood stays manual and says why. A row is gated against
@@ -1016,13 +1021,19 @@ function stationAbilities(seg: AbilitySegment, face: FaceInfo, ue: UnitEnv, acc:
     abilities.push({ kind: 'manual', text, src: [row.line, ...(row.more ?? []).map((m) => m.line)], prov: { by: 'fallback' }, reason, shape: 'static' });
     oracles.push(undefined);
   };
-  const creatureAt = ((): number | undefined => {
-    const found = seg.reminders.map((r) => STATION_CREATURE_AT.exec(face.pre.normalized.slice(r[0], r[1]))).filter((m): m is RegExpExecArray => m !== null).map((m) => Number(m[1]));
-    return found.length === 1 ? found[0]! : undefined;
-  })();
   const power = face.pre.context.power;
   const toughness = face.pre.context.toughness;
   const hasBox = power !== undefined || toughness !== undefined;
+  const creatureAt = ((): number | undefined => {
+    const found = seg.reminders.map((r) => STATION_CREATURE_AT.exec(face.pre.normalized.slice(r[0], r[1]))).filter((m): m is RegExpExecArray => m !== null).map((m) => Number(m[1]));
+    if (found.length === 1) return found[0]!;
+    // TREK-6 (CR 721.2b): a Station line printed without its reminder text (Star Trek, "Station" alone) names no threshold, but a card with exactly one station symbol has exactly one
+    // striation: the printed power and toughness box can be in no other, so it is that symbol's. With two or more symbols the box's striation cannot be told from the Oracle
+    // text, and the rows stay manual; a reminder that names a threshold (or two) is never second-guessed, and neither is a Station reminder that leaves it out (T35: that is a
+    // card whose text is not what Oracle prints, the rows stay manual).
+    const stationReminder = seg.reminders.some((r) => /\btap another creature you control\b/i.test(face.pre.normalized.slice(r[0], r[1])));
+    return hasBox && found.length === 0 && !stationReminder && rows.length === 1 && rows[0]!.max === null && rows[0]!.min >= 1 ? rows[0]!.min : undefined;
+  })();
   const box = power !== undefined && toughness !== undefined && /^\d+$/.test(power) && /^\d+$/.test(toughness) ? { power: Number(power), toughness: Number(toughness) } : undefined;
   // T54 (CR 721.2b): the reminder text names the symbol whose striation holds the power and toughness box; every other symbol of the card is not that one
   const boxRowKnown = creatureAt !== undefined && rows.some((r) => r.min === creatureAt && r.max === null);
@@ -1226,7 +1237,7 @@ const piecesText = (face: FaceInfo, pieces: readonly Tok[][]): string => pieces.
 const ioOf = (face: FaceInfo, acc: Acc): DriverIO => ({ text: (t) => textAt(face, span(t)), claim: (range, status, by, reason) => claim(acc, range, status, by, reason) });
 
 /** Cost parts that act on the object itself ("Sacrifice ~", "Remove a +1/+1 counter from ~", "Exile ~ from your graveyard"; CR 602.2b, 118). */
-const SELF_COST_KINDS: ReadonlySet<string> = new Set(['sacrifice', 'discard', 'exileFrom', 'removeCounters', 'putCounters', 'returnToHand', 'reveal']);
+const SELF_COST_KINDS: ReadonlySet<string> = new Set(['sacrifice', 'discard', 'exileFrom', 'removeCounters', 'putCounters', 'returnToHand', 'reveal', 'putIntoLibrary' /* trek-9 */]);
 
 /**
  * PUSH1 T2 (design 6.4: "cost objects" are mentions): an activation cost that names the object itself makes it a candidate for the effect's pronouns, so
@@ -1376,7 +1387,7 @@ function activated(seg: AbilitySegment, face: FaceInfo, ue: UnitEnv, acc: Acc): 
   const manaShape = !/\btargets?\b/i.test(text.replace(/\bwhen that mana is spent\b[^.]*\./gi, '')) && ADDS_MANA.test(unquoted(text));
   // CR 113.6j, 113.6m: where the cost or the effect needs ~ when that is not the battlefield ("Discard ~", "Exile ~ from your graveyard", "Return ~ from
   // your graveyard"); the engine offers the ability only from `zone` (rules/abilities.ts#activationZones), so a zone that cannot be stated is manual
-  const where = activationZone(cost.cost, `${text} ${limits.text}`);
+  const where = activationZone(cost.cost, `${text} ${limits.text}`, limits.fields.onlyIf);
   const zone0 = 'zone' in where && where.zone !== undefined ? { zone: where.zone } : {};
   // FAST1 T4 (CR 702.177a): a wrapper keyword written before the cost ("Exhaust -- {3}{G}: ...") gives the ability its restrictions (ParseOptions.keywords[].wraps).
   // The ability may state none of its own: its text is then the keyword, the cost and the effect (render/abil.ts prints only the keyword).

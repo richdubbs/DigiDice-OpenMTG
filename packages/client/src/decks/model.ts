@@ -21,8 +21,6 @@ export interface Deck {
   updatedAt: string;
   /** Oracle name of the card shown for the deck in the library. */
   cover?: string;
-  /** The deck's sleeve (branding/sleeves.ts): its card backs in a game and its deck box. Absent: the classic DigiDice back. */
-  sleeve?: string;
 }
 
 export const SECTIONS: readonly DeckSection[] = ['commander', 'companion', 'main', 'sideboard'];

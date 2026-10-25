@@ -17,7 +17,7 @@ import { auraAttachedLegally, equipmentAttachedLegally, isAura, isEquipment, isF
 import { charsOfObject, hasKeyword, ptNumbers, readingStable, type Chars } from '../rules/characteristics';
 import { addCounters } from '../rules/counters';
 import { removeFromCombat } from '../rules/combat-state';
-import { destroy } from '../rules/destroy';
+import { destroyMany } from '../rules/destroy';
 import { zeroLoyaltyKept } from '../statics/hooks';
 import type { Game } from './game';
 import { chooseSiegeProtector, leavingTogether, moveObject, zoneArray } from './zones';
@@ -257,12 +257,15 @@ export function performObjectSbas(g: Game): boolean {
       if (moved(it.o)) continue;
       if (toGraveyard(g, it.o, 'toughness 0 or less', ['CR 704.5f'])) { gone.add(it.o.id); any = true; } // regeneration can't replace this
     }
-    for (const d of toDestroy) {
-      if (moved(d.it.o)) continue;
-      const r = destroy(g, d.it.o.id, { reason: d.why, rules: [d.rule], stateBased: true }); // FAST5X E28: not "as the result of an effect" (CR 122.1c)
+    // trek-8 review (CR 704.3, 701.8a): the destructions of one check happen at the same time, so each is proposed before any of them is performed (a replacement
+    // effect of one, Doctor McCoy, applies to the others whatever order they are in; rules/destroy.ts#destroyMany)
+    const doomed = toDestroy.filter((d) => !moved(d.it.o));
+    const results = destroyMany(g, doomed.map((d) => ({ id: d.it.o.id, opts: { reason: d.why, rules: [d.rule], stateBased: true } }))); // FAST5X E28: not "as the result of an effect" (CR 122.1c)
+    doomed.forEach((d, i) => {
+      const r = results[i];
       if (r === 'destroyed') gone.add(d.it.o.id);
       if (r === 'destroyed' || r === 'regenerated') any = true;
-    }
+    });
     for (const it of walkersAtZero) {
       if (moved(it.o)) continue;
       if (toGraveyard(g, it.o, 'loyalty 0', ['CR 704.5i'])) { gone.add(it.o.id); any = true; }

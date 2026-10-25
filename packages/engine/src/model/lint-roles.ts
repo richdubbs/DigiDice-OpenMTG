@@ -119,7 +119,7 @@ function combatSubjectNamed(on: readonly EventPattern[]): boolean {
 }
 
 /** FAST5X E20: actions of a player that no object takes part in (triggers/normalize.ts gives them no `subject`). */
-export const SUBJECTLESS_VERBS: ReadonlySet<string> = new Set(['commitCrime', 'expend']);
+export const SUBJECTLESS_VERBS: ReadonlySet<string> = new Set(['commitCrime', 'expend', 'faceDilemma' /* trek-2: a player's mode choice (actions/announce.ts#chooseModes emits no object) */]);
 
 const onlySelf = (f: unknown): boolean => typeof f === 'object' && f !== null && Object.entries(f).every(([k, v]) => (k === 'self' ? v === true : v === undefined)) && (f as { self?: unknown }).self === true;
 

@@ -6,7 +6,7 @@
 import type { CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { CardCredit } from './ArtistCredit';
-import { AUTOMATION_TEXT } from './AutomationBadge';
+import { AUTOMATION_TEXT, PartialWarning } from './AutomationBadge';
 import { CardPicture } from './CardPicture';
 import { activeFaceName, isTwoSided, shownFace, type CardModel } from './model';
 import { selfNamed } from './text';
@@ -67,7 +67,8 @@ export function CardZoom({
       <div className="card-zoom-info">
         {faceDown && <p className="card-zoom-note">Face down: other players see only the card back.</p>}
         {isFlipped && <p className="card-zoom-note">Flipped (CR 710.2): {name} applies; the card is shown turned around.</p>}
-        {level && <p className={`card-zoom-level automation-text-${level}`}>{AUTOMATION_TEXT[level].long}</p>}
+        {level && level !== 'partial' && <p className={`card-zoom-level automation-text-${level}`}>{AUTOMATION_TEXT[level].long}</p>}
+        <PartialWarning level={level} className="card-zoom-level" />
         {card.unsupported.length > 0 && (
           <div className="card-zoom-manual">
             <p>Resolved by hand:</p>

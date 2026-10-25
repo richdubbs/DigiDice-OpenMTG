@@ -405,7 +405,10 @@ function resolveDid(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
       // std-typechange-2 (CR 608.2c, 708.7, 701.40g, 701.58g): or a turn face up of the ONE object the ability's source is ("Turn this creature face up. If you can't, ..."):
       // it didn't happen when that permanent is not face down, is an instant or sorcery card that can't be turned face up, or can't be turned face up (effects/handlers/face-ops.ts)
       const faceUpSelf = !isUnit(p) && p['op'] === 'changeFace' && p['to'] === 'faceUp' && p['manifest'] === undefined && isRec(p['what']) && p['what']['ref'] === 'self' && p['guard'] === undefined;
-      if (node['$cant'] === true && (isUnit(p) || (p['op'] !== 'move' && !(p['op'] === 'sacrificeChoice' && p['mode'] === undefined) && !faceUpSelf))) { ok = false; return undefined; }
+      // TREK-6 (CR 608.2d; assimilate, Star Trek reminder text): or an assimilate of a card chosen among those a linked instruction exiled ("Assimilate a creature card exiled
+      // with it. If you can't, ..."): it put no card onto the battlefield when there was none to choose (the macro's moves report nothing, keywords/actions/assimilate.ts)
+      const assimilates = !isUnit(p) && p['op'] === 'action' && p['action'] === 'assimilate' && p['guard'] === undefined;
+      if (node['$cant'] === true && (isUnit(p) || (p['op'] !== 'move' && !(p['op'] === 'sacrificeChoice' && p['mode'] === undefined) && !faceUpSelf && !assimilates))) { ok = false; return undefined; }
       const how = moveTo !== null ? { to: moveTo } : {};
       if (isUnit(p)) {
         // the name the manual sentence would have produced: taint T1 poisons every step that reads it (parser/taint.ts, model/taint.ts#poisonedSteps)
@@ -631,6 +634,51 @@ function resolveCountersRemoved(d: Draft, seq: Unit[], at: number, prefix: Unit[
   if (!ok) setManual(u, { code: 'unbound-reference', reason: '"the counters removed this way" with no instruction removing counters right before it to refer to (CR 122.1, 608.2c)', unresolved: true });
 }
 
+const isCountersPut = (n: unknown): n is Rec => isRec(n) && n['q'] === 'countersPut';
+
+/** trek-6: a putCounters instruction, or a "you may" whose optional action is one (or holds one). */
+function putsCounters(p: Rec): boolean {
+  const own = (s: unknown): boolean => isRec(s) && s['op'] === 'putCounters';
+  if (own(p)) return true;
+  return p['op'] === 'may' && p['otherwise'] === undefined && Array.isArray(p['do']) && (p['do'] as unknown[]).some(own);
+}
+
+/**
+ * trek-6 (CR 122.1, 122.6, 608.2c): "if you put two or more +1/+1 counters on creatures this way" (`{q:'countersPut', step:'', $step}` from the Cond hole,
+ * parser/holes/cond.ts#countersPutThisWay) names the putCounters instruction RIGHT BEFORE the sentence's instruction (or the "you may" holding it), as "the counters
+ * removed this way" does (resolveCountersRemoved): it gets an `as` name and the quantity names it. A kind the words name must be the kind the instruction puts. Anything
+ * else (no such instruction right before, the quantity inside a nested step list) leaves the sentence manual and unresolved; a manual sentence right before is the
+ * antecedent and poisons the reader (taint T1).
+ */
+function resolveCountersPut(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
+  const u = seq[at]!;
+  let ok = true;
+  u.steps = [...u.steps];
+  for (let i = 0; i < u.steps.length && ok; i++) {
+    let name: string | undefined;
+    u.steps[i] = rewrite(u.steps[i]!, (node, path) => {
+      if (!ok || !isCountersPut(node) || node['$step'] === undefined) return undefined;
+      const parts = path.split('/').filter((x) => x !== '');
+      if (parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? ''))) { ok = false; return undefined; }
+      if (name === undefined) {
+        const p = previousInstruction(seq, at, i, '', prefix);
+        if (p === null || (!isUnit(p) && !putsCounters(p))) { ok = false; return undefined; }
+        if (isUnit(p)) {
+          name = freshName(d, 'put');
+          p.lostNames = [...(p.lostNames ?? []), name];
+        } else {
+          const put = p['op'] === 'putCounters' ? p : ((p['do'] as Rec[]).find((s) => isRec(s) && s['op'] === 'putCounters') as Rec);
+          if (node['kind'] !== undefined && put['kind'] !== node['kind']) { ok = false; return undefined; }
+          if (typeof p['as'] !== 'string') p['as'] = freshName(d, 'put');
+          name = p['as'] as string;
+        }
+      }
+      return { q: 'countersPut', step: name, ...(node['kind'] !== undefined ? { kind: node['kind'] } : {}) };
+    }) as Rec;
+  }
+  if (!ok) setManual(u, { code: 'unbound-reference', reason: '"the counters put this way" with no instruction putting counters right before it to refer to (CR 122.6, 608.2c)', unresolved: true });
+}
+
 /**
  * M12-3 (CR 701.38a-b): the vote markers of the Cond, Qty and Objs holes (parser/holes/vote.ts) name the vote BEFORE them in the ability: a top-level vote
  * step earlier in the same sentence or in an earlier sentence of the sequence ("Starting with you, each player votes for carnage or homage. If carnage gets
@@ -705,7 +753,7 @@ function resolveVotes(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
 function nameUsed(d: Draft, name: string): boolean {
   let used = false;
   for (const u of sequences(d).flat()) visit(u.steps, (n) => {
-    if ((n['cond'] === 'did' && n['step'] === name) || (n['ref'] === 'bound' && n['name'] === name) || ((n['q'] === 'resultCount' || n['q'] === 'excessDamage' || n['q'] === 'lifeLost' || n['q'] === 'countersRemoved' || n['q'] === 'votes' || n['q'] === 'damageDealt') && n['step'] === name)) used = true;
+    if ((n['cond'] === 'did' && n['step'] === name) || (n['ref'] === 'bound' && n['name'] === name) || ((n['q'] === 'resultCount' || n['q'] === 'excessDamage' || n['q'] === 'lifeLost' || n['q'] === 'countersRemoved' || n['q'] === 'countersPut' || n['q'] === 'votes' || n['q'] === 'damageDealt') && n['step'] === name)) used = true;
   });
   return used;
 }
@@ -1123,6 +1171,7 @@ export function lowerConditions(input: Draft): Draft {
       resolveExcess(d, seq, i, prefix); // FAST5X E16
       if (!u.manual) resolveLifeLost(d, seq, i, prefix); // M12-3
       if (!u.manual) resolveCountersRemoved(d, seq, i, prefix); // std-rx14
+      if (!u.manual) resolveCountersPut(d, seq, i, prefix); // trek-6
       if (!u.manual) resolveDamageDealt(d, seq, i, prefix); // std-rx20
       if (!u.manual) resolveVotes(d, seq, i, prefix); // M12-3
       if (!u.manual) resolveDid(d, seq, i, prefix);

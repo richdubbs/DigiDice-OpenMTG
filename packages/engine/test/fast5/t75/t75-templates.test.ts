@@ -319,9 +319,9 @@ describe.skipIf(index === null)('T75 design 6.9, 6.10 (local index): synthetic e
   it('FAST5 T75 promoted "Put the rest on the bottom in a random order.": the cards of the index that print it as an instruction (not as reminder text) and are read with it pass the render gate', () => {
     const line = /(^|\. |\n|• )Put the rest on the bottom in a random order\./;
     const printing = (index ?? []).filter((c) => [c.oracle_text, ...(c.card_faces ?? []).map((x) => x.oracle_text)].some((x) => typeof x === 'string' && line.test(x.replace(/\([^)]*\)/g, ' '))));
-    expect(printing.map((c) => c.name).sort()).toEqual(['Catch-Up Mechanic', "Kaslem's Stonetree // Kaslem's Strider", 'Loot, Exuberant Explorer', 'Ojer Kaslem, Deepest Growth // Temple of Cultivation', 'The Unknown Wizard']);
+    expect(printing.map((c) => c.name).sort()).toEqual(['Catch-Up Mechanic', "Kaslem's Stonetree // Kaslem's Strider", 'Loot, Exuberant Explorer', 'Ojer Kaslem, Deepest Growth // Temple of Cultivation', 'The Unknown Wizard', "There's Coffee in that Nebula"]); // trek-9: a Star Trek card of the 2026-10-24 index prints it too
     const read = printing.filter((oracle) => parseCard(oracle, OPTS).faces.flatMap((f) => f.templatesUsed).includes('eff.t43.dig.rest.bottomRandomShort'));
-    expect(read.map((c) => c.name).sort()).toEqual(["Kaslem's Stonetree // Kaslem's Strider", 'Loot, Exuberant Explorer', 'Ojer Kaslem, Deepest Growth // Temple of Cultivation', 'The Unknown Wizard']);
+    expect(read.map((c) => c.name).sort()).toEqual(["Kaslem's Stonetree // Kaslem's Strider", 'Loot, Exuberant Explorer', 'Ojer Kaslem, Deepest Growth // Temple of Cultivation', 'The Unknown Wizard', "There's Coffee in that Nebula"]); // trek-9: read since eff.trek9.dig.reveal.hand.orCard.mvAtMost reads the sentence before it
     for (const name of ["Kaslem's Stonetree // Kaslem's Strider", 'Loot, Exuberant Explorer']) {
       const oracle = read.find((c) => c.name === name)!;
       expect(parseCard(oracle, OPTS).faces.every((f) => f.gate.every((g) => g.ok)), name).toBe(true);

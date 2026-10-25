@@ -60,6 +60,12 @@ export interface BoardContextValue {
   /** The one open zone viewer (graveyard, exile, command), by key; null when none is open. */
   openZone: string | null;
   setOpenZone: (key: string | null) => void;
+  /**
+   * The table's layer the open zone viewer is drawn in (over the whole table, the stage, the result and the log included; under the zoom). Drawn where its
+   * button is, a viewer stayed inside its seat's part of the table, and the hand, the disc and the cards drawn after it came out over it. Absent outside a
+   * board: drawn in place.
+   */
+  zoneLayer?: HTMLElement | null;
   interaction: BoardInteraction;
   /**
    * The order each player arranged their own hand in by dragging, by player. Local to this screen and never sent to the game (a

@@ -67,6 +67,19 @@ export class Game {
   leavingAttached: Map<ObjectId, { equipped: boolean; modified: boolean; ids?: ObjectId[] }> | null = null;
   /** std-combat-3 (CR 603.10a): the battlefield just before the first object of a simultaneous leave moved (`LastKnown.board`). Transient, never in the state. */
   leavingBoard: ObjectId[] | null = null;
+  /**
+   * trek-8 review (CR 508.4): how the effect that is putting permanents onto the battlefield says they attack ("tapped and attacking target player", ninjutsu's
+   * "attacking the creature that was returned"), while its proposals are worked out: a replacement effect that makes a permanent enter tapped and attacking
+   * (Kira Nerys) joins the combat the way the putting effect says, not by a choice of its own. Set by effects/handlers/zones-util.ts#enteringAttacking. Transient,
+   * never in the state.
+   */
+  /**
+   * trek-8 re-review (CR 608.2f, 702.12b): who was indestructible when a batch of destructions was proposed. Permanents destroyed at the same time are
+   * indestructible or not as they were when the event happened, whatever order they are performed in (a creature that gives the others indestructible
+   * destroyed first). Set by effects/funnels.ts#proposeSimultaneous; read by rules/destroy.ts#isIndestructible. Transient, never in the state.
+   */
+  indestructibleAtProposal: ReadonlyMap<ObjectId, boolean> | null = null;
+  enterAttackingBy: ((ids: readonly ObjectId[]) => ObjectId[]) | null = null;
   /** Listeners invoked synchronously for every emitted event (trigger detection hooks in here). */
   private readonly listeners: ((g: Game, e: GameEvent) => void)[] = [];
 

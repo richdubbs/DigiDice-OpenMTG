@@ -24,6 +24,7 @@ import { automated, card, fullyAutomated, jsonKey } from '../../m5/templates/sup
 import { localIndex } from '../../m5/parser/support';
 import review from '../../m5/golden/cards/cloud-c6-review.json';
 import r3refsReview from '../../m5/golden/cards/cloud-r3-refs-review.json';
+import trek5Review from '../../m5/golden/cards/trek-5-review.json';
 
 const C6 = c6 as Template[];
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
@@ -165,7 +166,8 @@ describe.skipIf(index === null)('C6 design 6.9, 6.10 (local index): synthetic ex
   }, 120_000);
   it('a template of WHOLE_REACH reads only golden cards: every card of the index that prints its opening words and uses it is in the review file', () => {
     // merge wave 6: r3-refs's "for each player, you choose" was folded into eff.c6.choose.perPlayer.player; its golden card (Winnowing) is in r3-refs's review file
-    const golden = new Set([...(review as { card: string }[]), ...(r3refsReview as { card: string }[])].map((g) => g.card));
+    // trek-5: Ensign Pavel Chekov reads eff.c6.choose.perPlayer.opponent in its golden entry (golden/cards/trek-5-review.json)
+    const golden = new Set([...(review as { card: string }[]), ...(r3refsReview as { card: string }[]), ...(trek5Review as { card: string }[])].map((g) => g.card));
     const words = /for each (player|opponent), choose|sacrifices? all/i;
     for (const c of index ?? []) {
       if (!texts(c).some((x) => words.test(x))) continue;

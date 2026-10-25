@@ -1,7 +1,8 @@
 /**
  * Deck sleeves: the DigiDice card back ("classic") and its mana-color versions, one for every color and every combination of colors (31). The files are
  * made by scripts/brand/make-cardback.py --sleeves into assets/brand/sleeves/ with the list in sleeves.json; like every brand asset they are not MIT
- * licensed (assets/brand/README.md). A deck keeps its sleeve id (Deck.sleeve); a player's hidden cards are drawn in their deck's sleeve.
+ * licensed (assets/brand/README.md). A deck's sleeve is never chosen: it is the sleeve of the deck's colors (deckSleeve), the classic back for a
+ * colorless deck; a player's hidden cards are drawn in their deck's sleeve.
  *
  * Each sleeve is two pictures: the card back itself (a still picture, with a little depth) and its moving lights, comets that run along the circuit
  * lines in each line's color, drawn over it (CardBack). The classic sleeve is the DigiDice card back with the same depth and lights; card-back.svg itself
@@ -54,4 +55,9 @@ export function sleeveName(id: string | null | undefined): string {
 export function sleeveForColors(colors: readonly Color[]): Sleeve | undefined {
   const want = new Set(colors);
   return SLEEVES.find((s) => s.colors.length === want.size && s.colors.every((c) => want.has(c)));
+}
+
+/** A deck's sleeve id: the sleeve of its colors (decks/look.ts deckColors); undefined, the classic back, for a colorless deck or colors not known yet. */
+export function deckSleeve(colors: readonly Color[] | null | undefined): string | undefined {
+  return colors ? sleeveForColors(colors)?.id : undefined;
 }

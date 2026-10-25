@@ -184,6 +184,9 @@ export function eventMentions(on: readonly EventPattern[], batch: boolean, selfH
       // cmd1 (CR 508.1, 109.5): so is the attacking player of a creature you control attacking (a Background's granted "Whenever this creature attacks a
       // player"): "that player" of "Whenever ~ attacks a player, ... that player" is the defending player (the `defender` role) only
       if (role === 'player' && on.every((p) => p.ev === 'attacks' && p.attacker !== undefined && (onlySelf(p.attacker) || p.attacker.controller === 'you'))) continue;
+      // trek-7 (CR 603.3a, 506.2; The Borg Queen): and so is the player of the two kinds together, "Whenever ~ enters or attacks": each event's player is the controller of ~,
+      // and so the ability's ("you"), so "target opponent exiles ... They put the rest ..." names the target alone
+      if (role === 'player' && on.length > 1 && on.every((p) => (p.ev === 'zoneChange' && onlySelf(p.subject)) || (p.ev === 'attacks' && p.attacker !== undefined && (onlySelf(p.attacker) || p.attacker.controller === 'you')))) continue;
       // std-combat-1 (CR 508.1, 508.5, 608.2c; Tomik, Wielder of Law): "Whenever an opponent attacks with creatures, ... that opponent loses 3 life": the clause names the
       // attacking player (the opponent whose creatures attack) and not whom they attack, so the defending player is no antecedent of "that opponent" / "they"
       if (role === 'defender' && on.every((p) => p.ev === 'attacks' && p.defender === undefined && p.attacker?.controller === 'opponent' && p.attacker.self === undefined)) continue;

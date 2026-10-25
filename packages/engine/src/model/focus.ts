@@ -125,6 +125,10 @@ export function focusEffect(step: unknown): FocusEffect | null {
   if (!isRec(step) || step['guard'] !== undefined) return null;
   const op = step['op'];
   if (op === 'createToken' || (op === 'copy' && step['result'] === 'token')) return { kind: 'makes' };
+  // trek-5 (CR 608.2c, 601.2; Commander Spock): "Reveal the top card of your library. You may cast that card without paying its mana cost if ... If it's a land card, you may put
+  // it onto the battlefield tapped.": the cast of a card a name is bound to leaves the discourse on that card, cast or not (the cast of a land is never made, and the
+  // card is still the one "it" names); inside a `may` or an `if` keptFocus keeps it (a name only: a target or the object itself has its own reading)
+  if (op === 'cast' && isRec(step['what']) && step['what']['ref'] === 'bound' && typeof step['what']['name'] === 'string') return { kind: 'object', on: step['what'] };
   // the one card an instruction took from the top of a library and named ("Exile the top card of your library. You may play it": parser/lower/anaphora.ts#impulseIdiom);
   // Cloud std-fin: named or not yet ("Exile the top card of your library. You may cast it.": the parser names it when a pronoun binds it, bind(); the renderer reads the name)
   const what = step['what'];

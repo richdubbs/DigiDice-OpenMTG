@@ -111,6 +111,7 @@ function partLabel(p: CostPart): string {
     case 'exileFrom':
       if (p.zone === 'battlefield' && !p.orGraveyard) return p.self ? 'Exile this' : `Exile ${many(p.count) ? `${String(p.count)} ${filterNoun(p.filter, 'permanent')}s` : article(filterNoun(p.filter, 'permanent'))} you control`; // FAST5X E13
       return `Exile ${many(p.count) ? `${String(p.count)} cards` : 'a card'} from your ${p.zone}`;
+    case 'putIntoLibrary': return `Put this card from your ${p.zone} on the ${p.position} of your library`; // trek-9
     case 'reveal': {
       const sub = (p.filter?.subtypes ?? []).join(' ');
       return `Reveal ${article(sub !== '' ? `${sub} card` : filterNoun(p.filter, 'card'))} from your hand`;

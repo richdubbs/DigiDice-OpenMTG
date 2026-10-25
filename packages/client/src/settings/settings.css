@@ -217,7 +217,8 @@
 
 .profile-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  /* Wide enough for the longest template's name ("Reality Fracture") beside six swatches. */
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 8px;
   margin: 10px 0 12px;
 }

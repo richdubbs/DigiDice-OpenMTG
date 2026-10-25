@@ -212,7 +212,7 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
       if (ans.continue !== undefined && typeof ans.continue !== 'boolean') fail('"continue" must be true or false.');
       if (ans.continue === true && ans.ops.length === 0) fail('Add at least one adjustment before applying it, or confirm to finish.');
       if (ans.continue === true && (d.step ?? 0) >= MANUAL_MAX_STEPS - 1) fail(`This resolution has taken ${MANUAL_MAX_STEPS} steps; apply the rest and confirm.`);
-      validateManualOps(s, d.resolvingId, ans.ops, fail);
+      validateManualOps(s, d.resolvingId, ans.ops, fail, d.player);
       break;
     }
     case 'chooseDivision': {
@@ -251,7 +251,7 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
  * Structure and references of manual adjustments: a bad operation is rejected with an explanation instead of crashing the
  * engine. The resolving spell or ability itself can't be moved (it leaves the stack when the answer is confirmed, CR 608.2n).
  */
-function validateManualOps(s: GameState, resolvingId: string | undefined, ops: readonly unknown[], fail: (msg: string, rules?: string[]) => never): void {
+function validateManualOps(s: GameState, resolvingId: string | undefined, ops: readonly unknown[], fail: (msg: string, rules?: string[]) => never, resolver?: string): void {
   const hasObject = (id: unknown): boolean => isStr(id) && s.objects[id] !== undefined;
   const hasPlayer = (id: unknown): boolean => isStr(id) && s.players.some((p) => p.id === id);
   ops.forEach((raw, i) => {
@@ -314,6 +314,18 @@ function validateManualOps(s: GameState, resolvingId: string | undefined, ops: r
         if ((op.text !== undefined && (!isStr(op.text) || op.text.length > 1000)) || (op.tapped !== undefined && typeof op.tapped !== 'boolean')) return fail(`${at}: a token's rules text must be text, and tapped true or false.`);
         return;
       }
+      case 'discard':
+        if (!hasObject(op.object)) return fail(`${at}: there is no such object.`);
+        if (s.objects[op.object as string]!.zone !== 'hand') return fail(`${at}: only a card in a hand can be discarded.`, ['CR 701.9a']);
+        return;
+      case 'tokenCopy':
+        if (!hasObject(op.object) || !hasPlayer(op.player)) return fail(`${at}: a token copy needs the permanent to copy and the player who creates it.`, ['CR 707.2', 'CR 111.1']);
+        if (s.objects[op.object as string]!.zone !== 'battlefield') return fail(`${at}: only a permanent on the battlefield can be copied this way.`, ['CR 707.2']);
+        if (op.haste !== undefined && typeof op.haste !== 'boolean') return fail(`${at}: haste is true or false.`);
+        if (op.atNextEndStep !== undefined && op.atNextEndStep !== 'sacrifice' && op.atNextEndStep !== 'exile') return fail(`${at}: at the next end step the token is sacrificed or exiled.`, ['CR 603.7']);
+        // CR 603.7d, 701.21a: the delayed trigger is the resolving player's, and a player sacrifices only a permanent they control
+        if (op.atNextEndStep === 'sacrifice' && resolver !== undefined && op.player !== resolver) return fail(`${at}: a token another player gets can't be sacrificed by you at the next end step; choose to exile it instead.`, ['CR 603.7d', 'CR 701.21a']);
+        return;
       case 'note':
         if (!isStr(op.text)) return fail(`${at}: a note needs text.`);
         return;

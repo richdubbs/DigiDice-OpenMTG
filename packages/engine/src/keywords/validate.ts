@@ -8,9 +8,11 @@ import { HOOK_NAMES, type KeywordDefData } from './types';
 
 /**
  * FAST5X E18: keywords newer than the Comprehensive Rules in rules/cr, whose data says `rule: "reminder"` (the reminder text is the rule source). Empty since the
- * 2026-09-25 edition gave Storied, the first one, CR 702.195.
+ * 2026-09-25 edition gave Storied, the first one, CR 702.195, until trek-1 added Beam me up (Star Trek, CR 702 rule number not in that edition).
  */
-export const REMINDER_RULE_KEYWORDS: readonly string[] = [];
+export const REMINDER_RULE_KEYWORDS: readonly string[] = [
+  'beam me up', // trek-1: Star Trek (Open Communications); its reminder text is the rule source
+];
 
 const MECHANISMS = ['flag', 'hook', 'expands', 'castOption', 'replacement', 'structural'];
 const PARAM_TYPES: Record<string, string[]> = { cost: ['cost'], amount: ['number'], quality: ['quality'], filter: ['filter'] };

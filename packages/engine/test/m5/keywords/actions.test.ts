@@ -47,6 +47,7 @@ describe('which actions are macros', () => {
       'goad', // M12-3: native (effects/handlers/goad.ts), CR 701.15a; its requirements in statics/requirements.ts
       'doubleEachKind', // cloud std-spm: native (effects/handlers/actions-native-counters.ts), CR 701.10e
       'anotherOfEachKind', // r5-refs: native (effects/handlers/actions-native-counters.ts), CR 701.34a's "another counter of each kind already there"
+      'assimilate', // trek-1: a macro (keywords/actions/assimilate.ts), Star Trek reminder text
     ].sort()); // M6-3: manifest, cloak, manifest dread (native, effects/handlers/face-ops.ts); M6-4: meld (native, effects/handlers/dfc-ops.ts); MX2: meldPair (native, effects/handlers/meld-pair.ts); MX4: venture (native, effects/handlers/venture.ts); FAST5 MX7: learn (native, effects/handlers/learn.ts); MX3: ringTempts (native, effects/handlers/ring.ts); FAST5 T37: monstrosity (native)
   });
 
@@ -83,6 +84,7 @@ describe('which actions are macros', () => {
       exert: 'CR 701.43a', forage: 'CR 701.61a', // FAST5X E28: forage is native (effects/handlers/forage.ts); std-ry8: exert is native (effects/handlers/exert.ts)
       renown: 'CR 702.112a', // std-ry8: native (effects/handlers/actions-native-counters.ts)
       goad: 'CR 701.15a', // M12-3: native (effects/handlers/goad.ts)
+      assimilate: 'CR 701 (reminder text)', // trek-1: a macro over move and a layer 4 effect (Star Trek; rule number unverified)
     };
     const native = new Set(['cascade', 'discover', 'vote', 'proliferate', 'bolster', 'manifest', 'cloak', 'manifestDread', 'meld', 'meldPair', 'giveGift', 'venture', 'learn', 'ringTempts', 'monstrosity', 'openAttraction', 'airbend', 'behold', 'collectEvidence', 'forage' /* FAST5X E28 */, 'goad' /* M12-3 */, 'doubleEachKind' /* cloud std-spm */, 'anotherOfEachKind' /* r5-refs */, 'explore' /* std-lci: effects/handlers/explore.ts */, 'exert', 'renown' /* std-ry8 */]);
     for (const [name, m] of Object.entries(ACTION_MACROS)) {

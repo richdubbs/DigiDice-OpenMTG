@@ -3,6 +3,8 @@
  * over (branding slot 7), page-exit guard, online-shaped connections.
  */
 import { act as reactAct, fireEvent, render, screen, within } from '@testing-library/react';
+import { readdirSync } from 'node:fs';
+import path from 'node:path';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BRAND, type Brand } from '../src/branding/brand';
@@ -12,7 +14,9 @@ import { useGameView } from '../src/connection/useGame';
 import { usePublishSelection } from '../src/game/interaction';
 import { localRematch } from '../src/game/services';
 import { BoardSlot, type BoardSlotProps, type PromptSlotProps } from '../src/game/slots';
+import { applyLook, TEMPLATE_IDS, templateLook } from '../src/profiles/profiles';
 import { SettingsStore } from '../src/settings/settings';
+import { injectCss, paintsOver } from './css-rules';
 import { CARD_NAMES, hotSeatConfig, memoryStorage, renderGameApp } from './game-fixtures';
 
 afterEach(() => {
@@ -22,6 +26,24 @@ afterEach(() => {
 function started(seed = 'c7-screen'): LocalConnection {
   return new LocalConnection({ ...hotSeatConfig(seed), options: { startingLife: 20, skipMulligans: true, startingPlayer: 'p1' } });
 }
+
+/** A hot-seat game at Alice's opening-hand decision (CR 103.5), which the board draws large on its stage over the table. */
+function atOpeningHand(): LocalConnection {
+  return new LocalConnection({ ...hotSeatConfig('c7-opening-hand'), options: { startingLife: 20, startingPlayer: 'p1' } });
+}
+
+/** The stylesheets the game screen is drawn with: every look's (theme/, loaded by main.tsx), then the bar's, the board's and the prompts'. */
+const GAME_CSS = [
+  ...readdirSync(path.resolve(__dirname, '../src/theme'))
+    .filter((f) => f.endsWith('.css'))
+    .sort()
+    .map((f) => `theme/${f}`),
+  'game/game.css',
+  'board/board.css',
+  'board/arena.css',
+  'board/table/table.css',
+  'prompts/prompts.css',
+];
 
 const brandWith = (donationUrl: string | null): Brand => ({ ...BRAND, donationUrl });
 
@@ -258,6 +280,20 @@ describe('concede and leave', () => {
     expect(screen.getByRole('heading', { name: 'Bob wins' })).toBeTruthy();
   });
 
+  it('CR 104.3a: on the pass cover the Concede and Leave confirms open over the cover\'s own content, which would otherwise take their clicks', () => {
+    const removeCss = injectCss(...GAME_CSS);
+    try {
+      const { container } = render(renderGameApp(started()));
+      const body = container.querySelector('.pass-cover-body')!;
+      fireEvent.click(screen.getByRole('button', { name: 'Concede' }));
+      expect(paintsOver(screen.getByRole('dialog', { name: 'Concede' }), body)).toBe(true);
+      fireEvent.click(screen.getByRole('button', { name: 'Leave' }));
+      expect(paintsOver(screen.getByRole('dialog', { name: 'Leave the game' }), body)).toBe(true);
+    } finally {
+      removeCss();
+    }
+  });
+
   it('Leave asks first, then returns home', () => {
     render(renderGameApp(started()));
     fireEvent.click(screen.getByRole('button', { name: 'Leave' }));
@@ -344,6 +380,67 @@ describe('in-game menu (branding slot 3)', () => {
     expect(link.className).toContain('donate-quiet');
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
     expect(screen.queryByRole('group', { name: 'Game menu' })).toBeNull();
+  });
+
+  it('opens, as the confirms do, over the opening-hand stage and the board\'s other layers in every look: none dims it or takes its clicks', async () => {
+    const removeCss = injectCss(...GAME_CSS);
+    const root = document.documentElement;
+    try {
+      for (const look of TEMPLATE_IDS) {
+        applyLook(root, templateLook(look));
+        const { container, unmount } = render(renderGameApp(atOpeningHand()));
+        acceptCover();
+        // Queries inside the bar: a role query over the whole board reads every element's computed style, slow with the stylesheets in.
+        const bar = within(container.querySelector<HTMLElement>('.game-bar')!);
+        fireEvent.click(container.querySelector('.log-toggle')!);
+        // The stage holds the opening hand; the zoom, the log drawer and the fx layer are the board's other layers over the table.
+        const layers = ['.prompt-stage', '.zoom', '.game-log', '.fx-overlay'].map((s) => [s, container.querySelector(s)] as const);
+        for (const [opener, panel] of [
+          [/Menu/, () => bar.getByRole('group', { name: 'Game menu' })],
+          ['Concede', () => bar.getByRole('dialog', { name: 'Concede' })],
+          ['Leave', () => bar.getByRole('dialog', { name: 'Leave the game' })],
+        ] as const) {
+          fireEvent.click(bar.getByRole('button', { name: opener }));
+          for (const [s, layer] of layers) expect(layer !== null && paintsOver(panel(), layer), `${look}: ${String(opener)} over ${s}`).toBe(true);
+        }
+        // CR 104: the result drawn across the table once the game is over.
+        fireEvent.click(bar.getByRole('button', { name: 'Concede' }));
+        await reactAct(async () => {
+          fireEvent.click(bar.getByRole('button', { name: 'Alice concedes' }));
+        });
+        fireEvent.click(bar.getByRole('button', { name: /Menu/ }));
+        const result = container.querySelector('.result-screen');
+        expect(result !== null && paintsOver(bar.getByRole('group', { name: 'Game menu' }), result), `${look}: Menu over .result-screen`).toBe(true);
+        unmount();
+      }
+    } finally {
+      removeCss();
+      for (const k of Object.keys(root.dataset)) delete root.dataset[k];
+      root.removeAttribute('style');
+    }
+  }, 20_000);
+
+  it('the bar lies under an open zone viewer, the modal list of a pile (CR 404); a menu opened before the list stays over it', () => {
+    const { container } = render(renderGameApp(started()));
+    acceptCover();
+    const openList = () => {
+      fireEvent.click(screen.getByRole('button', { name: /^Bob's graveyard/ }));
+      return screen.getByRole('dialog', { name: "Bob's graveyard" });
+    };
+    // The stylesheets go in only for each check: role queries read computed styles, slow with them in.
+    const drawnOver = (a: Element, b: Element) => {
+      const removeCss = injectCss(...GAME_CSS);
+      try {
+        return paintsOver(a, b);
+      } finally {
+        removeCss();
+      }
+    };
+    expect(drawnOver(openList(), container.querySelector('.game-bar')!)).toBe(true);
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: /Menu/ }));
+    const list = openList();
+    expect(drawnOver(screen.getByRole('group', { name: 'Game menu' }), list)).toBe(true);
   });
 });
 

@@ -170,8 +170,8 @@ describe('p2-counters-move-1 (CR 122.5, 608.2d): moves of counters of any kind',
     expect(fullFace(f), JSON.stringify(f.diagnostics)).toBe(true);
     expect(abilitiesJson(f)).toContain('"kind":"any","count":"all","upTo":true');
   });
-  it('fail closed: counters moved onto a group ("onto other creatures") or from a group stay manual (one object to one object only, CR 122.5)', () => {
-    expect(fullFace(face('Creature — Beast', 'At the beginning of your upkeep, you may move any number of +1/+1 counters from ~ onto other creatures.', ['2', '2']))).toBe(false);
+  it('fail closed: counters gathered from a group stay manual (CR 122.5); counters moved onto a group of one kind are read since p2-counters-move-4 (moveCounters.distribute)', () => {
+    expect(fullFace(face('Creature — Beast', 'At the beginning of your upkeep, you may move any number of +1/+1 counters from ~ onto other creatures.', ['2', '2']))).toBe(true);
     expect(fullFace(face('Creature — Beast', 'Move any number of counters from other creatures you control onto ~.', ['2', '2']))).toBe(false);
   });
 });

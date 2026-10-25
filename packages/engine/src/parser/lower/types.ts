@@ -29,6 +29,8 @@ export interface ManualInfo {
 export interface Unit {
   /** Sentence index inside the ability (stable across passes; StepBase.sentence). */
   index: number;
+  /** trek-8: index of the Oracle line (paragraph) the sentence is on (`PreprocessedFace.lines`); undefined where it was not recorded (lower/delay-tail.ts reads it). */
+  line?: number;
   /** Normalized-text range of the unit (for the ledger and the diagnostics). */
   range: Range;
   /** Display text of the sentence: "~" for the object, reminder text removed, whitespace collapsed. */
@@ -207,8 +209,11 @@ export interface Mention {
   /**
    * C6 ADDITION: the step field a reference to this mention names (default `as`): the players who can't do what a step of a group tells them ("Each opponent
    * who can't ..."; CR 101.3) are bound by the step's `cantAs` (lower/mentions.ts#cantOf, lower/anaphora.ts#bind).
+   *
+   * trek-7 ADDITION: `exiledRest`, "the rest" of the cards an `exileUntil` exiled (the card it stopped at less): the step's names `exiled` and `as` are given when a
+   * reference to it is bound (lower/anaphora.ts#bind), not when the mention is made.
    */
-  bindKey?: 'cantAs';
+  bindKey?: 'cantAs' | 'exiledRest';
 }
 
 /** The effect program of one ability while it is being lowered. */

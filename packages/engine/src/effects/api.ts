@@ -110,6 +110,12 @@ export interface StepResult {
    */
   countersRemoved?: ReadonlyMap<string, number>;
   /**
+   * trek-6 ADDITION (optional), CR 122.1, 122.6, 608.2c: of a `putCounters` step, the counters it actually put (kind -> number, as the replacement effects left them, summed over
+   * the holders), read by `{q:'countersPut'}` ("if you put two or more +1/+1 counters on creatures this way"). `runSteps` adds up its steps' records, and a `may` keeps those of its
+   * optional action (effects/handlers/control.ts). Absent for every other step.
+   */
+  countersPut?: ReadonlyMap<string, number>;
+  /**
    * M12-3 ADDITION (optional), CR 701.38a-b: of a vote, the votes each choice got (a word, an object id or a player id -> the number of votes; every choice is
    * listed, 0 included), read by `{q:'votes'}`. Absent for every other step.
    */
@@ -296,6 +302,8 @@ export interface DestinationFacts {
   /** FAST5 T36: the controller of the spell or ability whose effect performs a discard (`zoneChange.byOpponent`, CR 701.9a); absent for a cost, the cleanup step or a rule. */
   causedBy?: PlayerId;
   tapped?: boolean;
+  /** trek-8 (CR 614.1c, 508.4): it enters as an attacking creature (effects/perform-events.ts#applyEnterFacts). */
+  attacking?: boolean;
   faceDown?: boolean;
   controller?: PlayerId;
   counters?: { kind: string; count: number }[];

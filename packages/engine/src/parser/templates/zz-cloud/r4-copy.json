@@ -359,7 +359,12 @@
         "copyIn": "exile",
         "optional": true,
         "@require": {
-          "what.ref": "bound",
+          "what.ref": {
+            "@oneOf": [
+              "bound",
+              "self"
+            ]
+          },
           "result": "spell",
           "count": null,
           "newTargets": null,

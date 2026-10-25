@@ -336,6 +336,9 @@ function atoms(ctx: HoleCtx, pos: number): Alt[] {
     if (d >= 0) out.push({ end: d, value: { q: 'happenedCount', event: { ev: 'action', verb: 'discard', actor: 'you' }, scope: 'turn' } });
     // std-rm (CR 121.1, 601.2i): "for each card you've drawn this turn", "for each spell you've cast this turn" (the history counts of "the number of ..." above, said
     // with the singular noun), and "for each spell you've cast this turn from anywhere other than your hand" (Surge of Brilliance: the cast history's `notFrom`)
+    // trek-7 (CR 700.2): "for each dilemma you've faced this turn" (the singular noun, as the counts above)
+    const dilemma = anyPhraseAt(ctx, pos, W_DILEMMA_YOU_FACED_THIS_TURN);
+    if (dilemma >= 0) out.push({ end: dilemma, value: FACED_DILEMMAS_THIS_TURN() });
     const drawn = phraseAt(ctx, pos, P("card you've drawn this turn"));
     if (drawn >= 0) out.push({ end: drawn, value: { q: 'cardsDrawnThisTurn' } });
     const cast = phraseAt(ctx, pos, P("spell you've cast this turn"));
@@ -547,6 +550,14 @@ function historyCounts(ctx: HoleCtx, pos: number): Alt[] {
   if (theirs >= 0) out.push({ end: theirs, value: { q: 'happenedCount', event: { ev: 'draw', player: anaphorObj({ sort: 'any', number: 'plural', text: 'they' }) as PlayerRef }, scope: 'turn' } });
   const life = phraseAt(ctx, pos, P("life you've gained this turn"));
   if (life >= 0) out.push({ end: life, value: { q: 'lifeGainedThisTurn' } });
+  // trek-7 (CR 700.2; Captain Benjamin Sisko): "the number of dilemmas you've faced this turn": the times you chose one or more modes for a spell or ability this turn
+  // (the history's faceDilemma action entries, one for each choice, rules/crime.ts#emitDilemma)
+  const dil = anyPhraseAt(ctx, pos, W_DILEMMAS_YOU_FACED_THIS_TURN);
+  if (dil >= 0) out.push({ end: dil, value: FACED_DILEMMAS_THIS_TURN() });
+  // trek-7 (CR 506.3, 508.1; Worf, Defiant Commander): "the number of opponents you attacked this turn": the different opponents that creatures you controlled were
+  // declared attacking this turn (a planeswalker or battle attacked is not its player), read from the history as melee's count of one combat is
+  const opp = anyPhraseAt(ctx, pos, W_OPPONENTS_YOU_ATTACKED_THIS_TURN);
+  if (opp >= 0) out.push({ end: opp, value: { q: 'opponentsAttacked', scope: 'turn' } });
   // FAST5X E22 (CR 700.11): "the number of times you descended this turn" = the permanent cards put into your graveyard from anywhere this turn
   const desc = phraseAt(ctx, pos, P('times you descended this turn'));
   if (desc >= 0) out.push({ end: desc, value: { q: 'descendedThisTurn' } });
@@ -586,6 +597,10 @@ function historyCounts(ctx: HoleCtx, pos: number): Alt[] {
   return out;
 }
 
+const W_DILEMMAS_YOU_FACED_THIS_TURN = [P("dilemmas you've faced this turn"), P('dilemmas you faced this turn'), P('dilemmas you have faced this turn')]; // trek-7
+const W_DILEMMA_YOU_FACED_THIS_TURN = [P("dilemma you've faced this turn"), P('dilemma you faced this turn'), P('dilemma you have faced this turn')]; // trek-7
+const FACED_DILEMMAS_THIS_TURN = (): Quantity => ({ q: 'happenedCount', event: { ev: 'action', verb: 'faceDilemma', actor: 'you' }, scope: 'turn' });
+const W_OPPONENTS_YOU_ATTACKED_THIS_TURN = [P('opponents you attacked this turn'), P("opponents you've attacked this turn"), P('opponents you have attacked this turn')]; // trek-7
 const W_YOU_SACRIFICED_THIS_TURN = [P("you've sacrificed this turn"), P('you sacrificed this turn')]; // std-r7
 const W_DIED_UNDER = P('that died under'); // std-rc
 const W_EXILED_UNDER = P('that were exiled under'); // std-rc

@@ -1,0 +1,3 @@
+# p2-player-rules-3 (Phase 2 lane p2-player-rules; test/cloud/p2-player-rules-3, golden p2-player-rules-3-review.json)
+# as long as C, your opponents can't cast spells during your turn; whenever you clash and win
+Sylvan Echoes

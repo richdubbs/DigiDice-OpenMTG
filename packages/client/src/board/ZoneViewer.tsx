@@ -7,7 +7,8 @@
  * decision (targets in a graveyard, CR 115.1), so they are found without opening it. The viewer is a modal dialog: one at a time (the open one is board
  * state), focus stays inside, Escape or the backdrop closes it, and focus returns to its button. Opening and closing it are heard (ui.open, ui.close).
  */
-import { useEffect, useRef, type KeyboardEvent } from 'react';
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import type { ObjectId } from '@openmtg/engine';
 import { gameSfx } from '../game/sound';
 import { useBoard } from './context';
@@ -147,7 +148,7 @@ export function ZoneViewer({ title, ownerName, ids, rule, zoneKey, pile, playerI
           </span>
         ))}
       </button>
-      {open && (
+      {open && withLayer(
         <>
           <div className="zone-backdrop" onClick={close} />
           <div ref={dialogRef} className="zone-viewer" role="dialog" aria-modal="true" aria-label={label} onKeyDown={trapTab}>
@@ -171,8 +172,14 @@ export function ZoneViewer({ title, ownerName, ids, rule, zoneKey, pile, playerI
               </div>
             )}
           </div>
-        </>
+        </>,
+        board.zoneLayer,
       )}
     </>
   );
+}
+
+/** The viewer in the board's zone layer (BoardContextValue.zoneLayer), or in place without one. */
+function withLayer(node: ReactNode, layer: HTMLElement | null | undefined): ReactNode {
+  return layer ? createPortal(node, layer) : node;
 }

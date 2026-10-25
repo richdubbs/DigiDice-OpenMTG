@@ -18,6 +18,7 @@ import type { LinkId } from '../types/ability';
 import type { CostPlan } from '../rules/cost';
 import { addCounters } from '../rules/counters';
 import { becomePrepared } from '../core/prepare';
+import { enterAttackingChoosing } from '../rules/status';
 import { dealDamage, type DamageOptions } from '../rules/damage';
 import { destroy, type DestroyOptions, type DestroyResult } from '../rules/destroy';
 import { changeLife, gainLife, givePoison, loseLife } from '../rules/life';
@@ -221,6 +222,9 @@ function applyEnterFacts(g: Game, id: ObjectId, d: DestinationFacts, used?: Read
   }
   // M6-6 INTERFACE CHANGE (additive): "enters prepared" (CR 722.3a; effects/enters-parts/prepared.ts): the designation and the exile copy (CR 722.3c)
   if (d.prepared === true) becomePrepared(g, id);
+  // trek-8 (CR 614.1c, 508.4): "enters tapped and attacking": once it is on the battlefield with its other entering facts, it joins the combat (its controller chooses what it attacks)
+  // (trek-8 review: the way the putting effect says, when it says one: "tapped and attacking target player", ninjutsu; else the controller chooses, once)
+  if (d.attacking === true) (g.enterAttackingBy ?? ((ids) => enterAttackingChoosing(g, ids)))([id]);
   if (d.abilities && d.abilities.length > 0) {
     const rec: ContinuousEffectRec = {
       id: g.newEffectId(),

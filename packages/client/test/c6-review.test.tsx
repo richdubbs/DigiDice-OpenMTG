@@ -86,9 +86,10 @@ describe('the board under a tall prompt (1400x900)', () => {
     expect(decl('.board-side').overflow).toBe('hidden');
     expect(decl('.board-prompt')['overflow-y']).toBe('auto');
     expect(decl('.board-prompt')['min-height']).toBe('0');
-    // The rail never moves: the stack's half and the prompt's half share it equally, the turn structure fixed between them.
-    expect(decl('.board-prompt').flex).toBe('1 1 0');
-    expect(decl('.rail-top').flex).toBe('1 1 0');
+    // The rail never moves: the stack's half and the prompt's half share it (equally until the player sizes the share, RailResize.tsx), the
+    // turn structure fixed between them.
+    expect(decl('.board-prompt').flex).toBe('var(--rail-prompt-grow, 1) 1 0');
+    expect(decl('.rail-top').flex).toBe('var(--rail-top-grow, 1) 1 0');
     // The board fills the game screen's slot below the top bar (100vh would push the prompt below the window).
     expect(decl('.game-board').height).toBe('100%');
   });

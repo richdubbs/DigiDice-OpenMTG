@@ -84,13 +84,15 @@ function stepEvents(ctx: HoleCtx, pos: number): Alt[] {
       const e = phraseAt(ctx, o.end, ws);
       if (e >= 0) emit(e, steps, whoseOf(o.ref), nth);
     }
-    // "combat on your turn"
+    // "combat on your turn"; trek-8 (CR 603.2, 506.1): and on any other player's turn ("combat on each player's turn", "on each opponent's turn"), the same step
+    // of those turns as "each player's upkeep" is theirs (only the beginning of combat: the main phases and the end step are not said this way)
     const e0 = phraseAt(ctx, b, ws);
     if (e0 >= 0) {
       const on = phraseAt(ctx, e0, P('on'));
       if (on >= 0) for (const o of possessivePlayerAt(ctx, on)) {
         const t = phraseAt(ctx, o.end, P('turn'));
         if (t >= 0 && o.ref.ref === 'you') emit(t, steps, 'you', nth);
+        else if (t >= 0 && steps.length === 1 && steps[0] === 'beginCombat' && ws.length === 1) emit(t, steps, whoseOf(o.ref), nth);
       }
     }
   }
@@ -631,6 +633,10 @@ function playerPredicates(ctx: HoleCtx, pos: number): PPred[] {
   // FAST5X E20 (CR 700.13): "whenever you commit a crime"
   at(P('commit a crime'), (pl) => ({ ev: 'action', verb: 'commitCrime', actor: pl }));
   at(P('commits a crime'), (pl) => ({ ev: 'action', verb: 'commitCrime', actor: pl }));
+  // trek-2 (CR 700.2, 601.2b, 602.2b, 603.3c; the term is new, its rule number unverified): "whenever you face a dilemma" (Seven of Nine; reminder text: "You face a
+  // dilemma as you choose one or more modes for a spell or ability"): the player chose one or more modes (actions/announce.ts#chooseModes emits the action)
+  at(P('face a dilemma'), (pl) => ({ ev: 'action', verb: 'faceDilemma', actor: pl }));
+  at(P('faces a dilemma'), (pl) => ({ ev: 'action', verb: 'faceDilemma', actor: pl }));
   // FAST5X E20 (CR 700.14): "whenever you expend 4"
   for (const w of [P('expend'), P('expends')]) {
     const e = phraseAt(ctx, pos, w);

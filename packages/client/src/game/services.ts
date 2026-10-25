@@ -3,15 +3,18 @@
  * - the saved decks (deck library of work package C3, IndexedDB) plus the built-in practice decks and the Commander precons (precons.ts);
  * - deck checks for a format (`POST /api/decks/validate`, work package C1 on top of the cards package's format rules, package F1);
  * - compiled card definitions (`POST /api/cards/defs`, C1): game configs embed them, so the engine state is self-contained;
- * - a fresh seed for each game (the browser's crypto RNG; the engine itself never reads randomness, ARCHITECTURE.md principle 1).
+ * - a fresh seed for each game (the browser's crypto RNG; the engine itself never reads randomness, ARCHITECTURE.md principle 1);
+ * - each deck's sleeve, the one of its colors (branding/sleeves.ts), from its cards' data (`GET /api/cards/:name`).
  *
  * `validateDeck` answers null when the server has no deck checker (501/503), and the New game screen then says the decks were not checked.
  */
 import type { GameConfig } from '@openmtg/engine';
-import type { DeckList, DefsResponse, ValidateResponse } from '@openmtg/server/api';
+import type { CardSummary, DeckList, DefsResponse, ValidateResponse } from '@openmtg/server/api';
 import { ApiRequestError, apiPost } from '../api/http';
+import { deckSleeve } from '../branding/sleeves';
 import { LocalConnection } from '../connection/LocalConnection';
-import { pageStore } from '../decks/context';
+import { httpDecksApi, pageStore, type DecksApi } from '../decks/context';
+import { deckColors } from '../decks/look';
 import { toDeckList } from '../decks/model';
 import type { DeckStore } from '../decks/store';
 import { PRACTICE_DECKS } from './practiceDecks';
@@ -28,8 +31,6 @@ export interface GameDeck {
   builtIn?: boolean;
   /** A preconstructed Commander deck as printed (precons.ts): built in too, listed in its own group with its commander(s). */
   precon?: { set: string; released: string; commanders: string };
-  /** The deck's sleeve (Deck.sleeve): the player's card backs in the game. */
-  sleeve?: string;
 }
 
 export interface GameServices {
@@ -42,12 +43,33 @@ export interface GameServices {
    */
   compileDefs(names: string[], opts?: { signal?: AbortSignal; stubs?: string[] }): Promise<DefsResponse>;
   newSeed(): string;
+  /** The sleeve of the deck's colors, the player's card backs in the game; undefined: the classic back. Absent: everyone has the classic back. */
+  deckSleeve?(deck: DeckList): Promise<string | undefined>;
 }
 
 /** The player's saved decks: the deck library's store (C3, IndexedDB; the same store the Decks screens use), newest first as the library lists them. */
 export async function savedDecks(store: DeckStore = pageStore()): Promise<GameDeck[]> {
   const decks = await store.list();
-  return decks.map((d) => ({ id: d.id, name: d.name, format: d.format, deck: toDeckList(d), ...(d.sleeve ? { sleeve: d.sleeve } : {}) }));
+  return decks.map((d) => ({ id: d.id, name: d.name, format: d.format, deck: toDeckList(d) }));
+}
+
+/** Card data read for sleeves, kept for the page's life (a failed lookup is asked again next time). */
+const sleeveCards = new Map<string, CardSummary>();
+
+/** The sleeve of a deck's colors (decks/look.ts deckColors), its cards looked up four at a time; a card that cannot be read adds no color. */
+export async function deckSleeveOf(deck: DeckList, api: Pick<DecksApi, 'card'> = httpDecksApi): Promise<string | undefined> {
+  const queue = [...new Set([...deck.main, ...(deck.commander ?? [])].map((e) => e.name))].filter((n) => !sleeveCards.has(n));
+  const worker = async () => {
+    for (let n = queue.shift(); n !== undefined; n = queue.shift()) {
+      try {
+        sleeveCards.set(n, (await api.card(n)).card);
+      } catch {
+        // No color from this card; the sleeve is still the one of the colors that were read.
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(4, queue.length) }, worker));
+  return deckSleeve(deckColors(deck, sleeveCards));
 }
 
 /** A 128-bit random seed in hex. */
@@ -85,6 +107,7 @@ export const defaultServices: GameServices = {
   compileDefs: (names, opts) =>
     apiPost('POST /api/cards/defs', { names, ...(opts?.stubs?.length ? { stubs: opts.stubs } : {}) }, opts?.signal ? { signal: opts.signal } : {}),
   newSeed,
+  deckSleeve: (deck) => deckSleeveOf(deck),
 };
 
 /**

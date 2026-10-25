@@ -1,0 +1,267 @@
+[
+  {
+    "id": "eff.trek5.nomaxhand.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1",
+      "CR 611.2a"
+    ],
+    "pattern": "you have no maximum hand size {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "handSizeNoLimit",
+          "player": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Draw two cards. You have no maximum hand size until your next turn."
+      },
+      {
+        "text": "Draw a card. You have no maximum hand size until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. You have no maximum hand size for the rest of the turn.",
+      "Draw two cards. You have no minimum hand size until your next turn.",
+      "Draw two cards. You have a maximum hand size until your next turn."
+    ]
+  },
+  {
+    "id": "eff.trek5.double.life.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 701.10",
+      "CR 119.3"
+    ],
+    "pattern": "double your life total",
+    "build": {
+      "op": "setLife",
+      "who": {
+        "ref": "you"
+      },
+      "value": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          {
+            "q": "life",
+            "of": {
+              "ref": "you"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Double your life total."
+      },
+      {
+        "text": "Double your life total. Draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Triple your life total.",
+      "Draw a card. Double your life total instead.",
+      "Draw a card. Double your poison counters."
+    ]
+  },
+  {
+    "id": "eff.trek5.double.life",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 701.10",
+      "CR 119.3"
+    ],
+    "pattern": "double {p:Player} 's life total",
+    "build": {
+      "op": "setLife",
+      "who": "$p",
+      "value": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          {
+            "q": "life",
+            "of": "$p"
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Double target player's life total."
+      },
+      {
+        "text": "Double target opponent's life total. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Triple target player's life total.",
+      "Double target player's life total instead.",
+      "Double each opponent's life total.",
+      "Double each player's life total.",
+      "Double target player's poison counters."
+    ]
+  },
+  {
+    "id": "sta.trek5.player.cantSacrifice",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 701.21a",
+      "CR 101.2"
+    ],
+    "pattern": "{p:Player} can't sacrifice {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$p",
+      "mode": "cant",
+      "action": "sacrifice",
+      "other": "$f"
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "You can't sacrifice artifact tokens."
+      },
+      {
+        "text": "Your opponents can't sacrifice creatures."
+      }
+    ],
+    "counterExamples": [
+      "You can sacrifice artifact tokens.",
+      "You can't sacrifice artifact tokens this turn.",
+      "You can't cast artifact tokens."
+    ]
+  },
+  {
+    "id": "eff.trek5.base.become",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Obj} 's base power and toughness become {pt:BasePT} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}{G}: ~'s base power and toughness become 5/5."
+      },
+      {
+        "text": "{1}: Target creature's base power and toughness become 1/1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: ~'s base power and toughness become +1/+1.",
+      "{2}{G}: ~'s base power and toughness become 5/5 unless it is tapped.",
+      "{2}{G}: ~'s power and toughness become 5/5."
+    ]
+  },
+  {
+    "id": "eff.trek5.cast.free.ifSpellMvAtMost",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2",
+      "CR 202.3",
+      "CR 608.2c",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost if ( that | the resulting | the ) spell 's mana value is equal to or less than {n:Qty}",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true,
+      "maxManaValue": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if that spell's mana value is equal to or less than the number of Swamps you control."
+      },
+      {
+        "text": "Exile cards from the top of your library until you exile an instant card. You may cast that card without paying its mana cost if that spell's mana value is equal to or less than your life total."
+      },
+      {
+        "text": "Exile cards from the top of your library until you exile a nonland card. You may cast it without paying its mana cost if the resulting spell's mana value is equal to or less than the number of Swamps you control."
+      }
+    ],
+    "counterExamples": [
+      "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if that spell's mana value is equal to or greater than the number of Swamps you control.",
+      "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost unless that spell's mana value is equal to or less than the number of Swamps you control.",
+      "Exile cards from the top of your library until you exile a nonland card. You may cast that card if that spell's mana value is equal to or less than the number of Swamps you control.",
+      "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if that spell's power is equal to or less than the number of Swamps you control."
+    ]
+  }
+]

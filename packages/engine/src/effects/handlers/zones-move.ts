@@ -30,7 +30,7 @@ import { proposeMeasured } from './lifedamage';
 import { filterCtxOf, isCurrent, resolveObjs, resolvePlayers } from '../refs';
 import { matchesFilter } from '../../rules/filter';
 import {
-  actOn, addToLink, bindAs, bindMoved, byHand, enterAttacking, exiledLeavingStack, firstPlayer, libraryPosition, movedHandles, NOTHING, did, proposeMove, PUBLIC_ZONES, wholeNumber, type Moved,
+  actOn, addToLink, bindAs, bindMoved, byHand, enterAttacking, enteringAttacking, exiledLeavingStack, firstPlayer, libraryPosition, movedHandles, NOTHING, did, proposeMove, PUBLIC_ZONES, wholeNumber, type Moved,
 } from './zones-util';
 
 type Move = Extract<EffectStep, { op: 'move' }>;
@@ -145,7 +145,8 @@ function logStayed(g: ExecCtx['g'], ids: readonly ObjectId[]): void {
   }
 }
 
-export const move: StepHandler<Move> = (cx, st) => {
+export const move: StepHandler<Move> = (cx, st) => enteringAttacking(cx, st.to.attacking, () => moveStep(cx, st)); // trek-8 review (CR 508.4): see zones-util.ts#enteringAttacking
+const moveStep: StepHandler<Move> = (cx, st) => {
   const to: Destination = st.to;
   // Forms of the step this build does not run (named by the capability walker; never approximated).
   if (st.until && !untilSourceLeaves(st.until, to)) return byHand(cx, st, 'a move that lasts until this event happens (CR 610.3) is not automated yet');

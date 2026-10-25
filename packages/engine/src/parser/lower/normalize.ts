@@ -135,6 +135,9 @@ function castsCopyOfUnexiled(steps: unknown, exiled: Set<string>): boolean {
     if (n['op'] !== 'cast' || n['copyIn'] === undefined) return;
     const what = n['what'];
     if (isRec(what) && what['ref'] === 'costExiled' && what['self'] === undefined) return;
+    // trek-12 (CR 707.12, 113.6): a copy of the card the ability itself is on ("Create a copy of ~. You may cast the copy."): the lint of the finished ability (model/lint-nodes.ts,
+    // case 'cast') allows it only in an activated ability that functions in exile alone
+    if (isRec(what) && what['ref'] === 'self') return;
     if (!isRec(what) || what['ref'] !== 'bound' || typeof what['name'] !== 'string' || !exiled.has(what['name'])) bad = true;
   });
   return bad;

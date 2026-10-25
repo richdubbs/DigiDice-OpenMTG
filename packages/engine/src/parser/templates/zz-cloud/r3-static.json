@@ -509,7 +509,7 @@
     "id": "sta.r3static.noLossForZeroLife",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 704.5a",
       "CR 104.3b"

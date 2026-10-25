@@ -656,6 +656,8 @@ function staticAbility(def: StaticAbilityDef, st: RenderState): string {
   }
   // FAST5 T68 (family during-turn, CR 611.3a, 500.1, 513.1): "During your end step, X" is "as long as it's your end step, X" (one step of your turn)
   if (c.cond === 'turnOf' && c.whose === 'you' && (c.step === 'upkeep' || c.step === 'draw' || c.step === 'end')) during.push(`during ${possessiveStep(c.step, 'you', st)}, ${body}`);
+  // trek-7 (family during-turn, CR 505.1, 611.3a; Scotty, Miracle Worker): "During your main phase, X" is "as long as it's your main phase, X" (either main phase of your turn)
+  if (c.cond === 'turnOf' && c.whose === 'you' && Array.isArray(c.step) && c.step.length === 2 && c.step[0] === 'main1' && c.step[1] === 'main2') during.push(`during your main phase, ${body}`);
   // FAST3 T11: "During turns other than yours, X" is Oracle's wording of "as long as it's not your turn, X" (CR 611.3a, 500.1; family other-turns)
   if (c.cond === 'not' && c.of.cond === 'turnOf' && c.of.whose === 'you' && c.of.step === undefined) during.push(`during turns other than yours, ${body}`);
   // FAST5X E22 (family additional-pump-static): "As long as there are eight or more permanent cards in your graveyard, ~ gets an additional +2/+2" (descend 8 after

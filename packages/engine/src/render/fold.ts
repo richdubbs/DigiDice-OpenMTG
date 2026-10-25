@@ -31,6 +31,7 @@ import { foldStdCopy6 } from './fold-stdcopy6';
 import { foldP2Refs1 } from './fold-p2refs1';
 import { foldStdControl1 } from './fold-stdcontrol1';
 import { foldP2Damage2 } from './fold-p2damage2'; // p2-damage-2
+import { foldP2Damage3 } from './fold-p2damage3'; // p2-damage-3
 import { foldStdCombat2 } from './fold-stdcombat2'; // std-combat-2
 import { foldStdCombat5 } from './fold-stdcombat5';
 import { foldP2ReplaceDamage1 } from './fold-p2rd1'; // p2-replace-damage-1
@@ -42,6 +43,9 @@ import { foldP2GroupActions1 } from './fold-p2ga1'; // p2-group-actions-1
 import { returnRandomFromGraveyard, revealRandomFromHand } from './fold-p2coinflip1'; // p2-coinflip-1
 import { foldP2GroupActions2 } from './fold-p2ga2'; // p2-group-actions-2
 import { foldP2ReplaceDamage4 } from './fold-p2rd4'; // p2-replace-damage-4
+import { foldTrek3 } from './fold-trek3'; // trek-3
+import { foldTrek8 } from './fold-trek8'; // trek-8
+import { foldTrek9 } from './fold-trek9'; // trek-9
 import { movedInfo } from './moved';
 
 export interface Folded {
@@ -2088,7 +2092,11 @@ function putOfThemAndRest(list: EffectStep[], i: number, st: RenderState): Folde
   const computed = typeof a.min === 'object' && JSON.stringify(a.max) === JSON.stringify(a.min);
   if (a.who.ref !== 'you' || !(computed || (typeof a.min === 'number' && a.min >= 1 && a.max === a.min)) || !isBound(b.what, a.as)) return null;
   const pool = groupPool(a.from);
-  if (pool === null || pool.desc !== null || c.what.ref !== 'each') return null;
+  if (pool === null || c.what.ref !== 'each') return null;
+  // trek-9 (CR 701.20e, 608.2c-d, 609.3): exactly ONE card of a description among the group ("Put a land card from among them onto the battlefield tapped and the
+  // rest into your graveyard", Hit It!), not into exile (the exile reading below says "of them"); any other described choice is a fold of its own
+  const oneOfDesc = pool.desc !== null && a.min === 1 && a.max === 1 && b.to.zone !== 'exile' ? pool.desc : null;
+  if (pool.desc !== null && oneOfDesc === null) return null;
   const rest = restOfGroup(c.what.filter);
   if (rest === null || rest.chosen !== a.as || rest.group !== (pool.group as { name: string }).name) return null;
   // std-exile-play-1-1 (CR 400.7, 608.2c): the cards exiled this way may be named by a later instruction, "the exiled cards" (bound below)
@@ -2102,7 +2110,8 @@ function putOfThemAndRest(list: EffectStep[], i: number, st: RenderState): Folde
   const ofThem = `${n} of ${them.text}`;
   // std-blb: Oracle also says "put three cards from among them into your hand" (CR 608.2c: the same choice among the cards looked at)
   const fromAmong = `${n} ${a.min === 1 ? 'card' : 'cards'} from among ${them.text}`;
-  const which = a.min === 1 ? alt(ofThem, 'one', fromAmong) : alt(ofThem, fromAmong);
+  const which = oneOfDesc !== null ? `${K.np({ ...oneOfDesc, zone: 'library' }, st, { det: 'a', plural: false, noZone: true })} from among ${them.text}`
+    : a.min === 1 ? alt(ofThem, 'one', fromAmong) : alt(ofThem, fromAmong);
   // r4-dig (CR 701.13a, 406.3, 401.4): "exile two of them face down, then put the rest on the bottom of their library in a random order" (Black Cat, Cunning Thief):
   // the chosen cards exiled (face down or not), the rest of the group to the bottom of the library they are in (the library's owner is "their" when another
   // player's library was looked at; each card goes to its owner's library, CR 400.3)
@@ -3383,6 +3392,23 @@ function linkedCopyOne(list: EffectStep[], i: number, st: RenderState): Folded |
 }
 
 /**
+ * trek-6 (CR 607.2a, 608.2d; assimilate, Star Trek reminder text): "Assimilate a creature card exiled with ~." (Borg Cube): you choose one card of the described kind
+ * among the cards the linked exile instruction exiled and assimilate it. Only that shape: one choice by you of exactly one linked card, then the assimilate action
+ * by you on exactly that card (it may carry a name: "If you can't" reads whether it put a card onto the battlefield), and no later step reads the choice.
+ */
+function linkedAssimilateOne(list: EffectStep[], i: number, st: RenderState): Folded | null {
+  const a = list[i];
+  const b = list[i + 1];
+  if (a?.op !== 'chooseObjects' || b?.op !== 'action' || b.action !== 'assimilate' || a.as === undefined || a.random === true || a.guard !== undefined || a.who.ref !== 'you' || a.min !== 1 || a.max !== 1 || a.groupLimit !== undefined) return null;
+  if (b.guard !== undefined || b.who.ref !== 'you' || b.n !== undefined || b.arg !== undefined || b.choices !== undefined || b.subject === undefined || !isBound(b.subject as ObjRef, a.as)) return null;
+  const f = a.from.ref === 'each' && 'filter' in a.from ? a.from.filter : null;
+  if (f === null || !linkedExiled(f, ['isCard', 'anyOf'], (x) => x.isCard === true && x.anyOf?.length === 1)) return null;
+  if (!unread(list, i + 2, a.as)) return null;
+  const card = withArticle(`${K.np(f.anyOf![0]!, st, { det: 'none' })} card`);
+  return { clauses: [plain(`assimilate ${card} exiled with ${alt('~', 'it')}`)], consumed: 2 };
+}
+
+/**
  * CMD5 (family token-and-token; Standard merge wave 4: also r3-fx's eff.r3fx.token.two.kinds, whose own one-clause fold `twoTokenKinds` printed only the
  * joined form and is gone): "create a Clue token and a Food token", "create a Treasure token and a 2/2 blue Bird creature token with flying" (CR 111.1,
  * 111.2, 608.2c): two plain creations of tokens by you in a row also share one verb. The steps keep their own clauses (so every joiner reading stays); the second
@@ -3481,6 +3507,8 @@ export function foldAt(list: EffectStep[], i: number, st: RenderState): Folded |
   if (linked !== null) return linked;
   const copied = linkedCopyOne(list, i, st); // r3-copy
   if (copied !== null) return copied;
+  const assimilated = linkedAssimilateOne(list, i, st); // trek-6
+  if (assimilated !== null) return assimilated;
   const picks = alternatingPicks(list, i, st) ?? eachPlayerHalves(list, i) ?? forEachPlayerDestroyUpToOne(list, i, st) ?? eachRevealsOtherLoses(list, i, st) ?? skipsNextTurns(list, i, st) ?? searchOutsideOpponentChooses(list, i, st); // std-rx30: before the folds of one choice and its move
   if (picks !== null) return picks;
   const rx31 = foldStdRx31(list, i, st); // std-rx31: shapes only its own templates build
@@ -3499,6 +3527,8 @@ export function foldAt(list: EffectStep[], i: number, st: RenderState): Folded |
   if (control1 !== null) return control1;
   const damage2 = foldP2Damage2(list, i, st); // p2-damage-2: shapes only its own templates build
   if (damage2 !== null) return damage2;
+  const damage3 = foldP2Damage3(list, i, st); // p2-damage-3: shapes only its own templates build
+  if (damage3 !== null) return damage3;
   const combat5 = foldStdCombat5(list, i, st); // std-combat-5: shapes only its own templates build
   if (combat5 !== null) return combat5;
   const p2rd1 = foldP2ReplaceDamage1(list, i, st); // p2-replace-damage-1: shapes only its own templates build
@@ -3515,6 +3545,12 @@ export function foldAt(list: EffectStep[], i: number, st: RenderState): Folded |
   if (p2ga2 !== null) return p2ga2;
   const p2rd4 = foldP2ReplaceDamage4(list, i, st); // p2-replace-damage-4: shapes only its own templates build
   if (p2rd4 !== null) return p2rd4;
+  const trek3 = foldTrek3(list, i, st); // trek-3: shapes only its own templates build
+  if (trek3 !== null) return trek3;
+  const trek8 = foldTrek8(list, i, st); // trek-8: shapes only its own templates build
+  if (trek8 !== null) return trek8;
+  const trek9 = foldTrek9(list, i, st); // trek-9: shapes only its own templates build
+  if (trek9 !== null) return trek9;
   return chooseThenCastFree(list, i) ?? castFromHandFreeMv(list, i, st) /* r4-cost */ ?? castFromGroupFree(list, i, st) ?? castFromLinkedExile(list, i, st) /* std-re */ ?? exileUpToOneFromGraveyard(list, i, st) /* std-exile-play-2-3 */ ?? castFromOwnedExileWithCounters(list, i) /* std-exile-play-2-2 */ ?? exileOneOfEachColorFromRevealed(list, i, st) /* std-exile-play-2-4 */ ?? castFromEachOpponentGraveyard(list, i) /* std-rx27 */ ?? castFromOwnZone(list, i, st) /* std-rw7 */ ?? exileTopXThenCastAnyFree(list, i, st) ?? castAnyFromExiledFree(list, i, st) /* r3-cost */ ?? revealCardsFromHand(list, i, st) ?? lookCloakRest(list, i, st) ?? cloakFromHand(list, i) ?? exilePileCloak(list, i, st)
     ?? dreadBinnedToHand(list, i, st) ?? putOfThemAndRest(list, i, st) ?? eachCardTypeFromGroup(list, i, st) /* std-library-3 */ ?? restOfExiledToHand(list, i, st) /* std-library-3 */ ?? putAnyFromGroupAndRest(list, i, st) ?? putThatAndRest(list, i, st) ?? exileRandomFromGraveyard(list, i, st) ?? returnRandomFromGraveyard(list, i, st) /* p2-coinflip-1 */ ?? revealRandomFromHand(list, i, st) /* p2-coinflip-1 */ ?? putUpToTotalFromGroupAndRest(list, i, st) ?? putOfThem(list, i, st) /* r4-repl */ ?? putAnyFromGroup(list, i, st) /* r4-fxz, r4-repl */ ?? revealTopAndPut(list, i, st) /* r4-dig */ ?? playerLooksThenExilesFaceDown(list, i, st) /* r4-dig */ ?? putEitherFromGroup(list, i, st) ?? putEitherFromHand(list, i, st) /* r4-fxz */ ?? putAllFromGroupAndRest(list, i, st) /* r4-fxz */ ?? putAllRevealedSplit(list, i, st) /* std-rx1 */ ?? chooseUpToFromGroup(list, i, st) /* r4-dig */ ?? chooseUpToFromGroupThenReveal(list, i, st) /* r5-dig */ ?? otherChoosesThenChosenAndRest(list, i, st) /* r5-dig */ ?? forEachOwnerMayPlay(list, i, st) /* r5-dig */ ?? playerRevealsUntilToGraveyard(list, i, st) /* r5-dig */ ?? revealOneFromHand(list, i, st) /* r4-dig */ ?? putAnyOfHitsAndRestOfRevealed(list, i, st) /* r4-dig */ ?? chooseFromGroup(list, i, st)
     ?? chooseRandomFromGroup(list, i, st) ?? chooseRandomLinkedThenBattlefield(list, i, st) ?? sourceOfChoiceShield(list, i, st) ?? textChange(list, i, st) ?? tapThenCounters(list, i, st) ?? tapThenFreeze(list, i, st) ?? gainControlThenUntap(list, i, st) /* r4-trig */ ?? chooseThenUntap(list, i, st)

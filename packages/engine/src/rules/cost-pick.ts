@@ -36,11 +36,12 @@ export function countersFor(counters: Readonly<Record<string, number>>, kind: st
   return n;
 }
 
-export type PickPart = Extract<PlanPart, { kind: 'sacrifice' | 'returnToHand' | 'exileFrom' | 'discard' | 'tapUntapped' | 'tapPower' | 'collectEvidence' | 'reveal' | 'removeCounters' | 'putCounters' | 'behold' | 'chooseObject' | 'untapTapped' }>;
+export type PickPart = Extract<PlanPart, { kind: 'sacrifice' | 'returnToHand' | 'putIntoLibrary' | 'exileFrom' | 'discard' | 'tapUntapped' | 'tapPower' | 'collectEvidence' | 'reveal' | 'removeCounters' | 'putCounters' | 'behold' | 'chooseObject' | 'untapTapped' }>;
 
 export const isPickPart = (part: PlanPart): part is PickPart => {
   switch (part.kind) {
     case 'sacrifice': case 'returnToHand': case 'exileFrom': case 'tapUntapped': case 'tapPower': case 'collectEvidence': case 'reveal': case 'behold': case 'chooseObject': return true;
+    case 'putIntoLibrary': return true; // trek-9: the source itself (isSelfPart)
     case 'untapTapped': return true; // p2-cost-parts-1
     case 'discard': return part.hand !== true; // "discard your hand" picks nothing
     case 'removeCounters': return part.filter !== undefined && part.among !== true; // on the source otherwise; r3-cost: "from among" is chosen counter by counter as it is paid
@@ -51,7 +52,7 @@ export const isPickPart = (part: PlanPart): part is PickPart => {
 
 /** "Sacrifice this permanent", "discard this card": the source itself pays, there is nothing to choose. */
 export const isSelfPart = (part: PlanPart): boolean =>
-  (part.kind === 'sacrifice' || part.kind === 'returnToHand' || part.kind === 'exileFrom' || part.kind === 'discard' || part.kind === 'reveal') && part.self === true;
+  (part.kind === 'sacrifice' || part.kind === 'returnToHand' || part.kind === 'exileFrom' || part.kind === 'discard' || part.kind === 'reveal' || part.kind === 'putIntoLibrary') && part.self === true;
 
 /** Discarding at random (CR 701.9b) is decided when the cost is paid. */
 export const isRandomPart = (part: PlanPart): boolean => part.kind === 'discard' && part.random === true;
@@ -94,7 +95,7 @@ export function countersAmong(s: GameState, player: PlayerId, sourceId: ObjectId
 
 /** How many objects a pick part takes (a threshold part takes at least one unless its total is 0). */
 export function pickCount(part: PickPart): number {
-  if (isSelfPart(part)) return 1;
+  if (isSelfPart(part) || part.kind === 'putIntoLibrary') return 1; // trek-9: putIntoLibrary is the source itself
   if (part.kind === 'exileFrom' && isExactPart(part)) return part.count; // std-costs-1: at least this many objects ("one or more")
   if (isThresholdPart(part)) return thresholdOf(part) > 0 ? 1 : 0;
   if (part.kind === 'removeCounters' || part.kind === 'putCounters') return 1; // one chosen permanent gets / loses all the counters
@@ -132,6 +133,8 @@ export function partCandidates(s: GameState, player: PlayerId, sourceId: ObjectI
         // M11-1, CR 702.49d: commander ninjutsu reveals "this card from your hand or from the command zone" (an ability that functions in the command zone)
         if (part.self) return sourceId && (s.objects[sourceId]?.zone === 'hand' || (part.kind === 'reveal' && s.objects[sourceId]?.zone === 'command')) ? [sourceId] : [];
         return findObjects(s, { ...(part.filter ?? {}), zone: 'hand', owner: 'you' }, ctx).map((o) => o.id);
+      case 'putIntoLibrary': // trek-9 (CR 118.3, 401.4): the source itself, where the part says it is
+        return sourceId && s.objects[sourceId]?.zone === part.zone ? [sourceId] : [];
       case 'exileFrom':
         if (part.self) return sourceId && s.objects[sourceId]?.zone === part.zone ? [sourceId] : [];
         if (part.orGraveyard) {
@@ -178,7 +181,7 @@ export function partCandidates(s: GameState, player: PlayerId, sourceId: ObjectI
 function costUse(part: PlanPart): CostUse | undefined {
   switch (part.kind) {
     case 'sacrifice': return 'sacrifice';
-    case 'returnToHand': return 'returnToHand';
+    case 'returnToHand': return part.beamUp === true ? 'beamUp' : 'returnToHand'; // trek-1: a beam me up cost (rules/cant.ts)
     case 'exileFrom': return 'exile';
     case 'collectEvidence': return 'exile'; // CR 701.59a: exile cards from your graveyard (WP31 review)
     case 'discard': return 'discard';

@@ -1,6 +1,7 @@
 /**
  * Damage, life and counters (WP2): damage, gainLife, loseLife, setLife, fight, putCounters, removeCounters, moveCounters (CR 120, 119, 122, 701.14).
  */
+import { namesOnePlayer } from '../model/focus';
 import type { CounterKind, ObjRef, PlayerRef, Quantity, Ref } from '../types/ability';
 import { plain, type Clause } from './clause';
 import { K } from './kernel';
@@ -74,7 +75,8 @@ function alsoText(s: StepOf<'damage'>, st: RenderState): string {
   const f = a.to.ref === 'each' && 'filter' in a.to ? a.to.filter : undefined;
   if (same && s.to.ref === 'each' && 'who' in s.to && s.to.who === 'opponent' && f !== undefined && f.controller === 'opponent') {
     const { controller: _c, ...rest } = f;
-    return alt(` and ${to}`, ` and ${K.np(rest, st, { det: 'each' })} they control`);
+    // p2-damage-3: the amount said again, "1 damage to each opponent and 1 damage to each creature your opponents control" (Dagger Caster), as for any other pair below
+    return alt(` and ${to}`, ` and ${K.np(rest, st, { det: 'each' })} they control`, ` and ${lit} to ${to}`);
   }
   // FAST4 T34 (CR 601.2c; family damage-each-of): "and 3 damage to each of up to two other targets", the same amount to every one of several targets
   const eachOf = a.to.ref === 'target' && (st.specs.get(a.to.id)?.max ?? 1) !== 1 ? [` and ${lit} to each of ${to}`] : [];
@@ -258,8 +260,17 @@ export const CLAUSES_LIFE = {
   }),
 
   setLife: (s: StepOf<'setLife'>, st: RenderState): Clause => {
-    const who = K.player(s.who, st, 'possessive').text;
-    return plain(`${who} life total becomes ${K.qty(s.value, st)}`);
+    const whoPhrase = K.player(s.who, st, 'possessive');
+    const who = whoPhrase.text;
+    const base = `${who} life total becomes ${K.qty(s.value, st)}`;
+    // trek-5 (CR 119.5, 701.10; family double-life-total): "double your life total" is the life total set to twice itself (the model has no doubling node, as
+    // render/double.ts says of power and toughness); the player the life total is of is the player whose life total it becomes. ONE player only: the step reads its value
+    // once (effects/handlers/lifedamage.ts#setLife), so "Double each opponent's life total" (each one's own total doubled) is not this step: the gate refuses it, manual
+    const v = s.value;
+    const life = typeof v === 'object' && v.q === 'math' && v.op === '*' && v.args.length === 2 ? v.args.find((a) => a !== 2) : undefined;
+    const doubled = namesOnePlayer(s.who) && !whoPhrase.plural && typeof v === 'object' && v.q === 'math' && v.op === '*' && v.args.length === 2 && v.args.includes(2)
+      && typeof life === 'object' && life.q === 'life' && life.agg === undefined && JSON.stringify(life.of) === JSON.stringify(s.who);
+    return plain(doubled ? alt(base, `double ${who} life total`) : base);
   },
 
   fight: (s: StepOf<'fight'>, st: RenderState): Clause => {
@@ -306,6 +317,12 @@ export const CLAUSES_LIFE = {
     // p2-counters-move-1 (CR 115.3, 122.5; cites unverified): the object the counters go onto, a target after a target they come from, is also "a second
     // target ..." (each "target" is its own choice, as render/refs.ts#againPhrase; moving counters from an object onto itself does nothing)
     const second = (to: string): string => (s.from.ref === 'target' && s.to.ref === 'target' && to.startsWith('target ') ? alt(to, `a second ${to}`) : to);
+    // p2-counters-move-4 (CR 122.5, 608.2d): "move any number of +1/+1 counters from ~ onto other creatures": a group receives them, divided as the controller chooses
+    if (s.distribute === true) {
+      if (s.upTo !== true || s.count !== 'all' || s.kind === 'any' || s.to.ref !== 'each' || !('filter' in s.to)) throw new NoRenderer('moveCounters divided other than any number of one kind onto a group');
+      const from = K.obj(s.from, st, 'object').text;
+      return plain(`move any number of ${s.kind} counters from ${from} ${onto} ${K.np(s.to.filter, st, { det: 'none', plural: true })}`);
+    }
     // p2-counters-move-1 (CR 122.5, 608.2d): "move any number of [+1/+1] counters from A onto B" (`upTo`, how many of each kind chosen on resolution)
     if (s.upTo === true) {
       if (s.count !== 'all') throw new NoRenderer('moveCounters up to a number');

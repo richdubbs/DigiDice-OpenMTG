@@ -22,7 +22,7 @@ import type { AbilityDef, CostModDef, Duration, KeywordAbilityDef, ObjectFilter,
 import type { CardDef } from '../types/card';
 import type { ObjectId, PlayerId } from '../types/ids';
 import { manaValue } from '../types/mana';
-import { type ContinuousEffectRec, type GameObject, type GameState } from '../types/state';
+import { castOriginOf, type ContinuousEffectRec, type GameObject, type GameState } from '../types/state';
 import type { Chars } from '../rules/characteristics';
 import { combineSplit, costForManaValue, fromFace } from '../rules/base-chars';
 import { charAbilitiesOfBase, expansionOf, keywordsOfAbilities } from './abilities';
@@ -601,7 +601,7 @@ export function overlayAsSpell(s: GameState, id: ObjectId, caster: GameObject['c
   if (hit !== undefined) return hit;
   // p2-exile-play-1 (CR 601.2a): the zone it would be cast from, as the cast record says it once cast (statics/match.ts reads `castFrom` there for a card not yet on the
   // stack): "Noncreature spells you cast from exile have convoke" reaches a card in exile
-  const from = { ...(o.cast ?? {}), from: o.zone } as NonNullable<GameObject['cast']>;
+  const from = { ...(o.cast ?? {}), from: castOriginOf(o) } as NonNullable<GameObject['cast']>;
   let out: GameState = { ...s, objects: { ...s.objects, [id]: { ...o, zone: 'stack' as const, controller: caster, cast: from } }, zones: { ...s.zones, stack: [...s.zones.stack, id] } };
   // std-rx26 (CR 601.2a, 601.2f): the keyword a waiting "the next spell you cast this turn has convoke" rider would give this card as it is put on the stack
   // (core/turn-effects.ts#lockNextSpellKeywords makes the same record when it is cast), so castCheck sees the cost the cast will pay

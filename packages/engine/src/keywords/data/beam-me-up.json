@@ -1,0 +1,61 @@
+{
+  "name": "beam me up",
+  "rule": "reminder",
+  "params": [
+    {
+      "name": "cost",
+      "type": "cost"
+    },
+    {
+      "name": "filter",
+      "type": "filter",
+      "optional": true
+    }
+  ],
+  "mechanisms": [
+    "castOption",
+    "expands"
+  ],
+  "reminder": "You may cast this card from your graveyard for {cost} if you also return a creature you control to its owner's hand. Then exile this spell.",
+  "multiple": "independent",
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Beam me up {cost}",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "name": "beam me up",
+          "cost": {
+            "$costAdd": {
+              "base": "$cost",
+              "other": [
+                {
+                  "kind": "returnToHand",
+                  "filter": {
+                    "$ifParam": "filter",
+                    "then": "$filter",
+                    "else": {
+                      "types": [
+                        "Creature"
+                      ],
+                      "controller": "you"
+                    }
+                  },
+                  "count": 1,
+                  "beamUp": true
+                }
+              ]
+            }
+          },
+          "from": "graveyard",
+          "exileOnLeave": true
+        }
+      ]
+    }
+  ]
+}

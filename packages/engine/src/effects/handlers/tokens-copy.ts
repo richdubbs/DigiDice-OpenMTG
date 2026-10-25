@@ -37,7 +37,7 @@ import { copiableTokenDef, exceptedSpellDef, tokenDefFromCopied } from './token-
 import { ruleDenial } from '../../statics/hooks';
 import { tokenAttachment } from './tokens-attach';
 import { tokensCreatedSince } from './tokens-create';
-import { bindAs, byHand, did, enterAttacking, firstPlayer, NOTHING, wholeNumber } from './zones-util';
+import { bindAs, byHand, did, enterAttacking, enteringAttacking, firstPlayer, NOTHING, wholeNumber } from './zones-util';
 
 type Copy = Extract<EffectStep, { op: 'copy' }>;
 
@@ -292,7 +292,7 @@ export const copy: StepHandler<Copy> = (cx, st) => {
   if (n === undefined || n === 0) return NOTHING;
   if (st.result !== 'spell') {
     const whos = resolvePlayers(cx, st.who);
-    return whos.length === 0 ? NOTHING : copyAsTokens(cx, st, whos, n);
+    return whos.length === 0 ? NOTHING : enteringAttacking(cx, st.attacking, () => copyAsTokens(cx, st, whos, n)); // trek-8 review (CR 508.4)
   }
   // p2-copy-spell-3 (CR 707.10c, 101.4): several players who each copy the spell ("each opponent copies it and may choose new targets for the copy") each put a copy
   // of their own onto the stack, in turn order, each choosing its new targets; a name for all those copies (`as`) is not read

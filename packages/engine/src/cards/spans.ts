@@ -145,7 +145,9 @@ export const spansOf: SpansOf = (def, faceIndex) => {
   const orphan = face.abilities.map((a, index): Owner => ({ index, def: a, auto: autos?.[index] })).filter((o) => o.def.src === undefined && o.def.kind === 'manual' && o.def.text.trim() !== '' && o.def.text.trim() !== '');
   for (const line of pre.lines) {
     if (line.blank) continue;
-    const reminders = pre.reminders.filter((r) => r.range[0] >= line.range[0] && r.range[1] <= line.range[1]).map((r) => r.range);
+    // trek-9: a reminder that a line break splits ("(As this Saga enters and after your draw\nstep, add a lore counter. Sacrifice after III.)", Those Old Scientists in the
+    // Oracle data) is one reminder of the preprocessor and a reminder-only line each: it is painted line by line, each piece clipped to its line
+    const reminders = pre.reminders.filter((r) => r.range[0] < line.range[1] && r.range[1] > line.range[0]).map((r): Range => [Math.max(r.range[0], line.range[0]), Math.min(r.range[1], line.range[1])]);
     let mine = owners(line.index);
     if (mine.length === 0 && orphan.length > 0) mine = [orphan[0]!];
     const lead = mine[0]?.index ?? -1;

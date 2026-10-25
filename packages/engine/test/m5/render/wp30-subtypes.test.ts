@@ -30,7 +30,8 @@ describe('CR 205.3g-k: render knows the same subtype classes as statics/subtypes
       for (const n of names) {
         expect(renders([type], n), `${type} ${n}`).toBe(true);
         // std-r9b (CR 301.7): a crewed Vehicle is an artifact creature, so "Vehicle creatures" is said; every other non-creature subtype stays refused with Creature
-        expect(renders(['Creature'], n), `Creature ${n}`).toBe(n === 'Vehicle');
+        // trek-3 (CR 205.3g, 721.2b): so is a stationed Spacecraft ("Spacecraft creatures you control get +3/+3")
+        expect(renders(['Creature'], n), `Creature ${n}`).toBe(n === 'Vehicle' || n === 'Spacecraft');
       }
     }
   });

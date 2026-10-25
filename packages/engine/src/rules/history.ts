@@ -384,7 +384,7 @@ export function historyMatches(e: HistoryEntry, p: EventPattern, env: FactsEnv):
       return f['onPlayer'] !== true && subject(p.on);
     }
     // Standard round 4, r4-trig (CR 305.1): the zone a land was played from (`from`, `notFrom`); an entry written before the fact existed never matches a pattern that asks
-    case 'action': return f['verb'] === p.verb && (p.revealed === undefined || f['revealed'] === p.revealed) && (p.from === undefined || f['from'] === p.from)
+    case 'action': return f['verb'] === p.verb && (p.revealed === undefined || f['revealed'] === p.revealed) && (p.won === undefined || f['won'] === p.won) /* p2-player-rules-3 */ && (p.from === undefined || f['from'] === p.from)
       && (p.notFrom === undefined || (typeof f['from'] === 'string' && f['from'] !== p.notFrom)) && playerOk(p.actor, e.actor, env) && subject(p.object); // std-lci: an explore's revealed card
     case 'createToken': return playerOk(p.player, e.actor, env) && subject(p.token);
     case 'dieRoll': return playerOk(p.player, e.actor, env) && cmpOk(p.result, f['result'], env);

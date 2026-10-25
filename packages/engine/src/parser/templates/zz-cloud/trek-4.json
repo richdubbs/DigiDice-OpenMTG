@@ -1,0 +1,107 @@
+[
+  {
+    "id": "rep.trek4.enters.copy.copiedCounters",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 122.6"
+    ],
+    "pattern": "you may have ~ enter as a copy of ( a | an | any ) {f:Filter} [ , except {x:CopyExcept} ] . if you do , it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": "$x",
+              "copiedCounters": true
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "if",
+      "additional",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield. If you do, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it."
+      },
+      {
+        "text": "You may have ~ enter as a copy of an artifact you control, except it isn't legendary. If you do, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it."
+      },
+      {
+        "text": "You may have ~ enter as a copy of a creature an opponent controls, except it has flying. If you do, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield. If you don't, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it.",
+      "You may have ~ enter as a copy of any creature on the battlefield. If you do, it enters with an additional +1/+1 counter on it.",
+      "~ enters as a copy of any creature on the battlefield. If it does, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it.",
+      "You may have ~ enter as a copy of any creature on the battlefield. If you do, it enters with additional counters on it equal to the number of counters the copied permanent has on it."
+    ]
+  },
+  {
+    "id": "sta.trek4.cantPhaseIn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.26c",
+      "CR 502.1",
+      "CR 101.2",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} can't phase in",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "phaseIn"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures can't phase in."
+      },
+      {
+        "text": "Artifacts your opponents control can't phase in."
+      }
+    ],
+    "counterExamples": [
+      "Creatures can phase in.",
+      "Creatures can't phase out.",
+      "Creatures can't phase in this turn.",
+      "Target creature can't phase in."
+    ]
+  }
+]

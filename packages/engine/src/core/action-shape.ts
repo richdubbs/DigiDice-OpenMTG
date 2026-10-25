@@ -45,7 +45,7 @@ const ACTION_FIELDS = {
   activate: ['type', 'player', 'source', 'ability'],
   manualTrigger: ['type', 'player', 'source', 'ability'],
   manualStatic: ['type', 'player', 'source', 'ability'],
-  special: ['type', 'player', 'kind', 'object', 'via', 'x', 'door', 'option'], // M6-0 (engine m6 design 2.3): the turn-face-up procedure and its X; FAST5X E8: door, the half of a Room to unlock (CR 709.5e); std-freecast-5: option, which of a plot card's costs (core/special/plot.ts, CR 702.170a)
+  special: ['type', 'player', 'kind', 'object', 'via', 'x', 'door', 'option', 'outside'], // M6-0 (engine m6 design 2.3): the turn-face-up procedure and its X; FAST5X E8: door, the half of a Room to unlock (CR 709.5e); std-freecast-5: option, which of a plot card's costs (core/special/plot.ts, CR 702.170a)
   answer: ['type', 'player', 'decisionId', 'answer'],
   cancel: ['type', 'player'],
   concede: ['type', 'player'],
@@ -85,6 +85,8 @@ const OP_FIELDS = {
   attach: ['op', 'object', 'to'],
   mana: ['op', 'player', 'types', 'snow'],
   token: ['op', 'player', 'name', 'typeLine', 'power', 'toughness', 'colors', 'text', 'tapped'],
+  discard: ['op', 'object'],
+  tokenCopy: ['op', 'object', 'player', 'haste', 'atNextEndStep'],
   note: ['op', 'text'],
 } as const satisfies FieldTable<ManualOp, 'op'>;
 
@@ -201,7 +203,7 @@ export function actionShapeProblem(x: unknown, opts: ActionShapeOptions = {}): s
       // M6-11 (engine m6 design 2.3, D8): the turn-face-up procedure (`via`, CR 702.37e, 702.168d, 701.40b, 701.58b) and its X (CR 702.37f, 107.3a)
       return isStr(x['kind'], 100) && (x['object'] === undefined || isStr(x['object'], 64)) && (x['via'] === undefined || (typeof x['via'] === 'string' && SPECIAL_VIA.has(x['via'])))
         && (x['x'] === undefined || isInt(x['x'], 0, 1_000_000)) && (x['door'] === undefined || isInt(x['door'], 0, 8))
-        && (x['option'] === undefined || isInt(x['option'], 0, 8)) ? null : 'action malformed'; // door: FAST5X E8 (CR 709.5e); option: std-freecast-5 (CR 702.170a)
+        && (x['option'] === undefined || isInt(x['option'], 0, 8)) && (x['outside'] === undefined || isStr(x['outside'], 200)) ? null : 'action malformed'; // door: FAST5X E8 (CR 709.5e); option: std-freecast-5 (CR 702.170a); outside: trek-11 (CR 400.11b, a definition id)
     case 'answer':
       return isStr(x['decisionId'], 64) && isRec(x['answer']) && typeof x['answer']['kind'] === 'string' ? null : 'action malformed';
     case 'setStops': {

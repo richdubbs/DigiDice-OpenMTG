@@ -147,7 +147,7 @@ const BOOKKEEPING = new Set(['prov', 'src']);
 export const EQUIVALENCES: readonly string[] = [
   "player target: `players: {who: 'any'}` = no `players` (CR 115.1: no restriction either way; decided by the hole grammars, WP6)",
   'object target: `filter: {}` = no `filter` (CR 115.1)',
-  "binding names up to renaming, through ONE map in document order over every place a name is written or read: `as`, `{ref:'bound', name}`, " +
+  "binding names up to renaming, through ONE map in document order over every place a name is written or read: `as`, an exileUntil step's `exiled`, `{ref:'bound', name}`, " +
     "`{cond:'did', step}`, `{q:'resultCount', step}`, `{op:'let', name}`, `{q:'var', name}`, `delay.capture` (CR 608.2c: 'if you do' reads one " +
     'specific earlier step, so both sides are renamed together)',
   "a token's `name` equal to its subtypes (with or without the word 'Token') = no `name` (CR 111.4: an unnamed token is named after its subtypes)",
@@ -204,6 +204,7 @@ function equivalences(v: unknown): unknown {
       }
       const isName =
         k === 'as' ||
+        (k === 'exiled' && x['op'] === 'exileUntil') ||
         (k === 'name' && (x['ref'] === 'bound' || x['q'] === 'var' || x['op'] === 'let')) ||
         (k === 'step' && (x['cond'] === 'did' || x['q'] === 'resultCount'));
       if (isName) out[k] = rename(y);

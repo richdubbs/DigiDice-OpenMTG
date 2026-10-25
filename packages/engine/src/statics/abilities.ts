@@ -15,6 +15,7 @@
  */
 import type { AbilityDef, ActivatedAbilityDef, KeywordAbilityDef } from '../types/ability';
 import type { Color } from '../types/mana';
+import { MANA_COST_OF_FACE_CAST } from '../keywords/expand';
 import { keywordRegistry } from '../keywords/registry';
 import type { ExpandContext } from '../keywords/types';
 import type { BaseChars, Chars } from '../rules/characteristics';
@@ -196,7 +197,9 @@ export function grantedAbilities(effectId: string, timestamp: number, defs: read
     const key = grantedKey(effectId, n);
     out.push({ key, origin: 'granted', face: c.face, index: -1, def, grantedBy: effectId, grantedAt: timestamp });
     if (def.kind !== 'keyword') return;
-    const ctx: ExpandContext = { granted: true, faceName: c.names[c.face] ?? c.name, types: c.types, keyPrefix: key, ...(c.manaCost !== undefined ? { manaCost: c.manaCost } : {}) }; // r5-cost: for costIsManaCost
+    // r5-cost: for costIsManaCost; trek-7: except where the cost is that of the face cast (keywords/expand.ts#MANA_COST_OF_FACE_CAST: nothing is expanded here, castOptionsOf does it)
+    const ofFace = def.costIsManaCost === true && def.cost === undefined && MANA_COST_OF_FACE_CAST.has(def.keyword);
+    const ctx: ExpandContext = { granted: true, faceName: c.names[c.face] ?? c.name, types: c.types, keyPrefix: key, ...(c.manaCost !== undefined && !ofFace ? { manaCost: c.manaCost } : {}) };
     expansionOf(def, ctx).forEach((x, j) => out.push({ key: `${key}:${j}`, origin: 'granted', face: c.face, index: -1, def: x, grantedBy: effectId, grantedAt: timestamp, parent: key }));
   });
   return out;

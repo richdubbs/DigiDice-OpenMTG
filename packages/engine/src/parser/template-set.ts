@@ -219,6 +219,8 @@ import cloudStdTmt from './templates/zz-cloud/std-tmt.json';
 import cloudStdTypechange1 from './templates/zz-cloud/std-typechange-1.json';
 import cloudStdTypechange2 from './templates/zz-cloud/std-typechange-2.json';
 import cloudStdWoe from './templates/zz-cloud/std-woe.json';
+import cloudTrek4 from './templates/zz-cloud/trek-4.json';
+import cloudTrek6 from './templates/zz-cloud/trek-6.json';
 import fast1T4 from './templates/zz-fast1/t4.json';
 import fast1T5 from './templates/zz-fast1/t5.json';
 import fast1T6 from './templates/zz-fast1/t6.json';
@@ -357,10 +359,12 @@ import cloudP2CostStatics1 from './templates/zz-cloud/p2-cost-statics-1.json';
 import cloudP2CostStatics2 from './templates/zz-cloud/p2-cost-statics-2.json';
 import cloudP2CountersMove1 from './templates/zz-cloud/p2-counters-move-1.json';
 import cloudP2CountersMove3 from './templates/zz-cloud/p2-counters-move-3.json';
+import cloudP2CountersMove4 from './templates/zz-cloud/p2-counters-move-4.json';
 import cloudP2CountersState1 from './templates/zz-cloud/p2-counters-state-1.json';
 import cloudP2CountersState2 from './templates/zz-cloud/p2-counters-state-2.json';
 import cloudP2Damage1 from './templates/zz-cloud/p2-damage-1.json';
 import cloudP2Damage2 from './templates/zz-cloud/p2-damage-2.json';
+import cloudP2Damage3 from './templates/zz-cloud/p2-damage-3.json';
 import cloudP2Dig1 from './templates/zz-cloud/p2-dig-1.json';
 import cloudP2ExilePlay1 from './templates/zz-cloud/p2-exile-play-1.json';
 import cloudP2Graveyard1 from './templates/zz-cloud/p2-graveyard-1.json';
@@ -374,6 +378,7 @@ import cloudP2Misc2 from './templates/zz-cloud/p2-misc-2.json';
 import cloudP2Modal1 from './templates/zz-cloud/p2-modal-1.json';
 import cloudP2PlayerRules1 from './templates/zz-cloud/p2-player-rules-1.json';
 import cloudP2PlayerRules2 from './templates/zz-cloud/p2-player-rules-2.json';
+import cloudP2PlayerRules3 from './templates/zz-cloud/p2-player-rules-3.json';
 import cloudP2Pt1 from './templates/zz-cloud/p2-pt-1.json';
 import cloudP2Pt2 from './templates/zz-cloud/p2-pt-2.json';
 import cloudP2Refs1 from './templates/zz-cloud/p2-refs-1.json';
@@ -393,6 +398,15 @@ import cloudP2ZoneMoves1 from './templates/zz-cloud/p2-zone-moves-1.json';
 import cloudStdCardcopy13 from './templates/zz-cloud/std-cardcopy-13.json';
 import cloudStdCardcopy7 from './templates/zz-cloud/std-cardcopy-7.json';
 import cloudStdExilePlay13 from './templates/zz-cloud/std-exile-play-1-3.json';
+import cloudTrek1 from './templates/zz-cloud/trek-1.json';
+import cloudTrek11 from './templates/zz-cloud/trek-11.json';
+import cloudTrek12 from './templates/zz-cloud/trek-12.json';
+import cloudTrek2 from './templates/zz-cloud/trek-2.json';
+import cloudTrek3 from './templates/zz-cloud/trek-3.json';
+import cloudTrek5 from './templates/zz-cloud/trek-5.json';
+import cloudTrek7 from './templates/zz-cloud/trek-7.json';
+import cloudTrek8 from './templates/zz-cloud/trek-8.json';
+import cloudTrek9 from './templates/zz-cloud/trek-9.json';
 
 /** The template files in path order (relative to parser/templates), with their templates. */
 export const TEMPLATE_FILES: readonly { file: string; templates: readonly Template[] }[] = Object.freeze(([
@@ -458,10 +472,12 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/p2-cost-statics-2.json', cloudP2CostStatics2], // p2-cost-statics-2 (Phase 2 lane p2-cost-statics; path order: 'p2-cos' sorts after 'p2-cop', before 'p2-cou'; p2-cost-statics-1 sorts before it): cost changes by what a spell or an ability targets (CR 601.2c, 601.2f, 115.9b)
   ['zz-cloud/p2-counters-move-1.json', cloudP2CountersMove1], // p2-counters-move-1 (Phase 2 lane p2-counters-move; path order: 'p2-counters-m' sorts before 'p2-counters-s'): moving counters of any kind, all counters, any number of counters (CR 122.5)
   ['zz-cloud/p2-counters-move-3.json', cloudP2CountersMove3], // p2-counters-move-3 (Phase 2 lane p2-counters-move; path order: 'p2-counters-m' sorts before 'p2-counters-s'): the count before a pump, 'For each <qty>, <obj> gets <pt> <dur>' (CR 613.4c)
+  ['zz-cloud/p2-counters-move-4.json', cloudP2CountersMove4], // p2-counters-move-4 (Phase 2 lane p2-counters-move; path order after p2-counters-move-1 (and -3), before p2-counters-state-1): any number of counters moved onto a group, divided (CR 122.5)
   ['zz-cloud/p2-counters-state-1.json', cloudP2CountersState1], // p2-counters-state-1 (lane p2-counters-state; path order: 'p2-' sorts after 'look3', before 'r3-'): counters as state, exile with counters, pumps per counter on it (CR 122.1)
   ['zz-cloud/p2-counters-state-2.json', cloudP2CountersState2], // p2-counters-state-2 (lane p2-counters-state; path order: 'p2-' sorts after 'look3', before 'r3-'): counted quantities, see the file
   ['zz-cloud/p2-damage-1.json', cloudP2Damage1], // p2-damage-1 (Phase 2 lane p2-damage; path order: 'p2-damage-1' sorts after 'look3', before 'r3-choose'): damage effects, see the file's templates
   ['zz-cloud/p2-damage-2.json', cloudP2Damage2], // p2-damage-2 (Phase 2 lane p2-damage; path order: 'p2-damage-2' sorts after 'p2-counters-state-1', before 'p2-player-rules-1'): damage effects, see the file's templates
+  ['zz-cloud/p2-damage-3.json', cloudP2Damage3], // p2-damage-3 (Phase 2 lane p2-damage; path order: 'p2-damage-3' sorts after 'p2-damage-2'): damage effects, see the file's templates
   ['zz-cloud/p2-dig-1.json', cloudP2Dig1], // p2-dig-1 (Phase 2 lane p2-dig; path order: 'p2-' sorts after 'look3', before 'r3-'): "play with the top card of your library revealed" (permit revealTop, CR 401.2) and the lane's digs
   ['zz-cloud/p2-exile-play-1.json', cloudP2ExilePlay1], // p2-exile-play-1 (Phase 2 lane p2-exile-play; path order: 'p2-' sorts after 'look3', before 'r3-'): play and cast from exile, cards exiled with ~ (CR 607.2a)
   ['zz-cloud/p2-graveyard-1.json', cloudP2Graveyard1], // p2-graveyard-1 (Phase 2 lane p2-graveyard; path order: 'p2-graveyard-1' sorts after 'look3', before 'r3-choose'): cast from the graveyard and graveyard riders, see the file
@@ -475,6 +491,7 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/p2-modal-1.json', cloudP2Modal1], // p2-modal-1 (Phase 2 lane p2-modal; path order: 'p2-modal' sorts after 'p2-counters', before 'p2-player'): "choose any number of <creatures> with different powers" (CR 208.1, 608.2d)
   ['zz-cloud/p2-player-rules-1.json', cloudP2PlayerRules1], // p2-player-rules-1 (Phase 2 lane p2-player-rules; path order: 'p2-' sorts after 'look3', before 'r3-'): player rules and riders: "lose K and can't have or gain K", detain, untap limits, draw limits
   ['zz-cloud/p2-player-rules-2.json', cloudP2PlayerRules2], // p2-player-rules-2 (Phase 2 lane p2-player-rules; path order: 'p2-' sorts after 'look3', before 'r3-'): clash with an opponent / defending player, "If you win, ... Otherwise, ..." (CR 701.30)
+  ['zz-cloud/p2-player-rules-3.json', cloudP2PlayerRules3], // p2-player-rules-3 (Phase 2 lane p2-player-rules; path order: after 'p2-player-rules-2'): "As long as C, your opponents can't cast spells during your turn" (CR 611.3a)
   ['zz-cloud/p2-pt-1.json', cloudP2Pt1], // p2-pt-1 (Phase 2 lane p2-pt; path order: 'p2-' sorts after 'look3', before 'r3-'): power/toughness pumps and exchanges, see the file
   ['zz-cloud/p2-pt-2.json', cloudP2Pt2], // p2-pt-2 (Phase 2 lane p2-pt; path order: 'p2-pt' sorts after 'p2-player', before 'p2-replace'): group pumps with grants and per-object counts, see the file
   ['zz-cloud/p2-refs-1.json', cloudP2Refs1], // p2-refs-1 (Phase 2 lane p2-refs; path order: 'p2-refs-1' sorts after 'look3', before 'r3-choose'): plural "the exiled cards" links (CR 607.2a)
@@ -652,6 +669,17 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/std-typechange-1.json', cloudStdTypechange1], // std-typechange-1 (lane std-typechange; path order: 'std-ty' sorts after 'std-tmt', before 'std-woe'): type and ability changes, see the file
   ['zz-cloud/std-typechange-2.json', cloudStdTypechange2], // std-typechange-2 (lane std-typechange; path order: 'std-ty' sorts after 'std-tmt', before 'std-woe'): see the file
   ['zz-cloud/std-woe.json', cloudStdWoe], // std-woe: the Standard backlog of Wilds of Eldraine (woe): see the file's templates
+  ['zz-cloud/trek-1.json', cloudTrek1], // trek-1 (lane trek, Star Trek; path order: 'trek' sorts after 'std-woe', before zz-fast1/): beam me up, assimilate, "gets +N/+N and becomes a <type>"
+  ['zz-cloud/trek-11.json', cloudTrek11], // trek-11 (lane trek; path order: 'trek-11' sorts after 'trek-1.json', before 'trek-2'): "Once during each of your turns, you may play a permanent card you own from outside the game or from your graveyard" (CR 400.11, 305.1, 601.3)
+  ['zz-cloud/trek-12.json', cloudTrek12], // trek-12 (lane trek; path order: 'trek-12' sorts after 'trek-1', before 'trek-2'): "create a copy of ~" of the card an exile-only ability is on (with r4-copy's "you may cast the copy")
+  ['zz-cloud/trek-2.json', cloudTrek2], // trek-2 (lane trek; path order: 'trek-2' sorts after 'std-woe', before zz-fast1/): "if you gaining life causes a triggered ability ... to trigger" (CR 603.2d)
+  ['zz-cloud/trek-3.json', cloudTrek3], // trek-3 (lane trek, Star Trek cards; path order: 'trek-3' sorts after 'std-woe', before zz-fast1/): "<obj> [also] gains <abilities> <dur> if <cond>", "<player> exiles that card, then draws a card", "<player> may search their library for a <card>, reveal it, put it into their hand, then shuffle"
+  ['zz-cloud/trek-4.json', cloudTrek4], // trek-4 (lane trek; path order: 'trek-4' sorts after 'std-woe', before zz-fast1/): "If you do, it enters with additional counters ... the copied permanent has on it" (CR 614.1c), "<permanents> can't phase in" (CR 702.26c)
+  ['zz-cloud/trek-5.json', cloudTrek5], // trek-5 (lane trek, Star Trek cards; path order: 'trek-5' sorts after 'std-woe', before zz-fast1/): "You have no maximum hand size <dur>", "double <player>'s life total", "<player> can't sacrifice <filter>", "~'s base power and toughness become N/M"
+  ['zz-cloud/trek-6.json', cloudTrek6], // trek-6 (lane trek; path order: 'trek-6' sorts after 'trek-4', before zz-fast1/): "If you would put one or more [kind] counters on <permanent>, put twice that many ... on that <permanent> instead" (CR 614.1a, 122.6)
+  ['zz-cloud/trek-7.json', cloudTrek7], // trek-7 (lane trek, Star Trek cards; path order: 'trek-7' sorts after 'trek-4', before zz-fast1/): "you may cast ~ from exile", beam me up granted to the cards of a graveyard, owner's permission to play an exiled card, assimilate after an exile-until
+  ['zz-cloud/trek-8.json', cloudTrek8], // trek-8 (lane trek; path order: 'trek-8' sorts after 'std-woe', before zz-fast1/): see the file's templates
+  ['zz-cloud/trek-9.json', cloudTrek9], // trek-9 (lane trek; path order: 'trek-9' sorts after 'trek-4', before zz-fast1/): library, graveyard and Star Trek odd ones
   // FAST1 (docs/ROADMAP.md): one file per template package under zz-fast1/ (path order puts it before zz-push/)
   ['zz-fast1/t4.json', fast1T4], // T4: triggered and activated ability shapes
   ['zz-fast1/t5.json', fast1T5], // T5: static and continuous ability shapes

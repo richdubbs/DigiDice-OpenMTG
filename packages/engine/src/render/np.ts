@@ -112,6 +112,9 @@ for (const [type, names] of Object.entries({
 })) for (const n of names.split(' ')) OTHER_SUBTYPES[n] = type.split(' ');
 // std-r9b (CR 301.7, 205.3g): a crewed Vehicle is an artifact creature that keeps its artifact subtype: "Vehicle creatures you control" is no contradiction
 OTHER_SUBTYPES['Vehicle'] = ['Artifact', 'Creature'];
+// trek-3 (CR 205.3g, 721.2b): a Spacecraft whose station threshold is met is an artifact creature that keeps its artifact subtype: "Spacecraft creatures you
+// control get +3/+3" (Captain Kirk, Boldly Going) is no contradiction either
+OTHER_SUBTYPES['Spacecraft'] = ['Artifact', 'Creature'];
 
 /**
  * A type beside a subtype must be one the subtype can have (design 3.3: all fields ANDed; a contradiction is an error of the JSON, not a filter that
@@ -333,6 +336,18 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
     const { anyOf: [only], ...rest } = f;
     if (Object.keys(only!).every((k) => (rest as Record<string, unknown>)[k] === undefined)) return build({ ...rest, ...only }, st, plural, o);
   }
+  // p2-damage-3 (CR 109.4, 115.1; parser/holes/filter.ts#controlForms): "creatures that player or that planeswalker's controller controls" after "target player or
+  // planeswalker": controlled by the target if it is a player, or by its controller if it is a planeswalker (one target, both options of the same one)
+  const ppc = f.anyOf?.length === 2 && f.controller === undefined ? f.anyOf : null;
+  if (ppc !== null && Object.keys(ppc[0]!).length === 1 && Object.keys(ppc[1]!).length === 1 && typeof ppc[0]!.controller === 'object' && typeof ppc[1]!.controller === 'object') {
+    const a = ppc[0]!.controller as PlayerRef;
+    const b = ppc[1]!.controller as PlayerRef;
+    if (a.ref === 'target' && b.ref === 'controllerOf' && b.object.ref === 'target' && b.object.id === a.id) {
+      const base = build({ ...f, anyOf: undefined }, st, plural, o);
+      base.post.push(`${K.player(a, st, 'subject').text} or ${K.obj(b.object, st, 'possessive').text} controller controls`);
+      return base;
+    }
+  }
   if (f.anyOf && f.anyOf.length > 0) return buildAnyOf(f, st, plural, o);
   if (f.self === true && Object.keys(f).filter((k) => (f as Record<string, unknown>)[k] !== undefined).length === 1) {
     p.whole = K.obj({ ref: 'self' }, st, 'subject').text;
@@ -346,7 +361,8 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
     if (discarded) way = 'discarded this way';
     const { is: _is0, ...rest0 } = f;
     // std-lci: what a move exiled is still "those cards" when nothing else describes it (the participle is the reading of a noun with it, below)
-    const bare = way === 'exiled this way' && !Object.values(rest0).some((v) => v !== undefined);
+    // trek-5 (CR 608.2c; family chosen-cards-named): and what a choice for each player chose is "the chosen cards" when nothing else describes it (render/steps-flow.ts#chooseObjects)
+    const bare = (way === 'exiled this way' || way === 'chosen this way') && !Object.values(rest0).some((v) => v !== undefined);
     if (way !== undefined && !bare) {
       const { is: _is, ...all } = f;
       // Cloud std-eoe: "put into a graveyard this way" says the zone itself, and "your graveyard" its owner (parser/holes/filter.ts)
@@ -358,7 +374,10 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
       // std-lci: "card exiled this way" says where the card is (parser/holes/filter.ts#EXILED_THIS_WAY reads the zone with the participle): no "in exile"
       const inner = build(rest, st, plural, putThere || discarded || (way === 'exiled this way' && rest.zone === 'exile') ? { ...o, noZone: true } : o);
       if (inner.whole !== undefined) throw new NoRenderer(`"${way}" after a whole reference`);
-      inner.post.push(way);
+      // trek-5 (CR 108.3, 406.1, 608.2c; family owner-in-exiled-this-way): the owner of a card exiled this way is a part of where it is, so the participle may say whose it is, "a land
+      // card that player owns exiled this way" (a player the effect iterates over), or leave it to the participle as before
+      const owns = way === 'exiled this way' && rest.zone === 'exile' && rest.owner !== undefined && typeof rest.owner === 'object' ? ownerWords(rest.owner, st) : '';
+      inner.post.push(owns === '' ? way : alt(way, `${owns} ${way}`));
       return inner;
     }
     // std-rx5 (CR 607.2a): "target creature card exiled with ~": one of what the linked exiling instruction exiled, that the rest of the filter describes; the
@@ -440,7 +459,7 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
   else if (f.modified === false) throw new NoRenderer('modified:false has no wording');
   // FAST5 T39 (CR 303.4b): "enchanted creatures you control"
   if (f.enchanted === true) p.adj.push('enchanted');
-  else if (f.enchanted === false) throw new NoRenderer('enchanted:false has no wording');
+  else if (f.enchanted === false) p.post.push(plural ? "that aren't enchanted" : "that isn't enchanted"); // p2-damage-3 (CR 303.4b): Winds of Rath, Brainspoil
   // FAST5X E3 (CR 702.171b): "a saddled creature"
   if (f.saddled === true) p.adj.push('saddled');
   else if (f.saddled === false) throw new NoRenderer('saddled:false has no wording in a noun phrase');
@@ -616,6 +635,8 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
       const verb = who.person === 'pl' ? 'control' : 'controls';
       const at = p.post.push(known ? alt(`${text} ${verb}`, 'they control') : `${text} ${verb}`) - 1;
       if ((c as PlayerRef).ref === 'iterating') ctrlAt = at; // C6: "with power 2 or less that player controls" (below)
+      // p2-damage-3 (family without-keyword-controller-order): "each creature without flying that player controls" (Siege Dragon) after a player named before
+      else if (known && f.notKeyword !== undefined && f.keyword === undefined) ctrlAt = at;
     }
   }
   if (f.owner !== undefined && (bf || onStack)) {
@@ -673,6 +694,8 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
   }
   else if (f.manaCostHasX === false) throw new NoRenderer('manaCostHasX:false has no wording');
   if (f.counters) withs.push(countPhrase(f.counters, st, wPlural));
+  // trek-9 (CR 301.5, 303.4; parser/holes/trek9.ts#attachedWithAt): "creatures you control with a Communicator attached to them" (Starfleet Communicator)
+  if (f.attachedWith !== undefined) withs.push(`${withArticle(f.attachedWith)} attached to ${wPlural ? 'them' : 'it'}`);
   if (f.hasAbility) withs.push(HAS_ABILITY[f.hasAbility]!);
   if (f.not && isNoAbilities(f.not)) withs.push('no abilities'); // FAST5 T42
   // FAST5 T42 (CR 201.2): "up to six target creature cards with different names" (TargetSpec.differentNames; never part of a filter)
@@ -1061,6 +1084,22 @@ function mvPowerOrToughness(options: readonly ObjectFilter[]): NonNullable<Objec
   return cmp === JSON.stringify(p.power) && cmp === JSON.stringify(t.toughness) ? m.manaValue! : null;
 }
 
+/** trek-9 (CR 205.3i, 202.3): a description of lands only ("a Plains card", "a land card"): the Plains-like basic land types or the type Land, nothing else of the cards named. */
+const BASIC_LAND_TYPES: ReadonlySet<string> = new Set(['Plains', 'Island', 'Swamp', 'Mountain', 'Forest']);
+function isLandDescription(o: ObjectFilter): boolean {
+  const keys = Object.keys(o).filter((k) => (o as Record<string, unknown>)[k] !== undefined);
+  if (keys.some((k) => k !== 'types' && k !== 'subtypes' && k !== 'supertypes')) return false;
+  if (o.types !== undefined) return o.types.length === 1 && o.types[0] === 'Land' && (o.subtypes ?? []).every((x) => BASIC_LAND_TYPES.has(x));
+  return o.subtypes !== undefined && o.subtypes.length > 0 && o.subtypes.every((x) => BASIC_LAND_TYPES.has(x));
+}
+
+/** trek-9: a mana value limit that every land meets, "mana value N or less" / "mana value less than N" (a land's mana value is 0, CR 202.3): no other words of the description count. */
+function landsMeetMvLimit(o: ObjectFilter): boolean {
+  const c = o.manaValue;
+  if (c === undefined || typeof c.value !== 'number') return false;
+  return (c.op === '<=' && c.value >= 0) || (c.op === '<' && c.value >= 1);
+}
+
 function buildAnyOfPlain(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts, spellOut = false): Parts {
   const { anyOf, ...rest } = f;
   // std-rx5 (CR 202.3, 208.1): "a spell with mana value, power, or toughness equal to the chosen number": one comparison any of the three statistics meets
@@ -1197,7 +1236,10 @@ function buildAnyOfPlain(f: ObjectFilter, st: RenderState, plural: boolean, o: N
   if (isHistoric(anyOf ?? []) && ps.every((p) => p.whole === undefined)) {
     const permanents = rest.isCard === undefined && rest.stackKind === undefined && rest.zone === undefined ? [rest] : [];
     const hs = [{ ...rest, isCard: rest.isCard ?? true }, ...permanents].map((g) => build(g, st, plural, o)).filter((h) => h.whole === undefined);
-    if (hs.length > 0) merged.whole = alt(merged.whole, ...hs.map((h) => compose({ ...h, adj: ['historic', ...h.adj] }, { det: 'none' }, plural)));
+    // TREK-6 (CR 700.6): one permanent after "a" is "a historic permanent you control" / "another historic permanent you control" (Jean-Luc Picard, Luminary), the article or
+    // "another" said before the word, as the spelled-out options take theirs (above); the plural and every other determiner keep the form without
+    const lead = !plural && o.det === 'a' ? 'a' : 'none';
+    if (hs.length > 0) merged.whole = alt(merged.whole, ...hs.map((h) => compose({ ...h, adj: ['historic', ...h.adj] }, { det: lead }, plural)));
   }
   merged.wholeCounted = true;
   // cloud std-spm (CR 205.2a, 205.4a): one object of either description after "each" also reads with "and", the halves spelled out and what they share said once
@@ -1217,6 +1259,16 @@ function buildAnyOfPlain(f: ObjectFilter, st: RenderState, plural: boolean, o: N
       // std-lci (CR 701.23a): ... or one article for the whole list, each description with its head word ("a basic land card or Cave card", Compass Gnome,
       // Open the Gates): the same one card of either description
       if (first.post.length === 0) readings.push(withArticle(spelled.join(' or ')));
+    }
+    // trek-9 (CR 202.3, 205.3i; family card-or-card-last-qualifier): "a Plains card or nonland permanent card with mana value 3 or less" (There's Coffee in that Nebula; Oracle
+    // prints Airlift Chaplain and Starfield Shepherd with an article for each): one article for the whole list, and the words after the LAST description said once after it.
+    // Those words are the last description's own: English does not say whether they are the first's too, so this wording is written only when it cannot matter: the
+    // descriptions before the last are lands with no words of their own, and the only words after the last one are a mana value limit every land meets ("N or less",
+    // "less than N": a land's mana value is 0; landsMeetMvLimit), so reading the limit as theirs too gives the same cards. Any other list keeps one article for each description
+    else if (first.suffix !== '' && ps.every((p) => !p.other && !p.creatureOptional && p.headChoice === undefined && p.typeAfter === undefined && p.suffix === first.suffix)
+      && ps.slice(0, -1).every((p) => p.post.length === 0) && ps[ps.length - 1]!.post.length === 1 && (anyOf ?? []).slice(0, -1).every(isLandDescription)
+      && (anyOf ?? []).length === ps.length && landsMeetMvLimit((anyOf ?? [])[ps.length - 1]!)) {
+      readings.push(withArticle(spelled.join(' or ')));
     }
     merged.whole = alt(merged.whole, ...readings);
   }

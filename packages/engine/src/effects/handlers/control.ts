@@ -191,6 +191,7 @@ export function declinedNames(st: Step<'may'>): string[] {
   for (const d of st.do) {
     if (d.op !== 'forEach' && typeof d.as === 'string') out.push(d.as);
     if (d.op === 'revealUntil' && typeof d.revealed === 'string') out.push(d.revealed);
+    if (d.op === 'exileUntil' && typeof d.exiled === 'string') out.push(d.exiled); // trek-7: every card exiled
   }
   return out;
 }
@@ -232,6 +233,7 @@ const mayHandler: StepHandler<Step<'may'>> = (cx, st) => {
   let count = 0;
   let lostBy: Map<PlayerId, number> | undefined;
   let removed: Map<string, number> | undefined; // std-rx14 (CR 122.1, 608.2c): the counters the optional action removed ("for each lore counter removed this way")
+  let putIn: Map<string, number> | undefined; // trek-6 (CR 122.6, 608.2c): the counters the optional action put ("if you put two or more +1/+1 counters on creatures this way")
   for (const p of players) {
     if (plural) cx.iterating = p;
     const did = yes.get(p) === true;
@@ -248,10 +250,11 @@ const mayHandler: StepHandler<Step<'may'>> = (cx, st) => {
     // cloud std-spm (CR 119.3, 608.2c): the life the optional action made players lose, for "If you lost life this way, ..." after it (`{q:'lifeLost', who}`)
     if (did && r.lifeLostBy !== undefined) for (const [q, n] of r.lifeLostBy) (lostBy ??= new Map()).set(q, (lostBy.get(q) ?? 0) + n);
     if (did && r.countersRemoved !== undefined) for (const [k, n] of r.countersRemoved) (removed ??= new Map()).set(k, (removed.get(k) ?? 0) + n);
+    if (did && r.countersPut !== undefined) for (const [k, n] of r.countersPut) (putIn ??= new Map()).set(k, (putIn.get(k) ?? 0) + n);
   }
   if (plural) restoreIterating(cx, before);
   if (count === 0) bindDeclined(cx, st);
-  const rem = removed !== undefined ? { countersRemoved: removed } : {};
+  const rem = { ...(removed !== undefined ? { countersRemoved: removed } : {}), ...(putIn !== undefined ? { countersPut: putIn } : {}) };
   if (lostBy === undefined) return { performed: count > 0, count, ...rem };
   return { performed: count > 0, count, lifeLost: [...lostBy.values()].reduce((a, b) => a + b, 0), lifeLostBy: lostBy, ...rem };
 };

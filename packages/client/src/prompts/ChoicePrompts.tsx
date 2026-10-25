@@ -54,6 +54,7 @@ export function ChooseObjectsPrompt({ d, view, answer, busy }: PromptProps<'choo
   usePublishSelection({ selectable: d.options, selected: chosen, marks, click });
   const library = searchedLibrary(view, d.options);
   const hand = library === null ? revealedHand(view, d.options) : null;
+  const mulligan = library === null && hand === null && isMulliganBottom(view, d);
   return (
     <>
       <p className="prompt-detail">
@@ -62,8 +63,9 @@ export function ChooseObjectsPrompt({ d, view, answer, busy }: PromptProps<'choo
       <Chips view={view} ids={d.options} selected={chosen} marks={marks} onClick={click} disabled={busy} label="Choices" />
       {library !== null && <LibrarySearchStage view={view} owner={library} options={d.options} min={d.min} max={d.max} chosen={chosen} marks={marks} busy={busy} onClick={click} />}
       {hand !== null && <RevealedHandStage view={view} owner={hand} options={d.options} min={d.min} max={d.max} chosen={chosen} marks={marks} busy={busy} onClick={click} />}
+      {mulligan && <MulliganBottomStage view={view} player={d.player} options={d.options} count={d.min} chosen={chosen} busy={busy} onClick={click} />}
       <PromptActions>
-        <OkButton label="OK" ok={ok} busy={busy} onClick={submit} />
+        <OkButton label={mulligan ? 'Put on the bottom' : 'OK'} ok={ok} busy={busy} onClick={submit} />
         <button type="button" disabled={busy || chosen.length === 0} onClick={() => setChosen([])}>
           Clear
         </button>
@@ -208,6 +210,81 @@ function RevealedHandStage({ view, owner, options, min, max, chosen, marks, busy
                 {on && <span className="prompt-search-mark">{marks[id] ?? 'Chosen'}</span>}
                 {!choosable && <span className="prompt-search-note">Can't be chosen</span>}
               </StageCard>
+            </div>
+          );
+        })}
+      </div>
+    </PromptStage>
+  );
+}
+
+/**
+ * The cards a mulligan puts on the bottom of the library (CR 103.5): a choice from the deciding player's own new hand before the first turn, cited to
+ * CR 103.5, which only the mulligan asks (engine core/start.ts).
+ */
+export function isMulliganBottom(view: GameView, d: { player: PlayerId; options: readonly ObjectId[]; rules?: readonly string[] }): boolean {
+  if (view.turn.number > 0 || d.rules?.includes('CR 103.5') !== true || d.options.length === 0) return false;
+  return d.options.every((id) => {
+    const o = view.objects[id];
+    return o !== undefined && o.zone === 'hand' && o.owner === d.player;
+  });
+}
+
+interface MulliganBottomStageProps {
+  view: GameView;
+  player: PlayerId;
+  options: readonly ObjectId[];
+  /** How many go on the bottom. */
+  count: number;
+  chosen: readonly string[];
+  busy: boolean;
+  onClick: (id: string) => void;
+}
+
+/**
+ * The new hand after a mulligan, on the stage like the opening hand (SimplePrompts.tsx MulliganPrompt) and fanned the same way: a click on a card picks it
+ * for the bottom of the library (CR 103.5) and drops it a little with a "Bottom" tag; a second click takes it back. With more than one, the first card
+ * picked goes to the very bottom (the engine's order).
+ */
+function MulliganBottomStage({ view, player, options, count, chosen, busy, onClick }: MulliganBottomStageProps) {
+  const overlap = useStageOverlap();
+  const hand = (view.zones.hand[player] ?? []).filter((id) => options.includes(id));
+  const taken = view.players.find((p) => p.id === player)?.mulligans ?? 0;
+  const pick = (id: string) => {
+    if (!busy) onClick(id);
+  };
+  const key = (e: KeyboardEvent, id: string) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    pick(id);
+  };
+  const cards = `${count} card${count === 1 ? '' : 's'}`;
+  return (
+    <PromptStage
+      title={`Put ${cards} on the bottom`}
+      subtitle={
+        `Your new hand after ${taken === 1 ? 'a mulligan' : `${taken} mulligans`}: click ${count === 1 ? 'the card' : `the ${cards}`} to put on the bottom of ` +
+        `your library (${chosen.length} of ${count} chosen).${count > 1 ? ' The first one you pick goes to the very bottom.' : ''}`
+      }
+    >
+      <div className={`prompt-fan${overlap ? '' : ' is-apart'}`} role="group" aria-label="Your new hand" style={{ '--fan-n': Math.max(1, hand.length) } as CSSProperties}>
+        {hand.map((id, i) => {
+          const at = chosen.indexOf(id);
+          const on = at >= 0;
+          return (
+            <div
+              key={id}
+              className={`prompt-fan-slot prompt-fan-pick${on ? ' is-selected' : ''}`}
+              style={{ '--fan-i': i - (hand.length - 1) / 2 } as CSSProperties}
+              role="button"
+              tabIndex={busy ? -1 : 0}
+              aria-pressed={on}
+              aria-disabled={busy}
+              aria-label={`${objectName(view, id)}${on ? ': to the bottom' : ''}`}
+              onClick={() => pick(id)}
+              onKeyDown={(e) => key(e, id)}
+            >
+              <StageCard id={id}>{on && <span className="prompt-search-mark">{count > 1 ? `Bottom ${at + 1}` : 'Bottom'}</span>}</StageCard>
             </div>
           );
         })}

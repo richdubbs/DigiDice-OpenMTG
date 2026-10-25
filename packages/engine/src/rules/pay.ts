@@ -288,6 +288,7 @@ function pickPrompt(part: PickPart): [string, string[]] {
     case 'discard': return ['Discard', ['CR 701.9', 'CR 118.3']];
     case 'sacrifice': return ['Sacrifice', ['CR 701.21', 'CR 118.3']];
     case 'returnToHand': return ['Return to your hand', ['CR 118.3']];
+    case 'putIntoLibrary': return [`Put this card from your ${part.zone} on the ${part.position} of your library`, ['CR 401.4', 'CR 118.3']]; // trek-9
     case 'exileFrom':
       if (part.orGraveyard) return ['Exile from among permanents you control and/or cards in your graveyard', ['CR 702.167a', 'CR 118.3']]; // FAST5X E13
       if (part.total !== undefined) return [`Exile ${part.count} or more permanents you control with total mana value exactly ${part.total}`, ['CR 118.3', 'CR 107.3a']]; // std-costs-1

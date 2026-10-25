@@ -6,7 +6,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import type { AbilityDef, EffectStep, EventPattern, KeywordAbilityDef, ManaRestriction, PlayerRef, Quantity, StaticEffect, TargetSpec } from '../../../src/types/ability';
+import type { AbilityDef, EffectStep, EventPattern, KeywordAbilityDef, ObjectFilter, ManaRestriction, PlayerRef, Quantity, StaticEffect, TargetSpec } from '../../../src/types/ability';
 import { ALT_SITES, EQUIVALENCE_FAMILIES } from '../../../src/render/equivalence';
 import { renderGateKeywordLine } from '../../../src/render/gate';
 import type { OracleCard } from '../../../src/types/card';
@@ -682,6 +682,13 @@ const EXAMPLES: Record<string, Example> = {
     ctx: creature,
     readings: ['Whenever a land you control enters, if you control no Islands, draw a card.', 'Whenever a land you control enters, if you don\x27t control an Island, draw a card.'],
     near: ['Whenever a land you control enters, if you don\x27t control two Islands, draw a card.', 'Whenever a land you control enters, if an opponent doesn\x27t control an Island, draw a card.'],
+  },
+  // opp-port-1: "your opponents control no creatures" (Erebos's Titan) is "no opponent controls a creature" (Vexing Beetle)
+  'no-opponent-controls-a': {
+    def: t12Static({ cond: 'not', of: { cond: 'exists', of: { ref: 'each', filter: { types: ['Creature'], controller: 'opponent' } } } }, [grow]),
+    ctx: creature,
+    readings: ['~ gets +1/+1 as long as your opponents control no creatures.', '~ gets +1/+1 as long as no opponent controls a creature.'],
+    near: ['~ gets +1/+1 as long as an opponent controls no creatures.', '~ gets +1/+1 as long as no opponent controls two creatures.'],
   },
   hellbent: {
     def: t12Static({ cond: 'compare', left: { q: 'zoneSize', zone: 'hand', of: you }, op: '==', right: 0 }, [grow]),
@@ -5281,6 +5288,83 @@ Object.assign(EXAMPLES, {
   },
 } satisfies Record<string, Example>);
 
+// trek-9 (lane trek; CR 608.2c, 122.1, 701.20a, 202.3, unverified cites): a negated count of counters said with "unless" (render/steps-flow.ts); a card of either of two
+// descriptions with words only after the last one (render/np.ts)
+const TREK9_LOOK = 'Look at the top five cards of your library.';
+const TREK9_BAND: Quantity = { q: 'counters', on: { ref: 'self' }, kind: 'quest' };
+Object.assign(EXAMPLES, {
+  'unless-counters': {
+    def: trig([enters], [draw(), { op: 'if', cond: { cond: 'not', of: { cond: 'compare', left: TREK9_BAND, op: '>=', right: 3 } }, then: [{ op: 'discard', who: you, count: 1 } as EffectStep] } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['When Test Card enters, draw a card. Then discard a card unless there are three or more quest counters on Test Card.', 'When Test Card enters, draw a card. If the number of quest counters on it is less than three, discard a card.'],
+    near: ['When Test Card enters, draw a card. Then discard a card unless there are two or more quest counters on Test Card.', 'When Test Card enters, draw a card. Then discard a card if there are three or more quest counters on Test Card.'],
+  },
+  'card-or-card-last-qualifier': {
+    def: spell([
+      { op: 'look', who: you, at: { ref: 'topCards', player: you, count: 5 }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ subtypes: ['Plains'] }, { anyOf: [{ types: ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'], notTypes: ['Land'] }], manaValue: { op: '<=', value: 3 } }], is: bound('them'), zone: 'library' } }, min: 0, max: 1, as: 'chosen' } as EffectStep,
+      { op: 'reveal', who: you, what: bound('chosen') } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: [
+      `${TREK9_LOOK} You may reveal a Plains card or nonland permanent card with mana value 3 or less from among them and put it into your hand.`,
+      `${TREK9_LOOK} You may reveal a Plains card or a nonland permanent card with mana value 3 or less from among them and put it into your hand.`,
+    ],
+    near: [
+      `${TREK9_LOOK} You may reveal a Plains card or nonland permanent card with mana value 4 or less from among them and put it into your hand.`,
+      `${TREK9_LOOK} You may reveal a nonland permanent card or Plains card with mana value 3 or less from among them and put it into your hand.`,
+    ],
+  },
+} satisfies Record<string, Example>);
+
+// trek-9 review: the one-article wording of card-or-card-last-qualifier is for a mana value limit every land meets ("or less", "less than"), nothing else after the last description
+describe('trek-9 (G6): "a Plains card or nonland permanent card <words>" with one article is accepted only for a mana value limit of "or less" / "less than"', () => {
+  const dig = (last: ObjectFilter): AbilityDef => spell([
+    { op: 'look', who: you, at: { ref: 'topCards', player: you, count: 5 }, as: 'them' } as EffectStep,
+    { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ subtypes: ['Plains'] }, { anyOf: [{ types: ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'], notTypes: ['Land'] }], ...last }], is: bound('them'), zone: 'library' } }, min: 0, max: 1, as: 'chosen' } as EffectStep,
+    { op: 'reveal', who: you, what: bound('chosen') } as EffectStep,
+    { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+  ]);
+  const text = (post: string, article: string): string => `${TREK9_LOOK} You may reveal ${article} Plains card or ${article === 'a' ? '' : 'a '}nonland permanent card ${post} from among them and put it into your hand.`;
+  it('"with mana value 3 or less" and "with mana value less than 3": one article for the list, or one for each description', () => {
+    accepts(dig({ manaValue: { op: '<=', value: 3 } }), text('with mana value 3 or less', 'a'));
+    accepts(dig({ manaValue: { op: '<=', value: 3 } }), text('with mana value 3 or less', 'a').replace('or nonland', 'or a nonland'));
+    accepts(dig({ manaValue: { op: '<', value: 3 } }), text('with mana value less than 3', 'a'));
+  });
+  it.each([
+    ['a lower bound: "3 or greater"', { manaValue: { op: '>=', value: 3 } } as ObjectFilter, 'with mana value 3 or greater'],
+    ['an exact value: "3"', { manaValue: { op: '==', value: 3 } } as ObjectFilter, 'with mana value 3'],
+    ['a power: "power 3 or greater"', { power: { op: '>=', value: 3 } } as ObjectFilter, 'with power 3 or greater'],
+    ['a power: "power 3 or less"', { power: { op: '<=', value: 3 } } as ObjectFilter, 'with power 3 or less'],
+    ['a counter', { counters: { kind: 'charge', op: '>=', value: 1 } } as unknown as ObjectFilter, 'with a charge counter on it'],
+    ['"less than 0" (no land is less than 0)', { manaValue: { op: '<', value: 0 } } as ObjectFilter, 'with mana value less than 0'],
+  ])('%s: the one-article wording is not accepted (the limit would bind to the Plains cards too and change the cards)', (_what, last, post) => {
+    rejects(dig(last), text(post, 'a'));
+  });
+});
+
+// trek-12 (lane trek; CR 707.12, 608.2g, 113.6, unverified cites): the copy of the card an exile-only ability is on, created and cast (render/steps-zones.ts#cast, family create-a-copy-of-self)
+const TREK12_ABILITY = (steps: EffectStep[]): AbilityDef => ({
+  kind: 'activated', text: '', cost: { other: [{ kind: 'exileFrom', zone: 'hand', count: 1 }] }, effect: { targets: [], steps }, zone: ['exile'],
+  onlyIf: { cond: 'matches', object: { ref: 'self' }, filter: { zone: 'exile' } },
+} as unknown as AbilityDef);
+Object.assign(EXAMPLES, {
+  'create-a-copy-of-self': {
+    def: TREK12_ABILITY([{ op: 'cast', who: you, what: self, copyIn: 'exile', optional: true } as EffectStep]),
+    ctx: creature,
+    readings: [
+      'Exile a card from your hand: Create a copy of Test Card. You may cast the copy. Activate only if Test Card is exiled.',
+      'Exile a card from your hand: Copy Test Card. You may cast the copy. Activate only if Test Card is exiled.',
+    ],
+    near: [
+      'Exile a card from your hand: Create a copy of Test Card. You may cast the copy without paying its mana cost. Activate only if Test Card is exiled.',
+      'Exile a card from your hand: Create a copy of Test Card. Cast the copy. Activate only if Test Card is exiled.',
+      'Exile a card from your hand: Create a token that\'s a copy of Test Card. You may cast the copy. Activate only if Test Card is exiled.',
+      'Exile a card from your hand: Create a copy of Test Card. You may cast the copy.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
 describe('design 6.8 (G6), D14: the equivalence table is documented and every family is exercised', () => {
   it('every family of the table has an example here, and every example a family', () => {
     expect(EQUIVALENCE_FAMILIES.map((f) => f.id).sort()).toEqual(Object.keys(EXAMPLES).sort());
@@ -6443,8 +6527,8 @@ Object.assign(EXAMPLES, {
   },
   'exiled-card-until': {
     def: xp1Def('Creature — Spy', `${XP1_UNTIL} You may cast that card this turn.`), ctx: creature,
-    readings: [`${XP1_UNTIL} You may cast that card this turn.`, `${XP1_UNTIL} You may cast the exiled card this turn.`, `${XP1_UNTIL} You may cast the exiled nonland card this turn.`],
-    near: [`${XP1_UNTIL} You may cast the exiled land card this turn.`, `${XP1_UNTIL} You may cast the revealed card this turn.`],
+    readings: [`${XP1_UNTIL} You may cast that card this turn.`, `${XP1_UNTIL} You may cast the exiled card this turn.`, `${XP1_UNTIL} You may cast the exiled nonland card this turn.`, `${XP1_UNTIL} You may cast that nonland card this turn.`], // trek-12: the last
+    near: [`${XP1_UNTIL} You may cast the exiled land card this turn.`, `${XP1_UNTIL} You may cast the revealed card this turn.`, `${XP1_UNTIL} You may cast that land card this turn.`],
   },
   'dig-exiled-cards-named': {
     def: xp1Def('Creature — Cat', `${XP1_DIG} You may play the exiled cards for as long as they remain exiled.`), ctx: creature,
@@ -7292,5 +7376,209 @@ Object.assign(EXAMPLES, {
     ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
     readings: ['Destroy up to X target lands, where X is the number of gloom counters on Test Card.', 'Destroy up to the number of gloom counters on Test Card target lands.'],
     near: ['Destroy up to X target lands, where X is the number of charge counters on Test Card.', 'Destroy up to X target creatures, where X is the number of gloom counters on Test Card.', 'Destroy X target lands, where X is the number of gloom counters on Test Card.'],
+  },
+} satisfies Record<string, Example>);
+
+// p2-damage-3 (render/cond.ts#zoneHistoryPhrase): Landfall's "you had a land enter the battlefield under your control this turn"
+Object.assign(EXAMPLES, {
+  'landfall-you-had': {
+    def: spell([{ op: 'if', cond: { cond: 'happened', event: { ev: 'zoneChange', subject: { types: ['Land'], controller: 'you' }, to: 'battlefield' }, scope: 'turn' }, then: [draw()] } as unknown as EffectStep]),
+    readings: ['If a land entered the battlefield under your control this turn, draw a card.', 'If you had a land enter the battlefield under your control this turn, draw a card.'],
+    near: ['If you had a creature enter the battlefield under your control this turn, draw a card.', 'If you had a land enter the battlefield under your control last turn, draw a card.'],
+  },
+});
+
+// p2-player-rules-3 (CR 701.30b-c): "whenever you clash and win" is "whenever you win a clash"
+Object.assign(EXAMPLES, {
+  'clash-and-win': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'action', verb: 'clash', actor: 'you', won: true }] }, effect: { targets: [], steps: [{ op: 'gainLife', who: { ref: 'you' }, amount: 2 }] } },
+    ctx: unknown,
+    readings: ['Whenever you clash and win, you gain 2 life.', 'Whenever you win a clash, you gain 2 life.'],
+    near: ['Whenever you clash and lose, you gain 2 life.', 'Whenever you clash, you gain 2 life.', 'Whenever you win a coin flip, you gain 2 life.'],
+  },
+});
+
+// trek-3 (lane trek; CR 406.1, 121.1, 608.2c, unverified cites): the card chosen from a looked-at hand, exiled, then its owner draws (render/fold-trek3.ts)
+const TREK3_LOOK = "When Test Card enters, look at target opponent's hand. You may choose an artifact card from it.";
+Object.assign(EXAMPLES, {
+  'owner-exiles-chosen-then-draws': {
+    def: xp2Def('Creature — Vampire', `${TREK3_LOOK} If you do, that player exiles that card, then draws a card.`, '{2}{B}'),
+    ctx: creature,
+    readings: [`${TREK3_LOOK} If you do, that player exiles that card, then draws a card.`, `${TREK3_LOOK} If you do, exile that card. That player draws a card.`, `${TREK3_LOOK} If you do, exile that card, then that player draws a card.`],
+    near: [`${TREK3_LOOK} If you do, that player exiles that card, then you draw a card.`, `${TREK3_LOOK} If you do, that player discards that card, then draws a card.`, `${TREK3_LOOK} If you do, that player exiles that card, then draws two cards.`],
+  },
+} satisfies Record<string, Example>);
+
+// trek-1 (lane trek; CR 205.1a, 613.1d, 613.4c): a resolved effect's creature types set, said after the change of power and toughness (render/mods.ts, family type-set-anywhere)
+Object.assign(EXAMPLES, {
+  'type-set-anywhere': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: t('c'), mods: [{ layer: 4, subtypes: { set: ['Doctor'] } }, { layer: '7c', power: 1, toughness: 1 }] }] } as EffectStep], [objTarget('c')]),
+    readings: ['Until end of turn, target creature gets +1/+1 and becomes a Doctor.', 'Target creature becomes a Doctor and gets +1/+1 until end of turn.', 'Target creature gets +1/+1 and becomes a Doctor until end of turn.'],
+    near: ['Until end of turn, target creature gets +1/+1 and becomes a Doctor in addition to its other types.', 'Until end of turn, target creature gets +1/+1 and becomes a Wizard.', 'Target creature gets +1/+1 and becomes a Doctor.'],
+  },
+} satisfies Record<string, Example>);
+
+// trek-8 (lane trek, Star Trek; CR 603.7b, 508.1, 508.4, 608.2c, 120.6, 115.1, 601.2c, 603.2; cites from memory, unverified)
+const TREK8_DELAY_NEXT_COMBAT = { op: 'delay', when: { at: 'step', step: 'beginCombat', next: true }, duration: { d: 'endOfTurn' }, once: true, do: [draw()] } as unknown as EffectStep;
+const TREK8_NO_ATTACK: EffectStep = { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Creature'], controller: { ref: 'target', id: 'p' } } }, mode: 'cant', action: 'attack' }] } as unknown as EffectStep;
+Object.assign(EXAMPLES, {
+  'next-combat-no-phase': {
+    def: spell([TREK8_DELAY_NEXT_COMBAT]),
+    readings: ['At the beginning of the next combat phase this turn, draw a card.', 'At the beginning of the next combat this turn, draw a card.'],
+    near: ['At the beginning of the next combat, draw a card.', 'At the beginning of each combat this turn, draw a card.', 'At the beginning of the next end step this turn, draw a card.'],
+  },
+  'player-cant-attack': {
+    def: spell([TREK8_NO_ATTACK], [playerTarget('p')]),
+    readings: ["Target player can't attack this turn.", "Creatures target player controls can't attack this turn.", "This turn, target player can't attack."],
+    near: ["Target player can't block this turn.", "Target player can't attack.", "Target player's creatures can't attack you this turn."],
+  },
+  'player-cant-attack-then-you-put': {
+    def: spell([TREK8_NO_ATTACK, { op: 'putCounters', on: self, kind: 'peace', count: 1 } as EffectStep], [playerTarget('p')]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["Target player can't attack this turn and you put a peace counter on this enchantment.", "Target player can't attack this turn. Put a peace counter on Test Card.", "Target player can't attack this turn and you put a peace counter on Test Card."],
+    near: ["Target player can't attack this turn and put a peace counter on this enchantment.", "Target player can't attack this turn and you put two peace counters on this enchantment.", "Target player can't attack this turn and they put a peace counter on this enchantment."],
+  },
+  'remove-all-damage-healed': {
+    def: spell([{ op: 'removeDamage', what: t('c') } as EffectStep], [objTarget('c')]),
+    readings: ['Remove all damage from target creature.', 'All damage already dealt to target creature is healed.'],
+    near: ['Remove all damage from each creature.', 'Remove all damage from target creature and tap it.', 'All damage dealt to target creature is prevented.'],
+  },
+  'per-opponent-target-mana-value-after': {
+    def: spell([{ op: 'tap', what: t('c') }], [{ id: 'c', kind: 'object', min: 0, max: 1, text: '', filter: { types: ['Creature'], controller: 'opponent', manaValue: { op: '<=', value: 3 } }, perOpponent: true } as TargetSpec]),
+    readings: ['For each opponent, tap up to one target creature that player controls with mana value 3 or less.', 'For each opponent, tap up to one target creature with mana value 3 or less that player controls.'],
+    near: ['For each opponent, tap up to one target creature that player controls with mana value 4 or less.', 'For each opponent, tap up to one target creature that player controls with mana value 3 or greater.', 'Tap up to one target creature that player controls with mana value 3 or less.'],
+  },
+  'combat-on-each-players-turn': {
+    def: trig([{ ev: 'step', step: 'beginCombat', whose: 'opponent' }], [draw()]),
+    ctx: creature,
+    readings: ["At the beginning of combat on each opponent's turn, draw a card.", "At the beginning of combat on an opponent's turn, draw a card."],
+    near: ["At the beginning of combat on your turn, draw a card.", "At the beginning of combat on each player's turn, draw a card.", "At the beginning of combat on each opponent's turn and your turn, draw a card."],
+  },
+} satisfies Record<string, Example>);
+
+// trek-5 (lane trek, Star Trek; CR 119.5, 701.10, 108.3, 406.1, 400.7, 401.5, 201.2, 613.4b, 118.9; cites from memory, unverified)
+const TREK5_DISTINCT_LANDS = { q: 'distinct', what: 'names', among: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } } as unknown as Quantity;
+const TREK5_REVEAL = { op: 'reveal', who: you, what: { ref: 'topCards', player: you, count: 1 }, as: 'c' } as EffectStep;
+Object.assign(EXAMPLES, {
+  'double-life-total': {
+    def: spell([{ op: 'setLife', who: you, value: { q: 'math', op: '*', args: [2, { q: 'life', of: you }] } } as EffectStep]),
+    readings: ['Double your life total.', 'Your life total becomes twice your life total.'],
+    near: ['Triple your life total.', "Double target opponent's life total.", 'Your life total becomes three times your life total.'],
+  },
+  'owner-in-exiled-this-way': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: { ref: 'each', who: 'opponent' }, count: 2 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Land'], owner: { ref: 'iterating' }, zone: 'exile', is: bound('them'), isCard: true } }, min: 1, max: 1, perPlayer: { ref: 'each', who: 'opponent' }, as: 'chosen' } as EffectStep,
+    ]),
+    readings: [
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a land card that player owns exiled this way.',
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a land card exiled this way.',
+    ],
+    near: [
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a land card you own exiled this way.',
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a creature card that player owns exiled this way.',
+    ],
+  },
+  'still-on-top': {
+    def: spell([TREK5_REVEAL, { op: 'if', cond: { cond: 'matches', object: bound('c'), filter: { zone: 'library', is: { ref: 'topCards', player: you, count: 1 } } }, then: [draw()] } as EffectStep]),
+    readings: ['Reveal the top card of your library. If that card is still on top of your library, draw a card.', 'Reveal the top card of your library. If it is still on top of your library, draw a card.'],
+    near: ['Reveal the top card of your library. If that card is still in your library, draw a card.', 'Reveal the top card of your library. If that card is still on top of an opponent\'s library, draw a card.'],
+  },
+  'differently-named-lands': {
+    def: trig([{ ev: 'step', step: 'upkeep', whose: 'you' } as EventPattern], [draw()], { interveningIf: { cond: 'compare', left: TREK5_DISTINCT_LANDS, op: '>=', right: 5 } }),
+    ctx: unknown,
+    readings: [
+      'At the beginning of your upkeep, if you control five or more differently named lands, draw a card.',
+      'At the beginning of your upkeep, if you control five or more lands with different names, draw a card.',
+    ],
+    near: [
+      'At the beginning of your upkeep, if you control four or more differently named lands, draw a card.',
+      'At the beginning of your upkeep, if an opponent controls five or more differently named lands, draw a card.',
+      'At the beginning of your upkeep, if you control five or more differently named creatures, draw a card.',
+    ],
+  },
+  'base-pt-become-for-good': {
+    def: spell([{ op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'continuous', affects: t('c'), mods: [{ layer: '7b', power: 4, toughness: 4 }] }] } as EffectStep], [objTarget('c')]),
+    readings: ["Target creature's base power and toughness become 4/4.", 'Target creature has base power and toughness 4/4.'],
+    near: ["Target creature's base power and toughness become 4/5.", "Target creature's base power and toughness become 4/4 until end of turn."],
+  },
+  'cast-free-mv-at-most': {
+    def: spell([TREK5_REVEAL, { op: 'cast', who: you, what: bound('c'), free: true, optional: true, maxManaValue: TREK5_DISTINCT_LANDS } as EffectStep]),
+    readings: [
+      "Reveal the top card of your library. You may cast that card without paying its mana cost if that spell's mana value is equal to or less than the number of differently named lands you control.",
+      "Reveal the top card of your library. You may cast that card without paying its mana cost if that spell's mana value is less than or equal to the number of differently named lands you control.",
+      "Reveal the top card of your library. You may cast that card without paying its mana cost if the spell's mana value is equal to or less than the number of differently named lands you control.",
+    ],
+    near: [
+      "Reveal the top card of your library. You may cast that card without paying its mana cost if that spell's mana value is less than the number of differently named lands you control.",
+      "Reveal the top card of your library. You may cast that card without paying its mana cost if that spell's mana value is equal to or greater than the number of differently named lands you control.",
+    ],
+  },
+  'chosen-cards-named': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: { ref: 'each', who: 'opponent' }, count: 2 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Land'], owner: { ref: 'iterating' }, zone: 'exile', is: bound('them'), isCard: true } }, min: 1, max: 1, perPlayer: { ref: 'each', who: 'opponent' }, as: 'chosen' } as EffectStep,
+      { op: 'effect', duration: { d: 'remainsExiled' }, effects: [{ s: 'permit', action: 'play', who: you, of: { is: bound('chosen') } }] } as EffectStep,
+    ]),
+    readings: [
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a land card that player owns exiled this way. You may play the chosen cards for as long as they remain exiled.',
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a land card exiled this way. You may play the chosen cards for as long as they remain exiled.',
+    ],
+    near: [
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a land card that player owns exiled this way. You may play the chosen cards until end of turn.',
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a land card that player owns exiled this way. You may cast the chosen cards for as long as they remain exiled.',
+      'Each opponent exiles the top two cards of their library. For each opponent, choose a land card that player owns exiled this way. You may play the chosen permanents for as long as they remain exiled.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+// trek-11 (lane trek; CR 400.11, 404.1, 305.1, 601.3): the two places of the permission that covers cards outside the game, in either order (render/stat.ts#graveyardPermit)
+Object.assign(EXAMPLES, {
+  'play-outside-or-graveyard': {
+    def: { ...statics([{ s: 'permit', who: you, action: 'play', of: { types: ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'] }, from: 'graveyard', alsoOutside: true, oncePerTurn: true } as unknown as StaticEffect]), condition: { cond: 'turnOf', whose: 'you' } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['Once during each of your turns, you may play a permanent card you own from outside the game or from your graveyard.', 'Once during each of your turns, you may play a permanent card you own from your graveyard or from outside the game.'],
+    near: ['Once during each of your turns, you may play a permanent card you own from outside the game.', 'Once during each of your turns, you may play a permanent card you own from your graveyard or from exile.', 'During each of your turns, you may play a permanent card you own from your graveyard or from outside the game.'],
+  },
+} satisfies Record<string, Example>);
+
+// trek-7 (lane trek, Star Trek; CR cites from memory, unverified): the readings of its families (invented wordings, design 6.10)
+const TREK7_SCOTTY = "During your main phase, each instant card in your graveyard has beam me up. The beam me up cost is equal to its mana cost.";
+const TREK7_HAND = "Look at target opponent's hand. You may exile a nonland card from it.";
+const TREK7_QUEEN = 'Target opponent exiles cards from the top of their library until they exile a creature card. Assimilate that card.';
+Object.assign(EXAMPLES, {
+  'opponents-attacked-this-turn': {
+    def: xp2Def('Sorcery', 'You gain life equal to the number of opponents you attacked this turn.'),
+    readings: ['You gain life equal to the number of opponents you attacked this turn.', "You gain life equal to the number of opponents you've attacked this turn.", 'You gain life equal to the number of opponents you have attacked this turn.', 'You gain X life, where X is the number of opponents you attacked this turn.'],
+    near: ['You gain life equal to the number of opponents you attacked with a creature this combat.', 'You gain life equal to the number of opponents you attacked last turn.', 'You gain life equal to the number of players you attacked this turn.'],
+  },
+  'beam-me-up-cost-that-spell': {
+    def: xp2Def('Creature — Human', TREK7_SCOTTY),
+    ctx: creature,
+    readings: [TREK7_SCOTTY, TREK7_SCOTTY.replace('equal to its mana cost', "equal to that spell's mana cost"), TREK7_SCOTTY.replace('equal to its mana cost', "equal to that card's mana cost")],
+    near: [TREK7_SCOTTY.replace('equal to its mana cost', "equal to that spell's mana value"), TREK7_SCOTTY.replace('equal to its mana cost', 'equal to {2}'), TREK7_SCOTTY.replace('beam me up cost', 'flashback cost')],
+  },
+  'during-your-main-phase': {
+    def: xp2Def('Creature — Human', TREK7_SCOTTY),
+    ctx: creature,
+    readings: [TREK7_SCOTTY, TREK7_SCOTTY.replace('During your main phase, each instant card in your graveyard has', "As long as it's your main phase, each instant card in your graveyard has").replace('its mana cost', "that spell's mana cost")],
+    near: [TREK7_SCOTTY.replace('During your main phase', 'During your turn'), TREK7_SCOTTY.replace('During your main phase', 'During your end step'), TREK7_SCOTTY.replace('During your main phase', "During an opponent's main phase")],
+  },
+  'exiled-rest-put-on-the-bottom': {
+    def: xp2Def('Sorcery', `${TREK7_QUEEN} They put the rest on the bottom in a random order.`),
+    readings: [`${TREK7_QUEEN} They put the rest on the bottom in a random order.`, `${TREK7_QUEEN} That player puts the rest on the bottom in a random order.`],
+    near: [`${TREK7_QUEEN} They put the rest on top in a random order.`, `${TREK7_QUEEN} They put the rest on the bottom in any order.`, `${TREK7_QUEEN} You put the rest on the bottom in a random order.`, `${TREK7_QUEEN} They put the rest into their graveyard.`],
+  },
+  'named-permit-cost-increase-rider': {
+    def: xp2Def('Creature — Human', `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} more to cast.`),
+    ctx: creature,
+    readings: [`When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} more to cast.`],
+    near: [`When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play it. A spell cast this way costs {2} less to cast.`, `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play it. A spell cast this way costs {3} more to cast.`, `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play it. Each creature spell cast this way costs {2} more to cast.`],
+  },
+  'owner-may-play-it-focus': {
+    def: xp2Def('Creature — Human', `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play it.`),
+    ctx: creature,
+    readings: [`When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play it.`, `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play that card.`],
+    near: [`When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, you may play it.`, `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may cast it.`, `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its controller may play it.`],
   },
 } satisfies Record<string, Example>);

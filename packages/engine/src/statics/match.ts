@@ -23,7 +23,7 @@ import type { Chars } from '../rules/characteristics';
 import { commanderCastsOf, isCommander } from './commander';
 import { partyCreatureOf, partySize, type PartyCreature } from './party';
 import { readLink } from './links';
-import { CREATURE_TYPES, LAND_TYPES, PERMANENT_TYPES, subtypeClass } from './subtypes';
+import { LAND_TYPES, PERMANENT_TYPES, subtypeClass } from './subtypes';
 import { hasSharedTypeLine, unlockedHalves } from '../rules/base-chars';
 
 /** p2-graveyard-1: the method a spell was cast with is `via`, or its copy for another zone (`<via>:2`, as triggers/match.ts#castVia reads it). */
@@ -80,6 +80,7 @@ export const STATIC_FILTER_FIELDS: ReadonlySet<string> = new Set([
   'countersPutThisTurn', // std-rx12: "that you've put one or more +1/+1 counters on this turn" (CR 122.6, 611.3a), as rules/filter.ts reads it
   'blockingObject', 'blockedByObject', 'blockingOrBlockedBy', // p2-combat-flow-1: CR 509.1g-h, 506.4, as rules/filter.ts reads them
   'attackedThisTurn', // FAST5X E28: "creatures that attacked this turn", "as long as ~ attacked this turn" (CR 508.1, 611.3a), as rules/filter.ts reads it
+  'attachedWith', // trek-9 (CR 301.5, 303.4), as rules/filter.ts reads it
 ]);
 
 /**
@@ -307,6 +308,8 @@ function match(cx: EvalCx, id: ObjectId, f: ObjectFilter): boolean {
   if (f.attachedToPlayer !== undefined && (o.zone !== 'battlefield' || o.attachedTo === undefined || !cx.s.players.some((p) => p.id === o.attachedTo) || !playerMatches(cx, f.attachedToPlayer, o.attachedTo as PlayerId))) return false;
   // FAST4 T33: equipped (CR 301.5) and modified (CR 700.9), as rules/filter.ts reads them, with the characteristics of this evaluation
   if (f.equipped !== undefined && equippedNow(cx, o) !== f.equipped) return false;
+  // trek-9 (CR 301.5, 303.4): a permanent with this subtype is attached to it, with the characteristics of this evaluation
+  if (f.attachedWith !== undefined && !attachedChars(cx, o).some((a) => a.subtypes.includes(f.attachedWith!))) return false;
   if (f.modified !== undefined && modifiedNow(cx, o, c) !== f.modified) return false;
   // MX3, CR 701.54e: the Ring-bearer of a player the predicate names, under that player's control as computed so far (as rules/filter.ts reads it; the
   // designation is no characteristic, so it is read from the state, not from layers: CR 701.54b)
@@ -694,8 +697,8 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
           case 'cardTypes': c.types.forEach((x) => seen.add(x)); break;
           case 'permanentTypes': c.types.filter((x) => PERMANENT_TYPES.includes(x)).forEach((x) => seen.add(x)); break; // r4-cost (CR 110.4)
           case 'creatureTypes':
-            // r4-static (CR 702.73a, 205.3m): a changeling is every creature type, as effects/eval.ts reads it ("for each of its creature types")
-            if (c.keywords.some((k) => k.keyword === 'changeling')) CREATURE_TYPES.forEach((x) => seen.add(x));
+            // r4-static (CR 702.73a, 205.3m): a changeling is every creature type because layer 4 gave it all of them (layers run over all objects together, so a
+            // layer 7 effect sees them); trek-10: read from the computed subtypes, not from the keyword, as effects/eval.ts reads them (Maskwood Nexus ruling, 2021-02-05)
             c.subtypes.filter(creatureTypeLike).forEach((x) => seen.add(x));
             break;
           case 'landTypes': c.subtypes.filter((t) => !creatureTypeLike(t)).forEach((x) => seen.add(x)); break;

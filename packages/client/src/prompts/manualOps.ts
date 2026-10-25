@@ -5,10 +5,13 @@
 import { HIDDEN_DEF, MANUAL_MOVE_ZONES, type GameView, type ManaType, type ManualOp, type ObjectId } from '@openmtg/engine';
 import { entityName, numberDuplicates, objectLabel, playerName } from './names';
 
-export type ManualKind = ManualOp['op'];
+/** An operation of the panel: an engine op, or "Exile a card", which is a `move` to exile named for what the text says. */
+export type ManualKind = ManualOp['op'] | 'exile';
 
 export const MANUAL_KINDS: { kind: ManualKind; label: string }[] = [
   { kind: 'move', label: 'Move a card' },
+  { kind: 'discard', label: 'Discard a card' },
+  { kind: 'exile', label: 'Exile a card' },
   { kind: 'life', label: 'Change life' },
   { kind: 'counters', label: 'Counters' },
   { kind: 'tap', label: 'Tap or untap' },
@@ -19,12 +22,16 @@ export const MANUAL_KINDS: { kind: ManualKind; label: string }[] = [
   { kind: 'mana', label: 'Add mana' },
   { kind: 'attach', label: 'Attach or unattach' },
   { kind: 'token', label: 'Create a token' },
+  { kind: 'tokenCopy', label: 'Token copy of a creature' },
   { kind: 'note', label: 'Note' },
 ];
 
 /** Which fields each kind uses (the panel shows only these). */
 export const FIELDS: Record<ManualKind, readonly (keyof ManualDraft)[]> = {
   move: ['object', 'zone', 'attachTo'],
+  discard: ['object'],
+  exile: ['object'],
+  tokenCopy: ['object', 'player', 'haste', 'atNextEndStep'],
   life: ['player', 'amount'],
   counters: ['target', 'counter', 'amount'],
   tap: ['object', 'tapped'],
@@ -60,6 +67,10 @@ export interface ManualDraft {
   /** Token color letters, e.g. "WU". */
   colors: string;
   text: string;
+  /** A token copy: "except it has haste" (CR 707.9a). */
+  haste: boolean;
+  /** A token copy: what happens to it at the beginning of the next end step (CR 603.7), '' for nothing. */
+  atNextEndStep: '' | 'sacrifice' | 'exile';
 }
 
 export function emptyDraft(view: GameView, kind: ManualKind = 'move'): ManualDraft {
@@ -68,18 +79,37 @@ export function emptyDraft(view: GameView, kind: ManualKind = 'move'): ManualDra
   return {
     kind, object: '', target: '', player: me, zone: 'graveyard', attachTo: '', amount: kind === 'draw' ? '1' : kind === 'life' ? '-1' : '1', counter: '+1/+1',
     tapped: kind === 'tap', mana: '', name: '', typeLine: 'Token Creature — ', power: '1', toughness: '1', colors: '', text: '',
+    // the usual temporary copy (Kiki-Jiki, Splinter Twin): with haste, sacrificed at the next end step
+    haste: true, atNextEndStep: 'sacrifice',
   };
+}
+
+/** The zone a kind's card must be in (the panel offers only those), or null for any card it can see. */
+export function kindZone(kind: ManualKind): 'hand' | 'battlefield' | null {
+  return kind === 'discard' ? 'hand' : kind === 'tokenCopy' ? 'battlefield' : null;
 }
 
 const int = (s: string): number | null => (/^[-+]?\d+$/.test(s.trim()) ? Number(s.trim()) : null);
 
-export function buildOp(d: ManualDraft): { op: ManualOp } | { error: string } {
+/** `resolver`: the player making the adjustments (the engine refuses a token copy they give away and would sacrifice, CR 603.7d, 701.21a). */
+export function buildOp(d: ManualDraft, resolver?: string): { op: ManualOp } | { error: string } {
   const need = (what: string) => ({ error: `Choose ${what}.` });
   switch (d.kind) {
     case 'move':
       if (!d.object) return need('the card to move');
       if (!MANUAL_MOVE_ZONES.includes(d.zone)) return need('where it goes');
       return { op: { op: 'move', object: d.object, to: d.zone as Extract<ManualOp, { op: 'move' }>['to'], ...(d.zone === 'battlefield' && d.attachTo ? { attachTo: d.attachTo } : {}) } };
+    case 'discard':
+      return d.object ? { op: { op: 'discard', object: d.object } } : need('the card to discard');
+    case 'exile':
+      return d.object ? { op: { op: 'move', object: d.object, to: 'exile' } } : need('the card to exile');
+    case 'tokenCopy':
+      if (!d.object) return need('the creature to copy');
+      if (!d.player) return need('who creates the token');
+      if (d.atNextEndStep === 'sacrifice' && resolver !== undefined && d.player !== resolver) {
+        return { error: "You can't sacrifice a token another player controls at the next end step (CR 701.21a): choose Exile it instead." };
+      }
+      return { op: { op: 'tokenCopy', object: d.object, player: d.player, ...(d.haste ? { haste: true } : {}), ...(d.atNextEndStep ? { atNextEndStep: d.atNextEndStep } : {}) } };
     case 'life': {
       const n = int(d.amount);
       if (!d.player) return need('a player');
@@ -171,6 +201,13 @@ export function describeOp(view: GameView, op: ManualOp): string {
       return `${playerName(view, op.player)} adds ${op.types.map((t) => `{${t}}`).join('')}`;
     case 'token':
       return `${playerName(view, op.player)} creates ${op.name} (${op.typeLine}${op.power !== undefined ? `, ${op.power}/${op.toughness}` : ''})`;
+    case 'discard':
+      return `Discard ${n(op.object)}`;
+    case 'tokenCopy':
+      return (
+        `${playerName(view, op.player)} creates a token copy of ${n(op.object)}${op.haste ? ' with haste' : ''}` +
+        (op.atNextEndStep ? `; ${op.atNextEndStep === 'sacrifice' ? 'sacrifice' : 'exile'} it at the beginning of the next end step` : '')
+      );
     case 'note':
       return `Note: ${op.text}`;
   }
@@ -207,6 +244,8 @@ function referencedIds(op: ManualOp): string[] {
     case 'counters':
     case 'tap':
     case 'control':
+    case 'discard':
+    case 'tokenCopy':
       return [op.object];
     case 'damage':
       return [op.target];
@@ -227,11 +266,12 @@ export function staleReference(view: GameView, earlier: readonly ManualOp[], op:
   const ids = referencedIds(op);
   for (const [i, e] of earlier.entries()) {
     const gone =
-      e.op === 'move' ? [e.object] : e.op === 'draw' ? (view.zones.library[e.player] ?? []).slice(0, e.count) : [];
+      e.op === 'move' || e.op === 'discard' ? [e.object] : e.op === 'draw' ? (view.zones.library[e.player] ?? []).slice(0, e.count) : [];
     const hit = ids.find((id) => gone.includes(id));
     if (hit !== undefined) {
       return (
-        `${entityName(view, hit)} is ${e.op === 'move' ? 'moved' : 'drawn'} by adjustment ${i + 1}, so it is a new object (CR 400.7) and a later adjustment ` +
+        `${entityName(view, hit)} is ${e.op === 'move' ? 'moved' : e.op === 'discard' ? 'discarded' : 'drawn'} by adjustment ${i + 1}, ` +
+        `so it is a new object (CR 400.7) and a later adjustment ` +
         `can't name it. Adjustments to it after the move are not supported yet: add a Note saying what still has to happen.`
       );
     }

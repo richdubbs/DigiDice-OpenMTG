@@ -613,6 +613,17 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
         case 'chooseValue':
           if (s['what'] === 'option' && arr(s['options']).length === 0) out('executable-gap', node.path, 'a choice among options needs the options');
           break;
+        case 'cast': {
+          // trek-12 (CR 707.12, 113.6, 400.7; Q, Stacking the Deck): a copy of THE CARD ITSELF ("Create a copy of ~. You may cast the copy.") is made in exile and cast: the
+          // card is a card in exile only in an activated ability that functions in exile alone (`zone: ['exile']`); anywhere else (a permanent, a spell) ~ is no card to copy
+          if (s['copyIn'] === undefined || rec(s['what'])['ref'] !== 'self') break;
+          let owner: WalkNode | null = null;
+          for (const a of ancestors(node)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
+          const zone = owner?.value['zone'];
+          const inExile = owner?.value['kind'] === 'activated' && Array.isArray(zone) && zone.length === 1 && zone[0] === 'exile';
+          if (!inExile) out('executable-gap', node.path, 'a copy of ~ made in exile and cast needs an activated ability that functions only in exile, where ~ is a card (CR 707.12, 113.6)');
+          break;
+        }
         case 'rollDie': {
           if (typeof s['sides'] !== 'number' || s['sides'] < 1) out('executable-gap', `${node.path}/sides`, 'a die has at least one side (CR 706)');
           const rows = arr(s['table']);
@@ -635,6 +646,20 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
           const spec = what['ref'] === 'target' && typeof what['id'] === 'string' ? visibleTargets(node).get(what['id']) : undefined;
           if (s['result'] === 'spell' && spec !== undefined && !['spell', 'ability', 'stackObject'].includes(String(spec['kind']))) {
             out('executable-gap', `${node.path}/what`, `a spell copy of a target that is not on the stack (target kind ${String(spec['kind'])}, CR 707.10)`);
+          }
+          // trek-12 (CR 707.10, 707.12, 113.6k; Q, Stacking the Deck): a spell copy of ~ is a copy of a spell on the stack, which ~ is only in an ability that functions there: a spell's
+          // own ability or the cast trigger of the spell itself ("When you cast this spell, copy it"). In an activated ability (any zone: "Create a copy of ~." of a card in exile copies
+          // a CARD, which only "You may cast the copy." after it makes, the rider turns it into a `cast` with `copyIn`) and in a trigger of anything else, ~ is a permanent or a card
+          // and the copy would copy nothing: refused, never an instruction that silently does nothing
+          if (s['result'] === 'spell' && what['ref'] === 'self') {
+            let owner: WalkNode | null = null;
+            for (const a of ancestors(node)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
+            const kind = owner?.value['kind'];
+            const on = arr(rec(owner?.value['trigger'])['on']);
+            const castOfSelf = on.length > 0 && on.every((e) => e['ev'] === 'cast' && rec(e['spell'])['self'] === true);
+            if (kind === 'activated' || (kind === 'triggered' && !castOfSelf)) {
+              out('executable-gap', node.path, 'a spell copy of ~ is a copy of a spell on the stack: only a spell\'s own ability or the cast trigger of the spell itself has one; a card in exile is copied with the cast of the copy after it (CR 707.10, 707.12, 113.6k)');
+            }
           }
           break;
         }

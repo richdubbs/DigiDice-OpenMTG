@@ -1,6 +1,7 @@
 /**
- * UI profiles (docs/design/ui-profiles.md): the templates (Neon Grid, LCARS), saved profiles in localStorage with try/catch, the look applied to the
- * page, the Settings screen's Look and feel section, the LCARS space battle behind Home, and the stylesheets staying scoped to their template.
+ * UI profiles (docs/design/ui-profiles.md): the templates (Neon Grid, LCARS, Reality Fracture), saved profiles in localStorage with try/catch, the look
+ * applied to the page, the Settings screen's Look and feel section, the LCARS space battle and the Reality Fracture sky behind Home, and the stylesheets
+ * staying scoped to their template.
  */
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
@@ -8,6 +9,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NavProvider } from '../src/app/nav';
 import { createBattle, SHIELD, shieldHit, stepBattle } from '../src/profiles/battle';
+import { createScene, holeAt, mirrorPoint, orbitPlace, sideOf, stepScene } from '../src/profiles/fracture';
 import {
   MAX_PROFILES, PROFILES_KEY, ProfilesStore, TEMPLATES, TEMPLATE_PROFILES, applyLook, cleanHex, connectProfiles, isTemplatePalette, lookVars, parseProfileFile,
   profileFile, resetProfilesStoreForTests, sanitizeLook, sanitizeProfiles, templateLook, templateProfileId, uniqueName,
@@ -15,6 +17,7 @@ import {
 import { ProfilesSection } from '../src/settings/ProfilesSection';
 import { HomeScreen } from '../src/screens/HomeScreen';
 import { themeVars } from '../src/theme/theme';
+import { cssOf, declarations } from './css-rules';
 import { memoryStorage } from './game-fixtures';
 
 afterEach(() => {
@@ -27,16 +30,19 @@ afterEach(() => {
 
 const LCARS = templateProfileId('lcars');
 const GRID = templateProfileId('neonGrid');
+const FRACTURE = templateProfileId('fracture');
 
 describe('templates', () => {
-  it('names the current look Neon Grid and adds LCARS, both read-only profiles with their own palettes', () => {
+  it('names the current look Neon Grid and adds LCARS and Reality Fracture, read-only profiles with their own palettes', () => {
     expect(TEMPLATE_PROFILES.map((p) => [p.id, p.name, p.builtIn])).toEqual([
       [GRID, 'Neon Grid', true],
       [LCARS, 'LCARS', true],
+      [FRACTURE, 'Reality Fracture', true],
     ]);
     // Neon Grid's palette is the brand's: the look every screen was designed in.
     expect(templateLook('neonGrid').colors).toEqual({ neon: '#1fb8ff', neon2: '#f500f5' });
     expect(Object.keys(templateLook('lcars').colors)).toEqual(['frame', 'button', 'panel', 'highlight', 'alert', 'text']);
+    expect(Object.keys(templateLook('fracture').colors)).toEqual(['mind', 'echo', 'memory', 'alert', 'text', 'void']);
     for (const t of Object.values(TEMPLATES)) {
       expect(t.presets[0]!.colors, `${t.name}: the first palette is the template's own`).toEqual(templateLook(t.id).colors);
       for (const p of t.presets) expect(Object.keys(p.colors).sort(), `${t.name} ${p.name}`).toEqual(t.slots.map((s) => s.key).sort());
@@ -168,6 +174,27 @@ describe('applying a look', () => {
     expect(root.style.fontSize).toBe('');
   });
 
+  it('puts Reality Fracture on the root with its palette, lent to the grid variables too, and takes it all away again on another template', () => {
+    const root = document.documentElement;
+    const base = themeVars();
+    const look = { ...templateLook('fracture'), colors: { ...templateLook('fracture').colors, memory: '#123456' } };
+    applyLook(root, look, base);
+    expect(root.dataset.ui).toBe('fracture');
+    expect(root.dataset.tint).toBe('custom');
+    expect(root.style.getPropertyValue('--rf-memory')).toBe('#123456');
+    expect(root.style.getPropertyValue('--rf-echo')).toBe(TEMPLATES.fracture.slots[1]!.default);
+    // The palette lights what the sheet leaves to the grid look: glows and the accent in the light half's color, its readable text.
+    expect(root.style.getPropertyValue('--neon-rgb')).toBe('18, 52, 86');
+    expect(root.style.getPropertyValue('--accent-text')).toBe('#ffffff');
+    expect(root.style.getPropertyValue('--rf-memory-ink')).toBe('#ffffff');
+    applyLook(root, templateLook('lcars'), base);
+    expect(root.dataset.ui).toBe('lcars');
+    expect(root.style.getPropertyValue('--rf-mind')).toBe('');
+    applyLook(root, templateLook('neonGrid'), base);
+    expect(root.style.getPropertyValue('--rf-void')).toBe('');
+    expect(root.style.getPropertyValue('--text')).toBe(base['--text']);
+  });
+
   it("recolors Neon Grid's glows from the profile's neons and picks readable text for buttons in that color", () => {
     const look = { ...templateLook('neonGrid'), colors: { neon: '#39ff7a', neon2: '#202060' } };
     expect(isTemplatePalette(look)).toBe(false);
@@ -203,7 +230,7 @@ describe('Settings: Look and feel', () => {
     const store = new ProfilesStore(memoryStorage());
     renderSection(store);
     const radios = within(section()).getAllByRole('radio', { name: /Template$/ });
-    expect(radios.map((r) => r.closest('label')!.querySelector('b')!.textContent)).toEqual(['Neon Grid', 'LCARS']);
+    expect(radios.map((r) => r.closest('label')!.querySelector('b')!.textContent)).toEqual(['Neon Grid', 'LCARS', 'Reality Fracture']);
     expect((radios[0] as HTMLInputElement).checked).toBe(true);
     fireEvent.click(radios[1]!);
     expect(store.active().id).toBe(LCARS);
@@ -307,6 +334,89 @@ describe('Home: the LCARS space battle', () => {
   });
 });
 
+describe('Home: the Reality Fracture sky', () => {
+  function home(store: ProfilesStore) {
+    resetProfilesStoreForTests(store);
+    return render(
+      <NavProvider>
+        <HomeScreen />
+      </NavProvider>,
+    );
+  }
+
+  it('is drawn behind Home only with the Reality Fracture template and its scene on, hidden from screen readers', () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const store = new ProfilesStore(memoryStorage());
+    const { container } = home(store);
+    expect(container.querySelector('canvas.fracture-scene')).toBeNull();
+    act(() => store.select(FRACTURE));
+    const canvas = container.querySelector('canvas.fracture-scene')!;
+    expect(canvas).toBeTruthy();
+    expect(canvas.getAttribute('aria-hidden')).toBe('true');
+    expect(container.querySelector('canvas.space-battle')).toBeNull();
+    expect(within(screen.getByRole('navigation', { name: 'Main menu' })).getAllByRole('button').map((b) => b.textContent)).toEqual(['Play', 'Decks', 'Images', 'Settings', 'About']);
+    act(() => {
+      const id = store.create('Quiet', { ...templateLook('fracture'), scene: false })!;
+      store.select(id);
+    });
+    expect(container.querySelector('canvas')).toBeNull();
+  });
+});
+
+describe('the broken sky behind Home', () => {
+  it('breaks the sky round the logo: its pieces lie apart with none in the hole the logo broke through, and a line through the logo splits the two worlds', () => {
+    const s = createScene(1400, 900, 2026, { x: 0.5, y: 0.3 });
+    const cx = 700;
+    const cy = 270;
+    expect(s.pieces.length).toBeGreaterThanOrEqual(15);
+    const inHole = s.pieces.filter((p) => Math.hypot(p.c.x - cx, p.c.y - cy) < holeAt(s, Math.atan2(p.c.y - cy, p.c.x - cx)));
+    expect(inHole).toEqual([]);
+    // The hole is wider than the logo's frame all round, and ragged.
+    const reach = Array.from({ length: 36 }, (_, i) => holeAt(s, (i / 36) * Math.PI * 2));
+    expect(Math.min(...reach)).toBeGreaterThan(900 * 0.15);
+    expect(Math.max(...reach) - Math.min(...reach)).toBeGreaterThan(20);
+    // Left of the line is the real side, right of it the echo; the mirror of a point lies on the other side.
+    expect(sideOf(s, { x: 70, y: 450 })).toBe('real');
+    expect(sideOf(s, { x: 1330, y: 450 })).toBe('echo');
+    const echo = mirrorPoint(s, { x: 140, y: 360 });
+    expect(sideOf(s, echo)).toBe('echo');
+    const back = mirrorPoint(s, echo);
+    expect(back.x).toBeCloseTo(140, 9);
+    expect(back.y).toBeCloseTo(360, 9);
+    // The same break for the same seed, size and logo.
+    expect(createScene(1400, 900, 2026, { x: 0.5, y: 0.3 }).pieces).toEqual(s.pieces);
+  });
+
+  it('is the same sky for the same seed; motes rise on the real side and fall on the echo side; shards circle the logo and drift off the screen to break off again', () => {
+    const run = () => {
+      const s = createScene(1200, 800, 5);
+      const seen = { real: 0, echo: 0 };
+      const wrong: string[] = [];
+      for (let i = 0; i < 60 * 25; i++) {
+        stepScene(s, 1 / 60);
+        for (const m of s.motes) {
+          seen[m.side]++;
+          // Gravity is mirrored: up on the real side, down on the echo side.
+          if (m.side === 'real' ? m.vy >= 0 : m.vy <= 0) wrong.push(`mote ${m.side} vy ${m.vy}`);
+        }
+        for (const sh of s.shards) {
+          if (sh.orbit) {
+            const o = orbitPlace(s, sh);
+            if (Math.hypot(o.x - s.center.x * s.w, o.y - s.center.y * s.h) > s.w * 0.4) wrong.push('orbit too wide');
+          } else if (sh.x < -200 || sh.x > 1400 || sh.y < -200 || sh.y > 1000) wrong.push(`shard at ${sh.x}, ${sh.y}`);
+        }
+      }
+      return { wrong: wrong.slice(0, 5), seen, shards: s.shards.map((sh) => [Math.round(sh.x), Math.round(sh.y)]), motes: s.motes.length };
+    };
+    const a = run();
+    expect(a.wrong).toEqual([]);
+    expect(run()).toEqual(a);
+    expect(a.seen.real).toBeGreaterThan(1000);
+    expect(a.seen.echo).toBeGreaterThan(1000);
+    expect(a.motes).toBeGreaterThan(20);
+  });
+});
+
 describe('the space battle', () => {
   it('is the same battle for the same seed, keeps its ships near the screen and lands every beam on a shield', () => {
     const run = () => {
@@ -354,12 +464,24 @@ describe('stylesheets', () => {
       .map((m) => m[1]!.trim())
       .filter((s) => !s.startsWith('@') && !/^(from|to|\d+%)/.test(s));
 
-  it("keeps every LCARS rule to the LCARS template and every Neon Grid profile rule to its own switches, so neither changes the other's look", () => {
+  it("keeps every LCARS and Reality Fracture rule to its template and every Neon Grid profile rule to its own switches, so none changes another's look", () => {
     for (const selectors of rules('lcars.css')) {
       for (const sel of selectors.split(/,(?![^(]*\))/)) expect(sel.trim(), sel).toMatch(/^:root\[data-ui='lcars'\]/);
+    }
+    const fracture = rules('fracture.css');
+    expect(fracture.length).toBeGreaterThan(150);
+    for (const selectors of fracture) {
+      for (const sel of selectors.split(/,(?![^(]*\))/)) expect(sel.trim(), sel).toMatch(/^:root\[data-ui='fracture'\]/);
     }
     for (const selectors of rules('neon-grid.css')) {
       for (const sel of selectors.split(/,(?![^(]*\))/)) expect(sel.trim(), sel).toMatch(/^:root\[(data-ui='grid'|data-motion='off')\]/);
     }
+  });
+
+  it('mutes a select choice that cannot be picked (a deck the format cannot play) in LCARS too, whose option color outranks the rule in styles.css', () => {
+    const lcars = (selector: string) => declarations(cssOf('theme/lcars.css'), `:root[data-ui='lcars'] ${selector}`).color;
+    expect(declarations(cssOf('theme/styles.css'), 'select option:disabled').color).toBe('var(--text-muted)');
+    expect(lcars('select option:disabled')).toBe('var(--lc-muted)');
+    expect(lcars('select option:disabled')).not.toBe(lcars('select option'));
   });
 });

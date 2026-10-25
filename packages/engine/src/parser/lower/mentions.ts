@@ -684,6 +684,20 @@ function revealedRestOf(step: Rec, unit: Unit, path: string): StepMention | null
 }
 
 /**
+ * trek-7 (CR 406.1, 608.2c; The Borg Queen): "the rest" after "target opponent exiles cards from the top of their library until they exile a creature card": the cards that
+ * step exiled other than the one it stopped at, still in exile ("Assimilate that card. They put the rest on the bottom in a random order."). One player only. The step's
+ * names (`as` for the card it stopped at, `exiled` for every card) are given when a reference to this mention is bound (lower/anaphora.ts#bind: the step is not named
+ * unless "the rest" is read). Named by the head noun "rest" (or "the rest of the exiled cards") only, as restOf's.
+ */
+function exiledRestOf(step: Rec, unit: Unit, path: string): StepMention | null {
+  if (step['op'] !== 'exileUntil' || step['total'] !== undefined || !namesOnePlayer(step['who']) || step['guard'] !== undefined) return null;
+  return {
+    origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['rest', 'rest-exiled'], headOnly: true, verbs: ['left'], bindKey: 'exiledRest',
+    ref: { ref: 'each', filter: { is: { ref: 'bound', name: '' }, not: { is: { ref: 'bound', name: '' } }, zone: 'exile' } },
+  };
+}
+
+/**
  * LNK1: the player a target phrase names by "an opponent" ("destroy target creature an opponent controls. That player loses 3 life."): the controller (or
  * owner) of that one target, a candidate for "that player" (CR 608.2c; Oracle's "that player" is the opponent the phrase named). Read from the target, so
  * its last known information once it has left (CR 608.2h). Null for any other target: "you control" is "you", "you don't control" names no player.
@@ -790,6 +804,10 @@ export function stepsInOrder(list: unknown, path = ''): { step: Rec; path: strin
  * the text, so the chosen object is not its antecedent.
  */
 function joinedAfter(choice: Rec, next: unknown): boolean {
+  // p2-damage-3 (CR 608.2d; eff.p2damage3.damage.toRandomObject): "it deals 7 damage to a creature an opponent controls chosen at random": the random choice is named
+  // by the recipient of the damage that follows it, after the damage's own source ("it"), so the chosen object is no antecedent of that source
+  if (choice['op'] === 'chooseObjects' && choice['random'] === true && typeof choice['as'] === 'string' && isRec(next) && next['op'] === 'damage' && isRec(next['to'])
+    && next['to']['ref'] === 'bound' && next['to']['name'] === choice['as']) return true;
   if (choice['op'] !== 'chooseObjects' || typeof choice['as'] !== 'string' || !isRec(next) || !isRec(next['what']) || next['what']['ref'] !== 'union') return false;
   const of = next['what']['of'];
   if (!Array.isArray(of) || of.length < 2) return false;
@@ -1016,6 +1034,8 @@ export function mentionsAt(d: Draft, seq: readonly Unit[], upTo: number, beforeS
       // turn. Untap them. They gain haste until end of turn.": "them" was written as that group) adds no second mention of the same group
       const acts = step['what'];
       if (isRec(acts) && acts['ref'] === 'each' && out.some((m) => m.origin === 'step' && JSON.stringify(m.ref) === JSON.stringify(acts))) continue;
+      // p2-damage-3 (joinedAfter): a random choice the next step's recipient names is said after that step's source: no antecedent of the step being resolved
+      if (own && path === `/${top}` && top === beforeStep - 1 && joinedAfter(step, u.steps[beforeStep])) continue;
       const made = producedBy(step, u, path, (ref) => out.find((m) => m.sort !== 'number' && sameRef(m.ref as Rec, ref))?.heads ?? []);
       if (made) {
         out.push(made);
@@ -1033,6 +1053,8 @@ export function mentionsAt(d: Draft, seq: readonly Unit[], upTo: number, beforeS
         }
         const revealedRest = revealedRestOf(step, u, path); // r3-dig
         if (revealedRest) out.push(revealedRest);
+        const exiledRest = exiledRestOf(step, u, path); // trek-7
+        if (exiledRest) out.push(exiledRest);
         continue;
       }
       const what = step['what'];

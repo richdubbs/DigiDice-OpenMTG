@@ -2,7 +2,7 @@
  * Actions: the only inputs to the engine. A game is fully determined by its initial
  * configuration (including the seed) and its action log.
  */
-import type { ObjectId, PlayerId } from './ids';
+import type { DefId, ObjectId, PlayerId } from './ids';
 import type { DecisionAnswer } from './decisions';
 import type { StopSettings } from './state';
 
@@ -34,7 +34,7 @@ export type Action =
    * core/registries.ts#SPECIAL_ACTION_HANDLERS (M6-0). `via` (M6-0, m6 design 2.3): the procedure, CR 701.40c-d (a manifested card with morph or disguise may
    * be turned up either way); `x`: the X of that cost (CR 702.37f, 702.168e).
    */
-  | { type: 'special'; player: PlayerId; kind: string; object?: ObjectId; via?: 'morph' | 'megamorph' | 'disguise' | 'manifest' | 'cloak'; x?: number; door?: number; option?: number } // `door`: FAST5X E8 INTERFACE CHANGE (additive), the half of a Room to unlock (CR 709.5e, 116.2m); `option`: std-freecast-5 INTERFACE CHANGE (additive), which of a card's plot costs is paid (CR 702.170a, 702.170f: its own or its mana cost; core/special/plot.ts)
+  | { type: 'special'; player: PlayerId; kind: string; object?: ObjectId; via?: 'morph' | 'megamorph' | 'disguise' | 'manifest' | 'cloak'; x?: number; door?: number; option?: number; outside?: DefId } // `outside`: trek-11 INTERFACE CHANGE (additive), the card the action plays from outside the game, by definition id (CR 400.11b; `playOutside`, core/special/play-outside.ts); `door`: FAST5X E8 INTERFACE CHANGE (additive), the half of a Room to unlock (CR 709.5e, 116.2m); `option`: std-freecast-5 INTERFACE CHANGE (additive), which of a card's plot costs is paid (CR 702.170a, 702.170f: its own or its mana cost; core/special/plot.ts)
   /** Answer the pending decision. */
   | { type: 'answer'; player: PlayerId; decisionId: string; answer: DecisionAnswer }
   /** Cancel a cancellable in-progress action (CR 733.1: the whole action is reversed). */

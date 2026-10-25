@@ -171,6 +171,7 @@ export const EXILE_UNTIL_OP_FORMS: readonly string[] = ['op:exileUntil.total' /*
 export const exileUntilStep: StepHandler<ExileUntilStep> = (cx, st) => {
   const g = cx.g;
   bindAs(cx, st.as, []); // bound before any early exit (design 3.1 rule 6, CR 609.3)
+  bindAs(cx, st.exiled, []); // trek-7: every card it exiled (the rest, "put the rest on the bottom"), none yet
   // std-rs (CR 101.4, 608.2e): "each opponent exiles cards from the top of their library until they exile a nonland card": each player in APNAP order, each
   // from their own library (none: it fails to determine, CR 608.2b)
   const players = playersOf(cx, st.who);
@@ -200,6 +201,7 @@ export const exileUntilStep: StepHandler<ExileUntilStep> = (cx, st) => {
   }
   addToLink(cx, st.link, all); // std-rs (CR 607.2a): every card it exiled is "exiled with ~" (zones-util.ts)
   bindAs(cx, st.as, hits);
+  bindAs(cx, st.exiled, all); // trek-7 (CR 406.1, 608.2c): every card it exiled, the card it stopped at too (CR 400.7: the objects in exile now)
   return did(all.length);
 };
 

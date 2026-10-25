@@ -17,6 +17,7 @@ import k_backup from './backup.json';
 import k_banding from './banding.json';
 import k_bargain from './bargain.json';
 import k_battleCry from './battle-cry.json';
+import k_beamMeUp from './beam-me-up.json'; // trek-1: Beam me up (Star Trek; reminder-rule keyword, keywords/validate.ts#REMINDER_RULE_KEYWORDS)
 import k_bestow from './bestow.json';
 import k_blitz from './blitz.json';
 import k_bloodthirst from './bloodthirst.json';
@@ -221,6 +222,7 @@ export const KEYWORD_DATA_FILES: readonly { file: string; data: unknown }[] = [
   { file: 'banding.json', data: k_banding },
   { file: 'bargain.json', data: k_bargain },
   { file: 'battle-cry.json', data: k_battleCry },
+  { file: 'beam-me-up.json', data: k_beamMeUp },
   { file: 'bestow.json', data: k_bestow },
   { file: 'blitz.json', data: k_blitz },
   { file: 'bloodthirst.json', data: k_bloodthirst },

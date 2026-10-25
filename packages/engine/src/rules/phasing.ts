@@ -18,6 +18,7 @@ import type { Game } from '../core/game';
 import type { ObjectId, PlayerId } from '../types/ids';
 import { removeFromCombat } from './combat-state';
 import { charsOfObject, hasKeyword } from './characteristics';
+import { phaseInDenied } from '../statics/hooks';
 
 /** The permanents attached to `host` (Auras, Equipment, Fortifications), in battlefield order. */
 const attachmentsOf = (g: Game, host: ObjectId): ObjectId[] => g.s.zones.battlefield.filter((id) => g.s.objects[id]?.attachedTo === host);
@@ -64,15 +65,27 @@ export function phaseInForUntapStep(g: Game, active: PlayerId): ObjectId[] {
     const o = g.s.objects[id]!;
     return o.phasedOut && o.controller === active && !phasedOutIndirectly(g, id);
   });
-  const out: ObjectId[] = [];
-  const visit = (x: ObjectId): void => {
-    const o = g.s.objects[x];
-    if (!o || !o.phasedOut || out.includes(x)) return;
-    o.phasedOut = false;
-    out.push(x);
-    for (const a of attachmentsOf(g, x)) visit(a); // CR 702.26g: it phases in along with the permanent
+  // trek-4 (CR 702.26c, 101.2; unverified): "Permanents can't phase in." keeps a permanent phased out (statics/hooks.ts#phaseInDenied), judged for every
+  // permanent that would phase in before any of them does (they phase in simultaneously, CR 502.1); an attachment kept out stays out with its host phased in
+  const kept = new Map<ObjectId, string>();
+  const keptOut = (x: ObjectId): boolean => {
+    if (!kept.has(x)) kept.set(x, phaseInDenied(g.s, x)?.message ?? '');
+    return kept.get(x) !== '';
   };
-  for (const id of direct) visit(id);
+  const candidates: ObjectId[] = [];
+  const collect = (x: ObjectId): void => {
+    const o = g.s.objects[x];
+    if (!o || !o.phasedOut || candidates.includes(x) || keptOut(x)) return;
+    candidates.push(x);
+    for (const a of attachmentsOf(g, x)) collect(a); // CR 702.26g: it phases in along with the permanent
+  };
+  for (const id of direct) collect(id);
+  const out: ObjectId[] = [];
+  for (const x of candidates) {
+    g.s.objects[x]!.phasedOut = false;
+    out.push(x);
+  }
+  for (const [x, why] of kept) if (why !== '') g.log(`${g.nameOf(x)} can't phase in. ${why}`, { rules: ['CR 502.1', 'CR 702.26c', 'CR 101.2'], level: 'info' });
   if (out.length > 0) g.log(`${out.map((id) => g.nameOf(id)).join(', ')} phase${out.length === 1 ? 's' : ''} in.`, { rules: ['CR 502.1', 'CR 702.26c'], level: 'info' });
   const gone = phasers.flatMap((id) => phaseOutPermanent(g, id)); // p2-misc-1: with what is attached to each (CR 702.26g)
   if (gone.length > 0) g.log(`${gone.map((id) => g.nameOf(id)).join(', ')} phase${gone.length === 1 ? 's' : ''} out.`, { rules: ['CR 502.1', 'CR 702.26a'], level: 'info' });

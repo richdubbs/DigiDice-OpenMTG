@@ -149,7 +149,7 @@ describe('CR 601.2d: counters divided among targets on casting', () => {
   it('CR 601.2d: "distribute two +1/+1 counters among one or two target creatures" puts the announced share on each', () => {
     const { state, giant, bears, result } = distribute([1, 1]);
     expect([counters(state, bears), counters(state, giant)]).toEqual([{ '+1/+1': 1 }, { '+1/+1': 4 }]);
-    expect(result).toEqual({ performed: true, count: 2 });
+    expect(result).toEqual({ performed: true, count: 2, countersPut: new Map([['+1/+1', 2]]) }); // trek-6: putCounters records what it put (q:countersPut)
   });
 
   it('CR 608.2b: the share of a target that became illegal is lost', () => {

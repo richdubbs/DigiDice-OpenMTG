@@ -1,0 +1,16 @@
+# p2-damage-3 (Phase 2 lane p2-damage; test/cloud/p2-damage-3, golden p2-damage-3-review.json): "that player or that planeswalker's controller", Landfall's "you had a
+# land enter", creatures that aren't enchanted, damage to a creature chosen at random, "without flying that player controls", damage equal to N to each and each player
+Brainspoil
+Chandra's Fury
+Cinderheart Giant
+Cleaving Reaper
+Dagger Caster
+Groundswell
+Lavalanche
+Magmasaur
+Rest for the Weary
+Siege Dragon
+Soul of Shandalar
+Time Bomb
+Tomb Hex
+Winds of Rath

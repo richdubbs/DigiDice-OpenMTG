@@ -14,6 +14,7 @@ import { type ContinuousEffectRec, type GameState } from '../types/state';
 import { EngineBug, type Game } from '../core/game';
 import { moveObject } from '../core/zones';
 import { charsOfObject, controllerOf, hasKeyword } from './characteristics';
+import type { GameObject } from '../types/state';
 import { removeFromCombat } from './combat-state';
 import { matchesFilter } from './filter';
 import { filterCtxOutside } from './filter-env';
@@ -127,6 +128,28 @@ export function installDestroyFunnel(f: DestroyFunnel | null): void {
 }
 
 /**
+ * trek-8 review (CR 608.2f, 704.3, 701.8a): permanents destroyed at the same time (an effect's "destroy all creatures", the lethal damage of one state-based action
+ * check). Every destruction is proposed before any permanent leaves, so the replacement effects present when the events would happen apply to all of them, whatever
+ * order the permanents are in (a Doctor McCoy destroyed with the creature he protects; the umbra armor ruling: "would destroy both an Aura with umbra armor and the
+ * creature ... umbra armor's effect will save the enchanted creature"); then every event that is left is performed, in the order given. Returns each result, in order.
+ */
+export type DestroyManyFunnel = (g: Game, items: readonly { id: ObjectId; opts: DestroyOptions }[]) => DestroyResult[];
+let destroyManyFunnel: DestroyManyFunnel | null = null;
+export function installDestroyManyFunnel(f: DestroyManyFunnel | null): void {
+  destroyManyFunnel = f;
+}
+export function destroyMany(g: Game, items: readonly { id: ObjectId; opts: DestroyOptions }[]): DestroyResult[] {
+  if (items.length === 0) return [];
+  if (!destroyManyFunnel) throw new EngineBug('destroyMany: the destroy funnel is not installed (effects/funnels.ts was not loaded)');
+  return destroyManyFunnel(g, items);
+}
+
+/** Indestructible now (CR 702.12b), or as it was when the batch it is destroyed in was proposed (Game.indestructibleAtProposal). */
+export function isIndestructible(g: Game, o: GameObject): boolean {
+  return g.indestructibleAtProposal?.get(o.id) ?? hasKeyword(charsOfObject(g.s, o), 'indestructible');
+}
+
+/**
  * Destroy a permanent: it is put into its owner's graveyard (CR 701.8a) unless it is indestructible (CR 702.12b) or a regeneration shield
  * replaces the destruction (CR 701.19a: remove all damage, tap it, remove it from combat).
  */
@@ -138,7 +161,7 @@ export function destroy(g: Game, id: ObjectId, opts: DestroyOptions = {}): Destr
     return destroyFunnel(g, id, opts);
   }
   const name = g.nameOf(id);
-  if (hasKeyword(charsOfObject(g.s, o), 'indestructible')) {
+  if (isIndestructible(g, o)) {
     g.log(`${name} is indestructible and is not destroyed.`, { rules: ['CR 702.12b'], level: 'info' });
     return 'indestructible';
   }

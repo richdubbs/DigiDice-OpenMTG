@@ -28,7 +28,7 @@ const yes = (b: ReturnType<typeof board>, c: Condition) => evalCond(b.cx, c);
 describe('capability table (design 5.2)', () => {
   it('lists every condition this engine evaluates', () => {
     // M6-0 (m6 design 5): classLevel and eventFlag are evaluated and advertised at once (each fails closed outside its context)
-    expect(Object.keys(COND_EVALUATORS).sort()).toEqual(['all', 'any', 'ask', 'beheld', 'chosen', 'classLevel', 'compare', 'completedDungeon', 'designation', 'did', 'eventFlag', 'exists', 'happened', 'matches', 'not', 'turnOf', 'wasCast', 'asCast' /* FAST5X E17, CR 601.2i */, 'firstNamedResolution' /* FAST5X E26, CR 702.192a */, 'controlledSinceUpkeep' /* CMD3, CR 702.30a */, 'firstCombat' /* Standard round 4, r4-trig, CR 500.8 */, 'firstTime', 'someMatch' /* Standard round 5, r5-trig, CR 603.4 */, 'prime' /* std-rx1, CR 107.1 */, 'share' /* std-cardcopy-1, CR 205.2a, 105.2 */].sort()); // MX4: completedDungeon (CR 309.7); FAST5X E11: beheld (CR 701.4b)
+    expect(Object.keys(COND_EVALUATORS).sort()).toEqual(['all', 'any', 'ask', 'beheld', 'chosen', 'classLevel', 'compare', 'completedDungeon', 'designation', 'did', 'eventFlag', 'exists', 'happened', 'matches', 'not', 'turnOf', 'wasCast', 'asCast' /* FAST5X E17, CR 601.2i */, 'firstNamedResolution' /* FAST5X E26, CR 702.192a */, 'controlledSinceUpkeep' /* CMD3, CR 702.30a */, 'firstCombat' /* Standard round 4, r4-trig, CR 500.8 */, 'firstTime', 'someMatch' /* Standard round 5, r5-trig, CR 603.4 */, 'prime' /* std-rx1, CR 107.1 */, 'share' /* std-cardcopy-1, CR 205.2a, 105.2 */, 'firstSpellCast' /* trek-2, CR 601.2i */].sort()); // MX4: completedDungeon (CR 309.7); FAST5X E11: beheld (CR 701.4b)
   });
 });
 

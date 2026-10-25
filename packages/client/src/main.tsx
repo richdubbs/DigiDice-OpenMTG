@@ -12,6 +12,7 @@ import { applyTheme, themeVars } from './theme/theme';
 import './theme/styles.css';
 import './theme/neon-grid.css';
 import './theme/lcars.css';
+import './theme/fracture.css';
 
 // RPL-4: the errors this page catches, kept for a bug report (bugs/errors.ts); nothing leaves the page unless the player saves a report.
 installErrorTrail(window);

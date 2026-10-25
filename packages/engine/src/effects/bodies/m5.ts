@@ -234,6 +234,7 @@ export function applyEnters(g: Game, e: ZoneChange, b: Extract<ReplacementBody, 
   } else if (b.tappedUnless) {
     if (!evalCond(cx, b.tappedUnless)) facts.tapped = true;
   } else if (b.tapped) facts.tapped = true;
+  if (b.attacking === true) facts.attacking = true; // trek-8 (CR 614.1c, 508.4): joins combat once it is on the battlefield (effects/perform-events.ts#applyEnterFacts)
   // r5-fxb (CR 614.1d, 616.1): "enter untapped" undoes a tapped entry that the event or an earlier replacement gave it (unverified: the Spelunking rulings)
   if (b.untapped === true) delete facts.tapped;
   for (const spec of b.counters ?? []) {
@@ -410,7 +411,7 @@ function thenSteps(g: Game, e: Damage, steps: EffectStep[], c: Candidate, preven
 
 /** CR 614.1c-d, 614.12: an `enters` body applies to a permanent entering the battlefield. The M6 fields are checked by the dispatcher (ENTERS_PARTS). */
 export const ENTERS_BODY: BodyKind<Extract<ReplacementBody, { b: 'enters' }>> = {
-  capabilities: ['enters', 'enters.attachTo', 'enters.under', 'enters.choice', 'enters.countersIf' /* CMD3: sunburst, CR 702.44a, 614.12 */, 'enters.untapped' /* r5-fxb: CR 614.1d, 616.1 */, 'enters.lookAtHand' /* std-rx6: CR 614.12a, 402.3 */, 'enters.devour' /* std-rx15: CR 702.82a */, 'enters.exileCards' /* std-cardcopy-3: CR 614.12a, 607.2a */, 'enters.dayIfNeither' /* p2-misc-1: CR 731.1 */], // body:enters (tapped, tapped unless, counters, choices, with abilities), CR 303.4f, 616.1b; FAST5X E28: "your choice of" (CR 702.136a)
+  capabilities: ['enters', 'enters.attachTo', 'enters.under', 'enters.choice', 'enters.countersIf' /* CMD3: sunburst, CR 702.44a, 614.12 */, 'enters.untapped' /* r5-fxb: CR 614.1d, 616.1 */, 'enters.lookAtHand' /* std-rx6: CR 614.12a, 402.3 */, 'enters.devour' /* std-rx15: CR 702.82a */, 'enters.exileCards' /* std-cardcopy-3: CR 614.12a, 607.2a */, 'enters.dayIfNeither' /* p2-misc-1: CR 731.1 */, 'enters.attacking' /* trek-8: CR 508.4 */], // body:enters (tapped, tapped unless, counters, choices, with abilities), CR 303.4f, 616.1b; FAST5X E28: "your choice of" (CR 702.136a)
   fits: (_g, e) => e.ev === 'zoneChange' && e.to === 'battlefield',
   apply: (g, e, b, c) => (e.ev === 'zoneChange' ? applyEnters(g, e, b, c) : e),
 };

@@ -12,7 +12,8 @@ import { RemoteConnection } from '../src/connection/RemoteConnection';
 import { NewGameScreen } from '../src/game/NewGameScreen';
 import type { GameDeck } from '../src/game/services';
 import { HostScreen } from '../src/online/HostScreen';
-import { JoinScreen, addressProblem } from '../src/online/JoinScreen';
+import { normalizeJoinCode } from '@openmtg/net';
+import { JoinScreen, addressProblem, canonicalJoinCode, inviteProblem, readInvite } from '../src/online/JoinScreen';
 import type { OnlineLink } from '../src/online/OnlineLink';
 import { toOnlineDeck, type OnlineServices } from '../src/online/setup';
 import { PRACTICE_DECKS } from '../src/game/practiceDecks';
@@ -234,8 +235,7 @@ describe('Join an online game', () => {
   async function fillAndJoin(s: ReturnType<typeof setup>, address = '203.0.113.7:47620') {
     await s.open('joinOnline');
     await choose('Deck', green.id);
-    fireEvent.change(screen.getByLabelText('Host address'), { target: { value: address } });
-    fireEvent.change(screen.getByLabelText('Join code'), { target: { value: CODE.toLowerCase() } });
+    fireEvent.change(screen.getByLabelText('Host address and join code'), { target: { value: `${address} ${CODE.toLowerCase()}` } });
     fireEvent.click(screen.getByRole('button', { name: 'Join game' }));
     await reactAct(flush);
   }
@@ -244,7 +244,7 @@ describe('Join an online game', () => {
     const s = setup();
     await fillAndJoin(s);
     const sock = s.socket();
-    expect(sock.last('join')).toEqual({ t: 'join', id: 1, address: '203.0.113.7:47620', code: CODE.toLowerCase(), name: 'Player 1', deck: toOnlineDeck(green.deck) });
+    expect(sock.last('join')).toEqual({ t: 'join', id: 1, address: '203.0.113.7:47620', code: CODE, name: 'Player 1', deck: toOnlineDeck(green.deck) });
     reactAct(() => sock.push(status({ role: 'guest', phase: 'joining', address: '203.0.113.7:47620' })));
     expect(text(screen.getByRole('status'))).toMatch('Connecting to 203.0.113.7:47620…');
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy();
@@ -293,6 +293,50 @@ describe('Join an online game', () => {
     expect(addressProblem('[2001:db8::7]:47620')).toBeNull();
     expect(addressProblem('2001:db8::7')).toMatch(/ip:port/);
     expect(addressProblem('host.example:99999')).toMatch(/1 to 65535/);
+  });
+
+  it('one box: the address (any port) and the code in either order, with labels, a code split by spaces, or a port on its own', () => {
+    const want = { address: '203.0.113.7:47621', code: CODE };
+    expect(readInvite(`203.0.113.7:47621 ${CODE}`)).toEqual(want);
+    expect(readInvite(`  ${CODE.toLowerCase()}\n203.0.113.7:47621 `)).toEqual(want);
+    expect(readInvite(`IP: 203.0.113.7:47621, code: ${CODE}`)).toEqual(want);
+    expect(readInvite(`code ${CODE.replace(/-/g, ' ')} 203.0.113.7:47621`)).toEqual(want);
+    expect(readInvite(`203.0.113.7 port 47621 join code ${CODE}`)).toEqual(want);
+    expect(readInvite(`[2001:db8::7]:47621 ${CODE}`)).toEqual({ address: '[2001:db8::7]:47621', code: CODE });
+    expect(readInvite(`[2001:db8::7] 47621 ${CODE}`)).toEqual({ address: '[2001:db8::7]:47621', code: CODE });
+    // No port: the default one (the server reads it so); one piece alone; nothing.
+    expect(readInvite(`203.0.113.7 ${CODE}`)).toEqual({ address: '203.0.113.7', code: CODE });
+    expect(readInvite(CODE)).toEqual({ address: null, code: CODE });
+    expect(readInvite('203.0.113.7:47621')).toEqual({ address: '203.0.113.7:47621', code: null });
+    expect(readInvite('')).toEqual({ address: null, code: null });
+  });
+
+  it('one box: says which piece is missing or wrong', () => {
+    expect(inviteProblem('')).toMatch(/address and the join code/);
+    expect(inviteProblem(CODE)).toMatch(/Add the host's address/);
+    expect(inviteProblem('203.0.113.7:47621')).toMatch(/Add the join code/);
+    expect(inviteProblem(`host.example:99999 ${CODE}`)).toMatch(/1 to 65535/);
+    expect(inviteProblem(`203.0.113.7:47621 ${CODE}`)).toBeNull();
+  });
+
+  it('reads a code as the server does (net normalizeJoinCode): case, dashes, spaces and the look-alike letters', () => {
+    for (const typed of [CODE, CODE.toLowerCase(), CODE.replace(/-/g, ' '), 'k7q2m9xd4tpahw3n', 'K7Q2-M9XD-4TPA-HW3N'.replace(/0/g, 'O'), 'ABCD-EFGH-1JKM-NPQR', 'ABCD-EFGH-IJKM-NPQR', 'ABCD-EFGH-LJKM-NPQR', 'too-short', 'ABCD-EFGH-JKMN-PQRU']) {
+      expect(canonicalJoinCode(typed), typed).toBe(normalizeJoinCode(typed));
+    }
+  });
+
+  it('shows what the box was read as, and joins only once both pieces are there', async () => {
+    const s = setup();
+    await s.open('joinOnline');
+    await choose('Deck', green.id);
+    const box = screen.getByLabelText('Host address and join code');
+    fireEvent.change(box, { target: { value: CODE } });
+    expect(text(document.getElementById('online-join-found')!)).toBe(`Address: not found yet · Join code: ${CODE}`);
+    expect(disabled(screen.getByRole('button', { name: 'Join game' }))).toBe(true);
+    expect(text(document.getElementById('online-join-reason')!)).toMatch(/Add the host's address/);
+    fireEvent.change(box, { target: { value: `${CODE} 198.51.100.4:50123` } });
+    expect(text(document.getElementById('online-join-found')!)).toBe(`Address: 198.51.100.4:50123 · Join code: ${CODE}`);
+    expect(disabled(screen.getByRole('button', { name: 'Join game' }))).toBe(false);
   });
 });
 

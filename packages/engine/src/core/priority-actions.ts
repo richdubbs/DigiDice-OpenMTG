@@ -9,6 +9,7 @@ import type { Action } from '../types/actions';
 import { activateAbility } from '../actions/activate';
 import { castCheck, castSpell } from '../actions/cast';
 import { landCheck, playLand } from '../actions/land';
+import '../actions/play-outside'; // trek-11: installs the playOutside special action's checker and performer (core/special/play-outside.ts, CR 400.11)
 import type { Denial } from '../rules/denial';
 import type { GameState } from '../types/state';
 import { performByHand } from './by-hand';

@@ -524,6 +524,9 @@
         "equipped": {
           "type": "boolean"
         },
+        "attachedWith": {
+          "type": "string"
+        },
         "enchanted": {
           "type": "boolean"
         },
@@ -2334,6 +2337,26 @@
           "properties": {
             "q": {
               "type": "string",
+              "const": "countersPut"
+            },
+            "step": {
+              "$ref": "#/definitions/Name"
+            },
+            "kind": {
+              "$ref": "#/definitions/CounterKind"
+            }
+          },
+          "required": [
+            "q",
+            "step"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "q": {
+              "type": "string",
               "const": "votes"
             },
             "step": {
@@ -2356,6 +2379,10 @@
             "q": {
               "type": "string",
               "const": "opponentsAttacked"
+            },
+            "scope": {
+              "type": "string",
+              "const": "turn"
             }
           },
           "required": [
@@ -3349,6 +3376,10 @@
                 {
                   "type": "string",
                   "const": "firebend"
+                },
+                {
+                  "type": "string",
+                  "const": "faceDilemma"
                 }
               ]
             },
@@ -3381,6 +3412,9 @@
                 "land",
                 "nonland"
               ]
+            },
+            "won": {
+              "type": "boolean"
             }
           },
           "required": [
@@ -3732,6 +3766,7 @@
         "giveGift",
         "empower",
         "recruit",
+        "assimilate",
         "doubleEachKind",
         "anotherOfEachKind"
       ]
@@ -3875,7 +3910,15 @@
               "$ref": "#/definitions/ObjRef"
             },
             "count": {
-              "type": "number"
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "const": "all"
+                }
+              ]
             }
           },
           "required": [
@@ -4301,6 +4344,24 @@
             "cond",
             "object",
             "filter"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cond": {
+              "type": "string",
+              "const": "firstSpellCast"
+            },
+            "scope": {
+              "type": "string",
+              "const": "game"
+            }
+          },
+          "required": [
+            "cond",
+            "scope"
           ],
           "additionalProperties": false
         }
@@ -4939,12 +5000,46 @@
             },
             "self": {
               "type": "boolean"
+            },
+            "beamUp": {
+              "type": "boolean",
+              "const": true
             }
           },
           "required": [
             "kind",
             "filter",
             "count"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "putIntoLibrary"
+            },
+            "zone": {
+              "$ref": "#/definitions/ZoneName"
+            },
+            "self": {
+              "type": "boolean",
+              "const": true
+            },
+            "position": {
+              "type": "string",
+              "enum": [
+                "top",
+                "bottom"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "zone",
+            "self",
+            "position"
           ],
           "additionalProperties": false
         },
@@ -6167,6 +6262,9 @@
             "link": {
               "$ref": "#/definitions/LinkId"
             },
+            "exiled": {
+              "$ref": "#/definitions/Name"
+            },
             "as": {
               "$ref": "#/definitions/Name"
             },
@@ -6995,6 +7093,35 @@
           "properties": {
             "op": {
               "type": "string",
+              "const": "removeDamage"
+            },
+            "what": {
+              "$ref": "#/definitions/ObjRef"
+            },
+            "as": {
+              "$ref": "#/definitions/Name"
+            },
+            "guard": {
+              "$ref": "#/definitions/Condition"
+            },
+            "sentence": {
+              "type": "number"
+            },
+            "span": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "op",
+            "what"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "op": {
+              "type": "string",
               "const": "fight"
             },
             "a": {
@@ -7335,6 +7462,10 @@
               ]
             },
             "upTo": {
+              "type": "boolean",
+              "const": true
+            },
+            "distribute": {
               "type": "boolean",
               "const": true
             },
@@ -10057,7 +10188,9 @@
         "beTurnedFaceUp",
         "beSuspected",
         "preventCombatDamage",
-        "beCopied"
+        "beBeamedUp",
+        "beCopied",
+        "phaseIn"
       ]
     },
     "ReplacementDef": {
@@ -10302,6 +10435,10 @@
               "type": "boolean",
               "const": true
             },
+            "attacking": {
+              "type": "boolean",
+              "const": true
+            },
             "tappedUnless": {
               "$ref": "#/definitions/Condition"
             },
@@ -10441,6 +10578,10 @@
                     "do"
                   ],
                   "additionalProperties": false
+                },
+                "copiedCounters": {
+                  "type": "boolean",
+                  "const": true
                 }
               },
               "required": [
@@ -10767,6 +10908,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "alsoOutside": {
+          "type": "boolean",
+          "const": true
         },
         "entersWithIf": {
           "$ref": "#/definitions/ObjectFilter"

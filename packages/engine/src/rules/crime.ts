@@ -11,6 +11,10 @@
  *    spell or ability) and the tap costs a player pays (rules/pay.ts). A creature tapped to attack is tapped by the game's turn-based action for its controller,
  *    not by "you"; that is no `tap` action. A mana ability's {T} cost, convoke and regeneration (CR 701.19a) do not report who tapped, so a `tap` pattern is
  *    supported only for a permanent an opponent controls (triggers/forms.ts), which none of them can tap.
+ *  - `faceDilemma` (trek-2; CR 700.2, 601.2b, 602.2b, 603.3c; "face a dilemma" is a new term, its rule number unverified): "You face a dilemma as you choose one or
+ *    more modes for a spell or ability" (Seven of Nine's reminder text): the player who chooses the modes of a spell being cast, an ability being activated or a
+ *    triggered ability being put on the stack, once per such choice of one or more modes (actions/announce.ts#chooseModes). Modes picked at random are chosen by
+ *    nobody, and a copy's modes are copied, not chosen (CR 707.10): neither is a dilemma.
  */
 import type { Game } from '../core/game';
 import type { ObjectId, PlayerId } from '../types/ids';
@@ -39,6 +43,12 @@ export function emitCrime(g: Game, stackId: ObjectId, controller: PlayerId, targ
   if (!targets.flat().some((t) => isCrimeTarget(g, controller, t))) return;
   g.emit({ type: 'actionPerformed', verb: 'commitCrime', actor: controller });
   g.log(`${g.player(controller).name} commits a crime.`, { rules: ['CR 700.13'], level: 'info' });
+}
+
+/** trek-2 (CR 700.2): `player` faced a dilemma: they chose one or more modes for a spell or ability (actions/announce.ts#chooseModes). */
+export function emitDilemma(g: Game, player: PlayerId): void {
+  g.emit({ type: 'actionPerformed', verb: 'faceDilemma', actor: player });
+  g.log(`${g.player(player).name} faces a dilemma.`, { rules: ['CR 700.2'], level: 'info' });
 }
 
 /**

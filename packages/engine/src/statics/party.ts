@@ -9,7 +9,7 @@
  * characteristics it is given, so the layer evaluator and the interpreter agree.
  */
 import type { Chars } from '../rules/characteristics';
-import { isNonCreatureSubtype } from './subtypes';
+import { hasEveryCreatureType, isNonCreatureSubtype } from './subtypes';
 
 /** The four party slots, in the order CR 700.8a lists them. */
 export const PARTY_TYPES: readonly string[] = ['Cleric', 'Rogue', 'Warrior', 'Wizard'];
@@ -20,9 +20,12 @@ export interface PartyCreature {
   set: ReadonlySet<string>;
 }
 
-/** The creature types of a creature's characteristics (the creature subtypes, and whether it has changeling). */
+/**
+ * The creature types of a creature's characteristics (the creature subtypes, and whether it has every one of them). trek-10: a changeling that "becomes a
+ * Klingon" has the keyword and only that type (Maskwood Nexus ruling, 2021-02-05), so "every one of them" is read from the computed subtypes.
+ */
 export const partyCreatureOf = (c: Chars): PartyCreature => ({
-  all: c.keywords.some((k) => k.keyword === 'changeling'),
+  all: hasEveryCreatureType(c.subtypes),
   set: new Set(c.subtypes.filter((t) => !isNonCreatureSubtype(t))),
 });
 

@@ -17,7 +17,7 @@ import { propose } from '../propose';
 import { resolvePlayers } from '../refs';
 import { tokenAttachment } from './tokens-attach';
 import { tokenCardDef, type TokenSpec } from './token-defs';
-import { actOn, addToLink, bindAs, byHand, did, enterAttacking, NOTHING, wholeNumber } from './zones-util';
+import { actOn, addToLink, bindAs, byHand, did, enterAttacking, enteringAttacking, NOTHING, wholeNumber } from './zones-util';
 
 /** cmd1: the `feature:` names of this handler: a token put onto the battlefield attacking a named player (`attacking: {defender}`, CR 508.4). */
 export const TOKEN_FEATURES: readonly string[] = ['createToken.attackingWhom'];
@@ -43,7 +43,8 @@ export function tokensCreatedSince(cx: ExecCtx, mark: number): ObjHandle[] {
   return out;
 }
 
-export const createToken: StepHandler<CreateToken> = (cx, st) => {
+export const createToken: StepHandler<CreateToken> = (cx, st) => enteringAttacking(cx, st.attacking, () => createTokenStep(cx, st)); // trek-8 review (CR 508.4): zones-util.ts#enteringAttacking
+const createTokenStep: StepHandler<CreateToken> = (cx, st) => {
   const g = cx.g;
   // Integration fix (CR 608.2c, 603.7c): a create that makes no token ("for each Aura and Equipment attached to ~, create ..." with none attached) still binds
   // its name, to no token, so "those tokens" of a later step or a delayed trigger stands for nothing (design 3.1 rule 6), as run.ts#recordSkipped does

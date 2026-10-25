@@ -4,7 +4,6 @@
  */
 import { useRef, type ReactNode } from 'react';
 import type { CardSummary } from '@openmtg/server/api';
-import { sleeveName, sleeveUrl } from '../branding/sleeves';
 import { DeckBox } from './chrome';
 import { DeckNameField } from './DeckNameField';
 import { FormatSelect } from './FormatSelect';
@@ -21,19 +20,19 @@ export function DeckDetails({
   onFormat,
   onEdit,
   onExport,
-  onSleeve,
+  sleeve,
   validation,
 }: {
   deck: Deck;
   /** The deck's cover card (null: the card back). */
   cover?: CardSummary | null;
+  /** The sleeve of the deck's colors (branding/sleeves.ts deckSleeve); undefined: the classic back. */
+  sleeve: string | undefined;
   stats: DeckStats;
   onRename: (name: string) => void;
   onFormat: (format: string) => void;
   onEdit: () => void;
   onExport: () => void;
-  /** Opens the sleeve picker (Deck.sleeve). */
-  onSleeve: () => void;
   /** The format check panel, shown under the pills. */
   validation: ReactNode;
 }) {
@@ -51,7 +50,7 @@ export function DeckDetails({
 
       <section className="deck-showcase" aria-label="Deck showcase">
         <div className="deck-box-host deck-showcase-box">
-          <DeckBox size="lg" cover={cover} sleeve={deck.sleeve} />
+          <DeckBox size="lg" cover={cover} sleeve={sleeve} />
         </div>
         <p className="deck-showcase-name">{deck.name.trim() || '(unnamed deck)'}</p>
         <p className="deck-showcase-count">
@@ -64,10 +63,6 @@ export function DeckDetails({
           </button>
           <button type="button" className="deck-pill" onClick={onExport}>
             Export
-          </button>
-          <button type="button" className="deck-pill deck-pill-sleeve" onClick={onSleeve} title={`Sleeve: ${sleeveName(deck.sleeve)}`}>
-            <img src={sleeveUrl(deck.sleeve)} alt="" draggable={false} />
-            Sleeve
           </button>
           <button
             type="button"

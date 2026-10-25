@@ -6,7 +6,8 @@
  * the game, not even the turn.
  *
  * A confirm or the menu takes the keyboard focus when it opens; Esc closes it (and nothing else: the prompt's Esc = Cancel does not also fire) and
- * gives the focus back to the button that opened it. A panel opening or folding away is heard (ui.open, ui.close).
+ * gives the focus back to the button that opened it. A panel opening or folding away is heard (ui.open, ui.close). While one is open the bar says which
+ * (`data-open`), and stacks over the whole board, the decision stage included (game.css).
  */
 import type { GameView, PlayerId } from '@openmtg/engine';
 import { useEffect, useRef, useState, type RefObject } from 'react';
@@ -97,7 +98,7 @@ export function GameBar({
   const goesOn = view.options.multiplayer !== undefined && view.players.filter((p) => !p.hasLost).length > 2;
 
   return (
-    <header className={covered ? 'game-bar game-bar-covered' : 'game-bar'}>
+    <header className={covered ? 'game-bar game-bar-covered' : 'game-bar'} data-open={open ?? undefined}>
       {!covered && (
         <>
           <button ref={menuButton} type="button" className="game-bar-menu" aria-expanded={open === 'menu'} aria-controls="game-menu" onClick={() => toggle('menu')}>

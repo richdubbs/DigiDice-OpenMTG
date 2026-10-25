@@ -1,9 +1,49 @@
-/** Reading our own stylesheets in tests (jsdom does no layout, so a few layout and contrast guarantees are checked on the CSS text itself). */
+/**
+ * Reading our own stylesheets in tests (jsdom does no layout, so a few layout and contrast guarantees are checked on the CSS text itself, or on the
+ * cascade with the sheets put into the document).
+ */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 export function cssOf(relative: string): string {
   return readFileSync(path.resolve(__dirname, '..', 'src', relative), 'utf8');
+}
+
+/** Puts our stylesheets (paths under src/) into the document, so `getComputedStyle` applies their cascade (jsdom matches selectors). Returns the undo. */
+export function injectCss(...relative: string[]): () => void {
+  const sheets = relative.map((r) => {
+    const sheet = document.createElement('style');
+    sheet.textContent = cssOf(r);
+    document.head.appendChild(sheet);
+    return sheet;
+  });
+  return () => sheets.forEach((s) => s.remove());
+}
+
+/** The stacking contexts from the document down to `el` (itself included): a positioned box with a z-index, or an isolated one (z 0). */
+function stackingPath(el: Element): { el: Element; z: number }[] {
+  const out: { el: Element; z: number }[] = [];
+  for (let e: Element | null = el; e; e = e.parentElement) {
+    const s = getComputedStyle(e);
+    const z = s.zIndex === '' || s.zIndex === 'auto' ? null : Number(s.zIndex);
+    if ((z !== null && s.position !== '' && s.position !== 'static') || s.isolation === 'isolate') out.unshift({ el: e, z: z ?? 0 });
+  }
+  return out;
+}
+
+/**
+ * Whether `a` is drawn over `b` where the two overlap (and so gets the clicks there, unless it lets them through), from the stylesheets in the document
+ * (`injectCss`): in their closest common stacking context the higher z-index wins, then the later one in the document (CSS 2.1 appendix E). jsdom has
+ * no `elementFromPoint` to ask instead.
+ */
+export function paintsOver(a: Element, b: Element): boolean {
+  const pa = stackingPath(a);
+  const pb = stackingPath(b);
+  let i = 0;
+  while (pa[i] !== undefined && pa[i]!.el === pb[i]?.el) i++;
+  const [x, y] = [pa[i], pb[i]];
+  if (!x || !y) throw new Error('paintsOver: one of the two is drawn inside the other\'s stacking context');
+  return x.z !== y.z ? x.z > y.z : (y.el.compareDocumentPosition(x.el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
 }
 
 /** The declarations of every rule whose selector list contains `selector` exactly, merged in order. */

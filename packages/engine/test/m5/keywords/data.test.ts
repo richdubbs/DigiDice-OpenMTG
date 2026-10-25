@@ -121,7 +121,9 @@ describe('statuses follow design 7.4 (implemented only where every mechanism exi
     const stdRy8 = ['enlist', 'renown', 'surge'];
     // p2-misc-1 (Phase 2 lane p2-misc): phasing, its permanents phase out in their controller's untap step (rules/phasing.ts#phaseInForUntapStep, CR 702.26a, 502.1)
     const p2Misc1 = ['phasing'];
-    expect(byStatus('implemented')).toEqual([...cmd3, ...stdRl, ...stdRx7, ...stdRx17, ...stdRx15, ...stdRx24, ...stdRx22, ...stdRy7, ...stdRy8, ...stdRy3, ...p2Misc1, ...[
+    // trek-1 (lane trek, Star Trek): beam me up, a graveyard alternative cost that also returns a creature you control and exiles the spell (keywords/data/beam-me-up.json; reminder text)
+    const trek1 = ['beam me up'];
+    expect(byStatus('implemented')).toEqual([...cmd3, ...stdRl, ...stdRx7, ...stdRx17, ...stdRx15, ...stdRx24, ...stdRx22, ...stdRy7, ...stdRy8, ...stdRy3, ...p2Misc1, ...trek1, ...[
       'affinity', 'aftermath', 'bargain' /* FAST5X E1 */, 'battle cry' /* FAST5X E28 */, 'blitz' /* CMD2 */, 'bloodthirst' /* CMD4 */, 'boast' /* cloud r3-mech */, 'bushido', 'buyback', 'cascade', 'changeling', 'choose a background' /* cmd1, CR 702.124k */, 'commander ninjutsu' /* M11-4 */, 'conspire' /* M6-12 */, 'convoke', 'craft' /* FAST5X E13 */, 'crew', 'cumulative upkeep', 'cycling', 'daybound', 'deathtouch', 'decayed' /* FAST5X E28 */, 'defender', 'delve' /* std-tdm */, 'dethrone' /* CMD4 */, 'devoid', 'doctor\'s companion' /* cmd1, CR 702.124m */,
       'double strike', 'dredge', 'embalm' /* M6-12 */, 'enchant', 'encore' /* M6-12 */, 'entwine', 'equip', 'escape', 'eternalize' /* M6-12 */, 'evoke', 'exalted', 'exhaust', 'extort' /* FAST5X E28 */, 'fear', 'firebending' /* FAST5 MX6 */, 'first strike', 'flash', 'flying', 'for mirrodin!' /* T35 */, 'freerunning' /* CMD2 */, 'fuse', 'gift' /* FAST5X E1 */, 'harmonize' /* FAST5X E6 */, 'haste', 'hexproof', 'hideaway' /* FAST5X E26 */, 'horsemanship', 'impending' /* FAST5X E26 */, 'improvise' /* FAST5X E26 */,
       'increment' /* FAST5X E9 */, 'indestructible', 'infect', 'intimidate', 'job select' /* FAST5X E9 */, 'kicker', 'landwalk', 'level up' /* M6-6 */, 'lifelink', 'madness' /* M6-12 */, 'max speed' /* FAST5X-4 */, 'mayhem' /* FAST5X E6 */, 'melee' /* M12-3 */, 'menace', 'mentor' /* CMD4 */, 'mobilize' /* FAST5X E9 */, 'multikicker', 'myriad' /* M6-12 */, 'ninjutsu', 'offspring' /* M6-12 */, 'paradigm' /* FAST5X E26 */, 'partner', 'partner with' /* M11-4 */, 'persist' /* FAST5X E28 */, 'power-up' /* T35 */, 'protection', 'prowess', 'ravenous' /* CMD4 */, 'reach', 'rebound',
@@ -186,7 +188,9 @@ describe('the validator refuses bad data, so the registry never builds from it (
 
 describe('FAST5X E18: a keyword newer than the Comprehensive Rules says rule "reminder"', () => {
   it('only the keywords REMINDER_RULE_KEYWORDS lists may say rule "reminder"; Storied has CR 702.195 since the 2026-09-25 edition', () => {
-    expect(REMINDER_RULE_KEYWORDS).toEqual([]);
+    // trek-1: Beam me up (Star Trek) is newer than the 2026-09-25 edition: its reminder text is the rule source
+    expect(REMINDER_RULE_KEYWORDS).toEqual(['beam me up']);
+    expect(keywordRegistry.get('beam me up')?.rule).toBe('reminder');
     expect(keywordRegistry.get('storied')?.rule).toBe('702.195');
     const base: KeywordDefData = { name: 'zap', rule: 'reminder', params: [], mechanisms: ['structural'], reminder: 'x', multiple: 'redundant', status: 'planned' };
     expect(keywordDataProblems(base).join()).toMatch(/rule must be/);

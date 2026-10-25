@@ -7,7 +7,7 @@
 import type { ManaRestriction } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { ManaSymbol, ManaType } from '../types/mana';
-import type { GameObject, GameState } from '../types/state';
+import { castOriginOf, type GameObject, type GameState } from '../types/state';
 import { activatedAbilities, type ActivatedInfo } from './abilities';
 import { charsOfObject, readingStable, type Chars } from './characteristics';
 import { FACE_DOWN } from './base-chars';
@@ -77,7 +77,7 @@ export function spendAllows(s: GameState, player: PlayerId, spend: SpendContext 
     // face-down 2/2's characteristics, CR 708.2a) if it would be cast face down
     const spell: GameObject = {
       ...o, zone: 'stack', ...(spend.faceDown ? { faceDown: true } : {}),
-      stack: { kind: 'spell', face: spend.face ?? o.face ?? 0, targets: [], costsPaid: {}, castFrom: o.zone, caster: player, ...(spend.x !== undefined ? { x: spend.x } : {}) },
+      stack: { kind: 'spell', face: spend.face ?? o.face ?? 0, targets: [], costsPaid: {}, castFrom: castOriginOf(o), caster: player, ...(spend.x !== undefined ? { x: spend.x } : {}) },
     };
     const own = charsOfObject(s, o);
     // Review E23 (CR 601.2a, 709.3, 715.3, 712.11): a card with more than one face is, as a spell, only the face being cast (the Adventure or Omen half, one

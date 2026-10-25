@@ -191,8 +191,11 @@ function readAheadEnteredThisTurn(g: Game, cand: Candidate): boolean {
  * of attackers (triggers/normalize.ts, one per attacker; "whenever you attack" and "whenever one or more creatures attack" read the same events), matched against
  * the attacker filter without looking back, so an ability that triggers on such an event triggers once more for each mod that matches one of its events. A creature
  * put onto the battlefield attacking was never declared as an attacker (CR 508.4) and makes no such event.
+ * trek-2 (CR 603.2d, 119.9; cites unverified): `feature:triggerMod.lifeGain`, YOU GAINING LIFE (Dr. Beverly Crusher): the `life` gain events of the doubler's
+ * controller (one per gain, triggers/normalize.ts; a life total set higher is a gain too, CR 119.5), matched without looking back like entering: an ability of a
+ * permanent you control that one of them triggers ("whenever you gain life", "whenever you gain or lose life") triggers once more per such doubler.
  */
-export const TRIGGER_MOD_CAPABILITIES: readonly string[] = ['static:triggerMod', 'feature:triggerMod.enters', 'feature:triggerMod.any', 'feature:triggerMod.suppress.enters' /* CLOUD std-misc: #suppressed */, 'feature:triggerMod.attacks' /* std-rx2 */, 'feature:triggerMod.suppress.keyword' /* std-rx32: #silencedKeywords */, 'feature:triggerMod.dies' /* std-typechange-2: diesCause */, 'feature:triggerMod.suppress.dies' /* p2-misc-1: #suppressed */];
+export const TRIGGER_MOD_CAPABILITIES: readonly string[] = ['static:triggerMod', 'feature:triggerMod.enters', 'feature:triggerMod.any', 'feature:triggerMod.suppress.enters' /* CLOUD std-misc: #suppressed */, 'feature:triggerMod.attacks' /* std-rx2 */, 'feature:triggerMod.suppress.keyword' /* std-rx32: #silencedKeywords */, 'feature:triggerMod.dies' /* std-typechange-2: diesCause */, 'feature:triggerMod.suppress.dies' /* p2-misc-1: #suppressed */, 'feature:triggerMod.lifeGain' /* trek-2: isLifeGainCause, CR 603.2d */];
 
 /** std-typechange-2 (CR 114.4): does the description of whose abilities are affected name emblems (`emblem: true`, alone or in one of its `anyOf`)? */
 const namesEmblems = (f: ObjectFilter): boolean => f.emblem === true || (f.anyOf ?? []).some((x) => x.emblem === true);

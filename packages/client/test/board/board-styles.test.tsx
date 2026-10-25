@@ -6,7 +6,7 @@
 import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { GameBoard } from '../../src/board';
-import { contrast, cssRules, decl, injectBoardCss, over, removeBoardCss, resolveColor } from './css';
+import { CARDS_CSS, contrast, cssRules, decl, injectBoardCss, over, removeBoardCss, resolveColor } from './css';
 import { ALICE, editable, playGame } from './fixtures';
 
 const game = playGame(5);
@@ -68,6 +68,19 @@ describe('card images are never dimmed or covered (ARCHITECTURE.md "Card images"
     // the pull is the share of the hand's width the cards lack, never more (none while they fit)
     expect(decl(".game-board[data-overlap='yes'] .hand-card + .hand-card")['margin-left']).toMatch(/^min\(0px, .*100cqw.*var\(--hand-n/);
     expect(decl('.hand-own').gap).toBeDefined();
+  });
+
+  it('CR 208.3, 613.4: the current P/T and counters are drawn above every layer of our own text frame, so its printed P/T box never covers them', () => {
+    // The frame's inline-size container does not keep its z-indexed parts to itself: they stack with the overlay in the card's image box.
+    // (C2's own hover zoom, .card-zoom, is a fixed window of its own, not part of a card.)
+    const frameLayers = cssRules(CARDS_CSS)
+      .filter((r) => r.decls['z-index'] && !r.selectors.some((s) => s.includes('card-zoom')))
+      .map((r) => Number(r.decls['z-index']));
+    expect(frameLayers.length).toBeGreaterThan(0);
+    expect(decl('.card-overlay').position).toBe('absolute');
+    expect(Number(decl('.card-overlay')['z-index'])).toBeGreaterThan(Math.max(...frameLayers));
+    // the zoom draws the same overlay on its picture (GameBoard.tsx Zoom)
+    expect(decl('.zoom-card').position).toBe('relative');
   });
 });
 

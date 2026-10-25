@@ -1,0 +1,100 @@
+[
+  {
+    "id": "eff.p2damage3.damage.toRandomObject",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 120.3"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to ( a | an ) {f:Filter} chosen at random",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "atRandom"
+      },
+      {
+        "op": "damage",
+        "source": "$src",
+        "to": {
+          "ref": "bound",
+          "name": "atRandom"
+        },
+        "amount": "$n"
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "chosen",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, it deals 3 damage to a creature an opponent controls chosen at random."
+      },
+      {
+        "text": "Whenever this creature attacks, it deals 2 damage to a creature you don't control chosen at random."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, it deals 3 damage to target creature an opponent controls.",
+      "When this creature enters, it deals 3 damage to each creature an opponent controls chosen at random.",
+      "When this creature enters, it deals 3 damage to a creature an opponent controls of their choice."
+    ]
+  },
+  {
+    "id": "eff.p2damage3.damageEqual.toEachAndPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.2b",
+      "CR 120.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to each {f:Filter} and {p:Player}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When this creature dies, it deals damage equal to its toughness to each creature and each player."
+      },
+      {
+        "text": "When this creature dies, it deals damage equal to its power to each creature with flying and each opponent."
+      }
+    ],
+    "counterExamples": [
+      "When this creature dies, it deals damage equal to its toughness to each creature or each player.",
+      "When this creature dies, it deals damage equal to its toughness to target creature and each player.",
+      "When this creature dies, it deals 2 damage to each creature and each player."
+    ]
+  }
+]

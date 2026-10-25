@@ -17,7 +17,7 @@ import type { StepHandler, StepResult } from '../api';
 import { evalQty } from '../eval';
 import { performAction } from '../perform';
 import { performRemoveFromStack } from '../perform-direct';
-import { propose } from '../propose';
+import { proposeTogether } from '../propose';
 import { LASTING_HANDLERS } from './lasting';
 import { filterCtxOf, rebase, resolvePlayers } from '../refs';
 import { actOn, bindMoved, byHand, did, exiledLeavingStack, libraryPosition, movedResult, newObjectOf, NOTHING, permanentsOf, proposeMove, type Moved } from './zones-util';
@@ -37,9 +37,11 @@ export const destroy: StepHandler<Step<'destroy'>> = (cx, st) => {
   const moved: Moved[] = [];
   // FAST5X E28 review (CR 603.10a): destroyed at the same time, each one is as it was before the first one left (a persist granted by another one destroyed)
   leavingTogether(g, targets.map((h) => h.id), () => {
-    for (const h of targets) {
-      if (!g.s.objects[h.id] || g.s.objects[h.id]!.zone !== 'battlefield') continue;
-      propose(g, { ev: 'destroy', object: h, canRegenerate: st.regeneration !== 'cant' }); // CR 701.8a; logged by rules/destroy.ts
+    // trek-8 review (CR 608.2f, 701.8a): every destruction is proposed before any permanent leaves, so a replacement effect of one of them (Doctor McCoy) applies to the
+    // others whatever order they are in; then they are destroyed together (effects/propose.ts#proposeTogether)
+    const live = targets.filter((h) => g.s.objects[h.id] !== undefined && g.s.objects[h.id]!.zone === 'battlefield');
+    proposeTogether(g, live.map((h) => ({ ev: 'destroy' as const, object: h, canRegenerate: st.regeneration !== 'cant' }))); // CR 701.8a; logged by rules/destroy.ts
+    for (const h of live) {
       if (g.s.objects[h.id]) continue; // indestructible, regenerated or replaced: it is still here (CR 702.12b, 701.19a)
       const to = newObjectOf(g, h.id);
       rebase(cx, h.id, to); // CR 400.7j, design 3.1 rule 2: "destroy it ... return it" finds the card in the graveyard

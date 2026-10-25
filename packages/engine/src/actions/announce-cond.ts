@@ -11,7 +11,7 @@
  */
 import type { Condition, PlayerPred, PlayerRef, Quantity } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
-import type { CostsPaid, GameState, ZoneKind } from '../types/state';
+import type { CastOrigin, CostsPaid, GameState, ZoneKind } from '../types/state';
 import { announceCondForms, isAttackedWithThisTurn, isOpponentSpellsPerPlayer, isSelfEnteredThisTurn, isTurnDamageTotal, isTurnPlayerCombatDamage, isTurnPlayerLifeLoss, turnHistoryAtAnnouncement, type AnnounceWhere } from '../model/forms';
 import { countHistory, enteredThisTurn, happenedCountOf } from '../rules/history';
 import { compareNumbers } from '../rules/predicates';
@@ -51,8 +51,12 @@ export const ANNOUNCE_READABLE: readonly string[] = [
   'announce.qty.countPlayers.sizeIs',
   // std-rx24 (CR 122.1f, 602.5b): "activate only if an opponent has three or more poison counters" (`poisonIs` over `each`, nothing else narrowing the players)
   'announce.qty.countPlayers.poisonIs',
+  // opp-port-1 (OPP1 of 2026-10-17; CR 102.3, 602.5b): "activate only if an opponent controls four or more lands", each player's own permanents on the visible
+  // board against a fixed number (`controlsIs` over `each`, nothing else narrowing the players)
+  'announce.qty.countPlayers.controlsIs',
   // r4-cost (CR 110.4, 602.5b): "activate only if there are four or more permanent types among cards in your graveyard"
   'announce.qty.distinct.permanentTypes.each',
+  'announce.qty.distinct.names.each', // trek-5 (CR 201.2, 602.5b): "activate only if you control seven or more differently named lands", the names among the visible objects a filter selects
   // CMD2 (CR 702.173a, 510.2): the source filter fields of freerunning's "if you dealt combat damage to a player this turn with an Assassin or commander" that the
   // history facts answer (rules/history.ts#factsMatchFilter), read by announce.happened.turn below (model/forms.ts#isTurnPlayerCombatDamage)
   ...['anyOf', 'not', 'controller', 'owner', 'types', 'subtypes', 'supertypes', 'colors', 'name', 'token', 'isCard', 'commander'].map((k) => `announce.history.${k}`),
@@ -101,7 +105,7 @@ export interface AnnounceEnv {
    */
   xMax?: number;
   /** The zone the spell is being cast from. */
-  castFrom?: ZoneKind;
+  castFrom?: CastOrigin; // trek-11: or 'outside' (CR 400.11)
   /**
    * How `{cond:'ask'}` is answered: only activation restrictions allow it (the controller attests, CR 602.5b). A pure check passes `() => true` (optimistic: the
    * attestation is asked when the ability is actually activated). Without it an `ask` condition can't be determined.
@@ -187,6 +191,19 @@ export function announceQty(env: AnnounceEnv, q: Quantity): number | undefined {
         const { op, n } = q.poisonIs;
         return env.s.players.filter((p) => !p.hasLost && (who === 'player' || p.id !== env.player) && compareNumbers(op, p.poison, n)).length;
       }
+      // opp-port-1 (OPP1 of 2026-10-17; CR 102.3, 806, 602.5b): "activate only if an opponent controls four or more lands" (Tectonic Edge), the players of `each`
+      // who themselves control a number of permanents matching the filter that compares with a fixed number, each counted alone, as they are now
+      if (q.controlsIs !== undefined) {
+        if (q.controlsVs !== undefined || q.sizeVs !== undefined || q.sizeIs !== undefined || q.lifeVs !== undefined || q.lifeIs !== undefined || q.poisonIs !== undefined || q.lostLifeThisTurn !== undefined || q.lostLifeIs !== undefined || q.didNot !== undefined || q.speedVs !== undefined || q.of.ref !== 'each' || xUnread(env, q.controlsIs.filter)) return undefined;
+        const who = q.of.who;
+        const per = new Map<PlayerId, number>();
+        for (const id of findObjects(env.s, q.controlsIs.filter, ctx)) {
+          const c = controllerOf(env.s, id);
+          per.set(c, (per.get(c) ?? 0) + 1);
+        }
+        const { op, n } = q.controlsIs;
+        return env.s.players.filter((p) => !p.hasLost && (who === 'player' || p.id !== env.player) && compareNumbers(op, per.get(p.id) ?? 0, n)).length;
+      }
       // merge line D (std-sos's controlsVs, CR 102.2, 102.3, 602.5b): the players who control more (fewer, ...) permanents matching the filter than `than`, each
       // player counted alone, as they are now. Only `controlsVs` over `each` players (each opponent, player or other player) is read here (model/forms.ts)
       if (q.controlsVs === undefined || q.sizeVs !== undefined || q.sizeIs !== undefined || q.lifeVs !== undefined || q.lifeIs !== undefined || q.lostLifeThisTurn !== undefined || q.lostLifeIs !== undefined || q.controlsIs !== undefined || q.of.ref !== 'each' || xUnread(env, q.controlsVs.filter)) return undefined;
@@ -259,7 +276,13 @@ export function announceQty(env: AnnounceEnv, q: Quantity): number | undefined {
       // FAST5X E13 (delirium, CR 205.2a, 602.5b): "Activate only if there are four or more card types among cards in your graveyard": the card types of the
       // visible objects the filter selects now. FAST5X E12 (CR 105.1, 105.2): the number of colors among them ("there are five colors among permanents you
       // control"). Only card types and colors among `each` are read here (model/forms.ts names the others `announce.qty.distinct.<what>.<ref>`).
-      if ((q.what !== 'cardTypes' && q.what !== 'colors' && q.what !== 'powers' && q.what !== 'permanentTypes') || q.among.ref !== 'each' || xUnread(env, q.among.filter)) return undefined;
+      if ((q.what !== 'cardTypes' && q.what !== 'colors' && q.what !== 'powers' && q.what !== 'permanentTypes' && q.what !== 'names') || q.among.ref !== 'each' || xUnread(env, q.among.filter)) return undefined;
+      // trek-5 (CR 201.2, 602.5b): "Activate only if you control seven or more differently named lands": each name among the objects counted once (effects/eval.ts reads the same names)
+      if (q.what === 'names') {
+        const names = new Set<string>();
+        for (const o of findObjects(env.s, q.among.filter, ctx)) charsOfObject(env.s, o).names.forEach((n) => names.add(n));
+        return names.size;
+      }
       // CLOUD std-misc (coven, CR 208.1): "Activate only if you control three or more creatures with different powers": each power counted once
       if (q.what === 'powers') {
         const powers = new Set<number>();
@@ -334,7 +357,8 @@ export function announceCond(env: AnnounceEnv, c: Condition): boolean | undefine
       const src = env.s.objects[env.sourceId];
       // p2-cost-parts-1 (CR 303.4, 602.5b): "Activate only if enchanted creature is untapped": the permanent the source is attached to, as it is now
       const o = c.object.ref === 'self' ? src : src?.attachedTo !== undefined ? env.s.objects[src.attachedTo] : undefined;
-      return o ? matchesFilter(env.s, o, { ...c.filter, zone: 'any' }, filterCtxOf(env)) : undefined;
+      // trek-12 (CR 113.6, 602.5b, 400.7): "Activate only if ~ is exiled": the zone the filter names is the zone the source is in now (the filter's own, not any)
+      return o ? matchesFilter(env.s, o, { ...c.filter, zone: c.object.ref === 'self' && c.filter.zone !== undefined ? c.filter.zone : 'any' }, filterCtxOf(env)) : undefined;
     }
     case 'completedDungeon': { // MX4, CR 309.7
       const ps = condPlayers(env, c.who);

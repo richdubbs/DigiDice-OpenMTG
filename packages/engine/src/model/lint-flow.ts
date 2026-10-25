@@ -41,6 +41,7 @@ function mayDeclaredNames(step: Rec): string[] {
   for (const d of arr(step['do'])) {
     if (d['op'] !== 'forEach' && typeof d['as'] === 'string') out.push(d['as']);
     if (d['op'] === 'revealUntil' && typeof d['revealed'] === 'string') out.push(d['revealed']);
+    if (d['op'] === 'exileUntil' && typeof d['exiled'] === 'string') out.push(d['exiled']); // trek-7: every card exiled
   }
   return out;
 }
@@ -53,6 +54,7 @@ function allNamesOf(root: unknown): Set<string> {
     if (n.def === 'EffectStep') {
       for (const k of ['as', 'chosen', 'other', 'cantAs']) if (typeof n.value[k] === 'string') names.add(n.value[k] as string); // C6: `cantAs` (discard, sacrificeChoice)
       if (n.value['op'] === 'revealUntil' && typeof n.value['revealed'] === 'string') names.add(n.value['revealed'] as string); // r3-dig: every card revealed
+      if (n.value['op'] === 'exileUntil' && typeof n.value['exiled'] === 'string') names.add(n.value['exiled'] as string); // trek-7: every card exiled
     }
     return undefined;
   });
@@ -124,7 +126,7 @@ class FlowLint {
     let kind: 'name' | 'var' | undefined;
     if ((n.def === 'ObjRef' || n.def === 'PlayerRef') && v['ref'] === 'bound') [name, kind] = [v['name'] as string, 'name'];
     else if (n.def === 'Condition' && v['cond'] === 'did') [name, kind] = [v['step'] as string, 'name'];
-    else if (n.def === 'Quantity' && (v['q'] === 'resultCount' || v['q'] === 'excessDamage' || v['q'] === 'lifeLost' || v['q'] === 'countersRemoved' || v['q'] === 'votes' || v['q'] === 'damageDealt')) [name, kind] = [v['step'] as string, 'name']; // FAST5X E16: excessDamage
+    else if (n.def === 'Quantity' && (v['q'] === 'resultCount' || v['q'] === 'excessDamage' || v['q'] === 'lifeLost' || v['q'] === 'countersRemoved' || v['q'] === 'countersPut' || v['q'] === 'votes' || v['q'] === 'damageDealt')) [name, kind] = [v['step'] as string, 'name']; // FAST5X E16: excessDamage
     else if (n.def === 'Quantity' && v['q'] === 'var') [name, kind] = [v['name'] as string, 'var'];
     // C6 (CR 101.3): "Each opponent who can't loses half their life" reads one life total of a group of players: not one number (the instruction is per player)
     const of = n.def === 'Quantity' && ONE_PLAYER_QUANTITIES.has(v['q']) ? rec(v['of']) : {};
@@ -356,6 +358,7 @@ class FlowLint {
       if ((step['op'] === 'discard' || step['op'] === 'sacrificeChoice') && typeof step['cantAs'] === 'string') names.push([step['cantAs'], 'cantAs']);
       // r3-dig (CR 701.20a): every card "reveal ... until you reveal ..." revealed (the group whose rest a later instruction moves)
       if (step['op'] === 'revealUntil' && typeof step['revealed'] === 'string') names.push([step['revealed'], 'revealed']);
+      if (step['op'] === 'exileUntil' && typeof step['exiled'] === 'string') names.push([step['exiled'], 'exiled']); // trek-7 (CR 406.1): every card exiled (the group whose rest a later instruction moves)
       if (step['op'] === 'piles') {
         if (typeof step['chosen'] === 'string') names.push([step['chosen'], 'chosen']);
         if (typeof step['other'] === 'string') names.push([step['other'], 'other']);

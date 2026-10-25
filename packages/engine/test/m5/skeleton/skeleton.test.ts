@@ -91,7 +91,7 @@ describe('skeleton: capability tables of unfinished packages are empty', () => {
 
   it('the tables of milestone 3 and 4 behavior are honest (they list what is implemented)', async () => {
     const cost = (await load('rules/cost'))['COST_PART_IMPLS'] as object;
-    expect(Object.keys(cost).sort()).toEqual(['action', 'behold' /* FAST5X E11 */, 'chooseObject' /* std-costs-2 */, 'discard', 'exileFrom', 'getCounters' /* FAST5X E27 */, 'manual', 'mill', 'oneOf' /* FAST5X E27 */, 'payEnergy', 'payLife', 'putCounters', 'removeCounters', 'returnToHand', 'reveal', 'revealChosen' /* std-combat-5 */, 'sacrifice', 'tapPower', 'tapUntapped', 'untapTapped' /* p2-cost-parts-1 */]); // WP7: all CostPart kinds
+    expect(Object.keys(cost).sort()).toEqual(['action', 'behold' /* FAST5X E11 */, 'chooseObject' /* std-costs-2 */, 'discard', 'exileFrom', 'getCounters' /* FAST5X E27 */, 'manual', 'mill', 'oneOf' /* FAST5X E27 */, 'payEnergy', 'payLife', 'putCounters', 'putIntoLibrary' /* trek-9 */, 'removeCounters', 'returnToHand', 'reveal', 'revealChosen' /* std-combat-5 */, 'sacrifice', 'tapPower', 'tapUntapped', 'untapTapped' /* p2-cost-parts-1 */]); // WP7: all CostPart kinds
     expect(Object.keys((await load('rules/targets'))['TARGET_KINDS'] as object).sort()).toEqual(['ability', 'anyTarget', 'object', 'objectOrPlayer', 'player', 'spell', 'stackObject']);
     expect((await load('rules/filter'))['SUPPORTED_FILTER_FIELDS']).toBeInstanceOf(Set);
     expect((await load('core/validate'))['DECISION_KINDS']).toHaveLength(19); // M11-0: commanderZone (CR 903.9)

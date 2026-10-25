@@ -197,6 +197,25 @@ describe('M11-2: starting a Commander game', () => {
     expect(startButton().disabled).toBe(true);
   });
 
+  it('in a Commander format the decks without a commander (the 60-card practice decks) are greyed out and say why', async () => {
+    await open();
+    const option = (n: 1 | 2, id: string) => player(n).getByRole('combobox', { name: 'Deck' }).querySelector<HTMLOptionElement>(`option[value="${id}"]`)!;
+    // Player 1's deck still sets the format: nothing is greyed out in that list until the format is chosen by hand.
+    expect(option(1, 'practice:red').disabled).toBe(false);
+    await pick(1, titania);
+    expect(formatBox().value).toBe('commander');
+    for (const id of ['practice:red', 'practice:green', green.id]) {
+      expect(option(2, id).disabled, id).toBe(true);
+      expect(option(2, id).textContent, id).toMatch(/\(not a Commander deck\)$/);
+    }
+    expect(option(2, 'commander:lumra').disabled).toBe(false);
+    expect(option(1, 'practice:red').disabled).toBe(false);
+    await setFormat('commander');
+    expect(option(1, 'practice:red').disabled).toBe(true);
+    await setFormat('casual');
+    expect(option(2, 'practice:red').disabled).toBe(false);
+  });
+
   it('opened from the deckbuilder ("Play this deck"): player 1 has the deck and its format', async () => {
     await open(services(), partners.id);
     await waitFor(() => expect((player(1).getByRole('combobox', { name: 'Deck' }) as HTMLSelectElement).value).toBe(partners.id));

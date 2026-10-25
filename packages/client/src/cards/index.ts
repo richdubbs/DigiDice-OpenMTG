@@ -5,7 +5,7 @@ export { CardFrame } from './CardFrame';
 export { CardBack } from './CardBack';
 export { CardZoom } from './CardZoom';
 export { ArtistCredit, CardCredit, creditElement, creditText, creditedName } from './ArtistCredit';
-export { AutomationBadge, AUTOMATION_TEXT } from './AutomationBadge';
+export { AutomationBadge, AUTOMATION_TEXT, PARTIAL_WARNING, PartialWarning } from './AutomationBadge';
 export { ManaCost, ManaGlyph, SymbolText } from './ManaGlyph';
 export { glyphOf, manaGlyphs, splitSymbols, manaCostName, type Glyph } from './mana';
 export { modelFromDef, modelFromSummary, slotsOfSummary, slotOfFace, isTwoSided, type CardModel, type CardFaceModel } from './model';

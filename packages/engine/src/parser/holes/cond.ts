@@ -18,11 +18,13 @@ import { voteCondAt } from './vote';
 import { p2iv3CondAt } from './p2iv3';
 import { isRoomsOnly } from '../../model/room-filter';
 import { movedCondAt } from './moved';
+import { MOVED_MARK } from './moved-words';
 import { costCondAt } from './cost-conds';
 import { kickedWithCost } from './p2cs1';
 import { p2iv1CondAt } from './p2iv1';
 import { p2iv2CondAt } from './p2iv2';
 import { p2cst1CondAt } from './p2cst1';
+import { allExiledShareCond } from './trek9'; // trek-9
 
 const W_YOU_CONTROL = P('you control');
 const W_YOU_DONT_CONTROL = [P("you don't control"), P('you do not control')];
@@ -49,6 +51,7 @@ const W_NO = P('no');
 const W_OR_MORE = [P('or more'), P('or greater')];
 const W_A_PRIME_NUMBER_OF = P('a prime number of'); // std-rx1
 const W_WITH_DIFFERENT_NAMES = P('with different names'); // CLOUD std-fdn
+const W_DIFFERENTLY_NAMED_COND = P('differently named'); // trek-5
 const W_AT_LEAST = P('at least');
 const W_ITS_YOUR_TURN = [P("it's your turn"), P('it is your turn')];
 const W_ITS_NOT_YOUR_TURN = [P("it's not your turn"), P('it is not your turn')];
@@ -184,6 +187,8 @@ function commanderThatsTypes(ctx: HoleCtx, pos: number): { end: number; types: s
 }
 
 const W_A_PLAYER_CONTROLS_NO = P('a player controls no'); // std-rx31
+const W_YOUR_OPPONENTS_CONTROL_NO = P('your opponents control no'); // opp-port-1
+const W_NO_OPPONENT_CONTROLS = P('no opponent controls'); // opp-port-1
 
 /** "you control ...", "an opponent controls ...", "you don't control ...". */
 function control(ctx: HoleCtx, pos: number): Alt[] {
@@ -196,6 +201,23 @@ function control(ctx: HoleCtx, pos: number): Alt[] {
       if (n.number !== 'plural' || n.filter.controller !== undefined) continue;
       const count = { q: 'countPlayers', of: { ref: 'each', who: 'player' }, controlsIs: { filter: n.filter, op: '==', n: 0 } };
       out.push({ end: n.end, value: { cond: 'compare', left: count, op: '>=', right: 1 } as unknown as Condition, ...(n.flags.length > 0 ? { flags: n.flags } : {}) });
+    }
+  }
+  // opp-port-1 (OPP2's follow-up of 2026-10-17; CR 102.3, 603.4): "your opponents control no creatures" (Erebos's Titan, Kezzerdrix) and "no opponent controls a
+  // creature" (Vexing Beetle, Kavu Runner): no opponent controls one of them, a negated existence over every opponent's permanents ("an opponent controls no
+  // creatures" is one opponent who controls none, below)
+  const yn = phraseAt(ctx, pos, W_YOUR_OPPONENTS_CONTROL_NO);
+  if (yn >= 0) {
+    for (const n of npAlts(ctx, yn)) {
+      const f = n.number === 'plural' ? withController(n.filter, 'opponent') : null;
+      if (f) out.push({ end: n.end, value: notExists(f), ...(n.flags.length > 0 ? { flags: n.flags } : {}) });
+    }
+  }
+  const na = phraseAt(ctx, pos, W_NO_OPPONENT_CONTROLS);
+  if (na >= 0 && (ctx.toks[na]?.norm === 'a' || ctx.toks[na]?.norm === 'an')) {
+    for (const n of npAlts(ctx, na + 1)) {
+      const f = n.number === 'singular' ? withController(n.filter, 'opponent') : null;
+      if (f) out.push({ end: n.end, value: notExists(f), ...(n.flags.length > 0 ? { flags: n.flags } : {}) });
     }
   }
   const subj: { end: number; pred: PlayerPred; neg: boolean }[] = [];
@@ -227,7 +249,20 @@ function control(ctx: HoleCtx, pos: number): Alt[] {
     // CMD2 (CR 903.3d): "you control a commander that's a creature or planeswalker": a commander permanent you control that has one of those card types
     if (t === 'a') for (const c of commanderThatsTypes(ctx, s.end + 1)) push(c.end, exists({ commander: true, types: c.types, controller: s.pred }));
     const no = phraseAt(ctx, s.end, W_NO);
-    if (no >= 0) for (const n of npAlts(ctx, no)) { const f = withController(n.filter, s.pred); if (f) push(n.end, s.neg ? exists(f) : notExists(f), n.flags); }
+    if (no >= 0) {
+      for (const n of npAlts(ctx, no)) {
+        const f = withController(n.filter, s.pred);
+        if (!f) continue;
+        // opp-port-1 (OPP2 of 2026-10-17; CR 102.3, 806): "an opponent controls no creatures" is one opponent who controls none (`countPlayers.controlsIs`
+        // of std-rx12 with "none", as std-rx31's "a player controls no creatures"); that no opponent controls one is "your opponents control no creatures".
+        // The two agree in a two-player game only.
+        if (s.pred === 'opponent') {
+          if (n.filter.controller === undefined) push(n.end, compare({ q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, controlsIs: { filter: n.filter, op: '==', n: 0 } }, '>=', 1), n.flags);
+          continue;
+        }
+        push(n.end, s.neg ? exists(f) : notExists(f), n.flags);
+      }
+    }
     // FAST5 T62 (CR 603.4, 109.5): "an opponent controls more lands than you": the permanents an opponent controls outnumber yours (the same description counted for each;
     // std-sos review: `countPlayers.controlsVs`, per opponent)
     const more = !s.neg && s.pred === 'opponent' ? phraseAt(ctx, s.end, W_MORE) : -1;
@@ -251,6 +286,14 @@ function control(ctx: HoleCtx, pos: number): Alt[] {
         if (n.number !== 'plural') continue;
         const f = withController(n.filter, s.pred);
         if (!f) continue;
+        // opp-port-1 (OPP1 of 2026-10-17; CR 102.3, 806): "an opponent controls two or more creatures" is one opponent who controls that many
+        // (`countPlayers.controlsIs`); the permanents of several opponents added up are "your opponents control ...". One or more is the same either way: an existence.
+        if (s.pred === 'opponent' && !(c.cmp.op === '>=' && c.cmp.value === 1)) {
+          if (typeof c.cmp.value === 'number' && n.filter.controller === undefined) {
+            push(n.end, compare({ q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, controlsIs: { filter: n.filter, op: c.cmp.op, n: c.cmp.value } }, '>=', 1), n.flags);
+          }
+          continue;
+        }
         if (c.cmp.op === '>=') push(n.end, exists(f, c.cmp.value), n.flags);
         else if (c.cmp.op === '>') push(n.end, exists(f, { q: 'math', op: '+', args: [c.cmp.value, 1] }), n.flags);
         else push(n.end, compare({ q: 'count', of: { ref: 'each', filter: f } }, c.cmp.op, c.cmp.value), n.flags);
@@ -260,6 +303,16 @@ function control(ctx: HoleCtx, pos: number): Alt[] {
         // CLOUD std-misc (coven, CR 207.2c, 208.1): "you control three or more creatures with different powers": that many different powers among them
         const dp = c.cmp.op === '>=' ? phraseAt(ctx, n.end, W_WITH_DIFFERENT_POWERS) : -1;
         if (dp >= 0) push(dp, compare({ q: 'distinct', what: 'powers', among: { ref: 'each', filter: f } }, '>=', c.cmp.value), n.flags);
+      }
+      // trek-5 (CR 201.2, 603.4; Qty "the number of differently named lands you control", parser/holes/qty.ts): "you control five or more differently named lands" is the
+      // number of different names among the lands you control, at least five. Of you only: an opponent's count is one per opponent (CR 102.3)
+      const dnm = s.pred === 'you' ? phraseAt(ctx, c.end, W_DIFFERENTLY_NAMED_COND) : -1;
+      if (dnm >= 0) {
+        for (const n of npAlts(ctx, dnm)) {
+          if (n.number !== 'plural') continue;
+          const f = withController(n.filter, s.pred);
+          if (f) push(n.end, compare({ q: 'distinct', what: 'names', among: { ref: 'each', filter: f } }, c.cmp.op, c.cmp.value), n.flags);
+        }
       }
     }
     // std-rx1 (CR 107.1, 603.4): "you control a prime number of lands" (Zimone, All-Questioning): the number of them is prime. Of "you" only, never negated: an
@@ -501,9 +554,11 @@ function misc(ctx: HoleCtx, pos: number): Alt[] {
   const lib = phraseAt(ctx, pos, W_LIBRARY_NO_CARDS);
   if (lib >= 0) out.push({ end: lib, value: { cond: 'not', of: { cond: 'exists', of: { ref: 'each', filter: { zone: 'library', owner: 'you', isCard: true } } } } });
   out.push(...destroyedThisWay(ctx, pos)); // FAST5X E17
+  out.push(...countersPutThisWay(ctx, pos)); // trek-6
   out.push(...putIntoHandThisWay(ctx, pos)); // FAST5 T75
   out.push(...milledThisWayCond(ctx, pos)); // std-tla
   out.push(...revealedThisWayCond(ctx, pos)); // p2-dig-2
+  out.push(...allExiledShareCond(ctx, pos)); // trek-9
   out.push(...returnedThisWay(ctx, pos)); // STD-OTJ
   out.push(...searchedThisWay(ctx, pos)); // r4-moved
   out.push(...returnedToYourHandThisWay(ctx, pos)); // r4-moved
@@ -646,6 +701,10 @@ function misc(ctx: HoleCtx, pos: number): Alt[] {
         if (zv.zone === 'graveyard' && zv.owner === 'you') out.push({ end: z.end, weak: 1, value: { cond: 'matches', object: { ref: 'self' }, filter: { zone: 'graveyard', owner: 'you' } } });
       }
     }
+    // trek-12 (CR 113.6, 602.5b, 400.7; Q, Stacking the Deck): "~ is exiled", the restriction "Activate only ... if ~ is exiled" of an ability a card in exile has: the
+    // object itself is in exile (a card that left exile is a new object, CR 400.7). The activation zone follows from it (parser/lower/activation.ts#activationZone)
+    const isExiled = phraseAt(ctx, pos + 1, P('is exiled'));
+    if (isExiled >= 0) out.push({ end: isExiled, value: { cond: 'matches', object: { ref: 'self' }, filter: { zone: 'exile' } } });
   }
   out.push(...altCostPaid(ctx, pos));
   // FAST5X E11 (CR 701.4b): "a Dragon was beheld": something with that quality was beheld to pay this spell's cost (`CostsPaid.beheld`)
@@ -990,6 +1049,43 @@ const W_MILLED_WAY_VERB = [P('is milled this way'), P('was milled this way')];
 const W_MILLED_WAY_VERB_PLURAL = [P('are milled this way'), P('were milled this way')]; // std-cardcopy-1
 const W_THAT_SHARE: readonly [string[], 'cardType' | 'color'][] = [[P('that share a card type'), 'cardType'], [P('that share a color'), 'color']]; // std-cardcopy-1
 const W_AT_LEAST_ONE = P('at least one');
+
+const W_THIS_WAY_PUT = P('this way');
+
+/**
+ * trek-6 (CR 122.1, 122.6, 608.2c; Guinan, Ancient Advisor): "If you put two or more +1/+1 counters on creatures this way, draw a card.": the counters the putCounters
+ * instruction right before it actually put (`{q:'countersPut', $step}`, resolved by parser/lower/conditions.ts#resolveCountersPut as "the counters removed this way" is),
+ * at least that many (of the kind when one is named). The plural noun phrase after "counters on" is the objects they went on, said again: it names no controller, owner
+ * or zone of its own and is not kept (the renderer says it from what the instruction put them on, render/cond.ts#compareIdiom, so a different noun is refused by the
+ * render gate). A count is a number of one or more.
+ */
+function countersPutThisWay(ctx: HoleCtx, pos: number): Alt[] {
+  const out: Alt[] = [];
+  const you = phraseAt(ctx, pos, W_YOU_PUT);
+  if (you < 0) return out;
+  for (const q of ctx.call('Qty', you)) {
+    if (typeof q.value !== 'number' || q.value < 1) continue;
+    const om = phraseAt(ctx, q.end, P('or more'));
+    if (om < 0) continue;
+    const kinds: { end: number; kind?: unknown }[] = [];
+    const bare = phraseAt(ctx, om, W_COUNTERS_ON);
+    if (bare >= 0) kinds.push({ end: bare });
+    for (const k of ctx.call('CounterKind', om)) {
+      const e = phraseAt(ctx, k.end, W_COUNTERS_ON);
+      if (e >= 0) kinds.push({ end: e, kind: k.value });
+    }
+    for (const kd of kinds) {
+      for (const n of npAlts(ctx, kd.end)) {
+        const f = n.filter as Record<string, unknown>;
+        if (n.number !== 'plural' || n.flags.some((x) => x !== 'zone-unstated') || f['controller'] !== undefined || f['owner'] !== undefined || f['zone'] !== undefined || f[MOVED_MARK] !== undefined) continue;
+        const e = phraseAt(ctx, n.end, W_THIS_WAY_PUT);
+        if (e < 0) continue;
+        out.push({ end: e, value: { cond: 'compare', left: { q: 'countersPut', step: '', $step: 'previous', ...(kd.kind !== undefined ? { kind: kd.kind } : {}) }, op: '>=', right: q.value } as unknown as Condition });
+      }
+    }
+  }
+  return out;
+}
 
 /**
  * std-tla (CR 701.17a, 608.2c, 608.2h): "a Lesson card is milled this way", "a land card was milled this way", "at least one Zombie card is milled this way": among the
@@ -1454,10 +1550,12 @@ function ownAndControl(ctx: HoleCtx, pos: number): Alt[] {
 }
 
 /** FAST4 T23: the zone changes of the turn's history ("died", "entered the battlefield", "left the battlefield"), as `zoneChange` patterns (CR 700.4, 603.6a, 603.6c). */
-const ZONE_VERBS: [readonly string[], { from?: 'battlefield'; to?: 'battlefield' | 'graveyard' }][] = [
+const ZONE_VERBS: [readonly string[], { from?: 'battlefield'; to?: 'battlefield' | 'graveyard' | 'hand'; ownerYou?: true }][] = [
   [P('died'), { from: 'battlefield', to: 'graveyard' }],
   [P('entered the battlefield'), { to: 'battlefield' }],
   [P('left the battlefield'), { from: 'battlefield' }],
+  // trek-5 (CR 603.4, 400.3): "a permanent was returned to your hand from the battlefield this turn": it went to a hand that is yours, and a card goes to its owner's hand
+  [P('was returned to your hand from the battlefield'), { from: 'battlefield', to: 'hand', ownerYou: true }],
 ];
 const W_UNDER_YOUR_CONTROL = P('under your control');
 const W_OR_ANOTHER = P('or another'); // std-lci
@@ -1465,6 +1563,7 @@ const W_UNDER_OPPONENT_CONTROL = P("under an opponent 's control"); // FAST5 T53
 const W_FACE_DOWN = P('face down'); // FAST5X E25
 const W_ATTACKING_ALONE = P('attacking alone'); // p2-attack-block-1 (CR 506.5)
 const W_FACE_UP = P('face up'); // std-typechange-1
+const W_ENTER_UNDER_YOUR_CONTROL_THIS_TURN = P('enter the battlefield under your control this turn'); // p2-damage-3
 
 /**
  * FAST4 T23 (CR 603.4, 603.10a): history conditions about objects that changed zones this turn. "a creature died under your control this turn" (the
@@ -1478,6 +1577,15 @@ function zoneHistory(ctx: HoleCtx, pos: number): Alt[] {
   const t = ctx.toks[pos]?.norm;
   // "a Bird, Frog, Otter, or Rat" (several subtypes after one article) has no reading in the renderer's noun phrase: not read here
   if (t === 'a' || t === 'an') for (const n of npAlts(ctx, pos + 1)) if (n.number === 'singular') subjects.push({ end: n.end, filter: n.filter, flags: n.flags });
+  // p2-damage-3 (CR 603.4, 207.2c): Landfall's "you had a land enter the battlefield under your control this turn" (Searing Blaze, Groundswell): a land entered under
+  // your control this turn, the same history as "a land entered the battlefield under your control this turn"
+  if (t === 'you' && ctx.toks[pos + 1]?.norm === 'had' && ['a', 'an'].includes(ctx.toks[pos + 2]?.norm ?? '')) {
+    for (const n of npAlts(ctx, pos + 3)) {
+      if (n.number !== 'singular' || n.filter.controller !== undefined || n.filter.zone !== undefined || n.filter.isCard !== undefined || n.filter.stackKind !== undefined) continue;
+      const e = phraseAt(ctx, n.end, W_ENTER_UNDER_YOUR_CONTROL_THIS_TURN);
+      if (e >= 0) out.push({ end: e, value: { cond: 'happened', event: { ev: 'zoneChange', subject: { ...n.filter, controller: 'you' }, to: 'battlefield' }, scope: 'turn' }, ...(n.flags.length > 0 ? { flags: n.flags } : {}) });
+    }
+  }
   // FAST4 T27 (CR 603.4): "another creature entered the battlefield under your control this turn": an object other than the ability's source (the history's
   // `other`, rules/history.ts#factsMatchFilter: the entry's object is not the source)
   if (t === 'another') for (const n of npAlts(ctx, pos + 1)) if (n.number === 'singular' && (n.filter.subtypes?.length ?? 0) <= 1 && n.filter.other === undefined) subjects.push({ end: n.end, filter: { ...n.filter, other: true }, flags: n.flags });
@@ -1495,19 +1603,21 @@ function zoneHistory(ctx: HoleCtx, pos: number): Alt[] {
   for (const s of subjects) {
     // only objects that can be permanents: a card or a spell never "died" or "entered the battlefield" (the head words "card" and "spell" are not read)
     if (s.filter.isCard !== undefined || s.filter.stackKind !== undefined || s.filter.zone !== undefined || s.filter.controller !== undefined) continue;
-    for (const [ws, zones] of ZONE_VERBS) {
+    for (const [ws, { ownerYou, ...zones }] of ZONE_VERBS) {
       const v0 = phraseAt(ctx, s.end, ws);
       if (v0 < 0) continue;
+      if (ownerYou === true && s.filter.owner !== undefined) continue; // trek-5: the hand says whose
       // FAST5X E25 (CR 708.3, 603.4): "a permanent entered the battlefield face down under your control this turn" (put onto the battlefield face down)
       const fd = zones.to === 'battlefield' && zones.from === undefined ? phraseAt(ctx, v0, W_FACE_DOWN) : -1;
       for (const [v, faceDown] of fd >= 0 ? [[fd, true] as const] : [[v0, false] as const]) for (const under of [false, true, 'opponent'] as const) {
+        if (ownerYou === true && under !== false) continue; // trek-5: "returned to your hand" has no "under your control"
         const u = under === 'opponent' ? phraseAt(ctx, v, W_UNDER_OPPONENT_CONTROL) : under ? phraseAt(ctx, v, W_UNDER_YOUR_CONTROL) : v;
         if (u < 0) continue;
         // "a creature died this turn" (no controller, no count) is `history`'s reading; one reading only
         if (!under && s.times === undefined && zones.to === 'graveyard') continue;
         const th = phraseAt(ctx, u, W_THIS_TURN);
         if (th < 0) continue;
-        const subject: ObjectFilter = { ...s.filter, ...(under === 'opponent' ? { controller: 'opponent' as const } : under ? { controller: 'you' as const } : {}), ...(faceDown ? { faceDown: true } : {}) };
+        const subject: ObjectFilter = { ...s.filter, ...(under === 'opponent' ? { controller: 'opponent' as const } : under ? { controller: 'you' as const } : {}), ...(faceDown ? { faceDown: true } : {}), ...(ownerYou === true ? { owner: 'you' as const } : {}) };
         const event = { ev: 'zoneChange', subject, ...zones };
         out.push({ end: th, value: { cond: 'happened', event, scope: 'turn', ...(s.times !== undefined ? { times: s.times } : {}) }, ...(s.flags.length > 0 ? { flags: s.flags } : {}) });
       }
@@ -1521,6 +1631,7 @@ const W_OPPONENT_LOST_LIFE = P('an opponent lost life this turn');
 const W_YOU_DISCARDED_THIS_TURN = [P("you've discarded a card this turn"), P('you have discarded a card this turn'), P('you discarded a card this turn')]; // std-ry5
 const W_FULL_PARTY = P('you have a full party');
 const W_DIDNT_ENTER = [P("didn't enter the battlefield this turn"), P('did not enter the battlefield this turn')];
+const W_STILL_ON_TOP_OF_YOUR_LIBRARY = [P('is still on top of your library')]; // trek-5 (CR 401.5, 400.7)
 const W_HAVE_TOTAL_POWER = [P('have total power'), P('has total power')];
 
 /**
@@ -1550,6 +1661,14 @@ function t23Misc(ctx: HoleCtx, pos: number): Alt[] {
   if (fp >= 0) out.push({ end: fp, value: { cond: 'compare', left: { q: 'partySize', of: { ref: 'you' } }, op: '>=', right: 4 } });
   for (const o of ctx.call('Obj', pos)) {
     for (const w of W_DIDNT_ENTER) { const e = phraseAt(ctx, o.end, w); if (e >= 0) out.push({ end: e, value: { cond: 'matches', object: o.value as never, filter: { enteredThisTurn: false } }, ...(o.flags ? { flags: o.flags } : {}) }); }
+    // trek-5 (CR 401.5, 400.7, 608.2c; Commander Spock): "If that card is still on top of your library, draw a card.": a card an earlier instruction named (an anaphor: "that card",
+    // "it") that is in a library and is one of the top 1 cards of your library now. A card that moved is a new object (CR 400.7), so it is no longer that card
+    if ('$anaphor' in (o.value as object)) {
+      for (const w of W_STILL_ON_TOP_OF_YOUR_LIBRARY) {
+        const e = phraseAt(ctx, o.end, w);
+        if (e >= 0) out.push({ end: e, value: { cond: 'matches', object: o.value as never, filter: { zone: 'library', is: { ref: 'topCards', player: { ref: 'you' }, count: 1 } } }, ...(o.flags ? { flags: o.flags } : {}) });
+      }
+    }
     // std-rx10 (CR 400.7, 608.2c): "If the creature you control entered this turn, put a +1/+1 counter on it." (Malamet Battle Glyph): that object (never ~ itself, read
     // once by enteredSelf below) entered the battlefield this turn, as the permanent it is now
     if ((o.value as { ref?: unknown }).ref !== 'self') {
@@ -2273,7 +2392,25 @@ function atoms(ctx: HoleCtx, pos: number): Alt[] {
     ...speedGreatest(ctx, pos), // std-control-1 (CR 702.179)
     ...unannounced(p2iv1CondAt(ctx, pos, spentObjects)), // p2-intervening-1 (CR 603.4; parser/holes/p2iv1.ts)
     ...p2cst1CondAt(ctx, pos), // p2-cost-statics-1 (CR 506.4, 508.1; parser/holes/p2cst1.ts): "three or more creatures are attacking", "exactly one creature is attacking"
+    ...unannounced(firstSpellCastCond(ctx, pos)), // trek-2 (CR 601.2i): "~ is the first spell you've cast this game"
   ];
+}
+
+const W_IS_FIRST_SPELL_THIS_GAME = [P("is the first spell you've cast this game"), P('is the first spell you have cast this game')];
+
+/**
+ * trek-2 (CR 601.2i, 707.10): "If this spell is the first spell you've cast this game, you gain 2 life." (First Contact): the spell itself (its "~") was cast by the
+ * controller of the resolution before every other spell that player cast this game (`firstSpellCast`, effects/eval.ts). Only the spell's own name ("this spell"
+ * is "~" in the parse text), and only "this game".
+ */
+function firstSpellCastCond(ctx: HoleCtx, pos: number): Alt[] {
+  if (ctx.toks[pos]?.kind !== 'SELF') return [];
+  const out: Alt[] = [];
+  for (const w of W_IS_FIRST_SPELL_THIS_GAME) {
+    const e = phraseAt(ctx, pos + 1, w);
+    if (e >= 0) out.push({ end: e, value: { cond: 'firstSpellCast', scope: 'game' } });
+  }
+  return out;
 }
 
 const W_SPEED_GREATER_THAN_EACH_OTHER = P("'s speed is greater than each other player 's speed"); // std-control-1

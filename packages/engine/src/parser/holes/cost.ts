@@ -13,6 +13,7 @@ import type { ManaCost } from '../../types/mana';
 import type { Alt, HoleCtx, HoleFn } from './core';
 import { P, anyPhraseAt, canonicalJson, dedupe, numberAt, phraseAt } from './core';
 import { npAlts } from './filter';
+import { putSelfIntoLibrary } from './trek9'; // trek-9
 
 const W_SAC = P('sacrifice');
 const W_DISCARD = P('discard');
@@ -511,6 +512,7 @@ function partAt(ctx: HoleCtx, pos: number): Alt[] {
   return [...symbols(ctx, pos), ...sacrifice(ctx, pos), ...discard(ctx, pos), ...exile(ctx, pos), ...pay(ctx, pos), ...tapUntapped(ctx, pos), ...counters(ctx, pos),
     ...returnToHand(ctx, pos), ...reveal(ctx, pos), ...actionsAndMill(ctx, pos), ...behold(ctx, pos), ...getPoison(ctx, pos),
     ...revealChosen(ctx, pos), // std-combat-5
+    ...putSelfIntoLibrary(ctx, pos).map((a) => ({ end: a.end, value: { part: a.part } satisfies Frag })), // trek-9
     ...untapTapped(ctx, pos)]; // p2-cost-parts-1
 }
 
@@ -557,6 +559,18 @@ export const discardDesc: HoleFn = (ctx, pos) => {
     if (n.number !== 'singular' || n.head !== 'card' || n.filter.zone !== undefined) continue;
     const flags = n.flags.filter((f) => f !== 'zone-unstated');
     out.push({ end: n.end, value: without(n.filter, 'isCard'), ...(n.weak ? { weak: n.weak } : {}), ...(flags.length > 0 ? { flags } : {}) });
+    // trek-3 (CR 201.2, 608.2c): "a basic land card or a card named Starship Enterprise": either description, the second one a name only (`anyOf`). A card
+    // named X needs a name, not a card of the index (CR 201.2). Only the name as the second half: "a creature card or a land card" is SearchDesc's (r4dig.ts)
+    const art2 = ctx.toks[n.end + 1]?.norm;
+    if (ctx.toks[n.end]?.norm !== 'or' || (art2 !== 'a' && art2 !== 'an')) continue;
+    for (const m of npAlts(ctx, n.end + 2)) {
+      if (m.number !== 'singular' || m.head !== 'card' || m.filter.zone !== undefined) continue;
+      const named = without(m.filter, 'isCard');
+      if (Object.keys(named).length !== 1 || typeof named.name !== 'string') continue;
+      const both = [...new Set([...flags, ...m.flags.filter((f) => f !== 'zone-unstated')])];
+      const weak = n.weak + m.weak;
+      out.push({ end: m.end, value: { anyOf: [without(n.filter, 'isCard'), named] }, ...(weak ? { weak } : {}), ...(both.length > 0 ? { flags: both } : {}) });
+    }
   }
   return out;
 };

@@ -23,6 +23,7 @@ import { NEW_TARGETS_HANDLERS } from './new-targets';
 import { NEXT_SPELL_HANDLERS } from './next-spell';
 import { REPORT_ACTION_HANDLERS } from './report-action';
 import { BECOME_BLOCKED_HANDLERS } from './become-blocked';
+import { REMOVE_DAMAGE_HANDLERS } from './remove-damage';
 import './plot-ops'; // FAST5X E6: installs the plot special action's performer (core/special/plot.ts)
 import './foretell-ops'; // cloud r3-mech: installs the foretell special action's performer (core/special/foretell.ts, CR 702.143a)
 import './suspend-ops'; // std-rx22: installs the suspend special action's performer (core/special/suspend.ts, CR 702.62a)
@@ -44,6 +45,7 @@ export const OP_HANDLERS: OpHandlers = {
   ...NEXT_SPELL_HANDLERS, // Standard round 10: nextSpell (CR 601.2i, 611.2)
   ...REPORT_ACTION_HANDLERS, // std-mana-12: reportAction (CR 603.2; earthbend, firebend)
   ...BECOME_BLOCKED_HANDLERS, // p2-combat-flow-2: becomeBlocked (CR 509.1h)
+  ...REMOVE_DAMAGE_HANDLERS, // trek-8: removeDamage (CR 120.6)
 };
 
 installOpHandlers(OP_HANDLERS);

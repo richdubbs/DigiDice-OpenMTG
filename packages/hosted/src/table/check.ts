@@ -42,7 +42,7 @@ function sameLegal(a: Action, l: LegalAction): boolean {
       return a.source === (b as typeof a).source && a.ability === (b as typeof a).ability;
     case 'special': {
       const s = b as typeof a;
-      return a.kind === s.kind && a.object === s.object && (a.via === undefined || a.via === s.via) && (a.door === undefined || a.door === s.door) && (a.option === undefined || a.option === s.option); // door: FAST5X E8; option: std-freecast-5
+      return a.kind === s.kind && a.object === s.object && (a.via === undefined || a.via === s.via) && (a.door === undefined || a.door === s.door) && (a.option === undefined || a.option === s.option) && a.outside === s.outside; // door: FAST5X E8; option: std-freecast-5; outside: trek-11 (the card outside the game a `playOutside` action plays, CR 400.11b)
     }
     default:
       return false;

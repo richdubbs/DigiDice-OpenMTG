@@ -21,7 +21,8 @@ describe('WP6 Cond (CR 603.4, 608.2, 118.12)', () => {
     ['you control at least three Elves', exists({ subtypes: ['Elf'], controller: 'you' }, 3)],
     ["you don't control a creature", { cond: 'not', of: exists({ ...creature, controller: 'you' }) }],
     ['an opponent controls a creature', exists({ ...creature, controller: 'opponent' })],
-    ['an opponent controls no lands', { cond: 'not', of: exists({ types: ['Land'], controller: 'opponent' }) }],
+    // opp-port-1 (CR 102.3, 806): one opponent who controls none, not no opponent controlling one ("your opponents control no lands")
+    ['an opponent controls no lands', { cond: 'compare', left: { q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, controlsIs: { filter: { types: ['Land'] }, op: '==', n: 0 } }, op: '>=', right: 1 }],
     ['there are seven or more cards in your graveyard', exists({ zone: 'graveyard', owner: 'you', isCard: true }, 7)],
     ['there are no creatures on the battlefield', { cond: 'not', of: exists({ ...creature, zone: 'battlefield' }) }],
     ['you have 5 or less life', { cond: 'compare', left: { q: 'life', of: you }, op: '<=', right: 5 }],

@@ -15,6 +15,17 @@ import type { Chars } from '../rules/characteristics';
 export type ZoneKind = 'library' | 'hand' | 'battlefield' | 'graveyard' | 'stack' | 'exile' | 'command';
 export const HIDDEN_ZONES: readonly ZoneKind[] = ['library', 'hand']; // CR 400.2
 
+/**
+ * trek-11 INTERFACE CHANGE (additive), CR 400.11, 601.2a: where a spell was cast from. A zone, or `'outside'`: the card came from outside the game (The Holodeck:
+ * "play a permanent card you own from outside the game", `GameState.outside`), which is no zone (CR 400.11). A filter or event that names a zone ("cast from your hand",
+ * "from exile") never matches it, while "from anywhere other than your hand" (`not` of a zone, `notFrom`) does: the spell was plainly not cast from the hand.
+ * (A judgement the owner may revisit: Star Trek's rules text is not out yet.)
+ */
+export type CastOrigin = ZoneKind | 'outside';
+
+/** trek-11 (CR 400.11, 601.2a): the origin of a spell cast from `o`: `'outside'` for the staging object of a card played from outside the game, else its zone. */
+export const castOriginOf = (o: { zone: ZoneKind; fromOutside?: true }): CastOrigin => (o.fromOutside === true ? 'outside' : o.zone);
+
 /** Steps of a turn (CR 500.1). Main phases have no steps; we model them as steps for simplicity. */
 export type Step =
   | 'untap' | 'upkeep' | 'draw' // beginning phase (CR 501)
@@ -255,8 +266,8 @@ export interface StackInfo {
   pendingId?: string;
   /** "Split second" and similar flags read from the spell when cast. */
   flags?: string[];
-  /** Zone the card was cast from (aftermath: exile instead of leaving the stack, CR 702.127a). */
-  castFrom?: ZoneKind;
+  /** Zone the card was cast from (aftermath: exile instead of leaving the stack, CR 702.127a); trek-11: or `'outside'`, from outside the game (CR 400.11). */
+  castFrom?: CastOrigin;
   /** FAST4 T27 INTERFACE CHANGE (additive): the player who cast the spell (CR 601.2a), kept in the permanent's cast record (`GameObject.cast.by`). */
   caster?: PlayerId;
   /** std-rx22 INTERFACE CHANGE (additive): the spell's controller changed while it was on the stack (core/control.ts); copied to `GameObject.cast.controlLost`. */
@@ -514,7 +525,14 @@ export interface GameObject {
   // FAST4 T27 INTERFACE CHANGE (additive): `by`, the player who cast the spell (CR 601.2a; "if you cast it": Condition `wasCast.by`)
   // std-rx22 INTERFACE CHANGE (additive): `controlLost`, the permanent's controller changed at least once since it entered (core/control.ts), so the caster has not
   // controlled it without a break (Condition `wasCast.kept`, suspend's haste, CR 702.62a)
-  cast?: { costsPaid: CostsPaid; x?: number; from: ZoneKind; via?: string; turn: number; by?: PlayerId; controlLost?: true };
+  cast?: { costsPaid: CostsPaid; x?: number; from: CastOrigin; via?: string; turn: number; by?: PlayerId; controlLost?: true };
+  /**
+   * trek-11 INTERFACE CHANGE (additive), CR 400.11b, 601.2a, 305.1: set ONLY on the staging object of a card a player plays from outside the game (core/zones.ts#stageFromOutside):
+   * a card they own outside the game (`GameState.outside`) becomes this object, in its owner's hand, for the length of ONE special action (`playOutside`,
+   * core/special/play-outside.ts), whose checks (actions/cast.ts#castCheck, actions/land.ts#landCheck) then read it as a card cast or played from no zone and move it to the
+   * stack or the battlefield (the new object has no marker). It exists in no published state: a refused or cancelled action leaves the state it began with.
+   */
+  fromOutside?: true;
 
   /** Present while on the stack. */
   stack?: StackInfo;

@@ -10,7 +10,7 @@
  */
 import type { ObjectFilter } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
-import type { GameObject, GameState, ZoneKind } from '../types/state';
+import { castOriginOf, type CastOrigin, type GameObject, type GameState } from '../types/state';
 import { intrinsicChars } from './layers';
 import { filterMatches, STATIC_CONDITION_KINDS, STATIC_FILTER_FIELDS, STATIC_QUANTITY_KINDS, type EvalCx } from './match';
 import { anyZone, type CharsView } from './rule-sources';
@@ -19,7 +19,7 @@ import { anyZone, type CharsView } from './rule-sources';
 export interface Actor {
   kind: 'spell' | 'activated' | 'triggered';
   copy?: boolean;
-  castFrom?: ZoneKind;
+  castFrom?: CastOrigin; // trek-11: or 'outside' (CR 400.11)
 }
 
 /**
@@ -99,7 +99,7 @@ export function objectMatches(cx: EvalCx, id: ObjectId | PlayerId, f: ObjectFilt
 
 /** A card about to be cast or a spell on the stack, as a spell (CR 601.2a): where it is cast from. */
 export function spellActor(o: GameObject): Actor {
-  return o.zone === 'stack' ? actorOf(o) ?? { kind: 'spell' } : { kind: 'spell', castFrom: o.zone };
+  return o.zone === 'stack' ? actorOf(o) ?? { kind: 'spell' } : { kind: 'spell', castFrom: castOriginOf(o) }; // trek-11 (CR 400.11): a card from outside the game is cast from no zone
 }
 
 /**
@@ -124,7 +124,7 @@ export function sourceView(base: CharsView, source: ObjectId, controller: Player
     const x = s.objects[s.zones.stack[i]!];
     if (x?.kind === 'ability' && x.stack?.sourceId === source) actor = { kind: x.stack.kind === 'triggered' ? 'triggered' : 'activated' };
   }
-  actor ??= actorOf(obj) ?? (live && obj.zone !== 'battlefield' ? { kind: 'spell', castFrom: obj.zone } : { kind: 'activated' });
+  actor ??= actorOf(obj) ?? (live && obj.zone !== 'battlefield' ? { kind: 'spell', castFrom: castOriginOf(obj) } : { kind: 'activated' });
   const s2: GameState = live ? s : { ...s, objects: { ...s.objects, [source]: obj } };
   return { view: base.with(s2, new Map([[source, { ...chars, controller }]])), actor };
 }

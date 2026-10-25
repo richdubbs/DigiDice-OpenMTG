@@ -73,7 +73,7 @@
       "CR 506.1",
       "CR 507.1"
     ],
-    "pattern": "at the beginning of the next combat phase this turn , {e:Effects}",
+    "pattern": "at the beginning of the next combat [phase] this turn , {e:Effects}",
     "build": {
       "op": "delay",
       "when": {

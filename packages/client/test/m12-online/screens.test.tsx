@@ -4,6 +4,7 @@
  * until every seat is taken; a guest joins with its seat's code and waits in the lobby; the game opens by itself at the start.
  */
 import { act as reactAct, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { formatJoinCode, normalizeJoinCode } from '@openmtg/net';
 import type { OnlineStatus, ServerMessage } from '@openmtg/server/online';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NavProvider, useNav, type Route } from '../../src/app/nav';
@@ -142,12 +143,12 @@ describe('Join a game of 3 or 4 players', () => {
     await s.open('joinOnline');
     expect(screen.getByText(/the code of your own seat/)).toBeTruthy();
     await choose('Deck', green.id);
-    fireEvent.change(screen.getByLabelText('Host address'), { target: { value: '203.0.113.7:47620' } });
-    fireEvent.change(screen.getByLabelText('Join code'), { target: { value: CODES[1] } });
+    fireEvent.change(screen.getByLabelText('Host address and join code'), { target: { value: `203.0.113.7:47620 ${CODES[1]}` } });
     fireEvent.click(screen.getByRole('button', { name: 'Join game' }));
     await reactAct(flush);
     const sock = s.socket();
-    expect(sock.last('join')).toMatchObject({ t: 'join', code: CODES[1], address: '203.0.113.7:47620' });
+    // The code as the server reads it (net normalizeJoinCode): this fixture's L, which is not in the alphabet, is read as 1.
+    expect(sock.last('join')).toMatchObject({ t: 'join', code: formatJoinCode(normalizeJoinCode(CODES[1]!)!), address: '203.0.113.7:47620' });
     // Seated in seat 3 of 4; Alice (the host) and Bob are there.
     const waiting = tableStatus({ role: 'guest', me: 'p3', phase: 'waiting', seats: 4, players: table(4, [], 3) });
     delete waiting.codes;
@@ -181,8 +182,7 @@ describe('Join a game of 3 or 4 players', () => {
     const s = setup();
     await s.open('joinOnline');
     await choose('Deck', green.id);
-    fireEvent.change(screen.getByLabelText('Host address'), { target: { value: '203.0.113.7' } });
-    fireEvent.change(screen.getByLabelText('Join code'), { target: { value: CODES[0] } });
+    fireEvent.change(screen.getByLabelText('Host address and join code'), { target: { value: `${CODES[0]} 203.0.113.7` } });
     fireEvent.click(screen.getByRole('button', { name: 'Join game' }));
     await reactAct(flush);
     reactAct(() => {

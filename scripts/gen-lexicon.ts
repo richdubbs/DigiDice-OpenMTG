@@ -4,9 +4,14 @@
  *   packages/engine/src/parser/lexicon.generated.json         from the Comprehensive Rules (a function of the CR edition alone)
  *   packages/engine/src/parser/lexicon.index.generated.json   the subtypes that cards of the local Oracle index use and the CR edition does not list yet
  *                                                             (sets newer than the rules: "Officer", "Klingon"), with their classes and plurals
+ *   packages/engine/src/statics/printed-creature-types.generated.json   the creature types printed on cards of the game's own sets that the CR edition does not
+ *                                                             list yet, certain ones only: what the rules engine adds to its creature-type list (trek-10). It only
+ *                                                             grows (an older index cannot drop a type); the check against an index is one-way
  *
  *   npx tsx scripts/gen-lexicon.ts            write the files
  *   npx tsx scripts/gen-lexicon.ts --check    exit 1 when a checked-in file differs from what its inputs produce (the staleness tests do the same)
+ *   npx tsx scripts/gen-lexicon.ts --index-only [--check]   without rules/cr (a cloud session): the checked-in lexicon.generated.json stands for the rules; only the
+ *                                             two files read from the Oracle index are written (or checked)
  *
  * Input: the split rules in <repo>/rules/cr/ (git-ignored Wizards text: only names are copied into the output, never rule prose) and the Oracle index
  * <repo>/.cache/scryfall/cards.jsonl (git-ignored Scryfall data: only subtype words are copied). Override the locations with OPENMTG_RULES_DIR and
@@ -26,6 +31,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = resolve(HERE, '..');
 export const LEXICON_PATH = join(REPO_ROOT, 'packages/engine/src/parser/lexicon.generated.json');
 export const INDEX_LEXICON_PATH = join(REPO_ROOT, 'packages/engine/src/parser/lexicon.index.generated.json');
+export const PRINTED_CREATURE_TYPES_PATH = join(REPO_ROOT, 'packages/engine/src/statics/printed-creature-types.generated.json');
 
 /** Finds rules/cr: OPENMTG_RULES_DIR, then <repo>/rules/cr, then (git worktree) the main checkout's rules/cr. Undefined when the rules are not on this machine. */
 export function findCrRoot(repoRoot: string = REPO_ROOT, env: Record<string, string | undefined> = process.env): string | undefined {
@@ -394,7 +400,10 @@ export function serializeLexicon(lex: Generated): string {
 /** The part of an Oracle card the index reader needs. */
 export interface IndexCard {
   type_line?: string;
-  card_faces?: { type_line?: string }[];
+  oracle_text?: string;
+  /** Scryfall's set type: "funny" (Un-sets, playtest cards) text invents words that are no game types and is not read for token types. */
+  set_type?: string;
+  card_faces?: { type_line?: string; oracle_text?: string }[];
 }
 
 export type IndexSubtype = Lexicon['subtypes'][number];
@@ -413,14 +422,27 @@ function classOf(lefts: readonly string[]): IndexSubtype['class'] | undefined {
  * Subtypes used on the faces of `cards` that `lex` does not list (CR 205.3 lags behind the newest sets). Only the classes whose words appear in rules text are
  * read (creature, spell, artifact, enchantment, land); a face whose type line has a word that is not a card type or supertype of the rules (Plane, Phenomenon,
  * Conspiracy, Universewalker) is not a card of the game and is skipped. Sorted by class and name: deterministic, no clock, no hash order.
+ *
+ * trek-3: also the creature types a card's rules text gives the creature tokens it creates ("create two 2/2 black Romulan creature tokens"): a token's
+ * subtypes are the ones the effect that creates it names (CR 111.4, 111.10), and a creature type printed only on a token is still a creature type
+ * (CR 205.3m) that other text can name. Read from token descriptions of the form "<P>/<T> [<colors>] <Capitalized words> [artifact|enchantment|...] creature
+ * token(s)", and not from cards of a funny set (Un-sets invent words there: "an 0/0 Blue Elemental creature token"). A word a type line already gives a
+ * class keeps that class.
  */
-export function indexSubtypes(cards: Iterable<IndexCard>, lex: Pick<Lexicon, 'cardTypes' | 'supertypes' | 'subtypes'>): IndexSubtype[] {
+export function indexSubtypes(cards: Iterable<IndexCard>, lex: Pick<Lexicon, 'cardTypes' | 'supertypes' | 'subtypes'> & Partial<Pick<Lexicon, 'colors'>>): IndexSubtype[] {
   const known = new Set(lex.subtypes.flatMap((s) => [s.singular, s.plural]));
   const typeWords = new Set([...lex.cardTypes, ...lex.supertypes, 'Tribal']);
   const found = new Map<string, IndexSubtype['class']>();
+  const tokenTypes = new Set<string>();
+  const tokenDesc = tokenDescription(lex.colors ?? []);
   for (const card of cards) {
     const faces = card.card_faces && card.card_faces.length > 1 ? card.card_faces : [card];
     for (const f of faces) {
+      if (card.set_type !== 'funny') {
+        for (const m of (f.oracle_text ?? card.oracle_text ?? '').matchAll(tokenDesc)) {
+          for (const w of m[1]!.trim().split(' ')) if (/^\p{Lu}[\p{L}'-]*$/u.test(w) && !known.has(w)) tokenTypes.add(w);
+        }
+      }
       const typeLine = f.type_line ?? card.type_line ?? '';
       const [left = '', right = ''] = typeLine.split(' — ');
       if (!right) continue;
@@ -434,10 +456,20 @@ export function indexSubtypes(cards: Iterable<IndexCard>, lex: Pick<Lexicon, 'ca
       }
     }
   }
+  for (const w of tokenTypes) if (!found.has(w)) found.set(w, 'creature');
   const order = ['creature', 'spell', 'artifact', 'enchantment', 'land'];
   return [...found.entries()]
     .sort((a, b) => order.indexOf(a[1]) - order.indexOf(b[1]) || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0))
     .map(([singular, cls]) => ({ singular, plural: pluralize(singular), class: cls }));
+}
+
+/**
+ * The token description of rules text whose capitalized words (group 1) are the token's subtypes: "<P>/<T>", the colors (CR 105.1, and "colorless", CR 105.2c)
+ * joined as Oracle joins them, the subtypes, other card types and supertypes in lower case, then "creature token(s)".
+ */
+function tokenDescription(colors: readonly { word: string }[]): RegExp {
+  const color = `(?:${[...colors.map((c) => c.word), 'colorless'].join('|')})`;
+  return new RegExp(`\\b(?:\\d+|X)/(?:\\d+|X) (?:${color}(?:(?:,? and |, )${color})* )?((?:\\p{Lu}[\\p{L}'-]* )+)(?:(?:artifact|enchantment|legendary|snow) )*creature tokens?\\b`, 'gu');
 }
 
 /** Reads cards.jsonl (one Oracle card per line). */
@@ -452,21 +484,135 @@ export function serializeIndexLexicon(subtypes: readonly IndexSubtype[]): string
   return `{\n  "_comment": ${JSON.stringify(comment)},\n  "subtypes": ${list}\n}\n`;
 }
 
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Creature types printed on cards that the rules do not list yet (the rules engine's list, statics/subtypes.ts)
+// ---------------------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Scryfall set types whose cards are cards of the game: the sets a player builds a deck from or opens (core, expansion, Commander precons, draft-innovation
+ * sets such as Conspiracy and Jumpstart). Not "masters" (it holds the Mystery Booster playtest cards: "Armored Dragon", "Cow", "Spuzzem"), "funny" (Un-sets),
+ * "memorabilia", "alchemy" (digital rebalances, whose "Chorus" the rules do not list either), "promo" and the rest: a type printed only there is not certain.
+ */
+export const GAME_SET_TYPES: readonly string[] = ['core', 'expansion', 'commander', 'draft_innovation'];
+
+/** Card types whose subtypes can stand on a creature's type line beside creature types ("Artifact Creature — Android Scientist", CR 205.3d). */
+const MIXABLE_CARD_TYPES: readonly string[] = ['Artifact', 'Enchantment', 'Land'];
+
+export interface PrintedCreatureEvidence {
+  /** The words the index proves to be creature types (before the rules' own words are taken away). */
+  readonly proved: readonly string[];
+  /** The words some card of any set prints as the subtype of a card that is not a creature (an artifact type, a land type, a spell type, a planeswalker type...). */
+  readonly otherClass: ReadonlySet<string>;
+}
+
+/**
+ * trek-10 (CR 205.3m): what the Oracle index says about creature types the rules do not list yet. A word is PROVED when
+ *   - a type line of a card of a game set (`GAME_SET_TYPES`) has it on a card whose card types are creature or kindred, alone or beside artifact, enchantment or
+ *     land ("Artifact Creature — Android Scientist": the same footing as a creature token that is an artifact, below), or a token description in the rules text
+ *     of such a card gives it to a creature token (as `indexSubtypes` reads them, "a 2/2 black Romulan creature token", "a 1/1 colorless Zorgian artifact creature
+ *     token"), and
+ *   - it is not in `otherClass`: no type line of ANY card, funny sets included, has it on a card that is not a creature (an artifact type, a land type, a spell
+ *     type, a planeswalker or battle type: "Key", "Cloud", "Chorus", "Communicator").
+ * A type line that also has a planeswalker, battle, instant or sorcery (a kindred spell) is not read: its subtypes are of other classes too and nothing says
+ * which. Type lines with a word that is no card type of the rules (Plane, Conspiracy, an Un-card's invention) are not read. Words of funny, playtest ("masters")
+ * and other sets that are not game sets prove nothing, and they keep a word out only when they print it as another class's subtype.
+ */
+export function printedCreatureEvidence(cards: Iterable<IndexCard>, lex: Pick<Lexicon, 'cardTypes' | 'supertypes'> & Partial<Pick<Lexicon, 'colors'>>): PrintedCreatureEvidence {
+  const typeWords = new Set([...lex.cardTypes, ...lex.supertypes, 'Tribal']);
+  const supertypes = new Set(lex.supertypes);
+  const creatureWords = new Set(['Creature', 'Kindred', 'Tribal']);
+  const tokenDesc = tokenDescription(lex.colors ?? []);
+  const word = /^\p{Lu}[\p{L}'-]*$/u;
+  const proved = new Set<string>();
+  const otherClass = new Set<string>();
+  for (const card of cards) {
+    const game = GAME_SET_TYPES.includes(card.set_type ?? '');
+    const faces = card.card_faces && card.card_faces.length > 1 ? card.card_faces : [card];
+    for (const f of faces) {
+      if (game) for (const m of (f.oracle_text ?? card.oracle_text ?? '').matchAll(tokenDesc)) for (const w of m[1]!.trim().split(' ')) if (word.test(w)) proved.add(w);
+      const [left = '', right = ''] = (f.type_line ?? card.type_line ?? '').split(' — ');
+      if (!right) continue;
+      const lefts = left.split(' ').filter(Boolean);
+      if (lefts.some((w) => !typeWords.has(w))) continue;
+      const creature = lefts.some((w) => creatureWords.has(w));
+      if (creature && !lefts.every((w) => creatureWords.has(w) || supertypes.has(w) || MIXABLE_CARD_TYPES.includes(w))) continue;
+      for (const w of right.replace('Time Lord', 'TimeLord').split(' ')) {
+        if (w === 'TimeLord' || !word.test(w)) continue;
+        if (!creature) otherClass.add(w);
+        else if (game) proved.add(w);
+      }
+    }
+  }
+  return { proved: [...proved], otherClass };
+}
+
+const byName = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+/**
+ * The list for statics/printed-creature-types.generated.json: the words the index proves (`printedCreatureEvidence`) and the words `previous` (the checked-in
+ * list) already has, less the words the rules list (any class, singular or plural) and the words some card prints as another class's subtype. Keeping what
+ * `previous` has means an OLDER index (the archive's default one, from before the Star Trek cards) cannot take a type away by being the one that regenerates it;
+ * a type leaves the list when the rules list it or an index shows it as another class's subtype. Sorted: deterministic, no clock, no hash order.
+ */
+export function printedCreatureTypes(
+  cards: Iterable<IndexCard>,
+  lex: Pick<Lexicon, 'cardTypes' | 'supertypes' | 'subtypes'> & Partial<Pick<Lexicon, 'colors'>>,
+  previous: readonly string[] = [],
+): string[] {
+  const known = new Set(lex.subtypes.flatMap((s) => [s.singular, s.plural]));
+  const ev = printedCreatureEvidence(cards, lex);
+  return [...new Set([...ev.proved, ...previous])].filter((w) => !ev.otherClass.has(w) && !known.has(w)).sort(byName);
+}
+
+/**
+ * The staleness check of the checked-in list against a local index, ONE WAY: what is wrong with `listed` given this index. Every word the index proves must be
+ * listed (a newer index that adds a creature type fails until the generator reruns), and no listed word may be one the rules list or one this index prints as another
+ * class's subtype. A word listed that this index does not prove is fine: an older index (the archive's default, 2026-10-11) has fewer cards, and regenerating from
+ * it must not be what the check asks for.
+ */
+export function printedCreatureProblems(
+  listed: readonly string[],
+  cards: Iterable<IndexCard>,
+  lex: Pick<Lexicon, 'cardTypes' | 'supertypes' | 'subtypes'> & Partial<Pick<Lexicon, 'colors'>>,
+): string[] {
+  const known = new Set(lex.subtypes.flatMap((s) => [s.singular, s.plural]));
+  const ev = printedCreatureEvidence(cards, lex);
+  const has = new Set(listed);
+  return [
+    ...ev.proved.filter((w) => !known.has(w) && !ev.otherClass.has(w) && !has.has(w)).sort(byName).map((w) => `${w}: the index proves it a creature type, the list lacks it`),
+    ...listed.filter((w) => known.has(w)).map((w) => `${w}: the rules list it now`),
+    ...listed.filter((w) => ev.otherClass.has(w)).map((w) => `${w}: the index prints it as another class's subtype`),
+  ];
+}
+
+export function serializePrintedCreatureTypes(types: readonly string[]): string {
+  const comment =
+    'GENERATED by scripts/gen-lexicon.ts (trek-10) from the local Oracle index: the creature types that cards of the game\'s own sets print and the CR edition of lexicon.generated.json does not list yet (certain ones only: see printedCreatureEvidence). Regenerating keeps the types already listed, so an older index cannot take one away. Do not edit: run `npx tsx scripts/gen-lexicon.ts`. A test fails if the local index proves a type this file lacks, or this file lists one the index prints as another class\'s subtype (skipped on a machine without the index). Words only.';
+  const list = types.length === 0 ? '[]' : `[\n${types.map((x) => `    ${JSON.stringify(x)}`).join(',\n')}\n  ]`;
+  return `{\n  "_comment": ${JSON.stringify(comment)},\n  "creatureTypes": ${list}\n}\n`;
+}
+
 function main(): void {
   const check = process.argv.includes('--check');
+  // trek-10: `--index-only` is for a machine without the rules (a cloud session): the checked-in lexicon.generated.json, a function of the CR edition alone, stands for
+  // them, and only the two files read from the Oracle index are written (or checked)
+  const indexOnly = process.argv.includes('--index-only');
   const crRoot = findCrRoot();
-  if (!crRoot) {
-    console.error('gen-lexicon: the Comprehensive Rules (rules/cr) were not found. Set OPENMTG_RULES_DIR or run from a checkout that has them.');
+  if (!crRoot && !indexOnly) {
+    console.error('gen-lexicon: the Comprehensive Rules (rules/cr) were not found. Set OPENMTG_RULES_DIR or run from a checkout that has them (--index-only: only the files read from the Oracle index).');
     process.exit(2);
   }
-  const lex = generateLexicon(crRoot);
-  const text = serializeLexicon(lex);
+  const lex = crRoot ? generateLexicon(crRoot) : (JSON.parse(readFileSync(LEXICON_PATH, 'utf8')) as Lexicon);
+  const text = crRoot ? serializeLexicon(lex as Generated) : undefined;
   const cardsFile = findCardsFile();
-  const indexText = cardsFile ? serializeIndexLexicon(indexSubtypes(readIndexCards(cardsFile), lex)) : undefined;
+  const indexCards = cardsFile ? readIndexCards(cardsFile) : undefined;
+  const indexText = indexCards ? serializeIndexLexicon(indexSubtypes(indexCards, lex)) : undefined;
+  const listedPrinted = existsSync(PRINTED_CREATURE_TYPES_PATH) ? (JSON.parse(readFileSync(PRINTED_CREATURE_TYPES_PATH, 'utf8')) as { creatureTypes: string[] }).creatureTypes : [];
+  const printedText = indexCards ? serializePrintedCreatureTypes(printedCreatureTypes(indexCards, lex, listedPrinted)) : undefined;
   const read = (path: string): string => (existsSync(path) ? readFileSync(path, 'utf8').replace(/\r\n/g, '\n') : '');
   if (check) {
     let stale = false;
-    if (read(LEXICON_PATH) !== text) {
+    if (text !== undefined && read(LEXICON_PATH) !== text) {
       console.error('gen-lexicon: parser/lexicon.generated.json is stale. Run: npx tsx scripts/gen-lexicon.ts');
       stale = true;
     }
@@ -474,16 +620,27 @@ function main(): void {
       console.error('gen-lexicon: parser/lexicon.index.generated.json is stale. Run: npx tsx scripts/gen-lexicon.ts');
       stale = true;
     }
+    // one way (an older index proves fewer types and must not be asked to drop any): see printedCreatureProblems
+    for (const problem of indexCards ? printedCreatureProblems(listedPrinted, indexCards, lex) : []) {
+      console.error(`gen-lexicon: statics/printed-creature-types.generated.json is stale: ${problem}. Run: npx tsx scripts/gen-lexicon.ts`);
+      stale = true;
+    }
     if (stale) process.exit(1);
     console.log('gen-lexicon: up to date');
     return;
   }
-  writeFileSync(LEXICON_PATH, text);
-  console.log(`gen-lexicon: wrote ${LEXICON_PATH} (CR ${JSON.parse(text).crEdition})`);
+  if (text !== undefined) {
+    writeFileSync(LEXICON_PATH, text);
+    console.log(`gen-lexicon: wrote ${LEXICON_PATH} (CR ${JSON.parse(text).crEdition})`);
+  }
   if (indexText !== undefined) {
     writeFileSync(INDEX_LEXICON_PATH, indexText);
     console.log(`gen-lexicon: wrote ${INDEX_LEXICON_PATH} (${(JSON.parse(indexText) as { subtypes: unknown[] }).subtypes.length} subtypes from the Oracle index)`);
   } else console.log('gen-lexicon: no Oracle index on this machine, lexicon.index.generated.json left as it is');
+  if (printedText !== undefined) {
+    writeFileSync(PRINTED_CREATURE_TYPES_PATH, printedText);
+    console.log(`gen-lexicon: wrote ${PRINTED_CREATURE_TYPES_PATH} (${(JSON.parse(printedText) as { creatureTypes: unknown[] }).creatureTypes.length} creature types)`);
+  } else console.log('gen-lexicon: no Oracle index on this machine, printed-creature-types.generated.json left as it is');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) main();

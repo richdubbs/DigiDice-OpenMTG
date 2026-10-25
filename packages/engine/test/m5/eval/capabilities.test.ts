@@ -27,6 +27,7 @@ const CONDITIONS: Record<Condition['cond'], boolean> = {
   firstTime: true, someMatch: true, // Standard round 5, r5-trig (CR 603.4, 603.2c)
   prime: true, // std-rx1
   share: true, // std-cardcopy-1 (CR 205.2a, 105.2)
+  firstSpellCast: true, // trek-2 (CR 601.2i, 707.10)
 };
 const QUANTITIES: Record<Exclude<Quantity, number>['q'], boolean> = {
   X: true, var: true, count: true, countPlayers: true, stat: true, life: true, zoneSize: true, counters: true, devotion: true, distinct: true, happenedCount: true, spellsBefore: true, eventAmount: true,
@@ -59,6 +60,7 @@ const QUANTITIES: Record<Exclude<Quantity, number>['q'], boolean> = {
   chosenNumber: true, // CLOUD std-misc (CR 608.2d, 607.2d)
   manaSymbols: true, // Standard round 5, r5-trig (CR 107.4, 202.1)
   spellTargetTotal: true, costCount: true, // std-costs-1 (CR 601.2f, 601.2b)
+  countersPut: true, // trek-6 (CR 122.6, 608.2c)
 };
 const REFS: Record<ObjRef['ref'] | PlayerRef['ref'], true> = {
   otherOf: true, // std-rx30

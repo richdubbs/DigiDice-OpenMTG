@@ -56,6 +56,7 @@ describe('capability table (design 5.2)', () => {
       'modesChosen', // Standard round 3, r3-trig (CR 700.2, 601.2b): the modes chosen for the spell of a cast trigger
       'loyaltyRemoved', // Standard round 3, r3-trig (CR 606.4): the loyalty counters the cost of the triggering activation removed
       'spellTargetTotal', 'costCount', // std-costs-1 (CR 601.2f, 601.2b): the targets' total mana value, the number announced for an optional cost
+      'countersPut', // trek-6
     ].sort());
     const b = board();
     expect(evalQty(b.cx, { q: 'dieResult' })).toBeUndefined(); // no die rolled in this resolution: fails to determine (CR 608.2b)

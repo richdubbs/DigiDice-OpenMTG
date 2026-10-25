@@ -224,7 +224,20 @@ export function linkExiled(abilities: readonly AbilityDef[], permanentFace = tru
   // CR 607.2a links two abilities: the instruction that exiles is in another ability than the one that reads "the exiled card"
   const found: number[] = [];
   abilities.forEach((a, i) => { if (!consumers.includes(i)) walkJson(a, (n) => { if (exilesWithoutLink(n)) found.push(i); }); });
-  if (abilities.some((a, i) => consumers.includes(i) && mentionsExile(a))) return { producers, unlinked: consumers, consumers };
+  if (abilities.some((a, i) => consumers.includes(i) && mentionsExile(a))) {
+    // TREK-6 (CR 607.2a): the one reader is also the one ability that exiles (selfLinkable), and nothing else on the face exiles: it is its own producer
+    const mine = consumers.length === 1 ? abilities[consumers[0]!]! : undefined;
+    const elsewhere = abilities.some((a, i) => {
+      if (consumers.includes(i)) return false;
+      if (a.kind === 'keyword' && EXILED_LINK_KEYWORDS.has(a.keyword)) return true;
+      let r = evidenceCostParts(a as unknown as Record<string, unknown>).length > 0;
+      walkJson(a, (n) => { if (exilesWithoutLink(n) || (permanentFace && exileCostParts(n).length > 0) || replacementExilesWithoutLink(n)) r = true; });
+      return r;
+    });
+    if (mine === undefined || !permanentFace || elsewhere || !selfLinkable(mine)) return { producers, unlinked: consumers, consumers };
+    producers.set(consumers[0]!, withExiledLink(mine));
+    return { producers, unlinked: [], consumers };
+  }
   // FAST5 T59 (CR 607.2q): an additional cost of a permanent spell that exiles cards is an instruction that exiles too; the cards it exiled are linked as the instruction's are
   const costs: number[] = [];
   if (permanentFace) abilities.forEach((a, i) => { if (!consumers.includes(i)) walkJson(a, (n) => { if (exileCostParts(n).length > 0) costs.push(i); }); });
@@ -336,6 +349,34 @@ function readsOnlyExiledWith(a: AbilityDef): boolean {
     return undefined;
   });
   return all > 0 && all === described;
+}
+
+/**
+ * TREK-6 (CR 607.2a): an ability that exiles cards itself and reads, besides, only "<cards> exiled with ~" (never "the exiled card"): the cards ITS earlier
+ * resolutions exiled (Borg Cube: "assimilate a creature card exiled with it. If you can't, exile up to one target creature."). The link store is the object's, so one
+ * ability is its own producer. Only when every exile in it is a plain `move` to exile (no `until`, no exile cost, no `exileUntil`) and at least one is, so that
+ * `withExiledLink` records every card it exiles and nothing else exiles; linkExiled still requires that nothing else on the face exiles.
+ */
+function selfLinkable(a: AbilityDef): boolean {
+  let reads = 0;
+  let described = 0;
+  let moves = 0;
+  let zones = 0;
+  let other = false;
+  walkJson(a, (n) => {
+    const is = n['is'] as Record<string, unknown> | undefined;
+    if (n['ref'] === 'linked' && n['link'] === EXILED_LINK) reads++;
+    // the description of the cards read, "<cards> exiled with ~": in exile (the hole's filter) or in any zone (a template's choice among them)
+    if ((n['zone'] === 'exile' || n['zone'] === 'any') && is?.['ref'] === 'linked' && is['link'] === EXILED_LINK) { described++; return undefined; }
+    if (n['zone'] === 'exile') zones++;
+    // a card exiled face down has no characteristics (CR 406.3a, rules/base-parts/face-down.ts): a choice among "cards exiled with ~" by their types would see every one of them
+    // (Scarlet Witch, Chaotic Avenger), so a face-down exile is never read here
+    const faceDown = n['op'] === 'move' && typeof n['to'] === 'object' && n['to'] !== null && (n['to'] as Record<string, unknown>)['faceDown'] === true;
+    if (exilesWithoutLink(n)) { if (n['op'] === 'move' && n['until'] === undefined && !faceDown) moves++; else other = true; }
+    if (exileCostParts(n).length > 0 || n['kind'] === 'exileFrom') other = true;
+    return undefined;
+  });
+  return !other && reads > 0 && reads === described && moves > 0 && zones === moves;
 }
 
 /** A copy of an ability whose `move` to exile records what it exiled under the link "exiled" (CR 607.2a, design 3.9). */
@@ -743,7 +784,8 @@ function parseFace(ctx: FaceContext, opts: ParseOptions, cardHasX: boolean, cycl
       // way, so the G10 retry gives the ability the form it had before the template existed instead of the face-wide link making all of it manual (Wall of Mourning).
       // A reader through an older template keeps WP23's reading (the face-wide link makes it a manual ability)
       const newReader = readsExiledLink(v.def) && res.templates.some((id) => id.startsWith('eff.r3refs.')) && !exileProducerPossible(s);
-      const ownExile = v.def.kind !== 'manual' && (readsOwnExile(v.def) || newReader);
+      // TREK-6 (CR 607.2a): ... unless the ability is its own producer and nothing else on the face can exile (selfLinkable; linkExiled links it)
+      const ownExile = v.def.kind !== 'manual' && ((readsOwnExile(v.def) && !(v.def.kind !== 'spell' && selfLinkable(v.def) && !exileProducerPossible(s))) || newReader);
       if (ownExile) {
         const d = v.def;
         const shape = d.kind === 'triggered' ? 'triggered' : d.kind === 'activated' ? 'activated' : d.kind === 'spell' ? 'spell' : 'static';

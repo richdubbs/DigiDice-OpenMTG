@@ -160,4 +160,6 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   // std-ry3 (wave 2, Commander lane ry3)
   'awaken 3 -- {5}{B}{B}': kw('awaken', 'Awaken 3—{5}{B}{B}', { amount: 3, cost: mana('{5}{B}{B}') }), // CR 702.113a
   provoke: kw('provoke', 'Provoke'), // CR 702.39a
+  // trek-1 (lane trek, Star Trek reminder text): an alternative cost from the graveyard that also returns a creature you control, exiled on leaving the stack
+  'beam me up {2}{U}': kw('beam me up', 'Beam me up {2}{U}', { cost: mana('{2}{U}') }),
 };

@@ -1,0 +1,5 @@
+# trek-2 (lane trek, Star Trek cards): the round's golden cards (test/m5/golden/cards/trek-2-review.json)
+Seven of Nine
+Dathon and Picard at El-Adrel
+First Contact
+Dr. Beverly Crusher

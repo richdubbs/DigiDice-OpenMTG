@@ -179,11 +179,11 @@ describe('std-rx31 parser, renderer and engine support (hole readings, folds, no
     expect(abilitiesOf('Sorcery', text)).toContain('"filter":{"doubleFaced":true,"isCard":true}');
     expect(level('Sorcery', text.replace('double-faced', 'single-faced'))).not.toBe('full');
   });
-  it('CR 102.1, 603.4: "if a player controls no creatures" is at least one player who controls none; "an opponent controls no creatures" keeps its own reading', () => {
+  it('CR 102.1, 603.4: "if a player controls no creatures" is at least one player who controls none; "an opponent controls no creatures" is one opponent who controls none (opp-port-1, CR 102.3)', () => {
     const text = 'At the beginning of your end step, if a player controls no creatures, draw a card.';
     expect(level('Enchantment', text)).toBe('full');
     expect(abilitiesOf('Enchantment', text)).toContain('"controlsIs":{"filter":{"types":["Creature"]},"op":"==","n":0}');
-    expect(abilitiesOf('Enchantment', 'At the beginning of your end step, if an opponent controls no creatures, draw a card.')).not.toContain('controlsIs');
+    expect(abilitiesOf('Enchantment', 'At the beginning of your end step, if an opponent controls no creatures, draw a card.')).toContain('"of":{"ref":"each","who":"opponent"},"controlsIs":{"filter":{"types":["Creature"]},"op":"==","n":0}');
     expect(level('Enchantment', 'At the beginning of your end step, if a player controls no creature, draw a card.')).not.toBe('full');
   });
   it('CR 603.10a, 603.4: a past-tense "if ~ was a creature" in a trigger on the object itself leaving the battlefield reads what it was as it left', () => {

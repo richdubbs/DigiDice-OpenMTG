@@ -14,7 +14,7 @@ import type { ObjHandle, ZoneKind } from '../types/state';
 import { installDamageFunnel, installLifeLossFunnel, installSimultaneousDamageFunnel, type DamageItem, type DamageOptions } from '../rules/damage';
 import { installCostCounterFunnel } from '../rules/pay-parts';
 import { installPayLifeFunnel } from '../rules/life';
-import { installDestroyFunnel, type DestroyOptions, type DestroyResult } from '../rules/destroy';
+import { installDestroyFunnel, installDestroyManyFunnel, type DestroyOptions, type DestroyResult } from '../rules/destroy';
 import type { Proposed } from './api';
 import { ruleForbids } from './cant';
 import { installEntryPipeline, performEvent, type CallerOptions, type Performed } from './perform';
@@ -22,7 +22,8 @@ import { healMarkedDamage } from './perform-events';
 import './mana-ability'; // WP31: installs the resolver of mana abilities decided as they resolve (rules/mana.ts, CR 605.3b)
 import './until-return'; // FAST4 MX1: installs the second one-shot effect of a move "until" an event (core/durations.ts, CR 610.3)
 import './merge-leave'; // M6-9: installs where the card components of a token merged permanent go (core/move-parts/components.ts, CR 730.3e)
-import { affectedPlayer, isZero, proposeResult, runPipeline } from './propose';
+import { affectedPlayer, installProposeTogether, isZero, proposeResult, runPipeline } from './propose';
+import { charsOfObject, hasKeyword } from '../rules/characteristics';
 import { shieldBudgetLeft } from './replace-bodies';
 import { applicable, handleOf, semOf } from './replacements';
 import { collectingAfter, installNestedProposer, installNestedRunner, installSemOf } from './nested';
@@ -131,6 +132,16 @@ function apnap(g: Game): PlayerId[] {
  * triggers, CR 603.2c); what the bodies deferred (CR 615.5) happens after all of them. `callers`: the milestone 3/4 options of each event's call-site.
  */
 export function proposeSimultaneous(g: Game, events: (Proposed | null)[], callers: CallerOptions[] = []): (Performed | null)[] {
+  const destroyed = events.flatMap((e) => (e && e.ev === 'destroy' ? [e.object.id] : []));
+  if (destroyed.length > 0 && g.indestructibleAtProposal === null) {
+    // trek-8 re-review (CR 608.2f, 702.12b): who is indestructible is settled for the whole batch before the first permanent is destroyed
+    g.indestructibleAtProposal = new Map(destroyed.map((id) => [id, hasKeyword(charsOfObject(g.s, g.obj(id)), 'indestructible')]));
+    try {
+      return proposeSimultaneous(g, events, callers);
+    } finally {
+      g.indestructibleAtProposal = null;
+    }
+  }
   const shares = divideShields(g, events.map((e) => (e && e.ev === 'damage' ? e : null)));
   const rank = new Map(apnap(g).map((p, i) => [p, i]));
   const order = events.map((_e, i) => i).filter((i) => events[i] !== null)
@@ -173,6 +184,17 @@ function destroyFunnel(g: Game, id: ObjectId, opts: DestroyOptions): DestroyResu
   return r?.destroyed ?? 'none';
 }
 
+/** trek-8 review (CR 608.2f, 704.3): the destructions of one batch, each proposed before any permanent leaves (`proposeSimultaneous`; rules/destroy.ts#destroyMany). */
+function destroyManyFunnel(g: Game, items: readonly { id: ObjectId; opts: DestroyOptions }[]): DestroyResult[] {
+  const events = items.map(({ id, opts }): Proposed | null => {
+    const o = g.maybeObj(id);
+    if (!o || o.zone !== 'battlefield') return null;
+    const canRegenerate = opts.cantRegenerate !== true && !ruleForbids(g, { action: 'beRegenerated', subject: id });
+    return { ev: 'destroy', object: { id, zone: o.zone }, canRegenerate, ...(opts.stateBased === true ? { stateBased: true as const } : {}) };
+  });
+  return proposeSimultaneous(g, events, items.map(({ opts }) => ({ destroy: opts }))).map((r) => r?.destroyed ?? 'none');
+}
+
 installZoneChangeFunnel(zoneFunnel);
 installTokenFunnel(tokenFunnel);
 installDamageFunnel(damageFunnel);
@@ -184,6 +206,8 @@ installLifeLossFunnel((g, player, amount, cause) => proposeResult(g, { ev: 'life
 // std-library-4 (CR 119.4, 614.1a): a payment of life is proposed, so "If you would pay life ..., ... instead" replaces it (effects/proposal-kinds/pay-life.ts)
 installPayLifeFunnel((g, player, amount, cause, rules) => { proposeResult(g, { ev: 'payLife', player, amount, cause, rules }); });
 installDestroyFunnel(destroyFunnel);
+installDestroyManyFunnel(destroyManyFunnel);
+installProposeTogether((g, events) => proposeSimultaneous(g, [...events]));
 installEntryPipeline(runPipeline);
 // M6-1 (m6 design 3.1.5, 3.2): what the replacement bodies need from the interpreter (effects/nested.ts)
 installNestedRunner((cx, steps) => {

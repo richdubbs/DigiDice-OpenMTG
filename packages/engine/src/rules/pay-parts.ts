@@ -224,6 +224,20 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
       // FAST5X E7: "the creature that was returned" (sneak, CR 702.190b) reads them as they last existed on the battlefield (CR 608.2h)
       (paid.returned ??= []).push(...picked);
       return;
+    case 'putIntoLibrary': {
+      // trek-9 (CR 118.3, 401.4, 400.3): the source itself goes to its owner's library, to the position the part names (one card: no order to choose); it is a card
+      // the effect may look for no more (CR 400.7), so the cost is paid as moved, and a replacement that keeps it elsewhere makes the cost unpayable (CR 614.17b)
+      for (const id of picked) {
+        const o = g.maybeObj(id);
+        if (!o || o.zone !== part.zone) gone(id);
+        const nm = g.nameOf(id);
+        const n = moveObject(g, id, 'library', { cause: 'putIntoLibrary', position: part.position });
+        if (n === null && g.maybeObj(id)?.zone === part.zone) throw new IllegalAction(`${nm} can't pay for ${label}: that event can't happen.`, ['CR 614.17b', 'CR 118.3']);
+        if (n) paid.costObjects.push(n);
+        g.log(`${name} puts ${nm} from their ${part.zone} on the ${part.position} of their library (cost of ${label}).`, { rules: ['CR 401.4', 'CR 118.3'], level: 'info' });
+      }
+      return;
+    }
     case 'exileFrom': {
       // FAST5X E13: remember what the cards became in exile (CR 400.7j): the source ("Exile this permanent", returned by craft, CR 702.167a) and the others
       // (craft's materials, "the exiled cards used to craft it", CR 702.167c)

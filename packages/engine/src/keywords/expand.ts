@@ -133,8 +133,15 @@ function fillText(template: string, kw: KeywordAbilityDef, data: KeywordDefData)
     .replace(/\{filter\}/g, () => argText(kw, data));
 }
 
-/** r5-cost: the keywords whose "cost is equal to its mana cost" keyword expansion substitutes (CR 702.180a, 702.128a). */
-const COST_IS_MANA_COST_EXPANDED: ReadonlySet<string> = new Set(['harmonize', 'embalm']);
+/** r5-cost: the keywords whose "cost is equal to its mana cost" keyword expansion substitutes (CR 702.180a, 702.128a; trek-7: beam me up, "The beam me up cost is equal to that spell's mana cost"). */
+const COST_IS_MANA_COST_EXPANDED: ReadonlySet<string> = new Set(['harmonize', 'embalm', 'beam me up' /* trek-7: Scotty, Miracle Worker */]);
+
+/**
+ * trek-7 (CR 118.9, 601.2b; Scotty, Miracle Worker): the keywords of COST_IS_MANA_COST_EXPANDED whose cost is the mana cost of the FACE being cast, so a granted instance is
+ * not expanded with the object's own mana cost when it is granted (a split card in a graveyard has both halves' costs together, an Adventurer the creature's): actions/cast-options.ts
+ * #castOptionsOf expands it with the mana cost of the face cast now, as it reads a granted flashback's.
+ */
+export const MANA_COST_OF_FACE_CAST: ReadonlySet<string> = new Set(['beam me up']);
 
 /**
  * The abilities a keyword instance stands for (empty for flag and hook keywords). Throws `KeywordExpandError` when the template needs a parameter the instance

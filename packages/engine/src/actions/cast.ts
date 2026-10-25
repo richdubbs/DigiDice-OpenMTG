@@ -30,7 +30,7 @@ import type { Action } from '../types/actions';
 import type { CostDef, CounterSpec, Destination, EffectProgram, KeywordAbilityDef, Quantity } from '../types/ability';
 import type { CardDef } from '../types/card';
 import type { ObjectId, PlayerId } from '../types/ids';
-import type { CostsPaid, GameObject, GameState, ManaUnit } from '../types/state';
+import { castOriginOf, type CostsPaid, type GameObject, type GameState, type ManaUnit } from '../types/state';
 import { matchesFilter } from '../rules/filter';
 import { filterCtxOutside } from '../rules/filter-env';
 import { putReflexiveTrigger } from '../triggers/stack';
@@ -62,7 +62,7 @@ import { costModsFor, modifyMana, type CostModHit } from '../statics/costmods';
 import { spellTargetTotal } from '../rules/target-total';
 import { charsViewOf, overlayAsSpell } from '../statics/rule-sources';
 import { evalQuantity } from '../statics/match';
-import { anyManaTypePermit, type GrantedAlternative, grantedAlternatives, graveyardInsteadPermit, graveyardMethod, graveyardMethodIndex, graveyardPermitUses, type GraveyardUse, isGrantedAltMethod, isLinkedFreeMethod, isNamedFreeMethod, lifeCostOf, linkedPermitLifeCost, linkedPermitUses, type LinkedUse, namedPermit, namedPermitAdventureOnly, namedPermitIncrease, namedSingleKey, paidCastPermitted, playPermitted, staticAnyManaType, topPermitFor } from '../statics/play-permits';
+import { anyManaTypePermit, type GrantedAlternative, grantedAlternatives, graveyardInsteadPermit, graveyardMethod, graveyardMethodIndex, graveyardPermitUses, type GraveyardUse, isGrantedAltMethod, isLinkedFreeMethod, isNamedFreeMethod, lifeCostOf, linkedPermitLifeCost, linkedPermitUses, type LinkedUse, namedPermit, namedPermitAdventureOnly, namedPermitIncrease, namedSingleKey, outsideCastUses, paidCastPermitted, playPermitted, staticAnyManaType, topPermitFor } from '../statics/play-permits';
 import { installResolutionCaster, type ResolutionCastOptions } from '../effects/cast-hook';
 import { recordCastChecks } from './cast-checks';
 import { lockNextSpellKeywords, takeNextSpellRiders } from '../core/turn-effects';
@@ -317,12 +317,21 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
     if (requestedFace !== undefined && requestedFace !== 0) return { denial: deny("A fused cast uses both halves; don't choose one.", 'CR 702.102a') };
   }
 
+  // trek-11 (CR 400.11b, 601.3): the staging object of a card played from outside the game (core/special/play-outside.ts) is cast the plain way, with its mana cost, as a
+  // permanent spell some permission that covers cards outside the game allows (checked below on the face as the spell it would be)
+  const outside = o.fromOutside === true;
+  if (outside && (during || castMethod !== undefined || fused || o.zone !== 'hand' || o.owner !== player)) {
+    return { denial: deny('A card from outside the game is cast the plain way, with its mana cost, by its owner.', 'CR 400.11b', 'CR 601.3') };
+  }
+
   // Which face (CR 709.3, 712.11b, 715.3).
   const transformed = during?.transformed === true;
   const allowed = castableFaces(def, transformed);
   if (transformed && allowed.length === 0) return { denial: deny(`${def.name} is not a transforming double-faced card, so it can't be cast transformed.`, 'CR 712.11a') };
   const face = fused ? 0 : requestedFace ?? allowed[0] ?? 0; // CR 712.11a: cast transformed, its back face is up
   if (!allowed.includes(face) || face >= def.faces.length) return { denial: deny("That face of the card can't be cast.", 'CR 712.8c', 'CR 709.3', 'CR 715.3') };
+  // trek-11 (CR 712.8a, 400.11): outside the game a card has its front face's characteristics only, so only the front face is played from there
+  if (outside && face !== 0) return { denial: deny("Outside the game a card has only its front face's characteristics: only the front face can be cast from there.", 'CR 712.8a', 'CR 400.11') };
   const onAdventure = o.zone === 'exile' && o.chosen?.onAdventure === true;
   if (onAdventure && face !== 0) return { denial: deny('A card on an adventure can only be cast as the creature (or other normal) half.', 'CR 715.3d') };
   // r5-dig (CR 715.3, 715.3a): a card an effect lets you cast from where it is only "as an Adventure" is cast as that face only; its other face only by another
@@ -425,6 +434,13 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
     gyUse = uses[gyPick === null ? 0 : gyPick - 1];
     if (gyUse === undefined) return { denial: deny(`There is no such way to cast ${chars.name} from your graveyard.`, 'CR 601.3') };
   }
+  // trek-11 (CR 400.11b, 601.3, 601.3e): a card played from outside the game: a permission that covers cards outside the game must cover this face as the spell it
+  // would be; all such uses spend the one counter of the permission (shared with its graveyard casts and land plays)
+  if (outside) {
+    const uses = outsideCastUses(s, player, id, chars);
+    if (uses.length === 0) return { denial: deny(`No effect lets you cast ${chars.name} from outside the game.`, 'CR 400.11b', 'CR 601.3', 'CR 601.3e') };
+    gyUse = uses[0];
+  }
   // std-rx27 (CR 601.3, 601.3e, 607.2a): a card in exile that only linked permissions allow (one that names the card wins, as above): one of them must cover this
   // face as the spell it would be; a free one is used through its granted alternative cost (grantedAlternatives), a paid one picked like a graveyard one
   const byLinked = permitted && o.zone === 'exile' && !fused && !namedPermit(s, player, id, false);
@@ -443,6 +459,9 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
 
   if (alt?.name === 'flashback') {
     if (!hasType(chars, 'Instant') && !hasType(chars, 'Sorcery')) return { denial: deny('Flashback only works on instants and sorceries.', 'CR 702.34a') };
+  } else if (alt?.name === 'beam me up') {
+    // trek-7 (Star Trek reminder text of Scotty, Miracle Worker, "Only instant and sorcery spells can be cast this way"; the set is newer than the rules in rules/cr)
+    if (!hasType(chars, 'Instant') && !hasType(chars, 'Sorcery')) return { denial: deny('Beam me up only works on instants and sorceries.', 'CR 118.9') };
   } else if (!alt && chars.manaCost === null && !during?.free) {
     return { denial: deny(`${chars.name} has no mana cost, so it can't be cast without an alternative cost.`, 'CR 202.1b', 'CR 118.6') };
   }
@@ -494,7 +513,7 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   }
   // p2-cost-statics-1 (CR 118.9, 601.2b): an alternative cost's condition reads this turn's history ("If an opponent cast a blue spell this turn", model/forms.ts
   // 'altCost'), complete whenever a spell can be cast (it is written before a player receives priority, CR 117.3)
-  const aenv: AnnounceEnv = { s, player, sourceId: id, costsPaid: alt ? { alternative: alt.name } : {}, castFrom: o.zone, ...(alt?.when ? { history: true as const } : {}) };
+  const aenv: AnnounceEnv = { s, player, sourceId: id, costsPaid: alt ? { alternative: alt.name } : {}, castFrom: castOriginOf(o), ...(alt?.when ? { history: true as const } : {}) };
   if (alt?.when) {
     // p2-modal-2 (CR 601.2b, 118.9): the alternative cost is chosen as the spell is cast, so "If you've cast another white spell this turn" reads the turn's history so
     // far (model/cap-walk.ts declares the condition in position 'mode', as a mode count's override: both read the history, model/forms.ts)
@@ -762,7 +781,7 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
   const fromCommandZone = info.object.zone === 'command' && isCommander(g.s, info.object);
 
   // CR 601.2a: the card becomes a spell on the stack, controlled by the caster.
-  const castFrom = info.object.zone;
+  const castFrom = castOriginOf(info.object); // trek-11 (CR 400.11): 'outside' for a card from outside the game
   const stackId = moveObject(g, info.object.id, 'stack', { face: info.face, controller: player, cause: 'cast', ...(faceDown ? { faceDown: true } : {}) }); // M6-3: CR 708.4
   if (!stackId) throw new IllegalAction('The card could not be put on the stack.', ['CR 601.2a']);
   if (info.topOnce !== undefined) g.s.turnActivations[info.topOnce] = (g.s.turnActivations[info.topOnce] ?? 0) + 1; // FAST5X E14: "once each turn" (CR 601.3)
@@ -933,7 +952,7 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
   const extras = (paid.additional ?? []).filter((n) => !isKickerName(n));
   const taxText = taxCost?.mana ? manaCostText(taxCost.mana) : `${taxCost?.other?.find((x) => x.kind === 'payLife')?.amount ?? 0} life`; // CMD2: a tax paid in life (CR 903.8)
   const taxPaid = taxCost ? ` from the command zone (commander tax ${taxText})` : fromCommandZone ? ' from the command zone'
-    : info.gyPermit ? ` from their graveyard (${info.gyPermit.source})` : ''; // C10
+    : info.gyPermit ? (castFrom === 'outside' ? ` from outside the game (${info.gyPermit.source})` : ` from their graveyard (${info.gyPermit.source})`) : ''; // C10; trek-11
   g.log(`${name} casts ${spellName}${taxPaid}${how}${info.fused ? ' as a fused split spell' : ''}${x > 0 ? ` with X = ${x}` : ''}${paid.kicked ? (paid.kicked > 1 ? ` kicked ${paid.kicked} times` : ' kicked') : ''}${extras.length ? ` (${extras.join(', ')})` : ''}${describeTargets(g, spell.stack.targets)}.`, {
     rules: ['CR 601.2', ...(info.alt?.name === 'flashback' ? ['CR 702.34a'] : []), ...(info.fused ? ['CR 702.102a'] : []), ...(fromCommandZone ? ['CR 903.8'] : []), ...(info.gyPermit ? ['CR 601.3'] : [])],
     level: 'action',

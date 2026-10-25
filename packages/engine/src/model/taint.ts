@@ -67,7 +67,7 @@ export function ownReferences(step: Rec, path: string): Taint {
     else if ((n.def === 'ObjRef' || n.def === 'PlayerRef') && v['ref'] === 'linked') links.add(v['link'] as string);
     else if ((n.def === 'ObjectFilter.chosen' || (n.def === 'Condition' && v['cond'] === 'chosen')) && typeof v['link'] === 'string') links.add(v['link']);
     else if (n.def === 'Condition' && v['cond'] === 'did') names.add(v['step'] as string);
-    else if (n.def === 'Quantity' && (v['q'] === 'resultCount' || v['q'] === 'excessDamage' || v['q'] === 'lifeLost' || v['q'] === 'countersRemoved' || v['q'] === 'votes' || v['q'] === 'damageDealt')) names.add(v['step'] as string); // FAST5X E16: excessDamage
+    else if (n.def === 'Quantity' && (v['q'] === 'resultCount' || v['q'] === 'excessDamage' || v['q'] === 'lifeLost' || v['q'] === 'countersRemoved' || v['q'] === 'countersPut' || v['q'] === 'votes' || v['q'] === 'damageDealt')) names.add(v['step'] as string); // FAST5X E16: excessDamage
     else if (n.def === 'Quantity' && v['q'] === 'var') vars.add(v['name'] as string);
     return undefined;
   }, { path });
@@ -100,6 +100,7 @@ export function poisonedSteps(list: Rec[], path: string, culprits: ReadonlySet<s
       if (step['op'] !== 'forEach' && typeof step['as'] === 'string') names.add(step['as']);
       if (step['op'] === 'piles') for (const k of ['chosen', 'other']) if (typeof step[k] === 'string') names.add(step[k] as string);
       if (step['op'] === 'revealUntil' && typeof step['revealed'] === 'string') names.add(step['revealed']); // r3-dig: every card revealed
+      if (step['op'] === 'exileUntil' && typeof step['exiled'] === 'string') names.add(step['exiled']); // trek-7: every card exiled
       if (typeof step['cantAs'] === 'string') names.add(step['cantAs']); // C6: the players who can't (discard, sacrificeChoice)
       if (step['op'] === 'let' && typeof step['name'] === 'string') vars.add(step['name']);
       if (typeof step['link'] === 'string') links.add(step['link']);

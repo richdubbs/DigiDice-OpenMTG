@@ -12,7 +12,8 @@ import { gainControlWhileAttached, playerCantAttackYou } from './fold-stdcombat1
 import { continuousHave, ptPredicate } from './mods';
 import { quotedAbility, quotedListItem } from './quote';
 import { attackOrBlockIfAble, damageUnpreventable, damageUnpreventableText, graveyardPermitsSentence, lastingCants, lastingCombatToAndBy, sharedEffectSubject, topPermitsSentence } from './stat';
-import { absorb, cloneState, nestedState, objKey, playerKey, type RenderState } from './state';
+import { absorb, cloneState, nestedState, objKey, playerKey, withVariants, type RenderState } from './state';
+import { playerCantAttack, playerCantAttackText } from './fold-trek8';
 import { possessiveStep } from './turn';
 import { controlledGroup } from '../model/focus';
 import { alt, firstAlt, joinList, NoRenderer, numWord, pluralize } from './text';
@@ -116,7 +117,7 @@ function delayedLead(s: StepOf<'delay'>, st: RenderState): string {
   if (limited && w.at === 'step') {
     // std-library-1 (CR 603.7b, 506.1, 507.1): "At the beginning of the next combat phase this turn, ..." (Feral Encounter): the first beginning of combat step after the
     // trigger was created, this turn only, once (parser template dl.stdlib1.nextCombat.thisTurn.lead)
-    if (w.step === 'beginCombat' && w.whose === undefined && w.next === true && w.turn === undefined && s.once === true) return 'at the beginning of the next combat phase this turn';
+    if (w.step === 'beginCombat' && w.whose === undefined && w.next === true && w.turn === undefined && s.once === true) return alt('at the beginning of the next combat phase this turn', 'at the beginning of the next combat this turn'); // trek-8: Oracle also prints it without "phase" (The Wrath of Khan)
     if (w.step !== 'beginCombat' || w.whose !== undefined || w.next === true || w.turn !== undefined || s.once === true) throw new NoRenderer('a step trigger with a duration other than "each combat this turn"');
     return 'at the beginning of each combat this turn';
   }
@@ -276,6 +277,8 @@ const ACTION_OBJECT: Partial<Record<KeywordActionName, (obj: string, n: string |
   airbend: (o) => `airbend ${o}`,
   // FAST5X E28 (CR 701.43a): "exert target creature you control": the player exerts the permanent (Oracle never writes "it exerts")
   exert: (o) => `exert ${o}`,
+  // trek-1 (Star Trek reminder text; CR 701, number unverified): "assimilate target creature card from an opponent's graveyard"
+  assimilate: (o) => `assimilate ${o}`,
 };
 
 /**
@@ -577,6 +580,12 @@ export const CLAUSES_LASTING = {
     // std-mkm (CR 508.1d, 509.1c): "Target creature attacks or blocks this turn if able"
     const musts = attackOrBlockIfAble(s.effects, s.duration, st);
     if (musts !== null) return plain(musts, { standalone: true });
+    // trek-8 (CR 508.1, 611.2a): "Target player can't attack this turn" is also the restriction on every creature the player controls (render/fold-trek8.ts)
+    const pca = playerCantAttack(s);
+    if (pca !== null) {
+      const [group, player] = withVariants(st, [(v) => K.staticEffect(s.effects[0]!, v, { duration: s.duration }), (v) => playerCantAttackText(pca.who, pca.duration, v)]);
+      return plain(alt(group!, player!));
+    }
     const parts = s.effects.map((e) => K.staticEffect(e, st, { duration: s.duration }));
     if (parts.length === 1) return plain(parts[0]!, { standalone: hasBreak(parts[0]!) });
     // r4-repl (CR 611.2a, 614.1a): "you may cast spells from your graveyard this turn, and if a card would be put into your graveyard from anywhere this turn, exile it
@@ -611,7 +620,7 @@ export const CLAUSES_LASTING = {
     }
     let body: string;
     try {
-      body = K.steps(s.do, st, { nested: true, ...(s.when.at === 'event' ? { sentences: true } : {}) });
+      body = K.steps(s.do, st, { nested: true, sentences: true }); // (a step-timed delayed trigger too: parser/lower/delay-tail.ts, trek-8)
     } finally {
       st.trigger = saved;
       if (hadSelf) st.mentioned.add('self');
@@ -881,6 +890,19 @@ export const CLAUSES_LASTING = {
       const ok = spec !== undefined && spec.kind === 'object' && spec.min === 1 && spec.max === 1 && spec.onlyIf === undefined && spec.distinctFrom === undefined
         && JSON.stringify(spec.filter) === JSON.stringify({ types: ['Land'], controller: 'you' });
       if (!ok) throw new NoRenderer('earthbend with a target that is not "target land you control" (CR 701.66a)');
+    }
+    // trek-1 (assimilate: "put it onto the battlefield under your control", Star Trek reminder text): the macro moves a card, so only one target card in a graveyard,
+    // assimilated by "you", may stand behind it (keywords/actions/assimilate.ts); anything else stays manual
+    if (s.action === 'assimilate') {
+      const spec = (s.subject as { ref?: string } | undefined)?.ref === 'target' ? st.specs.get((s.subject as { id: string }).id) : undefined;
+      const f = (spec?.kind === 'object' ? spec.filter ?? {} : {}) as Record<string, unknown>;
+      // trek-7 (The Borg Queen): or the one card another instruction of the ability exiled ("... until they exile a creature card. Assimilate that card."), a card in exile
+      const sub = s.subject as { ref?: string; name?: string } | undefined;
+      const exiledCard = sub?.ref === 'bound' && sub.name !== undefined && st.info.get(`b:${sub.name}`)?.zone === 'exile' && st.info.get(`b:${sub.name}`)?.plural === false
+        && st.info.get(`b:${sub.name}`)?.nouns.includes('card') === true;
+      const ok = exiledCard ? s.who.ref === 'you' && s.n === undefined
+        : spec !== undefined && spec.kind === 'object' && spec.min === 1 && spec.max === 1 && f['zone'] === 'graveyard' && f['isCard'] === true && s.who.ref === 'you' && s.n === undefined;
+      if (!ok) throw new NoRenderer('assimilate of something that is not one target card in a graveyard or the one card an exile put into exile, or not by you');
     }
     const arg = s.arg ?? null;
     // FAST5X E10: airbend is run for permanents only (effects/handlers/airbend.ts; a spell or a card in another zone is airbent by hand): only targets or

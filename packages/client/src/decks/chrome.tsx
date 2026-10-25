@@ -7,8 +7,8 @@ import type { Color } from '@openmtg/engine';
 import type { CardSummary } from '@openmtg/server/api';
 import { useNav } from '../app/nav';
 import { sfx } from '../audio/sfx';
-import { sleeveTracersUrl, sleeveUrl } from '../branding/sleeves';
 import { CardPicture, modelFromSummary } from '../cards';
+import { useSleevePictures } from '../profiles/useSleevePictures';
 import { COLOR_NAME } from './stats';
 
 /** Back chevron and a large neon title, with the screen's actions on the right. The back button keeps the name "Back" (it goes to the previous screen). */
@@ -85,12 +85,14 @@ export function Modal({ label, onClose, role = 'dialog', wide = false, children 
 }
 
 /**
- * The deck box: a block of cards seen at an angle, its face the deck's sleeve (the DigiDice card back or a mana-color one) or its cover card, with neon edges. Pure decoration (hidden
+ * The deck box: a block of cards seen at an angle, its face the deck's sleeve (the DigiDice card back or a mana-color one, or Reality Fracture's cracked mirror
+ * in that look) or its cover card, with neon edges. Pure decoration (hidden
  * from screen readers); the box turns toward you when its tile is hovered or focused (the tile sets the pose through `.deck-box-host`).
  * The cover is drawn by the shared card picture: the player's upload, the Scryfall image if that setting is on, otherwise our text frame (never bundled art).
  */
 export function DeckBox({ size = 'md', cover, sleeve }: { size?: 'xs' | 'sm' | 'md' | 'lg'; cover?: CardSummary | null; sleeve?: string | undefined }) {
   const model = useMemo(() => (cover ? modelFromSummary(cover) : null), [cover]);
+  const pictures = useSleevePictures(sleeve);
   return (
     <div className={`deck-box deck-box-${size}`} aria-hidden="true">
       <div className="deck-box-body">
@@ -100,8 +102,8 @@ export function DeckBox({ size = 'md', cover, sleeve }: { size?: 'xs' | 'sm' | '
           </div>
         ) : (
           <>
-            <img className="deck-box-face" src={sleeveUrl(sleeve)} alt="" data-sleeve={sleeve ?? 'classic'} draggable={false} />
-            <img className="deck-box-face deck-box-tracers" src={sleeveTracersUrl(sleeve)} alt="" draggable={false} />
+            <img className="deck-box-face" src={pictures.back} alt="" data-sleeve={sleeve ?? 'classic'} draggable={false} />
+            <img className="deck-box-face deck-box-tracers" src={pictures.lights} alt="" draggable={false} />
           </>
         )}
         <span className="deck-box-side deck-box-right" />

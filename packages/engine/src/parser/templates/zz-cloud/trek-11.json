@@ -1,0 +1,69 @@
+[
+  {
+    "id": "sta.trek11.once.playPermanentOutside",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.11",
+      "CR 400.11a",
+      "CR 400.11b",
+      "CR 305.1",
+      "CR 601.3",
+      "CR 404.1",
+      "CR 611.3a",
+      "CR 110.4"
+    ],
+    "pattern": "once during each of your turns , you may play a permanent card you own ( from outside the game or from your graveyard | from your graveyard or from outside the game )",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+            ]
+          },
+          "from": "graveyard",
+          "alsoOutside": true,
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may play a permanent card you own from your graveyard or from outside the game."
+      },
+      {
+        "text": "{6}, {T}: You gain 7 life.\nOnce during each of your turns, you may play a permanent card you own from your graveyard or from outside the game."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may play a permanent card you own from outside the game.",
+      "Once during each of your turns, you may play a permanent card you own from your graveyard.",
+      "Once during each of your turns, you may play a land card you own from your graveyard or from outside the game.",
+      "Once during each of your turns, you may play a permanent card from your graveyard or from outside the game.",
+      "Once during each of your turns, you may play a permanent card you own from your graveyard or from your hand."
+    ]
+  }
+]

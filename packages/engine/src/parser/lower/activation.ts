@@ -372,9 +372,20 @@ export function costOf(tokens: Tok[], io: DriverIO, ue: UnitEnv): CostResult {
 }
 
 /** Where a cost part puts the source itself (CR 113.6m exception: "Sacrifice ~: Return ~ from your graveyard ..." functions on the battlefield). */
-const COST_PUTS_SELF: Readonly<Partial<Record<string, ZoneName>>> = { sacrifice: 'graveyard', discard: 'graveyard', exileFrom: 'exile', returnToHand: 'hand' };
+const COST_PUTS_SELF: Readonly<Partial<Record<string, ZoneName>>> = { sacrifice: 'graveyard', discard: 'graveyard', exileFrom: 'exile', returnToHand: 'hand', putIntoLibrary: 'library' /* trek-9 */ };
 /** The zones core/legal.ts offers activated abilities from (CR 113.6): an ability that functions only elsewhere could never be activated there. */
 const OFFERED_ZONES: ReadonlySet<ZoneName> = new Set(['battlefield', 'hand', 'graveyard']);
+
+/**
+ * trek-12 (CR 113.6, 602.5b, 400.7; Q, Stacking the Deck): does the restriction say the source must be in exile ("Activate only during your turn and only if ~ is
+ * exiled")? The condition `{matches self, zone exile}` alone or as one of the conditions that must all hold: an ability that can be activated only while its card is
+ * in exile functions only there (a card that left exile is a new object).
+ */
+export function requiresSelfExiled(c: Condition | undefined): boolean {
+  if (c === undefined) return false;
+  if (c.cond === 'all') return c.of.some(requiresSelfExiled);
+  return c.cond === 'matches' && c.object.ref === 'self' && c.filter.zone === 'exile' && Object.keys(c.filter).length === 1;
+}
 
 /**
  * W3b: the zones an activated ability functions in (CR 113.6), from its cost and its text after the colon (`rest`, normalized: `~` is the object itself;
@@ -385,8 +396,10 @@ const OFFERED_ZONES: ReadonlySet<ZoneName> = new Set(['battlefield', 'hand', 'gr
  *    Skeleton) functions only there, unless the cost or an earlier part of the effect puts ~ there first ("Sacrifice ~: Return ~ from your graveyard ...").
  * `{}` is the battlefield (the default, CR 113.6). `manual` when the zone cannot be stated: the cost needs ~ in two zones at once, the cost and the effect
  * name different zones, or the ability functions only in a zone the engine offers no activation from (core/legal.ts: battlefield, hand, graveyard).
+ *  - trek-12 (CR 113.6, 602.5b): `onlyIf`, the restriction of the ability, may itself say where it functions: "Activate only if ~ is exiled" (a card in exile has
+ *    abilities only when they say so) puts it in exile, which core/legal.ts offers for the owner's face-up cards; the cost and the effect must not name another zone.
  */
-export function activationZone(cost: CostDef, rest: string): { zone?: ZoneName[] } | { manual: string } {
+export function activationZone(cost: CostDef, rest: string, onlyIf?: Condition): { zone?: ZoneName[] } | { manual: string } {
   const need = new Set(selfCostZones(cost));
   for (const p of cost.other ?? []) {
     if (p.kind !== 'manual') continue;
@@ -401,7 +414,16 @@ export function activationZone(cost: CostDef, rest: string): { zone?: ZoneName[]
   if (fromCost !== undefined && fromEffect !== undefined && fromCost !== fromEffect) {
     return { manual: `the cost needs ~ on the ${fromCost} but the ability moves or checks ~ in the ${fromEffect}, so it can never be activated as written (CR 113.6j, 113.6m)` };
   }
-  const zone = fromEffect ?? fromCost;
+  // trek-12 (CR 113.6, 602.5b): "Activate only if ~ is exiled" is a statement of where the ability functions, which must agree with the cost and the effect
+  const fromRestriction: ZoneName | undefined = requiresSelfExiled(onlyIf) ? 'exile' : undefined;
+  const stated = fromEffect ?? fromCost;
+  if (fromRestriction !== undefined && stated !== undefined && stated !== fromRestriction) {
+    return { manual: `the restriction needs ~ in exile but the cost or the effect names ~ in the ${stated}, so it can never be activated as written (CR 113.6j, 113.6m)` };
+  }
+  // the restriction alone puts the ability in exile, which core/legal.ts offers for the owner's face-up cards (CR 113.6, 602.2); a cost or an effect that names ~ in exile is not
+  // read (as before: `exile` is not an offered zone for those, below)
+  if (stated === undefined && fromRestriction !== undefined) return { zone: [fromRestriction] };
+  const zone = stated;
   if (zone === undefined || zone === 'battlefield') return {};
   if (!OFFERED_ZONES.has(zone)) return { manual: `the ability functions only in the ${zone} (CR 113.6j, 113.6m), where this engine build offers no activation` };
   return { zone: [zone] };

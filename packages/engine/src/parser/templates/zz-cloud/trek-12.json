@@ -1,0 +1,38 @@
+[
+  {
+    "id": "eff.trek12.copy.self.create",
+    "kind": "effect",
+    "cr": [
+      "CR 707.12",
+      "CR 707.2",
+      "CR 113.6"
+    ],
+    "pattern": "create a copy of ~",
+    "build": {
+      "op": "copy",
+      "what": {
+        "ref": "self"
+      },
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}, Exile a card from your hand: Create a copy of ~. You may cast the copy. Activate only if ~ is exiled."
+      },
+      {
+        "text": "Exile two cards from your hand: Create a copy of ~. You may cast the copy. Activate only as a sorcery and only if ~ is exiled."
+      }
+    ],
+    "counterExamples": [
+      "Exile a card from your hand: Create a copy of ~. You may cast the copy.",
+      "Exile a card from your hand: Create a copy of ~. Activate only if ~ is exiled.",
+      "Exile a card from your hand: Create a token that's a copy of ~. Activate only if ~ is exiled."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

@@ -8,6 +8,8 @@ import { legalActions, type CardDef, type GameView, type LegalAction, type Objec
 import { describe, expect, it, vi } from 'vitest';
 import { GameBoard, objectName, type BoardCardProps } from '../../src/board';
 import { automationMarkers } from '../../src/board/Markers';
+import { injectCss, paintsOver } from '../css-rules';
+import { decl } from './css';
 import { ALICE, BOB, editable, playGame, type Captured } from './fixtures';
 
 const game = playGame(6, undefined, (s) => s.zones.stack.length > 0);
@@ -103,6 +105,17 @@ describe('CL3: the card zoom never stays open (STATUS, wave M8-C6 verification g
     return { view: c.view, mine: mine!, theirs: theirs! };
   }
 
+  it('CR 208.3, 613.4: the zoomed picture of a creature shows its current power and toughness, as the battlefield does', () => {
+    const { view, mine } = bears();
+    const v = editable(view);
+    v.objects[mine] = { ...v.objects[mine]!, counters: { '+1/+1': 2 } };
+    const { container } = render(<GameBoard view={v} />);
+    fireEvent.mouseEnter(slot(container, mine));
+    const pt = shownZoom(container)!.querySelector('.zoom-card .card-pt')!;
+    expect(pt.getAttribute('data-pt')).toBe('4/4');
+    expect(pt.getAttribute('data-tone')).toBe('up');
+  });
+
   it('a zoom opened by keyboard focus closes when the pointer moves anywhere but that card, and stays while it moves over the card', () => {
     const { view, mine, theirs } = bears();
     const onObjectHover = vi.fn();
@@ -171,7 +184,7 @@ describe('design 10.5: automation badges', () => {
     const { container } = render(<GameBoard view={v} />);
     const [bear] = named(v, ALICE, 'Test Bear');
     const [forest] = named(v, ALICE, 'Forest');
-    expect(within(slot(container, bear!)).queryByText('Partly automated')).toBeNull();
+    expect(within(slot(container, bear!)).queryByText('Partial: may not function')).toBeNull();
     expect(within(slot(container, forest!)).queryByText('Resolve by hand')).toBeNull();
     expect(container.querySelectorAll('.board-card[data-zone="battlefield"] .marker-automation')).toHaveLength(0);
     for (const level of ['full', 'partial', 'manual'] as const) {
@@ -179,6 +192,23 @@ describe('design 10.5: automation badges', () => {
       expect(m?.icon, level).toBeTruthy();
     }
     expect(automationMarkers({ ...v.defs[bearDef]!, automation: { ...v.defs[bearDef]!.automation, level: 'full' } } as CardDef)[0]!.text).toBe('Fully automated');
+  });
+
+  it('a partly automated card warns that it may not function: its marker as a warning, and the zoom in every zone (the battlefield too)', () => {
+    const v = editable(at(5, 'main1').view);
+    const bearDef = defIdOf(v, 'Test Bear');
+    v.defs[bearDef] = { ...v.defs[bearDef]!, automation: { ...v.defs[bearDef]!.automation, level: 'partial' } };
+    expect(automationMarkers(v.defs[bearDef]!)[0]).toMatchObject({ text: 'Partial: may not function', warning: true });
+    expect(automationMarkers({ ...v.defs[bearDef]!, automation: { ...v.defs[bearDef]!.automation, level: 'full' } } as CardDef)[0]!.warning).toBeUndefined();
+    const { container } = render(<GameBoard view={v} />);
+    const [bear] = named(v, ALICE, 'Test Bear');
+    const [forest] = named(v, ALICE, 'Forest');
+    fireEvent.mouseEnter(slot(container, bear!));
+    const zoom = container.querySelector<HTMLElement>('.zoom:not(.zoom-empty)')!;
+    expect(within(zoom).getByRole('note').textContent).toMatch(/may not function as written/);
+    fireEvent.mouseLeave(slot(container, bear!));
+    fireEvent.mouseEnter(slot(container, forest!));
+    expect(container.querySelector('.zoom:not(.zoom-empty) .automation-warning')).toBeNull();
   });
 
   it('a spell on the stack carries its automation badge', () => {
@@ -301,6 +331,38 @@ describe('CR 404, 406: the zone viewer is a modal dialog', () => {
     fireEvent.click(screen.getByRole('button', { name: "Bob's graveyard: 1 card" }));
     fireEvent.click(container.querySelector('.zone-backdrop')!);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('is drawn in the table\'s zone layer, outside the seat, so the hand, the disc and the cards never come out over it', () => {
+    const { container } = render(<GameBoard view={gyView()} />);
+    fireEvent.click(screen.getByRole('button', { name: /^Alice's graveyard/ }));
+    const dialog = screen.getByRole('dialog', { name: "Alice's graveyard" });
+    expect(dialog.parentElement).toBe(container.querySelector('.board-main > .zone-layer'));
+    expect(dialog.closest('.side')).toBeNull();
+  });
+
+  it('draws its cards at the hand\'s size, as inside its seat: the zone layer takes the table\'s card widths', () => {
+    // jsdom computes no container units, so the declarations are compared (without them on the layer, every card in a viewer was 0px wide).
+    for (const v of ['--cw-hand', '--cw-near', '--cw-n', '--cw-s']) expect(decl('.zone-layer')[v], v).toBe(decl('.arena-stage')[v]);
+  });
+
+  it('is drawn over the whole table (the seats, the stage, the result, the log, the fx layer), under the zoom so a card in it can be read', () => {
+    const v = editable(gyView());
+    v.result = { winner: ALICE, reason: 'Bob conceded' };
+    const { container } = render(<GameBoard view={v} />);
+    fireEvent.click(container.querySelector('.log-toggle')!);
+    fireEvent.click(screen.getByRole('button', { name: /^Bob's graveyard/ }));
+    const dialog = screen.getByRole('dialog', { name: "Bob's graveyard" });
+    const removeCss = injectCss('board/board.css', 'board/arena.css', 'board/table/table.css');
+    try {
+      for (const s of ['.board-top', '.board-middle', '.board-bottom', '.decision-stage', '.result-screen', '.game-log', '.fx-overlay']) {
+        const layer = container.querySelector(s);
+        expect(layer !== null && paintsOver(dialog, layer), s).toBe(true);
+      }
+      expect(paintsOver(container.querySelector('.zoom')!, dialog)).toBe(true);
+    } finally {
+      removeCss();
+    }
   });
 });
 

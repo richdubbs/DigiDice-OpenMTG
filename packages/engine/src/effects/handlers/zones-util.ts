@@ -17,7 +17,7 @@ import type { DestinationFacts, ExecCtx, StepResult } from '../api';
 import { evalQty } from '../eval';
 import { askManual } from '../manual';
 import { performLink } from '../perform';
-import { performAddAttacker, performEntersAttackingAsReturned, performExiledWith } from '../perform-direct';
+import { performEnterAttacking, performEntersAttackingAsReturned, performExiledWith, performWithEnterAttacking } from '../perform-direct';
 import { propose } from '../propose';
 import { alsoBecameHandles, isCurrent, readInfo, rebase, resolveObjs, resolvePlayers } from '../refs';
 
@@ -202,41 +202,28 @@ export function enterAttacking(cx: ExecCtx, ids: readonly ObjectId[], how: boole
     named = firstPlayer(cx, how.defender);
     if (named === undefined || g.player(named).hasLost) return []; // CR 508.4a
   }
-  const out: ObjectId[] = [];
-  for (const id of ids) {
-    const o = s.objects[id];
-    if (!o || o.zone !== 'battlefield') continue;
-    const c = charsOfObject(s, o);
-    const ctl = controllerOf(s, o); // CR 613.1b: who controls it is the controller after layer 2
-    if (!c.types.includes('Creature') || c.types.includes('Battle') || ctl !== s.turn.activePlayer) continue; // CR 506.3a, 506.3b, 506.3f
-    // wave-4 cmd1 review (CR 506.2, 508.4): a named player is attacked only when they are an opponent of the creature's controller ("a token that's tapped and
-    // attacking target player" aimed at its own controller enters tapped, not attacking); no player attacks themselves or a teammate
-    if (named !== undefined && !g.opponents(ctl).some((p) => p.id === named)) continue;
-    const defenders = named !== undefined ? [named] : g.opponents(ctl).map((p) => p.id); // CR 506.2: the defending players
-    const options: { id: string; label: string; player: PlayerId }[] = defenders.map((p) => ({ id: p, label: g.player(p).name, player: p }));
-    // M6-12: "attacking that player or a planeswalker they control" (myriad, CR 702.116a): the named player's planeswalkers, no battle
-    const walkersOnly = typeof how === 'object' && how.orPlaneswalkers === true;
-    if (named === undefined || walkersOnly) {
-      for (const pid of s.zones.battlefield) {
-        const x = s.objects[pid]!;
-        if (x.phasedOut) continue;
-        const xc = charsOfObject(s, x);
-        const xctl = controllerOf(s, x);
-        if (xc.types.includes('Planeswalker') && defenders.includes(xctl)) options.push({ id: x.id, label: g.nameOf(x.id), player: xctl });
-        else if (!walkersOnly && xc.types.includes('Battle') && x.protector !== undefined && defenders.includes(x.protector)) options.push({ id: x.id, label: g.nameOf(x.id), player: x.protector });
-      }
+  // M6-12: "attacking that player or a planeswalker they control" (myriad, CR 702.116a): the named player's planeswalkers, no battle
+  return performEnterAttacking(g, ids, named, typeof how === 'object' && how.orPlaneswalkers === true); // trek-8: rules/status.ts#enterAttackingChoosing
+}
+
+/**
+ * trek-8 review (CR 508.4): run the proposals of an effect that puts permanents onto the battlefield "attacking" (`how` is its `attacking`: false/undefined for none)
+ * so that a replacement effect which makes a permanent enter tapped and attacking too (Kira Nerys) joins the combat the way THIS effect says (the player it names,
+ * ninjutsu's "what the returned creature attacked"), the controller choosing only where the effect names nothing, and once (`enterAttacking` skips what already
+ * attacks). Without such an effect nothing changes: the effect's own `enterAttacking` call after the proposals does it all.
+ */
+export function enteringAttacking<T>(cx: ExecCtx, how: boolean | { defender: PlayerRef; orPlaneswalkers?: true } | { asReturned: true } | undefined, f: () => T): T {
+  if (how === undefined || how === false) {
+    // trek-8 re-review: a nested entry that does not attack does not inherit the outer effect's way of attacking
+    const before = cx.g.enterAttackingBy;
+    cx.g.enterAttackingBy = null;
+    try {
+      return f();
+    } finally {
+      cx.g.enterAttackingBy = before;
     }
-    if (options.length === 0) continue;
-    let pick = options[0]!;
-    if (options.length > 1) {
-      const ans = g.choose({ kind: 'chooseOption', player: ctl, prompt: `Choose what ${g.nameOf(id)} is attacking.`, min: 1, max: 1, options: options.map(({ id: oid, label }) => ({ id: oid, label })), rules: ['CR 508.4'] });
-      pick = options.find((x) => x.id === ans.ids[0]) ?? pick;
-    }
-    performAddAttacker(g, id, pick.id, pick.player);
-    out.push(id);
   }
-  if (out.length > 0) g.log(`${out.map((id) => g.nameOf(id)).join(', ')} ${out.length === 1 ? 'is' : 'are'} attacking.`, { rules: ['CR 508.4', 'CR 508.4d'], level: 'action' });
-  return out;
+  return performWithEnterAttacking(cx.g, (ids) => enterAttacking(cx, ids, how), f);
 }
 
 /** Names of several objects for the log. */

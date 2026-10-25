@@ -139,7 +139,7 @@ function CheckLine({ check }: { check: Check }) {
 const cardTotal = (entries: readonly { count: number }[] | undefined) => (entries ?? []).reduce((n, e) => n + e.count, 0);
 
 /** The chosen deck as a 3D deck box with its name, format and size; a ghost box in a dashed slot while no deck is chosen. */
-function DeckPreview({ deck, player }: { deck: GameDeck | null; player: number }) {
+function DeckPreview({ deck, player, sleeve }: { deck: GameDeck | null; player: number; sleeve: string | undefined }) {
   if (!deck)
     return (
       <div className="new-game-preview new-game-preview-empty" data-player={player}>
@@ -154,7 +154,7 @@ function DeckPreview({ deck, player }: { deck: GameDeck | null; player: number }
   return (
     <div className="new-game-preview" data-player={player}>
       <div key={deck.id} className="new-game-preview-box">
-        <DeckBox size="xs" sleeve={deck.sleeve} />
+        <DeckBox size="xs" sleeve={sleeve} />
       </div>
       <span className="new-game-preview-name">{deck.name}</span>
       <span className="new-game-preview-meta">
@@ -246,6 +246,23 @@ export function NewGameScreen({
   // The decks only change when a seat's deck does (typing a name does not check the decks again).
   const deckKey = seats.map((x) => x.deckId).join('\n');
   const chosen = useMemo(() => deckKey.split('\n').map((id) => decks?.find((d) => d.id === id) ?? null), [decks, deckKey]);
+
+  // Each chosen deck's sleeve, the one of its colors (branding/sleeves.ts), read once per deck; until it arrives the deck shows the classic back.
+  const [sleeves, setSleeves] = useState<ReadonlyMap<string, string | undefined>>(new Map());
+  useEffect(() => {
+    let live = true;
+    for (const d of chosen) {
+      if (!d || sleeves.has(d.id) || !services.deckSleeve) continue;
+      services.deckSleeve(d.deck).then(
+        (id) => live && setSleeves((m) => new Map(m).set(d.id, id)),
+        () => {},
+      );
+    }
+    return () => {
+      live = false;
+    };
+    // `sleeves` is read only to skip decks already done.
+  }, [chosen, services]);
 
   // Check every deck whenever a deck or the format changes; answers of an older request are dropped.
   useEffect(() => {
@@ -394,7 +411,7 @@ export function NewGameScreen({
       }
       const config = buildGameConfig({ players, defs: res.defs, seed: services.newSeed(), start, stops: stopSettings(settings.get()), commander: variant });
       // Each player's card backs are in their deck's sleeve (board/sleeves.tsx).
-      const sleeves: PlayerSleeves = Object.fromEntries(chosen.flatMap((d, i) => (d?.sleeve ? [[PLAYER_IDS[i]!, d.sleeve]] : [])));
+      const playerSleeves: PlayerSleeves = Object.fromEntries(chosen.flatMap((d, i) => (d && sleeves.get(d.id) ? [[PLAYER_IDS[i]!, sleeves.get(d.id)!]] : [])));
       rememberNames(settings, seats.map((x, i) => ({ name: trimmed[i]!, by: x.by })));
       if (computers > 0) {
         const ids = (by: SeatPlayer): PlayerId[] => seats.flatMap((x, i) => (x.by === by ? [PLAYER_IDS[i]!] : []));
@@ -404,14 +421,14 @@ export function NewGameScreen({
         // RPL-1 (replays design 7.1): every local game is recorded as it is played, a rematch too (replays/record.ts).
         const vsComputer = (c: typeof config) => recordLocalGame(new ComputerGame(c, humans, machines, opts()), { format });
         // FXH (audit m5, CR 400.2): the route and the game screen hold only the sealed connection, never the session behind it (sealed.ts).
-        nav.go({ screen: 'game', connection: sealConnection(vsComputer(config)), rematch: sealedFactory(() => vsComputer({ ...config, seed: services.newSeed() })), sleeves });
+        nav.go({ screen: 'game', connection: sealConnection(vsComputer(config)), rematch: sealedFactory(() => vsComputer({ ...config, seed: services.newSeed() })), sleeves: playerSleeves });
       } else {
         const rematch = localRematch(config, services.newSeed);
         nav.go({
           screen: 'game',
           connection: sealConnection(recordLocalGame(new LocalConnection(config), { format })),
           rematch: sealedFactory(() => recordLocalGame(rematch(), { format })),
-          sleeves,
+          sleeves: playerSleeves,
         });
       }
     } catch (e) {
@@ -516,7 +533,8 @@ export function NewGameScreen({
                           Deck
                           <select value={seat.deckId} onChange={(e) => pickDeck(i, e.target.value)}>
                             <option value="">Choose a deck…</option>
-                            <DeckOptions decks={decks} />
+                            {/* Decks the format cannot play are greyed out; not in player 1's list while the format still follows player 1's deck */}
+                            <DeckOptions decks={decks} {...(i > 0 || formatTouched ? { format } : {})} />
                           </select>
                         </label>
                         {unplayable[i] && <p className="game-error">{unplayable[i]}</p>}
@@ -529,7 +547,7 @@ export function NewGameScreen({
                           </ul>
                         )}
                       </div>
-                      <DeckPreview deck={deck} player={i + 1} />
+                      <DeckPreview deck={deck} player={i + 1} sleeve={deck ? sleeves.get(deck.id) : undefined} />
                     </div>
                   </section>
                 );

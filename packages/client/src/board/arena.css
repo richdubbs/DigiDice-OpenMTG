@@ -7,8 +7,9 @@
  */
 
 /*
- * Registered lengths: declared on `.arena-stage` with container units, they are computed there against the table (`.board-main`, the size container) and
- * inherited as pixels, so a hand or a row (inline-size containers themselves) never measures them against its own width.
+ * Registered lengths: declared on `.arena-stage` (and the zone layer beside it) with container units, they are computed there against the table
+ * (`.board-main`, the size container) and inherited as pixels, so a hand or a row (inline-size containers themselves) never measures them against its
+ * own width.
  */
 @property --cw-far {
   syntax: '<length>';

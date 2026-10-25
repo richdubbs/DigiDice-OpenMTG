@@ -1,0 +1,121 @@
+[
+  {
+    "id": "sta.p2pr3.aslong.cantCast.yourTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 101.2",
+      "CR 500.1"
+    ],
+    "pattern": "as long as {c:Cond} , {p:Player} can't cast spells during your turn",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Wizard, your opponents can't cast spells during your turn."
+      },
+      {
+        "text": "As long as ~ is untapped, each opponent can't cast spells during your turn."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Wizard, your opponents can't cast spells.",
+      "Unless you control a Wizard, your opponents can't cast spells during your turn.",
+      "As long as you control a Wizard, your opponents can cast spells during your turn."
+    ]
+  },
+  {
+    "id": "trg.p2pr3.youClashAndWin",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 701.30b",
+      "CR 701.30c"
+    ],
+    "pattern": "( whenever you clash and win | whenever you win a clash )",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "clash",
+          "actor": "you",
+          "won": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you clash and win, you gain 2 life."
+      },
+      {
+        "text": "Whenever you win a clash, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you clash and lose, you gain 2 life.",
+      "Whenever an opponent wins a clash, you gain 2 life.",
+      "Whenever you win a coin flip, you gain 2 life."
+    ]
+  },
+  {
+    "id": "trg.p2pr3.youClash",
+    "kind": "trigger",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 603.2",
+      "CR 701.30b"
+    ],
+    "pattern": "whenever you clash",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "clash",
+          "actor": "you"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you clash, you gain 1 life."
+      },
+      {
+        "text": "Whenever you clash, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent clashes, you gain 1 life.",
+      "Whenever you clash twice, you gain 1 life."
+    ]
+  }
+]

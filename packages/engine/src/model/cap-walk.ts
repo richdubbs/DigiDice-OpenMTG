@@ -26,7 +26,7 @@
  * `feature:class.level`, `feature:leveler.bracket`, and `feature:mana.restriction` for a restricted addMana. Registered by the package that implements
  * them (triggers/normalize.ts, statics/layers.ts, and the owner of the addMana handler); until then abilities that use them degrade to manual.
  */
-import { isPlayerOnlyRefKind, type ActivatedAbilityDef, type Condition, type CostPart, type ModeSpec, diesCause, type EventPattern, type ObjectFilter, type TargetSpec } from '../types/ability';
+import { isPlayerOnlyRefKind, type ActivatedAbilityDef, type Condition, type CostPart, type ModeSpec, diesCause, isLifeGainCause, type EventPattern, type ObjectFilter, type TargetSpec } from '../types/ability';
 import { activatedForms, announceCondForms, costPartForms, filterForms, modeSpecForms, targetSpecForms } from './forms';
 import { ABILITY_DEFS, ancestors, isNestedAbility, walkAbility, type WalkNode } from './walk';
 
@@ -38,7 +38,7 @@ type Rec = Record<string, unknown>;
  * The keywords whose cost may be "equal to its mana cost" (`KeywordAbilityDef.costIsManaCost`): flashback (FAST5 T56, actions/cast-options.ts), mayhem (cloud r3-mech) and, r5-cost,
  * harmonize and embalm (keywords/expand.ts substitutes the object's mana cost, CR 702.180a, 702.128a). Any other keyword with it still misses its cost.
  */
-const COST_IS_MANA_COST: ReadonlySet<string> = new Set(['flashback', 'mayhem', 'harmonize', 'embalm']);
+const COST_IS_MANA_COST: ReadonlySet<string> = new Set(['flashback', 'mayhem', 'harmonize', 'embalm', 'beam me up' /* trek-7 */]);
 
 const rec = (x: unknown): Rec => (typeof x === 'object' && x !== null ? (x as Rec) : {});
 
@@ -254,7 +254,7 @@ function nativeManaGaps(v: Rec): string[] {
   // gone before the resolver runs (rules/mana.ts#activateManaAbility), so only a production that reads nothing of it runs then ("{T}, Sacrifice ~: Add
   // three mana of any one color"); the others keep feature:mana.steps (never a guess from a moved object)
   // FAST5X E13: "Exile ~" (CR 118.3, 602.2) and "Return ~ to its owner's hand" move the source away before the resolver runs, as "Sacrifice ~" does
-  const sacrificesSelf = other.some((p) => ['sacrifice', 'exileFrom', 'returnToHand'].includes(String(rec(p)['kind'])) && rec(p)['self'] === true);
+  const sacrificesSelf = other.some((p) => ['sacrifice', 'exileFrom', 'returnToHand', 'putIntoLibrary' /* trek-9 */].includes(String(rec(p)['kind'])) && rec(p)['self'] === true);
   if (!nativeManaEffect(v['effect'], sacrificesSelf ? 'sourceFree' : 'all')) out.unshift('feature:mana.steps');
   return out;
 }
@@ -367,7 +367,7 @@ function castStaticForms(n: WalkNode): string[] {
 }
 
 /** The optional fields of a PermissionDef: each wired permission declares the ones it honors (`feature:permit.<action>.<field>`). */
-const PERMIT_FIELDS = ['of', 'from', 'asThough', 'count', 'costChange', 'grants', 'laterTurn', 'oncePerTurn', 'anyManaType', 'while', 'addCost', 'entersWith', 'graveyardInstead', 'asAdventure', 'exileOnLeave', 'single', 'entersWithIf', 'entersSubtypes', 'ownOnly', 'landsEnterTapped', 'attacker'] as const; // FAST5X E2: laterTurn (CR 702.185a); E14: oncePerTurn; E29: anyManaType (CR 609.4b), while; C10: addCost, entersWith; r5-repl: graveyardInstead (CR 614.1a); r5-dig: asAdventure (CR 715.3)
+const PERMIT_FIELDS = ['of', 'from', 'asThough', 'count', 'costChange', 'grants', 'laterTurn', 'oncePerTurn', 'anyManaType', 'while', 'addCost', 'entersWith', 'graveyardInstead', 'asAdventure', 'exileOnLeave', 'single', 'entersWithIf', 'entersSubtypes', 'ownOnly', 'landsEnterTapped', 'attacker', 'alsoOutside'] as const; // FAST5X E2: laterTurn (CR 702.185a); E14: oncePerTurn; E29: anyManaType (CR 609.4b), while; C10: addCost, entersWith; r5-repl: graveyardInstead (CR 614.1a); r5-dig: asAdventure (CR 715.3)
 
 /** std-rx3: `{kind:'set', cost:{}}` and nothing else, "without paying its mana cost" (statics/play-permits.ts#isFreeCost, which the walker cannot import, design 5.4). */
 /**
@@ -458,12 +458,30 @@ function isGraveyardLandPermitJson(v: Rec): boolean {
 }
 
 /**
+ * trek-11: statics/play-permits.ts#isPermanentPlayPermit, spelled here because the walker imports no statics (design 5.4): "Once during each of your turns, you may play a
+ * permanent card you own from outside the game or from your graveyard" (CR 400.11, 305.1, 601.3): `{s:'permit', who:{ref:'you'}, action:'play', of:{types: the six
+ * permanent card types}, from:'graveyard', alsoOutside:true, oncePerTurn:true}` and no other field.
+ */
+function isPermanentPlayPermitJson(v: Rec): boolean {
+  if (v['s'] !== 'permit' || v['action'] !== 'play' || v['from'] !== 'graveyard' || v['alsoOutside'] !== true || v['oncePerTurn'] !== true) return false;
+  const keys = Object.keys(v).filter((k) => v[k] !== undefined);
+  if (keys.length !== 7 || !['s', 'who', 'action', 'of', 'from', 'alsoOutside', 'oncePerTurn'].every((k) => keys.includes(k))) return false;
+  const who = rec(v['who']);
+  if (Object.keys(who).filter((k) => who[k] !== undefined).length !== 1 || who['ref'] !== 'you') return false;
+  const of = rec(v['of']);
+  if (Object.keys(of).filter((k) => of[k] !== undefined).length !== 1) return false;
+  const types = of['types'];
+  return Array.isArray(types) && types.length === 6 && ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'].every((t) => types.includes(t));
+}
+
+/**
  * C10: a graveyard permission statics/play-permits.ts#isGraveyardPermit honors (the walker cannot import it, design 5.4): `who` exactly `{ref:'you'}`,
  * `from` the graveyard; `cast` with any `of` and optionally `addCost`, `entersWith` (counters with a fixed number) and `oncePerTurn`; `play` with no `of`
  * ("cards") or exactly GY1's land form, and nothing else.
  */
 function isGraveyardPermitJson(v: Rec): boolean {
   if (v['s'] !== 'permit' || v['from'] !== 'graveyard' || (v['action'] !== 'cast' && v['action'] !== 'play')) return false;
+  if (v['alsoOutside'] !== undefined) return isPermanentPlayPermitJson(v); // trek-11: the field is honored on that one form only
   // std-rx27 (CR 305.2, 601.3): "During each of your turns, you may play a land ... from your graveyard": a land permission once each turn (statics/play-permits.ts)
   const allowed = ['s', 'who', 'action', 'from', 'of', ...(v['action'] === 'cast' ? ['addCost', 'entersWith', 'oncePerTurn', 'exileOnLeave' /* std-rx24 */, 'single', 'entersSubtypes' /* std-freecast-2 */, 'graveyardInstead' /* p2-graveyard-2 */] : v['of'] !== undefined ? ['oncePerTurn'] : [])];
   if (Object.keys(v).some((k) => v[k] !== undefined && !allowed.includes(k))) return false;
@@ -584,9 +602,10 @@ function bodyForms(v: Rec): string[] {
   const out: string[] = [];
   if (v['b'] === 'enters') {
     if (Array.isArray(v['choose']) && v['choose'].some((c) => rec(c)['cardKind'] !== undefined)) out.push('feature:choose.cardKind'); // std-rx28 (CR 201.3)
-    for (const k of present(v, 'copy', 'faceDown', 'transformed', 'under', 'attachTo', 'prepared' /* M6-0: CR 722.3a */, 'choice' /* FAST5X E28: CR 702.136a */, 'countersIf' /* CMD3: CR 702.44a */, 'untapped' /* r5-fxb: CR 614.1d */, 'lookAtHand' /* std-rx6: CR 614.12a, 402.3 */, 'devour' /* std-rx15: CR 702.82a */, 'exileCards' /* std-cardcopy-3: CR 614.12a, 607.2a */, 'subtypes' /* std-freecast-2: CR 614.1c, written by rules only (unregistered) */, 'dayIfNeither' /* p2-misc-1: CR 731.1 */)) out.push(`body:enters.${k}`);
+    for (const k of present(v, 'copy', 'faceDown', 'transformed', 'under', 'attachTo', 'prepared' /* M6-0: CR 722.3a */, 'choice' /* FAST5X E28: CR 702.136a */, 'countersIf' /* CMD3: CR 702.44a */, 'untapped' /* r5-fxb: CR 614.1d */, 'lookAtHand' /* std-rx6: CR 614.12a, 402.3 */, 'devour' /* std-rx15: CR 702.82a */, 'exileCards' /* std-cardcopy-3: CR 614.12a, 607.2a */, 'subtypes' /* std-freecast-2: CR 614.1c, written by rules only (unregistered) */, 'dayIfNeither' /* p2-misc-1: CR 731.1 */, 'attacking' /* trek-8: CR 508.4 */)) out.push(`body:enters.${k}`);
     if (v['copy'] !== undefined) out.push('layer:1a'); // CR 614.12, 707.9, 616.1c
     if (rec(v['copy'])['then'] !== undefined) out.push('body:enters.copy.then'); // r4-copy: "When you do, exile that card." (CR 603.12)
+    if (rec(v['copy'])['copiedCounters'] !== undefined) out.push('body:enters.copy.copiedCounters'); // trek-4: "If you do, it enters with additional counters ... the copied permanent has" (CR 614.1c)
     if (v['faceDown'] === true) out.push('layer:1b'); // CR 708.2
   } else if (v['b'] === 'modify') {
     for (const k of present(v, 'amount', 'count', 'destination', 'to', 'then', 'link')) out.push(`body:modify.${k}`); // M6-12: then (CR 702.35a); std-ru: link (CR 607.2a)
@@ -795,7 +814,8 @@ function stepForms(v: Rec): string[] {
     // FAST5X E21 INTERFACE CHANGE (additive): "put its counters on <object>", every kind (CR 122.5, 122.8; effects/handlers/counters.ts#OP_FORMS)
     case 'moveCounters':
       // p2-counters-move-1: "move a counter / N counters" with no kind named, and "move any number of counters" (effects/handlers/counters.ts#movePlan)
-      return [...(v['kind'] === 'any' ? [v['count'] === 'all' ? 'op:moveCounters.every' : 'op:moveCounters.anyKind'] : []), ...(v['upTo'] === true ? ['op:moveCounters.upTo'] : [])];
+      return [...(v['kind'] === 'any' ? [v['count'] === 'all' ? 'op:moveCounters.every' : 'op:moveCounters.anyKind'] : []), ...(v['upTo'] === true ? ['op:moveCounters.upTo'] : []),
+        ...(v['distribute'] === true ? ['op:moveCounters.distribute'] : [])]; // p2-counters-move-4: onto a group, divided (effects/handlers/counters.ts#moveDistributed)
     case 'regenerate':
       return v['duration'] !== undefined && rec(v['duration'])['d'] !== 'endOfTurn' ? ['op:regenerate.duration'] : [];
     case 'cast': {
@@ -1379,7 +1399,10 @@ function usesOfNode(n: WalkNode, out: CapUse[]): void {
       const dies = v['suppress'] !== true && diesCause(v['cause'] as EventPattern | undefined);
       // p2-misc-1 (CR 603.10a, 603.2): "Creatures dying don't cause abilities to trigger" (Hushbringer), every ability, judged looking back (triggers/collect.ts#suppressed)
       const diesSuppress = v['suppress'] === true && diesCause(v['cause'] as EventPattern | undefined) && Object.keys(rec(v['abilitiesOf'])).length === 0 && v['keyword'] === undefined;
-      add(v['cause'] === undefined ? 'feature:triggerMod.any' : enters ? 'feature:triggerMod.enters' : attacks ? 'feature:triggerMod.attacks' : dies ? 'feature:triggerMod.dies' : diesSuppress ? 'feature:triggerMod.suppress.dies' : `feature:triggerMod.cause.${String(cause['ev'])}`);
+      // trek-2 (CR 603.2d, 119.9): YOU GAINING LIFE (`feature:triggerMod.lifeGain`, Dr. Beverly Crusher): a `life` gain event of the mod's controller and nothing else,
+      // matched without looking back (no object leaves with it); a gain of another player, a loss or an amount keeps `feature:triggerMod.cause.life`, never registered
+      const lifeGain = v['suppress'] !== true && isLifeGainCause(v['cause'] as EventPattern | undefined);
+      add(v['cause'] === undefined ? 'feature:triggerMod.any' : enters ? 'feature:triggerMod.enters' : attacks ? 'feature:triggerMod.attacks' : dies ? 'feature:triggerMod.dies' : diesSuppress ? 'feature:triggerMod.suppress.dies' : lifeGain ? 'feature:triggerMod.lifeGain' : `feature:triggerMod.cause.${String(cause['ev'])}`);
       if (typeof v['additional'] !== 'number') add('feature:triggerMod.computed');
       // CLOUD std-misc: "<permanents> entering don't cause abilities to trigger" (triggers/collect.ts#suppressed): a permanent entering, every ability; any other form is unread
       // std-rx32: a keyword's abilities silenced with no cause ("Ward abilities of those creatures don't trigger", triggers/collect.ts#silencedKeywords)
@@ -1444,7 +1467,9 @@ function usesOfNode(n: WalkNode, out: CapUse[]): void {
       // `zone` or `self`, and only `anyManaType` besides is `permit:<action>.exile` (and `feature:permit.<action>.exile.anyManaType`); a resolved effect with it is
       // a form nothing registers
       const exOf = rec(v['of']);
-      if (playCast && v['from'] === 'exile' && v['of'] !== undefined && exOf['is'] === undefined && exOf['zone'] === undefined && exOf['self'] === undefined
+      // trek-7: ... `self` alone is the card itself ("You may cast this card from exile", Khan, Vengeful Heart)
+      const exSelf = exOf['self'] === undefined || (exOf['self'] === true && Object.keys(exOf).filter((k) => exOf[k] !== undefined).length === 1);
+      if (playCast && v['from'] === 'exile' && v['of'] !== undefined && exOf['is'] === undefined && exOf['zone'] === undefined && exSelf
         && Object.keys(v).every((k) => ['s', 'who', 'action', 'from', 'of', 'anyManaType'].includes(k)) && JSON.stringify(v['who']) === '{"ref":"you"}'
         && (v['anyManaType'] === undefined || v['anyManaType'] === true)) {
         if (notPrinted(n) === 'lasting') add(`feature:permit.${String(v['action'])}.exile.lasting`);
@@ -1522,6 +1547,9 @@ function usesOfNode(n: WalkNode, out: CapUse[]): void {
         // so only on a permission for named objects that lasts until end of turn; any other is a form nothing registers
         // std-rx27 (CR 305.2): a graveyard land permission once each turn has its own name (a top-card play permission once each turn stays unregistered)
         if (k === 'oncePerTurn' && zone && v['action'] === 'play') { add('feature:permit.play.zone.oncePerTurn'); continue; }
+        // trek-11 (CR 400.11, 305.1, 601.3): "... a permanent card you own from outside the game or from your graveyard" on its one form (statics/play-permits.ts#isPermanentPlayPermit),
+        // a static ability's only (`zone` is false for a resolved effect with a limit); on any other permission a form nothing registers
+        if (k === 'alsoOutside') { add(zone && v['action'] === 'play' && isPermanentPlayPermitJson(v) ? 'feature:permit.play.zone.outside' : `feature:permit.${String(v['action'])}.alsoOutside`); continue; }
         // std-freecast-2 (CR 601.3): a graveyard permission of a resolved effect "this turn" for one spell (statics/play-permits.ts#gyHits counts it for the turn)
         if (k === 'single' && zone) { add(lastingGy && rec(rec(n.parent?.value)['duration'])['d'] === 'endOfTurn' ? 'feature:permit.cast.zone.single' : 'feature:permit.cast.zone.single.other'); continue; }
         if (k === 'entersSubtypes') { add(zone ? 'feature:permit.cast.entersSubtypes' : `feature:permit.${String(v['action'])}.entersSubtypes.other`); continue; }

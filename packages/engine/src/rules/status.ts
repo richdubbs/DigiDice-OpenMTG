@@ -132,6 +132,7 @@ export function entersAttackingAsReturned(g: Game, id: ObjectId, how: { defender
   const s = g.s;
   const o = s.objects[id];
   if (!o || !s.combat || how.defender === null || how.defendingPlayer === null) return false;
+  if (s.combat.attackers.some((a) => a.id === id)) return false; // trek-8 review: it already joined the combat (an effect of this very move put it there)
   const c = charsOfObject(s, o);
   const ctl = controllerOf(s, o); // CR 613.1b
   if (!c.types.includes('Creature') || c.types.includes('Battle') || ctl !== s.turn.activePlayer) return false; // CR 506.3a, 506.3b, 506.3f
@@ -148,4 +149,51 @@ export function entersAttackingAsReturned(g: Game, id: ObjectId, how: { defender
   addAttacker(g, id, how.defender, how.defendingPlayer);
   g.log(`${g.nameOf(id)} enters tapped and attacking ${how.defender === how.defendingPlayer ? g.player(how.defendingPlayer).name : g.nameOf(how.defender)}, as the creature returned to pay for it was.`, { rules: [rule, 'CR 508.4', 'CR 508.4d'], level: 'action' });
   return true;
+}
+
+/**
+ * CR 508.4: the creatures just put onto the battlefield "attacking" become attacking creatures. Each one's controller chooses what it attacks among the defending
+ * players and the planeswalkers they control and battles they protect (no question when there is one choice), unless the effect names the player (`named`; with
+ * `walkersOnly`, that player or a planeswalker they control, myriad CR 702.116a). A creature put onto the battlefield outside combat, under the control of a player who
+ * isn't attacking, or attacking a player who has left, is not attacking (CR 506.3a-c, 506.3f, 508.4a). Returns the ids that became attacking creatures.
+ * (trek-8: moved here from effects/handlers/zones-util.ts#enterAttacking, which now calls it, so a replacement effect can put a permanent onto the battlefield attacking
+ * as it enters too: effects/perform-events.ts#applyEnterFacts, "enters tapped and attacking".)
+ */
+export function enterAttackingChoosing(g: Game, ids: readonly ObjectId[], named?: PlayerId, walkersOnly = false): ObjectId[] {
+  const s = g.s;
+  if (!s.combat) return [];
+  const out: ObjectId[] = [];
+  for (const id of ids) {
+    const o = s.objects[id];
+    if (!o || o.zone !== 'battlefield') continue;
+    if (s.combat.attackers.some((a) => a.id === id)) continue; // trek-8 review: it already joined the combat (a replacement effect made it enter attacking): chosen once, never asked twice
+    const c = charsOfObject(s, o);
+    const ctl = controllerOf(s, o); // CR 613.1b: who controls it is the controller after layer 2
+    if (!c.types.includes('Creature') || c.types.includes('Battle') || ctl !== s.turn.activePlayer) continue; // CR 506.3a, 506.3b, 506.3f
+    // wave-4 cmd1 review (CR 506.2, 508.4): a named player is attacked only when they are an opponent of the creature's controller ("a token that's tapped and
+    // attacking target player" aimed at its own controller enters tapped, not attacking); no player attacks themselves or a teammate
+    if (named !== undefined && !g.opponents(ctl).some((p) => p.id === named)) continue;
+    const defenders = named !== undefined ? [named] : g.opponents(ctl).map((p) => p.id); // CR 506.2: the defending players
+    const options: { id: string; label: string; player: PlayerId }[] = defenders.map((p) => ({ id: p, label: g.player(p).name, player: p }));
+    if (named === undefined || walkersOnly) {
+      for (const pid of s.zones.battlefield) {
+        const x = s.objects[pid]!;
+        if (x.phasedOut) continue;
+        const xc = charsOfObject(s, x);
+        const xctl = controllerOf(s, x);
+        if (xc.types.includes('Planeswalker') && defenders.includes(xctl)) options.push({ id: x.id, label: g.nameOf(x.id), player: xctl });
+        else if (!walkersOnly && xc.types.includes('Battle') && x.protector !== undefined && defenders.includes(x.protector)) options.push({ id: x.id, label: g.nameOf(x.id), player: x.protector });
+      }
+    }
+    if (options.length === 0) continue;
+    let pick = options[0]!;
+    if (options.length > 1) {
+      const ans = g.choose({ kind: 'chooseOption', player: ctl, prompt: `Choose what ${g.nameOf(id)} is attacking.`, min: 1, max: 1, options: options.map(({ id: oid, label }) => ({ id: oid, label })), rules: ['CR 508.4'] });
+      pick = options.find((x) => x.id === ans.ids[0]) ?? pick;
+    }
+    addAttacker(g, id, pick.id, pick.player);
+    out.push(id);
+  }
+  if (out.length > 0) g.log(`${out.map((id) => g.nameOf(id)).join(', ')} ${out.length === 1 ? 'is' : 'are'} attacking.`, { rules: ['CR 508.4', 'CR 508.4d'], level: 'action' });
+  return out;
 }

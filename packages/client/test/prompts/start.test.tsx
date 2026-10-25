@@ -57,14 +57,14 @@ describe('start of game prompts (CR 103)', () => {
     for (let i = 0; i < 4 && t.pending?.kind === 'mulligan' && t.pending.player !== mulliganer; i++) t = drive(t, [{ kind: 'mulligan', keep: true }]);
     await setState(conn, t);
     expect(conn.state.pending).toMatchObject({ kind: 'chooseObjects', player: mulliganer, min: 1, max: 1 });
-    const ok = screen.getByRole('button', { name: 'OK' }) as HTMLButtonElement;
+    const ok = screen.getByRole('button', { name: 'Put on the bottom' }) as HTMLButtonElement;
     expect(ok.disabled).toBe(true); // nothing chosen yet: exactly one is needed
     const first = screen.getByRole('group', { name: 'Choices' }).querySelector('button')!;
     await click(first.textContent!);
     expect(ok.disabled).toBe(false);
     const chosen = first.getAttribute('data-id')!;
     const card = conn.state.objects[chosen]!.cardId;
-    await click('OK');
+    await click('Put on the bottom');
     expect(conn.lastAnswer()).toEqual({ kind: 'chooseObjects', ids: [chosen] });
     expect(conn.errors).toEqual([]);
     const bottom = conn.state.zones.library[mulliganer]!.at(-1)!;
