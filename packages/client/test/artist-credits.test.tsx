@@ -264,6 +264,7 @@ describe('the card component (C2) and its zoom', () => {
   });
 
   it('no credit with the setting off', async () => {
+    setShowScryfallImages(false);
     const { container } = show(testImages().images, <Card card={delver()} credit zoomDelayMs={0} />);
     expect(screen.getByRole('group', { name: 'Delver of Secrets' })).toBeTruthy();
     fireEvent.mouseEnter(container.querySelector('figure')!);

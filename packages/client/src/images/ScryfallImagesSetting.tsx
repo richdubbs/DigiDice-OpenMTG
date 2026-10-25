@@ -1,5 +1,5 @@
 /**
- * The switch "Show card images from Scryfall" (ARCHITECTURE.md "Card images" B; off by default), shown on the Images screen. It reads and writes the
+ * The switch "Show card images from Scryfall" (ARCHITECTURE.md "Card images" B; on by default), shown on the Images screen. It reads and writes the
  * one setting (images/settings.ts), so it always agrees with the Settings screen's own checkbox.
  */
 import { useId } from 'react';
@@ -16,7 +16,7 @@ export function ScryfallImagesSetting() {
         Show card images from Scryfall
       </label>
       <p id={hint} className="muted setting-hint">
-        Off by default. When on, your browser loads card pictures directly from Scryfall (scryfall.io) for cards you have no image of your own. OpenMTG never
+        On by default. Your browser loads card pictures directly from Scryfall (scryfall.io) for cards you have no image of your own. OpenMTG never
         downloads, stores or shares those pictures. Images you upload always come first.
       </p>
     </div>

@@ -33,10 +33,13 @@ function screenWith(store: SettingsStore) {
 const box = (name: string | RegExp) => screen.getByRole('checkbox', { name }) as HTMLInputElement;
 
 describe('settings storage', () => {
-  it('defaults: Scryfall images off, the engine default stops, no full control, normal speed', () => {
+  it('defaults: Scryfall images on, the engine default stops, no full control, normal speed', () => {
     const s = loadSettings(memoryStorage());
     expect(s).toEqual(DEFAULT_SETTINGS);
-    expect(s.showScryfallImages).toBe(false);
+    expect(s.showScryfallImages).toBe(true);
+    // Images became on by default (2026-10-25): an "off" stored before that was the old default; one stored since (with the mark) is the player's.
+    expect(sanitizeSettings({ showScryfallImages: false }).showScryfallImages).toBe(true);
+    expect(sanitizeSettings({ showScryfallImages: false, scryfallDefaultOn: true }).showScryfallImages).toBe(false);
     expect(stopSettings(s)).toEqual(DEFAULT_STOPS);
   });
 
@@ -63,7 +66,7 @@ describe('settings storage', () => {
       stops: { ownTurn: ['end', 'untap', 'nonsense', 'main1', 'end'], opponentTurn: 'all' },
       playerNames: ['  Ann  ', '', 'Extra', 7, 'Too many'],
     });
-    expect(s.showScryfallImages).toBe(false);
+    expect(s.showScryfallImages).toBe(true);
     expect(s.fullControl).toBe(true);
     expect(s.animationSpeed).toBe('normal');
     // In turn order, without duplicates, unknown names, or the untap step (CR 502.4: no player receives priority there).
@@ -171,9 +174,9 @@ describe('Settings screen', () => {
     const storage = memoryStorage();
     const store = new SettingsStore(storage);
     screenWith(store);
-    expect(box('Show card images from Scryfall').checked).toBe(false);
+    expect(box('Show card images from Scryfall').checked).toBe(true);
     fireEvent.click(box('Show card images from Scryfall'));
-    expect(JSON.parse(storage.getItem(SETTINGS_KEY)!).showScryfallImages).toBe(true);
+    expect(JSON.parse(storage.getItem(SETTINGS_KEY)!).showScryfallImages).toBe(false);
 
     expect(box('Stop in Precombat main on my turn').checked).toBe(true);
     fireEvent.click(box('Stop in Precombat main on my turn'));
@@ -190,7 +193,7 @@ describe('Settings screen', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Restore defaults' }));
     expect(loadSettings(storage)).toEqual(DEFAULT_SETTINGS);
-    expect(box('Show card images from Scryfall').checked).toBe(false);
+    expect(box('Show card images from Scryfall').checked).toBe(true);
   });
 
   it('stores player names when the field is left; an empty name falls back to the default', () => {
@@ -223,7 +226,7 @@ describe('Settings screen', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     fireEvent.click(box('Show card images from Scryfall'));
     expect(screen.getByRole('alert').textContent).toMatch(/until the page is closed/);
-    expect(box('Show card images from Scryfall').checked).toBe(true);
+    expect(box('Show card images from Scryfall').checked).toBe(false);
   });
 });
 

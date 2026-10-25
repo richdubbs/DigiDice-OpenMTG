@@ -413,16 +413,16 @@ describe('file pickers', () => {
   });
 });
 
-describe('the Scryfall setting (off by default)', () => {
-  it('the Images screen has the switch itself, off by default; turning it on is stored in the shared settings record', () => {
+describe('the Scryfall setting (on by default)', () => {
+  it('the Images screen has the switch itself, on by default; turning it off is stored in the shared settings record', () => {
     fakeServer();
     const { images } = testImages();
     renderScreen(images);
     const box = screen.getByRole('checkbox', { name: 'Show card images from Scryfall' }) as HTMLInputElement;
-    expect(box.checked).toBe(false);
-    fireEvent.click(box);
     expect(box.checked).toBe(true);
-    expect(JSON.parse(localStorage.getItem(SETTINGS_KEY)!).showScryfallImages).toBe(true);
+    fireEvent.click(box);
+    expect(box.checked).toBe(false);
+    expect(JSON.parse(localStorage.getItem(SETTINGS_KEY)!).showScryfallImages).toBe(false);
     // No link away from the screen (leaving it used to drop the review list).
     expect(screen.queryByRole('button', { name: 'Change in Settings' })).toBeNull();
   });

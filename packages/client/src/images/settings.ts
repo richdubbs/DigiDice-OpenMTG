@@ -12,6 +12,17 @@ import { useCallback, useSyncExternalStore } from 'react';
 export const SETTINGS_KEY = 'openmtg.settings.v1';
 /** The field of that record. */
 export const SHOW_SCRYFALL_FIELD = 'showScryfallImages';
+/**
+ * Written with every record since Scryfall images became on by default (owner, 2026-10-25, like Cockatrice): a stored "off" without it is the old
+ * opt-in default, not the player's choice, so it reads as on.
+ */
+export const DEFAULT_ON_MARK = 'scryfallDefaultOn';
+
+/** The setting in a stored record: on, unless a record written since the default changed says off. */
+export function scryfallImagesFrom(r: Record<string, unknown> | null | undefined): boolean {
+  if (!r || r[DEFAULT_ON_MARK] !== true) return true;
+  return r[SHOW_SCRYFALL_FIELD] !== false;
+}
 
 /** Where the setting lives: the settings record by default, or the page-wide settings store (C7 SettingsStore) once connected. */
 export interface ScryfallSettingSource {
@@ -42,18 +53,18 @@ function readRecord(s: Storage): Record<string, unknown> | null {
 function recordSource(): ScryfallSettingSource {
   const listeners = new Set<() => void>();
   // Storage blocked (private window, sandbox): the choice lasts until the page is closed.
-  let memory = false;
+  let memory = true;
   return {
     get: () => {
       const s = storage();
       if (!s) return memory;
-      return readRecord(s)?.[SHOW_SCRYFALL_FIELD] === true;
+      return scryfallImagesFrom(readRecord(s));
     },
     set: (on) => {
       memory = on;
       try {
         const s = storage();
-        if (s) s.setItem(SETTINGS_KEY, JSON.stringify({ ...(readRecord(s) ?? {}), [SHOW_SCRYFALL_FIELD]: on }));
+        if (s) s.setItem(SETTINGS_KEY, JSON.stringify({ ...(readRecord(s) ?? {}), [SHOW_SCRYFALL_FIELD]: on, [DEFAULT_ON_MARK]: true }));
       } catch {
         // Quota or blocked storage: `memory` still holds the choice for this page.
       }
@@ -86,7 +97,7 @@ export function connectScryfallSetting(next: ScryfallSettingSource | null): void
   for (const s of [...swaps]) s();
 }
 
-/** Off unless the player turned it on. */
+/** On unless the player turned it off. */
 export function getShowScryfallImages(): boolean {
   try {
     return source.get();

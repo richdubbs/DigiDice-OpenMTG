@@ -1,5 +1,5 @@
 /**
- * M8-W1 integration: C2's Scryfall images setting connected to C7's page-wide settings store (main.tsx). Opt-in, off by default;
+ * M8-W1 integration: C2's Scryfall images setting connected to C7's page-wide settings store (main.tsx). On by default (2026-10-25);
  * a choice made on the Images screen must survive the next save from the Settings screen.
  */
 import { afterEach, describe, expect, it } from 'vitest';
@@ -10,18 +10,18 @@ import { memoryStorage } from './game-fixtures';
 afterEach(() => connectScryfallSetting(null));
 
 describe('Scryfall images setting backed by the settings store', () => {
-  it('is off by default and a choice on the Images screen is kept when the Settings screen saves something else', () => {
+  it('is on by default and a choice on the Images screen is kept when the Settings screen saves something else', () => {
     const storage = memoryStorage();
     const store = new SettingsStore(storage);
     connectScryfallSetting(scryfallSettingSource(store));
-    expect(getShowScryfallImages()).toBe(false);
+    expect(getShowScryfallImages()).toBe(true);
 
-    setShowScryfallImages(true);
-    expect(store.get().showScryfallImages).toBe(true);
+    setShowScryfallImages(false);
+    expect(store.get().showScryfallImages).toBe(false);
 
     store.update({ fullControl: true });
-    expect(getShowScryfallImages()).toBe(true);
-    expect(JSON.parse(storage.getItem(SETTINGS_KEY)!)).toMatchObject({ showScryfallImages: true, fullControl: true });
+    expect(getShowScryfallImages()).toBe(false);
+    expect(JSON.parse(storage.getItem(SETTINGS_KEY)!)).toMatchObject({ showScryfallImages: false, scryfallDefaultOn: true, fullControl: true });
   });
 
   it('a change on the Settings screen reaches the cards and tells their subscribers', () => {

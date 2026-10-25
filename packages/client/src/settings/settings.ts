@@ -1,9 +1,10 @@
 /**
- * Player settings (docs/design/m8-client.md screen 9): Scryfall images opt-in (off by default, ARCHITECTURE.md "Card images" B), default stops,
+ * Player settings (docs/design/m8-client.md screen 9): Scryfall images (on by default since 2026-10-25, ARCHITECTURE.md "Card images" B), default stops,
  * full control, animation speed, sound (docs/design/sound.md), the default player names and (M12-4b) the multiplayer table's layout and camera. Kept in this browser's localStorage only; every read and write is wrapped in try/catch
  * (private windows, blocked storage, quota), and anything stored that is not understood falls back to the default for that field.
  */
 import type { Step, StopSettings } from '@openmtg/engine';
+import { scryfallImagesFrom } from '../images/settings';
 
 /**
  * The engine's turn order (STEP_ORDER, CR 500.1) and its Arena-like default stops (DEFAULT_STOPS), repeated here so the page's first chunk (main.tsx reads
@@ -39,8 +40,10 @@ export interface SoundSettings {
 export const DEFAULT_SOUND: SoundSettings = { enabled: true, master: 0.8, interface: 0.8, game: 1, ambience: 0.6 };
 
 export interface Settings {
-  /** "Show card images from Scryfall": the browser hot-links image URLs from the local index. Off by default. */
+  /** "Show card images from Scryfall": the browser hot-links image URLs from the local index. On by default (owner, 2026-10-25). */
   showScryfallImages: boolean;
+  /** Always true: marks a record written since the images became on by default (images/settings.ts DEFAULT_ON_MARK). */
+  scryfallDefaultOn: true;
   /** Steps where a player stops (receives priority) with nothing obvious to do; the engine's Arena-like defaults (DEFAULT_STOPS) unless changed. */
   stops: { ownTurn: Step[]; opponentTurn: Step[] };
   /** Never auto-pass priority (CR 117: every priority is the player's to pass). */
@@ -86,7 +89,8 @@ export const MAX_NAME_LENGTH = 24;
 export const STOP_STEPS: readonly Step[] = ENGINE_STEP_ORDER.filter((s) => s !== 'untap' && s !== 'cleanup');
 
 export const DEFAULT_SETTINGS: Settings = {
-  showScryfallImages: false,
+  showScryfallImages: true,
+  scryfallDefaultOn: true,
   stops: { ownTurn: [...ENGINE_DEFAULT_STOPS.ownTurn], opponentTurn: [...ENGINE_DEFAULT_STOPS.opponentTurn] },
   fullControl: false,
   animationSpeed: 'normal',
@@ -145,7 +149,8 @@ export function sanitizeSettings(raw: unknown): Settings {
   const stops = r.stops && typeof r.stops === 'object' ? (r.stops as Record<string, unknown>) : {};
   const names = Array.isArray(r.playerNames) ? r.playerNames : [];
   return {
-    showScryfallImages: r.showScryfallImages === true,
+    showScryfallImages: scryfallImagesFrom(r),
+    scryfallDefaultOn: true,
     stops: { ownTurn: cleanSteps(stops.ownTurn, d.stops.ownTurn), opponentTurn: cleanSteps(stops.opponentTurn, d.stops.opponentTurn) },
     fullControl: r.fullControl === true,
     animationSpeed: ANIMATION_SPEEDS.includes(r.animationSpeed as AnimationSpeed) ? (r.animationSpeed as AnimationSpeed) : d.animationSpeed,

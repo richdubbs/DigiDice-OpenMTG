@@ -1,6 +1,6 @@
 /**
  * Settings (docs/design/m8-client.md screen 9): the look and feel (UI profiles: ProfilesSection.tsx; Restore defaults leaves them alone), Scryfall
- * images opt-in (off by default), default stops, full control, animation speed, the table of a game
+ * images (on by default), default stops, full control, animation speed, the table of a game
  * with three or four players (M12-4b, m12 design 5.1-5.2: its layout and whether its camera follows the mouse), sound (on or off, the volumes with a test
  * each, and the list of every sound to play: SoundSection.tsx, docs/design/sound.md), four player names. Every change is applied and
  * stored at once (localStorage, settings.ts); stops and full control apply to games started afterwards (a game in progress keeps the stops it started
@@ -80,7 +80,7 @@ export function SettingsScreen({ store = settingsStore() }: { store?: SettingsSt
           <span>Show card images from Scryfall</span>
         </label>
         <p className="settings-hint">
-          Off by default. When on, your browser loads card pictures directly from Scryfall; nothing is downloaded into OpenMTG. Your own uploaded images
+          On by default. Your browser loads card pictures directly from Scryfall; nothing is downloaded into OpenMTG. Your own uploaded images
           always come first, and cards without an image show a text frame.
         </p>
       </section>

@@ -19,7 +19,7 @@ function renderBuilder(deck: Deck | null = deckFixture(), server: FakeServer = {
   const fetchMock = fakeServer(server);
   const store = new MemoryDeckStore(deck ? [deck] : []);
   render(
-    <DecksProvider store={store}>
+    <DecksProvider store={store} showScryfallImages={false}>
       <NavProvider>
         <DeckbuilderScreen {...(deck ? { deckId: deck.id } : {})} now={() => NOW} validateDelayMs={0} autoSearch={false} />
       </NavProvider>
@@ -47,7 +47,7 @@ describe('deckbuilder: loading', () => {
   it('a missing deck id is reported', async () => {
     fakeServer();
     render(
-      <DecksProvider store={new MemoryDeckStore()}>
+      <DecksProvider store={new MemoryDeckStore()} showScryfallImages={false}>
         <NavProvider>
           <DeckbuilderScreen deckId="nope" />
         </NavProvider>

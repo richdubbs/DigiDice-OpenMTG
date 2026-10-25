@@ -26,7 +26,7 @@ function renderBuilder(deck: Deck | null = deckFixture(), server: FakeServer = {
   const fetchMock = fakeServer(server);
   const store = new MemoryDeckStore(deck ? [deck] : []);
   render(
-    <DecksProvider store={store} {...env}>
+    <DecksProvider store={store} showScryfallImages={false} {...env}>
       <NavProvider>
         <DeckbuilderScreen {...(deck ? { deckId: deck.id } : {})} now={() => NOW} validateDelayMs={0} autoSearch={false} />
       </NavProvider>
@@ -59,7 +59,7 @@ describe('deckbuilder: card images (ARCHITECTURE.md "Card images" A + B)', () =>
     expect(calls(on.fetchMock, '/api/cards/Lightning')[0]).toBe('/api/cards/Lightning%20Bolt?images=1');
   });
 
-  it('without the opt-in no image URLs are asked for', async () => {
+  it('with Scryfall images turned off no image URLs are asked for', async () => {
     const off = renderBuilder(deckFixture(), { search: () => page(['Forest']) });
     await screen.findByDisplayValue('Gruul Test');
     runSearch();
