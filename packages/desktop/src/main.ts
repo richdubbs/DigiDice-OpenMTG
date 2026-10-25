@@ -3,7 +3,8 @@
  * local server (packages/server) runs inside this process and one app window shows the client it serves, with no console and no address bar.
  *
  * - Card data, the compiled cache and rules packs live in the user's profile, %APPDATA%\OpenMTG\data (the install folder is not writable). The first
- *   start downloads the card data from Scryfall, with a waiting screen; later starts take seconds.
+ *   start downloads the card data from Scryfall, with a waiting screen; later starts take seconds. A launch whose card data is more than a day old
+ *   refreshes it in the background (cardData.ts), so new cards show up without pressing Check for updates.
  * - Port 47600 when free, else any free port (the old OpenMTG.exe or another program may hold it). A second start of the app focuses the open window.
  * - Links to other sites open in the default browser, never inside the app. F11 toggles full screen.
  * - Updates at every launch (update.ts): a newer version on the GitHub Releases of richdubbs/DigiDice-OpenMTG is downloaded and installed before the game
@@ -16,6 +17,7 @@ import { existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { CardDatabase, defaultCacheDir } from '@openmtg/cards';
 import { contextFrom, startServer, warmCardCache, type RunningServer, type ServerOptions } from '@openmtg/server';
+import { cardDataStale, refreshCardData } from './cardData';
 import { acceptPublishers, launchLog, updateAtLaunch } from './update';
 
 declare const __OPENMTG_VERSION__: string;
@@ -117,6 +119,7 @@ async function startOpenMTG(): Promise<void> {
     if (e.code === 'EADDRINUSE') return startServer({ ...opts, port: 0 });
     throw e;
   });
+  if (cardDataStale(cacheDir)) void refreshCardData(running.url);
   void warmCardCache(contextFrom(opts));
   if (win) await win.loadURL(running.url);
 }
