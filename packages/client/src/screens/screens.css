@@ -394,8 +394,9 @@
   inset: 0;
   border-radius: inherit;
   background: repeating-linear-gradient(-55deg, rgba(255, 255, 255, 0.26) 0 8px, transparent 8px 18px);
-  background-size: 200% 100%;
-  animation: hp-stripes 1.1s linear infinite;
+  /* One tile is one stripe spacing across (18px / sin 55deg, about 22px), so the loop lands on the same picture. */
+  background-size: 22px 100%;
+  animation: hp-stripes 0.67s linear infinite;
   mix-blend-mode: screen;
 }
 
@@ -426,10 +427,10 @@
   }
 }
 
-/* Left to right, the way the bar fills. */
+/* Left to right, the way the bar fills. Moves one tile, so the loop is seamless. */
 @keyframes hp-stripes {
   to {
-    background-position: 36px 0;
+    background-position: 22px 0;
   }
 }
 

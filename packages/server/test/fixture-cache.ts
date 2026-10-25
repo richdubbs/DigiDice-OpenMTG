@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { OracleCard } from '@openmtg/engine';
-import type { IndexedCard } from '@openmtg/cards';
+import { ScryfallClient, type IndexedCard } from '@openmtg/cards';
 import { isMeldResult } from '../src/cache';
 import type { ServerContext } from '../src/context';
 
@@ -62,6 +62,14 @@ export interface FixtureCache {
   cleanup(): void;
 }
 
+/** A Scryfall client whose every request fails (no network in tests). */
+function offlineScryfall(): ScryfallClient {
+  const fetch = (async () => {
+    throw new TypeError('fetch failed');
+  }) as typeof globalThis.fetch;
+  return new ScryfallClient({ fetch, clock: { now: () => 0, sleep: async () => undefined } });
+}
+
 export function makeFixtureCache(): FixtureCache {
   const dir = mkdtempSync(path.join(tmpdir(), 'openmtg-c1-'));
   const cacheDir = path.join(dir, 'scryfall');
@@ -72,7 +80,8 @@ export function makeFixtureCache(): FixtureCache {
   writeFileSync(path.join(cacheDir, 'tokens.jsonl'), data.tokens.map((c) => JSON.stringify(c)).join('\n') + '\n');
   return {
     dir,
-    ctx: { cacheDir, compiledDir: path.join(dir, 'compiled'), version: 'test' },
+    // Offline unless a test injects a fake: a plain search asks for the set lists (sets.ts), which must never reach the real Scryfall.
+    ctx: { cacheDir, compiledDir: path.join(dir, 'compiled'), version: 'test', scryfall: offlineScryfall() },
     cards,
     // every meld result (CR 712.4b): Brisela, and Chittering Host since the M6-0 fixture cards
     deckCards: cards.filter((c) => !isMeldResult(c as IndexedCard)),

@@ -25,6 +25,6 @@ export const ROADMAP: readonly RoadmapItem[] = [
   { status: 'next', title: 'Commander favorites', text: "After Standard: the cards Commander players use most, the most popular first." },
   { status: 'done', title: 'Replays', text: 'Save a game and watch it again, at any speed.' },
   { status: 'done', title: 'Report a problem in the game', text: 'Report a bug from the game menu: the report is saved as a file to send us.' },
-  { status: 'planned', title: 'Mods', text: 'Change how OpenMTG looks and sounds: themes, sounds, music and animations.' },
+  { status: 'planned', title: 'Online play', text: 'Play against other people online in free lobbies, and climb a ladder of ranked players.' },
   { status: 'later', title: 'Mac and Linux', text: 'The desktop app on more computers.' },
 ];

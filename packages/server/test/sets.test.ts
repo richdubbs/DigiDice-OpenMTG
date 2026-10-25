@@ -164,6 +164,19 @@ describe('s: in GET /api/cards/search and GET /api/sets', () => {
     expect(await search('s:tsc')).toEqual([]);
   });
 
+  it('plain text that is a set\'s name (or starts one) also finds the whole set, next to the name matches; the other filters still apply', async () => {
+    const plain = async (query: Record<string, string>) => {
+      const r = await searchCards(req({ query }), ctx);
+      return r.status === 200 ? r.body.cards.map((c) => c.name) : `${r.status}: ${r.body.error}`;
+    };
+    expect(await plain({ q: 'test set' })).toEqual(['Lightning Bolt']); // Test Set, and the start of Test Set Commander
+    expect(await plain({ q: 'Test Set Commander' })).toEqual([]); // that set has no cards in the index
+    expect(await plain({ q: 'test set', types: 'creature' })).toEqual([]);
+    expect(await plain({ q: 'test' })).toEqual(await plain({ q: 'test' })); // a word that is not a whole set name stays a name search
+    expect(await plain({ q: 'tst' })).not.toContain('Lightning Bolt'); // a set code is not plain text: s:tst is
+    expect(await plain({ q: 'bolt' })).toContain('Lightning Bolt');
+  });
+
   it('answers 400 for a set it cannot find, and for a first set search offline', async () => {
     expect(await search('s:zzz')).toMatch(/^400: No set has the code or name "zzz"/);
     // A second install, whose set lists were never fetched.

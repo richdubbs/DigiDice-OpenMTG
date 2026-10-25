@@ -134,6 +134,16 @@ export function findSet(sets: readonly SetSummary[], text: string): SetSummary |
   return `No set has the code or name "${text}". Set codes are the three to five letters Scryfall shows, e.g. dmu for Dominaria United`;
 }
 
+/** The sets plain search text names: a set's whole name ("Star Trek"), or the start of one up to a word ("Star Trek" for "Star Trek Commander"). */
+export function setsNamed(sets: readonly SetSummary[], text: string): SetSummary[] {
+  const want = fold(text.trim());
+  if (want.length < 3) return [];
+  return sets.filter((s) => {
+    const name = fold(s.name);
+    return name === want || name.startsWith(`${want} `);
+  });
+}
+
 const bySetsDir = new Map<string, SetLists>();
 
 /** The set lists of a server (one per card-data folder, so every search shares the kept lists and the Scryfall client's rate limits). */

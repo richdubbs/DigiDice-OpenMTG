@@ -5,7 +5,8 @@
  * NO listener: the page's `HostedLink`s reach the gateway through its in-process transport (gateway/in-process.ts), so there is no socket and no network
  * traffic at all (the owner's rule). Four players:
  *  - Alice makes an open table with a password; Bob's lobby feed sees it appear, live; a wrong password is refused, the right one sits him down; the
- *    ready check; they play; Bob sends a bug report, which lands in the server's inbox with the game; Alice concedes; both replays are kept.
+ *    ready check; Bob sends a bug report as the game begins, which lands in the server's inbox with the game and his view; they play; Alice
+ *    concedes; both replays are kept.
  *  - With CAPACITY_UNITS=1 the server has room for one game: Carol and Dave find each other by quick match while it runs, and their start waits in
  *    line for room; when the first game ends it begins after their ready check.
  */
@@ -18,7 +19,7 @@ import { sealConnection } from '../../src/game/sealed';
 import { HostedLink, type SocketLike } from '../../src/hosted/HostedLink';
 import { LobbyWatcher } from '../../src/hosted/lobby/watcher';
 import { recordHostedGame, type HostedRecorder } from '../../src/hosted/replay';
-import { sendHostedBugReport } from '../../src/hosted/report';
+import { reportAttachments, sendHostedBugReport } from '../../src/hosted/report';
 import { MemoryHostedStorage } from '../../src/hosted/storage';
 import type { ReportEnvironment } from '../../src/bugs/report';
 import { DECKS } from '../../../ai/test/decks';
@@ -184,6 +185,19 @@ describe('M13-12 the lobby, a password table, quick match and the line for room,
     expect(alice.link.table()).toMatchObject({ status: 'playing', source: 'listed' });
     seat(alice, env);
     seat(bob, env);
+
+    // Bob reports a bug as the game begins: the server's inbox has it, with his game, his seat and the view on his screen. The view goes only when it
+    // fits in the server's 64 KB of attachments (hosted/report.ts), and a few turns in it may not: after 16 moves it is 55-66 KB, by the shuffle. At
+    // the start it is about 34 KB, whatever the shuffle.
+    const shown = bob.conn!.view();
+    expect(reportAttachments(ENV, shown).map((a) => a.kind)).toContain('view');
+    expect(await sendHostedBugReport(bob.link, { words: 'Test report: the stack looked odd.', card: null }, ENV, shown)).toBeNull();
+    const reports = await server.store.reports(new Date(0), 10);
+    expect(reports).toHaveLength(1);
+    expect(reports[0]).toMatchObject({ kind: 'bug', seat: 2, text: 'Test report: the stack looked odd.', status: 'new' });
+    expect(reports[0]!.game).toBe(alice.link.table()!.table);
+    expect(reports[0]!.attachments.map((a) => a.kind).sort()).toEqual(['client', 'settings', 'view']);
+
     await play([alice, bob], 16);
     expect([...alice.problems, ...bob.problems]).toEqual([]);
 
@@ -198,14 +212,6 @@ describe('M13-12 the lobby, a password table, quick match and the line for room,
       await until(() => carol.link.queue()?.kind === 'capacity', 20_000, 'the place in line');
       expect(carol.link.queue()).toMatchObject({ kind: 'capacity', position: 1 });
     }
-
-    // Bob reports a bug from his game: the server's inbox has it, with his game and seat.
-    expect(await sendHostedBugReport(bob.link, { words: 'Test report: the stack looked odd.', card: null }, ENV, bob.conn!.view())).toBeNull();
-    const reports = await server.store.reports(new Date(0), 10);
-    expect(reports).toHaveLength(1);
-    expect(reports[0]).toMatchObject({ kind: 'bug', seat: 2, text: 'Test report: the stack looked odd.', status: 'new' });
-    expect(reports[0]!.game).toBe(alice.link.table()!.table);
-    expect(reports[0]!.attachments.map((a) => a.kind).sort()).toEqual(['client', 'settings', 'view']);
 
     // Alice concedes: the result; both replays are kept, conceded, each of its own player's seat.
     expect(await alice.conn!.act({ type: 'concede', player: alice.conn!.view().viewer! })).toEqual({ ok: true });

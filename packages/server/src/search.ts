@@ -11,9 +11,9 @@ import { legalitiesOf, legalityIn } from '@openmtg/cards';
 import { COMPILER_VERSION, type CardDef } from '@openmtg/engine';
 import type { CardDetailResponse, ManualCategory, ManualPart } from './api';
 import { cardStore, storeError, type CardStore } from './cache';
-import { badRequest, type Handler } from './context';
+import { badRequest, type Handler, type ServerContext } from './context';
 import { parseSearch, searchRow, type SearchRow } from './search-query';
-import { findSet, setLists, SetsUnavailableError } from './sets';
+import { findSet, setLists, SetsUnavailableError, setsNamed } from './sets';
 import { cardSummary, wantsImages } from './summary';
 
 const rows = (store: CardStore): SearchRow[] => store.derived('searchRows', (s) => s.cards.map(searchRow));
@@ -74,7 +74,15 @@ export const searchCards: Handler<'GET /api/cards/search'> = async (req, ctx) =>
   }
   await store.automation.ready(); // levels cached on disk, so the page does not compile cards the cache knows
   const level = parsed.automation;
-  const filtered = rows(store).filter((r) => tests.every((t) => t(r)) && (!level || store.automation.peek(r.card) === level));
+  // Plain search text that names a set ("star trek"): the set's cards match too, next to the cards with the text in their name or rules; the other
+  // filters (and the format) still apply. Without the set lists (offline, none kept) it is the name and rules-text search alone.
+  const inSet = await namedSetsCards(req.query, ctx);
+  const bare = inSet ? parseSearch({ ...req.query, q: '', name: '' }) : null;
+  const bareTests = bare && typeof bare !== 'string' ? [...bare.tests, ...tests.slice(parsed.tests.length)] : null;
+  if (bare && typeof bare !== 'string') for (const [named, cards] of parsed.scrySetCards) bare.scrySetCards.set(named, cards); // the s: filters' lists
+  const matchesRow = (r: SearchRow): boolean =>
+    tests.every((t) => t(r)) || (inSet !== null && bareTests !== null && r.card.oracle_id !== undefined && inSet.has(r.card.oracle_id) && bareTests.every((t) => t(r)));
+  const filtered = rows(store).filter((r) => matchesRow(r) && (!level || store.automation.peek(r.card) === level));
   const rank = parsed.rank;
   // Relevance first when the query names a card; the sort is stable, so Oracle-name order is kept within each tier.
   const matches = rank ? filtered.map((r) => ({ r, t: rank(r) })).sort((a, b) => a.t - b.t).map((x) => x.r) : filtered;
@@ -82,6 +90,23 @@ export const searchCards: Handler<'GET /api/cards/search'> = async (req, ctx) =>
   const cards = matches.slice(start, start + parsed.pageSize).map((r) => cardSummary(r.card, store.automation.levelOf(r.card), parsed.images));
   return { status: 200, body: { cards, page: parsed.page, pageSize: parsed.pageSize, total: matches.length } };
 };
+
+/** The Oracle ids of the cards in the sets that the plain search text names (sets.ts setsNamed), or null: no such set, or the set lists are not at hand. */
+async function namedSetsCards(query: Record<string, string>, ctx: ServerContext): Promise<ReadonlySet<string> | null> {
+  const text = query.q || query.name;
+  if (!text) return null;
+  try {
+    const lists = setLists(ctx);
+    const named = setsNamed(await lists.all(), text);
+    if (!named.length) return null;
+    const ids = new Set<string>();
+    for (const set of named) for (const id of await lists.cardsOf(set)) ids.add(id);
+    return ids;
+  } catch (e) {
+    if (e instanceof SetsUnavailableError) return null;
+    throw e;
+  }
+}
 
 /** GET /api/sets: every set, for the Advanced search form's Set field. */
 export const listSets: Handler<'GET /api/sets'> = async (_req, ctx) => {
