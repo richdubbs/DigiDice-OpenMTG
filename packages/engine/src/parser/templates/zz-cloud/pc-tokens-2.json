@@ -1,0 +1,183 @@
+[
+  {
+    "id": "rep.pctokens2.asEnters.becomeCopy.until.exceptHas",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.12",
+      "CR 614.1c",
+      "CR 707.2",
+      "CR 611.2"
+    ],
+    "pattern": "as ~ enters , you may have it become a copy of any {f:Filter} on the battlefield {d:Dur} , except it has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "duration": "$d",
+              "except": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, you may have it become a copy of any artifact on the battlefield until end of turn, except it has vigilance."
+      },
+      {
+        "text": "As ~ enters, you may have it become a copy of any creature on the battlefield until end of turn, except it has flying and lifelink."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, you may have it become a copy of any creature on the battlefield, except it has flying.",
+      "As ~ enters, you may have it become a copy of any creature in a graveyard until end of turn, except it has flying.",
+      "As ~ enters, you may have it become a copy of any creature on the battlefield until end of turn, except it gains flying."
+    ]
+  },
+  {
+    "id": "rep.pctokens2.tokens.clueFoodTreasure.oneOfEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1",
+      "CR 111.10a",
+      "CR 111.10b",
+      "CR 111.10i"
+    ],
+    "pattern": "if you would create a clue , food , or treasure token , instead create ( one | 1 ) of each",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "createToken",
+            "player": "you",
+            "token": {
+              "anyOf": [
+                {
+                  "subtypes": [
+                    "Clue"
+                  ]
+                },
+                {
+                  "subtypes": [
+                    "Food"
+                  ]
+                },
+                {
+                  "subtypes": [
+                    "Treasure"
+                  ]
+                }
+              ]
+            }
+          },
+          "body": {
+            "b": "modify",
+            "then": {
+              "as": "created",
+              "do": [
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": {
+                    "q": "resultCount",
+                    "step": "created"
+                  },
+                  "token": {
+                    "predefined": "Clue"
+                  },
+                  "exceptReplaced": true
+                },
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": {
+                    "q": "resultCount",
+                    "step": "created"
+                  },
+                  "token": {
+                    "predefined": "Food"
+                  },
+                  "exceptReplaced": true
+                },
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": {
+                    "q": "resultCount",
+                    "step": "created"
+                  },
+                  "token": {
+                    "predefined": "Treasure"
+                  },
+                  "exceptReplaced": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "If you would create a Clue, Food, or Treasure token, instead create 1 of each."
+      },
+      {
+        "text": "{2}: Draw a card.\nIf you would create a Clue, Food, or Treasure token, instead create 1 of each."
+      }
+    ],
+    "counterExamples": [
+      "If you would create a Clue, Food, or Treasure token, you may instead create 1 of each.",
+      "If an opponent would create a Clue, Food, or Treasure token, instead create 1 of each.",
+      "If you would create a Clue, Food, or Treasure token, instead create 2 of each."
+    ]
+  }
+]

@@ -35,6 +35,7 @@ const QUANTITIES: Record<Exclude<Quantity, number>['q'], boolean> = {
   lifeGainedThisTurn: true, math: true, live: true, ask: true,
   kickCount: true, preventedAmount: true, faceUpX: true, // M6-0 (m6 design 5, M6-0)
   commanderCasts: true, // M11-0 (m11 design 4.5): exact in every game (0 outside Commander, CR 903.8)
+  commanderIdentitySize: true, // pc-statics-2 (CR 903.4): read by effects/eval.ts (a cost's amount is read when it is paid); unknown identity is not guessed
   lifeLostThisTurn: true, colorsSpent: true, // FAST4 T34
   spellManaSpent: true, // FAST5X E9 (increment, CR 702.191a)
   partySize: true, // FAST5 T38 (CR 700.8)

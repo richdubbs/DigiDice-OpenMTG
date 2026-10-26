@@ -325,6 +325,7 @@ export function moveObject(g: Game, id: ObjectId, to: ZoneKind, opts: MoveOption
     g.emit({
       type: 'zoneChanged', oldId: id, newId: o.id, from: old.fromOutside === true ? null : from, to: o.zone, owner: o.owner, controller: o.controller, // trek-11 (CR 400.11b): a card from outside the game comes from no zone
       name: g.nameOf(o.id), ...(cause ? { cause } : {}), ...(o.faceDown ? { faceDown: true as const } : {}), // FAST5X E25 (CR 708.3, 406.3)
+      ...(o.zone === 'battlefield' && o.tapped ? { tapped: true as const } : {}), // pc-tokens-2 (CR 603.6a)
     });
   }
   // FAST5X E22 (CR 700.11, 110.4a): a permanent card put into a graveyard from anywhere is one more time its owner (a card goes to its owner's graveyard,

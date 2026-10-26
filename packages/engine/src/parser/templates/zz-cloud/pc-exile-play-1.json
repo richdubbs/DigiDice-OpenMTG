@@ -1,0 +1,585 @@
+[
+  {
+    "id": "eff.pcep1.cast.fromHand.free.mvOrLess.after",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g",
+      "CR 202.3"
+    ],
+    "pattern": "you may cast ( a | an ) {f:Filter} from your hand with mana value {n:Qty} or less without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue"
+              }
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true,
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast a sorcery spell from your hand with mana value 2 or less without paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ attacks, you may cast an artifact spell from your hand with mana value 5 or less without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast a sorcery spell from your graveyard with mana value 2 or less without paying its mana cost.",
+      "When ~ enters, you may cast a sorcery spell from your hand with mana value 2 or more without paying its mana cost.",
+      "When ~ enters, you may cast two sorcery spells from your hand with mana value 2 or less without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.pcep1.self.cast.graveyardOrExile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 113.6b",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast ~ from ( your graveyard or from exile | exile or from your graveyard )",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard",
+        "exile"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard"
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "exile"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from exile or from your graveyard."
+      },
+      {
+        "text": "When ~ enters, you gain 11 life.\nYou may cast ~ from exile or from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your graveyard or from your hand.",
+      "You may cast ~ from exile or from your graveyard if you control a Wizard.",
+      "You may cast ~ from exile or from your library."
+    ]
+  },
+  {
+    "id": "eff.pcep1.copy.spell.twice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.1"
+    ],
+    "pattern": "copy {o:Obj} twice",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "count": 2
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Copy target instant spell twice."
+      },
+      {
+        "text": "Copy target sorcery spell twice."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell three times.",
+      "Copy target creature twice.",
+      "Copy target instant spell twice unless its controller pays {1}."
+    ],
+    "consumes": [
+      "twice"
+    ]
+  },
+  {
+    "id": "eff.pcep1.cast.spellsFromGroup.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 611.2b"
+    ],
+    "pattern": "{d:Dur} , you may cast spells from among {o:Group}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards."
+      },
+      {
+        "text": "Exile the top three cards of your library. Until your next end step, you may cast spells from among them."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards, and mana of any type can be spent to cast those spells.",
+      "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards without paying their mana costs.",
+      "Exile the top two cards of target opponent's library. You may cast spells from among those cards."
+    ]
+  },
+  {
+    "id": "eff.pcep1.cast.spellsFromGroup.durFirst.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "{d:Dur} , you may cast spells from among {o:Group} , and you may spend mana as though it were mana of any color to cast those spells",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards, and you may spend mana as though it were mana of any color to cast those spells."
+      },
+      {
+        "text": "Exile the top three cards of your library. Until your next end step, you may cast spells from among them, and you may spend mana as though it were mana of any color to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards, and you may spend mana as though it were mana of any type to cast those spells.",
+      "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards, and you may spend mana as though it were mana of any color to cast spells.",
+      "Exile the top two cards of target opponent's library. Until end of turn, you may cast spells from among those cards."
+    ]
+  },
+  {
+    "id": "eff.pcep1.cast.obj.dur.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "you may cast {o:Obj} {d:Dur} , and you may spend mana as though it were mana of any color to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library. You may cast that card this turn, and you may spend mana as though it were mana of any color to cast that spell."
+      },
+      {
+        "text": "Look at the top card of your library, then exile it face down. You may cast that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. You may cast that card this turn, and you may spend mana as though it were mana of any type to cast that spell.",
+      "Exile the top card of target opponent's library. You may cast that card this turn, and you may spend mana as though it were mana of any color to cast those spells.",
+      "Exile the top card of target opponent's library. You may cast that card this turn."
+    ]
+  },
+  {
+    "id": "eff.pcep1.cast.obj.durFirst.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "{d:Dur} , you may cast {o:Obj} and you may spend mana as though it were mana of any color to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library. Until end of turn, you may cast that card and you may spend mana as though it were mana of any color to cast that spell."
+      },
+      {
+        "text": "Exile the top card of your library. Until your next end step, you may cast that card and you may spend mana as though it were mana of any color to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. Until end of turn, you may cast that card and you may spend mana as though it were mana of any type to cast that spell.",
+      "Exile the top card of target opponent's library. Until end of turn, you may cast that card and you may spend mana as though it were mana of any color to cast those spells.",
+      "Exile the top card of target opponent's library. Until end of turn, you may cast that card."
+    ]
+  },
+  {
+    "id": "eff.pcep1.play.obj.dur.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "you may play {o:Obj} {d:Dur} , and you may spend mana as though it were mana of any color to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library. You may play that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast it."
+      },
+      {
+        "text": "Exile the top card of your library. You may play that card this turn, and you may spend mana as though it were mana of any color to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. You may play that card this turn, and you may spend mana as though it were mana of any type to cast that spell.",
+      "Exile the top card of target opponent's library. You may play that card this turn, and you may spend mana as though it were mana of any color to cast those spells.",
+      "Exile the top card of target opponent's library. You may play that card this turn."
+    ]
+  },
+  {
+    "id": "eff.pcep1.play.group.dur.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "you may play {o:Group} {d:Dur} , and you may spend mana as though it were mana of any color to cast ( them | those spells )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of target opponent's library. You may play those cards this turn, and you may spend mana as though it were mana of any color to cast those spells."
+      },
+      {
+        "text": "Exile the top three cards of your library. You may play them until end of turn, and you may spend mana as though it were mana of any color to cast them."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of target opponent's library. You may play those cards this turn, and you may spend mana as though it were mana of any type to cast those spells.",
+      "Exile the top two cards of target opponent's library. You may play those cards this turn, and you may spend mana as though it were mana of any color to cast that spell.",
+      "Exile the top two cards of target opponent's library. You may play those cards this turn."
+    ]
+  },
+  {
+    "id": "eff.pcep1.cast.fromHand.free.mvX.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g",
+      "CR 202.3",
+      "CR 107.3"
+    ],
+    "pattern": "you may cast ( a | an ) {f:Filter} with mana value x or less from your hand without paying its mana cost , where x is {q:Qty}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue"
+              }
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true,
+            "manaValue": {
+              "op": "<=",
+              "value": "$q"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may cast a spell with mana value X or less from your hand without paying its mana cost, where X is the number of creatures you control."
+      },
+      {
+        "text": "When ~ enters, you may cast a sorcery spell with mana value X or less from your hand without paying its mana cost, where X is the number of Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast a sorcery spell with mana value X or more from your hand without paying its mana cost, where X is the number of Elves you control.",
+      "When ~ enters, you may cast a sorcery spell with mana value X or less from your graveyard without paying its mana cost, where X is the number of Elves you control.",
+      "When ~ enters, you may cast a sorcery spell with mana value X or less from your hand without paying its mana cost."
+    ]
+  }
+]

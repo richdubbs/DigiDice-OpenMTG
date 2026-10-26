@@ -130,7 +130,7 @@ function checkSubtypeTypes(types: string[], subtypes: string[]): void {
   }
 }
 
-function zonePhrase(f: ObjectFilter, st: RenderState, zs: (ZoneName | 'any')[], plural: boolean): string {
+function zonePhrase(f: ObjectFilter, st: RenderState, zs: (ZoneName | 'any')[], plural: boolean, forEach = false): string {
   const real = zs.filter((z): z is ZoneName => z !== 'any' && z !== 'battlefield');
   if (real.length === 0) return '';
   // r5-mech (CR 108.3, 404.1, 406.1): cards you own in either zone, "cards you own in exile and in your graveyard" (parser/holes/filter.ts)
@@ -144,7 +144,9 @@ function zonePhrase(f: ObjectFilter, st: RenderState, zs: (ZoneName | 'any')[], 
     // r4-fxz (CR 400.1): two zones of one player are also "your hand and/or graveyard" (a card in either: the same set)
     const list = words.length === 2 ? alt(joinList(words, 'or'), words.join(' and/or ')) : joinList(words, 'or');
     // r5-fxz (CR 102.3, 404.1): cards every opponent owns are also in "your opponents' graveyards" (the zone word plural, as Oracle prints it)
-    const owned = poss === 'a' ? `a ${list}` : own === 'opponent' && plural && words.length === 1 ? alt(`${poss} ${list}`, `your opponents' ${pluralize(words[0]!)}`) : `${poss} ${list}`;
+    // p2-pt-3 (CR 102.3, 404.1, 613.4c): also one card of such a count, "for each creature card in your opponents' graveyards" (Wight of Precinct Six)
+    const owned = poss === 'a' ? `a ${list}` : own === 'opponent' && plural && words.length === 1 ? alt(`${poss} ${list}`, `your opponents' ${pluralize(words[0]!)}`)
+      : own === 'opponent' && forEach && words.length === 1 ? alt(`${poss} ${list}`, `your opponents' ${pluralize(words[0]!)}`) : `${poss} ${list}`;
     // FAST2 T9: a set of cards in any player's graveyard is "creature cards in all graveyards" (CR 404.1: each player has a graveyard); FAST3 T14: or
     // "cards from graveyards" ("exile up to three target cards from graveyards")
     // r4-fxz: "put all creature cards from all graveyards onto the battlefield under your control" (Rise of the Dark Realms) is the same set
@@ -158,7 +160,8 @@ function zonePhrase(f: ObjectFilter, st: RenderState, zs: (ZoneName | 'any')[], 
   }
   for (const z of real) {
     // the owner of a card in exile or the command zone is a part of where it is (CR 108.3, 406, 408): "a card you own in exile"
-    const owns = ownerWords(f.owner, st);
+    // p2-pt-3 (CR 102.3, 406.1, 613.4c): cards every opponent owns, also "for each card your opponents own in exile" (Umbris, Fear Manifest)
+    const owns = f.owner === 'opponent' && (plural || forEach) ? alt('an opponent owns', 'your opponents own') : ownerWords(f.owner, st);
     if (z === 'exile') parts.push(owns === '' ? 'in exile' : alt(`${owns} in exile`, `${owns} from exile`, `in exile ${owns}`));
     else if (z === 'stack') parts.push('on the stack');
     else if (z === 'command') parts.push(owns === '' ? 'in the command zone' : alt(`${owns} in the command zone`, `in the command zone ${owns}`));
@@ -440,6 +443,9 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
   else if (f.attacking && typeof f.attacking === 'object' && f.attacking.defender === 'opponent') p.post.push(plural ? alt("that are attacking one of your opponents", 'attacking one of your opponents') : alt("that's attacking one of your opponents", 'attacking one of your opponents'));
   // p2-combat-flow-1: attacking you, said after the other words that follow the noun (below, with "that's attacking alone")
   else if (attackingYou) { /* below */ }
+  // pc-combat-3 (CR 506.3, 508.1b; Soul Snare): attacking you or a planeswalker you control
+  else if (f.attacking && typeof f.attacking === 'object' && f.attacking.defender === 'you' && f.attacking.orPlaneswalker === true) p.post.push(plural ? alt('that are attacking you or a planeswalker you control', 'attacking you or a planeswalker you control') : alt("that's attacking you or a planeswalker you control", 'attacking you or a planeswalker you control'));
+  else if (f.attacking && typeof f.attacking === 'object' && f.attacking.orPlaneswalker === true) throw new NoRenderer('attacking a player or a planeswalker other than "you or a planeswalker you control"');
   else if (f.attacking && typeof f.attacking === 'object') p.post.push(`attacking ${K.player(f.attacking.defender as PlayerRef, st, 'object').text}`);
   // FAST4 T32: "an attacking nontoken creature" is Oracle's order of the same two adjectives (design 3.3: the fields are ANDed, the order says nothing)
   const ntIdx = p.adj.indexOf('nontoken');
@@ -506,7 +512,12 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
   if (f.not && notWay !== undefined) { /* C6: below */ }
   else if (butNotOwn) { /* r4-mech: below */ }
   else if (f.not && !isNoAbilities(f.not) && !notEvent && !otherThanObject(f.not) && !otherThanObjectOrSelf(f.not) && !otherThanSelfAndChosen(f.not)) {
-    if (!negated(f.not, st, p, plural)) {
+    // pc-counters-1/2 (CR 122.1): "each creature without a +1/+1 counter on it" (the filter's `not` is only a counter of one kind; Oracle says "on it" in the plural too)
+    const noCounter = Object.keys(f.not).filter((k) => (f.not as Record<string, unknown>)[k] !== undefined).join() === 'counters' && f.not.counters?.cmp === undefined && f.not.counters?.kind !== 'any';
+    if (noCounter) {
+      const kind = f.not.counters!.kind;
+      p.post.push(`without ${withArticle(`${kind} counter`)} on it`); // Oracle says "on it" after "each creature" too
+    } else if (!negated(f.not, st, p, plural)) {
       const isnt = `that isn't ${K.np(f.not, st, { det: 'a', noZone: true })}`;
       // FAST5 T49 (CR 205.2, 608.2b): "deals 4 damage to each creature except for tokens you control": the set without a smaller set of its own kind
       p.post.push(plural || o.det === 'each' ? alt(isnt, `except for ${K.np(f.not, st, { det: 'none', plural: true, noZone: true })}`) : isnt);
@@ -616,7 +627,7 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
     if (zs.length !== 1 || zs[0] !== 'graveyard' || f.owner !== undefined || f.controller !== undefined) throw new NoRenderer('a single zone that is not "a single graveyard"');
     zoneAt = p.post.push('from a single graveyard') - 1;
   } else if (!o.noZone && !onStack && !f.stackKind) {
-    const z = zonePhrase(f, st, zs, plural);
+    const z = zonePhrase(f, st, zs, plural, o.forEach === true);
     if (z) zoneAt = p.post.push(z) - 1;
   }
   let ctrlAt = -1;
@@ -794,7 +805,11 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
     const other = K.obj(f.sharesWith.with, st, 'object').text;
     const shares = `that ${plural ? 'share' : 'shares'} ${SHARES_QUALITY[f.sharesWith.quality] ?? 'a quality'} with ${other}`;
     // FAST3 T18: Oracle's other wording of a shared name, "with the same name as that creature" (CR 201.2)
-    p.post.push(f.sharesWith.quality === 'name' ? alt(shares, `with the same name as ${other}`) : shares);
+    // pc-keywords-mana-2 (CR 903.3d, 903.3e; Path of Ancestry): the commanders you own are also "your commander"
+    const w = f.sharesWith.with;
+    const yours = w.ref === 'each' && w.filter.commander === true && w.filter.owner === 'you' && Array.isArray(w.filter.zone) && w.filter.zone.includes('command') && Object.keys(w.filter).filter((k) => (w.filter as Record<string, unknown>)[k] !== undefined).length === 3;
+    p.post.push(f.sharesWith.quality === 'name' ? alt(shares, `with the same name as ${other}`)
+      : yours ? alt(shares, `that ${plural ? 'share' : 'shares'} ${SHARES_QUALITY[f.sharesWith.quality] ?? 'a quality'} with your commander`) : shares);
   }
   // FAST3 T18: "creatures blocking it" (CR 509.1g)
   if (f.blockingObject) p.post.push(`blocking ${K.obj(f.blockingObject, st, 'object').text}`);
@@ -1239,7 +1254,8 @@ function buildAnyOfPlain(f: ObjectFilter, st: RenderState, plural: boolean, o: N
     // TREK-6 (CR 700.6): one permanent after "a" is "a historic permanent you control" / "another historic permanent you control" (Jean-Luc Picard, Luminary), the article or
     // "another" said before the word, as the spelled-out options take theirs (above); the plural and every other determiner keep the form without
     const lead = !plural && o.det === 'a' ? 'a' : 'none';
-    if (hs.length > 0) merged.whole = alt(merged.whole, ...hs.map((h) => compose({ ...h, adj: ['historic', ...h.adj] }, { det: lead }, plural)));
+    // pc-zones-1 (CR 700.6): "target nonland historic permanent" (Lost to Legend): a lone negation comes before the word "historic", as it comes before any other adjective
+    if (hs.length > 0) merged.whole = alt(merged.whole, ...hs.map((h) => compose({ ...h, adj: h.negs.length > 0 && h.adj.length === 1 ? [...h.adj, 'historic'] : ['historic', ...h.adj] }, { det: lead }, plural)));
   }
   merged.wholeCounted = true;
   // cloud std-spm (CR 205.2a, 205.4a): one object of either description after "each" also reads with "and", the halves spelled out and what they share said once

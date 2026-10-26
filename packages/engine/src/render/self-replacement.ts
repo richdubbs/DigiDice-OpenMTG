@@ -106,6 +106,14 @@ export function notSelfReplacement(y: unknown, x: unknown, castChoice = false): 
     }
     return null;
   }
+  // pc-keywords-mana-2 (CR 614.15, 605.1a; Ilysian Caryatid): "Add one mana of any color. If C, add two mana of any one color instead.": the same player adds another production
+  if (op === 'addMana' && x['op'] === 'addMana') {
+    for (const k of new Set([...Object.keys(y), ...Object.keys(x)])) {
+      if (k === 'units' || k === 'dynamic' || k === 'sentence') continue;
+      if (canon(y[k]) !== canon(x[k])) return `X changes ${k} of the mana, not only what is added`;
+    }
+    return null;
+  }
   if (typeof op !== 'string' || NOT_ONE_INSTRUCTION.has(op)) return `the replaced instruction is a ${String(op)} step, not one instruction`;
   // FAST5 batch 5 merge (CR 614.15: "part or all" of the effect; CR 613.1): "Until end of turn, target artifact or creature becomes an artifact creature with
   // base power and toughness 4/3. If evidence was collected, it has base power and toughness 1/1 until end of turn instead." (Behind the Mask): a continuous

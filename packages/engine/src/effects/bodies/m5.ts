@@ -538,16 +538,27 @@ export const MODIFY_BODY: BodyKind<Modify> = {
  * copies, declined two Soldiers and a Food; a different answer for the Food (two Soldiers and a copy) is not a result the rules allow.
  */
 const THEN_CREATE = new WeakMap<ReadonlySet<string>, Set<string>>();
+/**
+ * pc-tokens-2 (CR 614.5, 616.1; Academy Manufactor): how many replacements applied to one event add tokens "of each kind" (`createToken.exceptReplaced`). Two of them multiply
+ * (Manufactor and its clone: three of each), which the one-pass `then` below cannot do: with more than one, none runs and the players make the tokens by hand.
+ */
+const EXCEPT_ADDERS = new WeakMap<ReadonlySet<string>, number>();
 function thenAfterCreate(g: Game, e: Extract<Proposed, { ev: 'createToken' }>, then: NonNullable<Modify['then']>, c: Candidate): void {
   const cx = replacementCtx(g, e, c);
   const live = g.chain;
   const before = new Set<string>(live?.used ?? []);
+  const exceptive = then.do.some((x) => x.op === 'createToken' && x.exceptReplaced === true);
   if (live) {
     const adders = THEN_CREATE.get(live.used) ?? new Set<string>();
     adders.add(c.id);
     THEN_CREATE.set(live.used, adders);
+    if (exceptive) EXCEPT_ADDERS.set(live.used, (EXCEPT_ADDERS.get(live.used) ?? 0) + 1);
   }
   deferAfter(() => {
+    if (exceptive && live && (EXCEPT_ADDERS.get(live.used) ?? 0) > 1) {
+      g.log(`${c.sourceName}: more than one replacement creates one of each kind of token for the same event; create the tokens by hand (CR 616.1).`, { rules: ['CR 614.5', 'CR 616.1'], level: 'manual' });
+      return;
+    }
     cx.results.set(then.as, { performed: true, count: e.count });
     const saved = g.chain;
     if (live) {

@@ -1,0 +1,276 @@
+[
+  {
+    "id": "sta.pcc2.attached.pump.foreach.anyCounterOnSelf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 122.1",
+      "CR 301.5a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each counter on ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "any"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "any"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+2 for each counter on ~."
+      },
+      {
+        "text": "Equipped creature gets +3/+3 for each counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+2 for each counter on it.",
+      "Equipped creature gets +1/+1 for each counter on ~ until end of turn.",
+      "Equipped creature gets +1/+1 for each counter on target artifact.",
+      "Equipped creature gets +1/+1 for each counter on ~ and has flying and lifelink."
+    ]
+  },
+  {
+    "id": "sta.pcc2.attached.pump.foreach.counterOnSelf.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 122.1",
+      "CR 301.5a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each {k:CounterKind} counter on ~ and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "$k"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "$k"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+2 for each charge counter on ~ and has vigilance."
+      },
+      {
+        "text": "Equipped creature gets +1/+1 for each oil counter on ~ and has first strike."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+1 for each charge counter on ~ and has vigilance until end of turn.",
+      "Equipped creature gets +1/+1 for each charge counter on it and has vigilance.",
+      "Equipped creature gets +1/+1 for each charge counter on ~ and loses vigilance."
+    ]
+  },
+  {
+    "id": "sta.pcc2.group.pump.foreach.anyCounterOnSelf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 122.1",
+      "CR 301.5a"
+    ],
+    "pattern": "{f:Filter} get {pt:PT} for each counter on ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "any"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "any"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Other Goblins you control get +1/+1 for each counter on ~."
+      },
+      {
+        "text": "Goblins you control get +2/+2 for each counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Other Humans you control get +1/+1 for each counter on target creature.",
+      "Other Humans you control get +1/+1 for each counter on ~ until end of turn.",
+      "Other Humans you control get +1/+1 for each counter on it."
+    ]
+  },
+  {
+    "id": "sta.pcc2.each.pump.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 107.3"
+    ],
+    "pattern": "each {f:Filter} gets +x/+x , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$q",
+              "toughness": "$q"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each other Elf you control gets +X/+X, where X is the number of cards in your hand."
+      },
+      {
+        "text": "Each creature you control that's a Zombie or Mutant gets +X/+X, where X is the number of counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "Each other Elf you control gets +X/+0, where X is the number of cards in your hand.",
+      "Each other Elf you control gets +X/+X until end of turn, where X is the number of cards in your hand.",
+      "Each other Elf you control gets +2/+2, where X is the number of cards in your hand."
+    ]
+  }
+]

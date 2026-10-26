@@ -214,6 +214,12 @@ function sameNumberOnce(srcs: NumberSource[]): NumberSource[] {
  * other condition.
  */
 export function differenceOf(condition: Rec | undefined): Rec | null {
+  // pc-players-2 (CR 402.1, 119.1, 608.2h): "If that player has more cards in hand than you, draw cards equal to the difference": the bigger amount minus the smaller one
+  // (`compare` with op `>`, the cards in a zone or the life of one player on each side)
+  if (condition !== undefined && condition['cond'] === 'compare' && condition['op'] === '>' && isRec(condition['left']) && isRec(condition['right'])) {
+    const [l, r] = [condition['left'], condition['right']];
+    if (l['q'] === r['q'] && (l['q'] === 'zoneSize' || l['q'] === 'life') && l['zone'] === r['zone'] && isRec(l['of']) && isRec(r['of'])) return { q: 'math', op: '-', args: [clone(l), clone(r)] };
+  }
   if (condition === undefined || condition['cond'] !== 'compare' || condition['op'] !== '<' || typeof condition['right'] !== 'number') return null;
   const left = condition['left'];
   // r4-mech (CR 608.2h, 202.3): also a statistic of one object ("If the discovered card's mana value is less than 10, create a number of ... equal to the difference")

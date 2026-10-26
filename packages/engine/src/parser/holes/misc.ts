@@ -342,6 +342,14 @@ export function qualityAt(ctx: HoleCtx, pos: number): { end: number; quality: st
   // controller's opponents control (rules/protection.ts#protectedFromPlayers reads the controllers)
   const opps = phraseAt(ctx, pos, W_EACH_OF_YOUR_OPPONENTS_Q);
   if (opps >= 0) out.push({ end: opps, quality: 'player:opponents' });
+  // pc-statics-1 (CR 702.16a, 202.3): "protection from mana value 3 or less / 3 or greater": from sources whose mana value is so (rules/quality.ts `mv:`)
+  const mvEnd = phraseAt(ctx, pos, P('mana value'));
+  const mvN = mvEnd >= 0 ? ctx.toks[mvEnd] : undefined;
+  if (mvN !== undefined && mvN.kind === 'NUM' && /^\d+$/.test(mvN.norm) && ctx.toks[mvEnd + 1]?.norm === 'or') {
+    const w = ctx.toks[mvEnd + 2]?.norm;
+    if (w === 'less') out.push({ end: mvEnd + 3, quality: `mv:le:${mvN.norm}` });
+    else if (w === 'greater') out.push({ end: mvEnd + 3, quality: `mv:ge:${mvN.norm}` });
+  }
   const ty = ctx.vocab.types.get(t.norm);
   if (ty !== undefined && ty.plural) out.push({ end: pos + 1, quality: `type:${ty.name}` });
   const st = ctx.vocab.supertypes.get(t.norm);

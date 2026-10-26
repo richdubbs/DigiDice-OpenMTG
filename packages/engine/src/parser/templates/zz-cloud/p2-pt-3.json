@@ -1,0 +1,369 @@
+[
+  {
+    "id": "sta.p2pt3.group.pump.foreach.have",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{f:Filter} get {pt:PT} for each {g:Filter} and have {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$g"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$g"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control get +1/+0 for each Mountain you control and have haste."
+      },
+      {
+        "text": "Elves you control get +0/+1 for each Forest you control and have reach."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+0 for each Mountain you control and lose haste.",
+      "Creatures you control get +1/+0 for each Mountain you control.",
+      "Creatures you control get +4/+1 and have haste."
+    ]
+  },
+  {
+    "id": "sta.p2pt3.all.anthem.aslong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "all {f:Filter} get {pt:PT} as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "All Goblins get +1/+1 as long as you control a Mountain."
+      },
+      {
+        "text": "All Rats get +2/+0 as long as it's your turn."
+      }
+    ],
+    "counterExamples": [
+      "All Goblins get +1/+1 as long as you control a Mountain until end of turn.",
+      "All Goblins get +1/+1 unless you control a Mountain.",
+      "All Goblins get +4/+1."
+    ]
+  },
+  {
+    "id": "sta.p2pt3.attached.pump.foreach.qty",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each {n:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              "$n"
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              "$n"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+0 for each opponent you have."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1 for each opponent you have."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+0 for each opponent you have until end of turn.",
+      "Target creature gets +2/+0 for each opponent you have.",
+      "Equipped creature gets +4/+1."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.p2pt3.attached.pump.foreach.itsColors",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 105.2",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each of its colors",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "distinct",
+                "what": "colors",
+                "among": {
+                  "ref": "subject"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "distinct",
+                "what": "colors",
+                "among": {
+                  "ref": "subject"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +0/+1 for each of its colors."
+      },
+      {
+        "text": "Enchanted creature gets +2/+0 for each of its colors."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +0/+1 for each of ~'s colors.",
+      "Equipped creature gets +0/+1 for each of its creature types.",
+      "Equipped creature gets +0/+1 for each color among permanents you control."
+    ]
+  },
+  {
+    "id": "sta.p2pt3.each.pump.foreach.itsColors",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 105.2"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} for each of its colors",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "distinct",
+                "what": "colors",
+                "among": {
+                  "ref": "subject"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "distinct",
+                "what": "colors",
+                "among": {
+                  "ref": "subject"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control gets +1/+0 for each of its colors."
+      },
+      {
+        "text": "Each other multicolored creature you control gets +0/+1 for each of its colors."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control gets +1/+0 for each of its creature types.",
+      "Each creature you control gets +1/+0 for each of ~'s colors.",
+      "Each creature you control gets +1/+0 for each color among permanents you control."
+    ]
+  },
+  {
+    "id": "sta.p2pt3.group.additional.aslong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "{f:Filter} get an additional {pt:PT} as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "Green creatures get an additional +1/+1 as long as you control a Forest."
+      },
+      {
+        "text": "Creatures you control get an additional +1/+0 as long as it's your turn."
+      }
+    ],
+    "counterExamples": [
+      "Green creatures get an additional +1/+1 unless you control a Forest.",
+      "Green creatures get an additional +1/+1 until end of turn.",
+      "Green creatures get an additional +1/+1 as long as you control a Forest and have trample."
+    ]
+  }
+]

@@ -6,6 +6,7 @@
  * then move at the same time (CR 701.22c, 701.23i). Reordering a library is `core/zones.ts#reorderLibrary` (not a zone change); the keyword action itself is
  * recorded by the performer `effects/perform.ts#performAction` (design 8.6 stage 4).
  */
+import { LAND_TYPES } from './choose'; // pc-zones-2
 import type { Game } from '../../core/game';
 import { renewedHandle, reorderLibrary, showCards } from '../../core/zones';
 import type { EffectStep, ObjectFilter } from '../../types/ability';
@@ -177,7 +178,8 @@ export const OP_FORMS: readonly string[] = ['op:search.differentNames',
   'op:search.alsoZones', 'op:shuffle.ifSearched',
   'op:search.and', // CLOUD C9: 'op:search.and'
   'op:search.allZones', // r4-refs (CR 701.23a): "search target opponent's graveyard, hand, and library", every zone listed
-  'op:search.alsoOutside']; // std-rx30 (CR 400.11b): "search your library and/or outside the game"
+  'op:search.alsoOutside', // std-rx30 (CR 400.11b): "search your library and/or outside the game"
+  'op:search.shareLandType']; // pc-zones-2 (CR 205.3i): "basic land cards that share a land type"
 
 /**
  * FAST5 T42 (CR 201.2, 701.23d; Reach the Horizon): "up to two basic land cards and/or Town cards with different names". The searcher takes the cards one at a time,
@@ -199,6 +201,32 @@ function pickDifferentNames(cx: ExecCtx, p: PlayerId, owner: PlayerId, zone: str
     picked.push(one[0]!);
     const taken = namesOfCard(one[0]!);
     pool = pool.filter((id) => id !== one[0] && !namesOfCard(id).some((n) => taken.includes(n)));
+  }
+  return picked;
+}
+
+/**
+ * pc-zones-2 (CR 701.23a, 205.3i): "up to two basic land cards that share a land type": the cards are taken one at a time, each sharing a land type (a subtype of a land
+ * card) with every card taken before it; the searcher may stop after `min` cards.
+ */
+function pickSharingLandType(cx: ExecCtx, p: PlayerId, owner: PlayerId, zone: string, candidates: ObjectId[], min: number, max: number): ObjectId[] {
+  const g = cx.g;
+  const landTypes = (id: ObjectId): string[] => charsOfObject(g.s, g.s.objects[id]!).subtypes.filter((t) => LAND_TYPES.includes(t));
+  const picked: ObjectId[] = [];
+  let pool = candidates;
+  let common: string[] | null = null;
+  while (picked.length < max && pool.length > 0) {
+    const need = picked.length < min ? 1 : 0;
+    const one = g.choose({
+      kind: 'chooseObjects', player: p, options: pool, min: need, max: 1,
+      prompt: `Search ${owner === p ? 'your' : `${playerName(g, owner)}'s`} ${zone} for a card sharing a land type with the others (${picked.length + 1} of up to ${max}).`, rules: ['CR 701.23a', 'CR 205.3i'],
+    }).ids;
+    if (one.length === 0) break;
+    picked.push(one[0]!);
+    // one land type that EVERY card taken has (CR 205.3i), not only a pair at a time: the types the cards taken have in common
+    common = common === null ? landTypes(one[0]!) : common.filter((t) => landTypes(one[0]!).includes(t));
+    const keep = common;
+    pool = pool.filter((id) => id !== one[0] && landTypes(id).some((t) => keep.includes(t)));
   }
   return picked;
 }
@@ -252,7 +280,7 @@ export function searchHandler(cx: ExecCtx, st: Step<'search'>): StepResult {
       const max = Math.min(evalCount(st.max, { cx }), candidates.length);
       const min = Math.min(fewest(cx, st, hidden), max);
       const picked = st.and !== undefined ? pickOneOfEach(cx, p, owner, st.zone, ids, [st.filter, ...st.and], hidden) // CLOUD C9
-        : max === 0 ? [] : st.differentNames === true ? pickDifferentNames(cx, p, owner, st.zone, candidates, min, max) : min === candidates.length ? candidates : g.choose({
+        : max === 0 ? [] : st.differentNames === true ? pickDifferentNames(cx, p, owner, st.zone, candidates, min, max) : st.shareLandType === true ? pickSharingLandType(cx, p, owner, st.zone, candidates, min, max) : min === candidates.length ? candidates : g.choose({
         kind: 'chooseObjects', player: p, options: candidates, min, max,
         prompt: `Search ${owner === p ? 'your' : `${playerName(g, owner)}'s`} ${st.zone} (${min === max ? max : `${min} to ${max}`}).`, rules: ['CR 701.23a', 'CR 701.23b', 'CR 701.23d'],
       }).ids;

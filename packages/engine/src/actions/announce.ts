@@ -138,7 +138,7 @@ function modeLimits(env: AnnounceEnv, spec: ModeSpec): { min: ModeSpec['min']; m
  * The state of X for the target checks of this announcement (rules/targets.ts#AnnouncedX): the announced X once there is one; before it (modes and optional
  * costs come first, CR 601.2b) unannounced, bounded by the largest payable X when the caller knows it (`xMax`, a legality check, CR 601.2c, 601.2h).
  */
-export const announcedX = (aenv: AnnounceEnv | undefined): AnnouncedX => aenv?.x ?? (aenv?.xMax !== undefined ? { upTo: aenv.xMax } : 'unannounced');
+export const announcedX = (aenv: AnnounceEnv | undefined): AnnouncedX => aenv?.x ?? (aenv?.xMax !== undefined ? { upTo: aenv.xMax, ...(aenv.castingSpell === true ? { spell: true as const } : {}) } : 'unannounced');
 
 /** The modes that have a legal target right now (CR 700.2a: a mode that would be illegal can't be chosen; one whose target reads X is legal if some X allows it). */
 function modesWithTargets(s: GameState, spec: ModeSpec, player: PlayerId, sourceId: ObjectId, stackId: ObjectId | undefined, aenv: AnnounceEnv): boolean[] {

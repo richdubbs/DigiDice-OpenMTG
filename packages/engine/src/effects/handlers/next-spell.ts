@@ -28,7 +28,7 @@ type Step = Extract<EffectStep, { op: 'nextSpell' }>;
 export const NEXT_SPELL_FILTER_FIELDS: readonly string[] = ['types', 'allTypes', 'notTypes', 'subtypes', 'supertypes', 'colors', 'notColors', 'colorless', 'multicolored', 'anyOf', 'zone', 'stackKind'];
 
 /** std-rx26: the keywords a `keyword` rider may give the next spell (CR 702.41a affinity, 702.51a convoke, 702.126a improvise); any other is refused. */
-export const NEXT_SPELL_KEYWORDS: readonly string[] = ['affinity', 'convoke', 'improvise'];
+export const NEXT_SPELL_KEYWORDS: readonly string[] = ['affinity', 'convoke', 'improvise', 'cascade' /* pc-exile-play-3 (CR 702.85a) */, 'storm' /* pc-exile-play-3 (CR 702.40a) */];
 
 /** std-rx26: is this a keyword a `keyword` rider can give (one of NEXT_SPELL_KEYWORDS; affinity with its filter, the others with no parameter)? */
 export function nextSpellKeywordOk(k: unknown): boolean {

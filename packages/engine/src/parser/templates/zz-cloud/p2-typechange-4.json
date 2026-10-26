@@ -1,0 +1,325 @@
+[
+  {
+    "id": "eff.p2tc4.group.pump.gainAllCreatureTypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4c"
+    ],
+    "pattern": "[ {d:Dur} , ] {o:Objs} get {pt:PT} and gain all creature types [ {d2:Dur} ]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "$when": "d2",
+          "then": "$d2",
+          "else": {
+            "d": "permanent"
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, creatures you control get +1/+1 and gain all creature types."
+      },
+      {
+        "text": "Creatures target opponent controls get -1/-0 and gain all creature types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, creatures you control get +1/+1 and gain flying.",
+      "Creatures you control get +1/+1 and gain all creature types.",
+      "Until end of turn, creatures you control get +1/+1 and lose all creature types."
+    ]
+  },
+  {
+    "id": "eff.p2tc4.group.pump.loseAllCreatureTypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4c"
+    ],
+    "pattern": "[ {d:Dur} , ] {o:Objs} get {pt:PT} and lose all creature types [ {d2:Dur} ]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "$when": "d2",
+          "then": "$d2",
+          "else": {
+            "d": "permanent"
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "removeAll": "creature"
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Creatures target opponent controls get -1/-1 and lose all creature types until end of turn."
+      },
+      {
+        "text": "Until end of turn, creatures you control get +0/+2 and lose all creature types."
+      }
+    ],
+    "counterExamples": [
+      "Creatures target opponent controls get -1/-1 and lose all abilities until end of turn.",
+      "Creatures target opponent controls get -1/-1 and lose all creature types.",
+      "Creatures target opponent controls get -1/-1 and gain all creature types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.p2tc4.attached.pump.everyCreatureType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.4c",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and is every creature type",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "all": true
+          }
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "every"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+2 and is every creature type.\nEquip {2}"
+      },
+      {
+        "text": "Enchant creature\nEnchanted creature gets +0/+3 and is every creature type."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+2 and is every land type.\nEquip {2}",
+      "Equipped creature gets +1/+2 and is a Wizard.\nEquip {2}",
+      "Equipped creature gets +1/+2 and has every creature type.\nEquip {2}"
+    ]
+  },
+  {
+    "id": "sta.p2tc4.group.are.enchantments.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Objs} are enchantments in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Enchantment"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "All creatures are enchantments in addition to their other types."
+      },
+      {
+        "text": "All lands are enchantments in addition to their other types.\n{1}: You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "All creatures are enchantments.",
+      "All creatures are enchantments in addition to their other colors.",
+      "All creatures are Auras in addition to their other types."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.p2tc4.group.are.artifacts.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 205.1b",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Objs} are artifacts in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Artifact"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "All creatures are artifacts in addition to their other types."
+      },
+      {
+        "text": "All lands are artifacts in addition to their other types.\n{1}: You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "All creatures are artifacts.",
+      "All creatures are artifacts in addition to their other colors.",
+      "All creatures are Equipment in addition to their other types."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.p2tc4.attached.pump.isArtifact.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.4c",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and is an artifact in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Artifact"
+            ]
+          }
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+0 and is an artifact in addition to its other types.\nEquip {1}"
+      },
+      {
+        "text": "Enchant creature\nEnchanted creature gets -1/-0 and is an artifact in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+0 and is an artifact.\nEquip {1}",
+      "Equipped creature gets +2/+0 and is an enchantment in addition to its other types.\nEquip {1}",
+      "Equipped creature gets +2/+0 and is a Golem in addition to its other types.\nEquip {1}"
+    ]
+  }
+]

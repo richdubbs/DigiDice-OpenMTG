@@ -119,6 +119,7 @@ const FIELD_KEYS: Record<keyof ObjectFilter, true> = {
   castWithMana: true, enteredFrom: true, // Standard round 5, r5-trig (CR 601.2h, 603.6a)
   lockedDoor: true, // r5-fxz (CR 709.5c)
   attachedWith: true, // trek-9 (CR 301.5, 303.4)
+  firstCast: true, // pc-exile-play-2 (CR 601.2i)
 };
 
 /** p2-combat-flow-1: the last known combat of an object that left the battlefield, under its old id or the new object it became (CR 400.7, `LastKnown.newId`). */
@@ -634,6 +635,7 @@ function test(s: GameState, o: GameObject, f: ObjectFilter, ctx: FilterContext, 
   // FAST5 T45, CR 113.7a, 608.2h: the source of the ability on the stack as it last existed ("from an artifact source")
   if (f.abilitySource !== undefined && !abilitySourceMatches(s, o, f.abilitySource, ctx)) return false;
   if (f.castFrom !== undefined && (o.stack?.castFrom ?? o.cast?.from) !== f.castFrom) return false;
+  if (f.firstCast !== undefined && !firstCastOk(o, f.firstCast)) return false; // pc-exile-play-2 (CR 601.2i)
   if (f.targets !== undefined) {
     if (o.zone !== 'stack' || !o.stack) return false;
     const want = refsOf(s, ctx, f.targets); // CR 115.9b: a spell or ability "targets" what it has as a target
@@ -763,4 +765,10 @@ function findIn(s: GameState, f: ObjectFilter, ctx: FilterContext): GameObject[]
     if (o && !(o.zone === 'battlefield' && o.phasedOut) && matchesFilter(s, o, { ...f, zone: 'any' }, ctx)) out.push(o);
   }
   return out;
+}
+
+/** pc-exile-play-2 (CR 601.2i, 707.10): the first spell its controller cast this turn, or from the zone it was cast from; a copy, an ability or a spell no longer on the stack never was. */
+export function firstCastOk(o: { zone: string; stack?: { castOrdinal?: { turn: number; fromZone: number } } | undefined }, which: 'turn' | 'turnFromZone'): boolean {
+  const n = o.zone === 'stack' ? o.stack?.castOrdinal : undefined;
+  return n !== undefined && (which === 'turn' ? n.turn : n.fromZone) === 1;
 }

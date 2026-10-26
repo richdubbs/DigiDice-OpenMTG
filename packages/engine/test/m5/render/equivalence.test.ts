@@ -5364,6 +5364,21 @@ Object.assign(EXAMPLES, {
     ],
   },
 } satisfies Record<string, Example>);
+// p2-trigger-events-1 (render/evt.ts): a permanent put into a graveyard said without "from the battlefield", "exiled from the battlefield", "~ or another <type> dies"
+Object.assign(EXAMPLES, {
+  'permanent-put-into-graveyard': {
+    def: trig([{ ev: 'zoneChange', subject: { controller: 'you' }, from: 'battlefield', to: 'graveyard' }], [draw()]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['Whenever a permanent you control is put into a graveyard, draw a card.', 'Whenever a permanent you control is put into a graveyard from the battlefield, draw a card.'],
+    near: ['Whenever a permanent you control is put into a graveyard from anywhere, draw a card.', 'Whenever a permanent you control is put into exile, draw a card.', 'Whenever a permanent an opponent controls is put into a graveyard, draw a card.'],
+  },
+  'self-or-another-dies': {
+    def: trig([dies, { ev: 'zoneChange', subject: { token: false, subtypes: ['Zombie'], controller: 'you', other: true }, from: 'battlefield', to: 'graveyard' }], [draw()]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature', 'Zombie'] },
+    readings: ['Whenever Test Card or another nontoken Zombie you control dies, draw a card.', 'Whenever Test Card dies or another nontoken Zombie you control is put into a graveyard from the battlefield, draw a card.'],
+    near: ['Whenever Test Card or another Zombie you control dies, draw a card.', 'Whenever Test Card or another nontoken Zombie an opponent controls dies, draw a card.', 'Whenever Test Card or another nontoken Zombie you control enters, draw a card.'],
+  },
+} satisfies Record<string, Example>);
 
 describe('design 6.8 (G6), D14: the equivalence table is documented and every family is exercised', () => {
   it('every family of the table has an example here, and every example a family', () => {
@@ -5386,6 +5401,79 @@ describe('design 6.8 (G6), D14: the equivalence table is documented and every fa
     for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
     for (const n of ex.near) rejects(ex.def, n, ex.ctx);
   });
+});
+
+// pc-counters-1 (precon lane pc-counters): energy "an amount of {E} equal to", other objects entering with a computed number of additional counters, a bare "put into a graveyard"
+// of permanents, "exiled from the battlefield"
+Object.assign(EXAMPLES, {
+  'energy-amount-equal-to': {
+    def: spell([{ op: 'putCounters', on: you, kind: 'energy', count: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } } } as EffectStep]),
+    readings: ['You get an amount of {E} equal to the number of creatures you control.', 'You get the number of creatures you control {E}.'],
+    near: ['You get an amount of {E} equal to the number of lands you control.', 'You get an amount of {E} for each creature you control.'],
+  },
+  'enters-additional-x-or-number': {
+    def: statics([{ s: 'replace', replaces: { ev: 'zoneChange', subject: { other: true, types: ['Creature'], controller: 'you' }, to: 'battlefield' }, body: { b: 'enters', counters: [{ kind: '+1/+1', count: { q: 'counters', on: self, kind: '+1/+1' } }] } } as StaticEffect]),
+    ctx: creature,
+    readings: [
+      'Each other creature you control enters with an additional X +1/+1 counters on it, where X is the number of +1/+1 counters on this creature.',
+      'Each other creature you control enters with a number of additional +1/+1 counters on it equal to the number of +1/+1 counters on this creature.',
+    ],
+    near: [
+      'Each other creature you control enters with an additional X +1/+1 counters on it, where X is the number of -1/-1 counters on this creature.',
+      'Each creature you control enters with a number of additional +1/+1 counters on it equal to the number of +1/+1 counters on this creature.',
+    ],
+  },
+  'permanent-put-into-graveyard-bare': {
+    def: trig([{ ev: 'zoneChange', subject: { controller: 'you' }, from: 'battlefield', to: 'graveyard' } as EventPattern], [draw()]),
+    ctx: creature,
+    readings: ['Whenever a permanent you control is put into a graveyard from the battlefield, draw a card.', 'Whenever a permanent you control is put into a graveyard, draw a card.'],
+    near: ['Whenever a permanent an opponent controls is put into a graveyard, draw a card.', 'Whenever a permanent you control is put into your hand, draw a card.'],
+  },
+  'exiled-from-the-battlefield': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'] }, from: 'battlefield', to: 'exile' } as EventPattern], [draw()]),
+    ctx: creature,
+    readings: ['Whenever a creature is put into exile from the battlefield, draw a card.', 'Whenever a creature is exiled from the battlefield, draw a card.', 'Whenever a creature is exiled, draw a card.'],
+    near: ['Whenever a creature is exiled from your hand, draw a card.', 'Whenever a creature is put into a graveyard from the battlefield, draw a card.'],
+  },
+});
+
+// pc-counters-3 (precon lane pc-counters): energy number words and per-object energy, half X counters, the creature that died, counters among a group
+Object.assign(EXAMPLES, {
+  'energy-number-word': {
+    def: spell([{ op: 'putCounters', on: you, kind: 'energy', count: 6 } as EffectStep]),
+    readings: ['You get six {E}.', 'You get {E}{E}{E}{E}{E}{E}.'],
+    near: ['You get seven {E}.', 'You get five {E}.'],
+  },
+  'energy-for-each': {
+    def: spell([{ op: 'putCounters', on: you, kind: 'energy', count: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } } } as EffectStep]),
+    readings: ['You get {E} for each creature you control.', 'You get an amount of {E} equal to the number of creatures you control.'],
+    near: ['You get {E} for each creature your opponents control.', 'You get {E}{E} for each creature you control.'],
+  },
+  'counters-half-x-rounded': {
+    def: spell([{ op: 'putCounters', on: you, kind: 'rad', count: { q: 'math', op: 'ceilDiv', args: [{ q: 'X' }, 2] } } as EffectStep]),
+    readings: ['You get half X rad counters, rounded up.', 'You get a number of rad counters equal to half X, rounded up.'],
+    near: ['You get half X rad counters, rounded down.', 'You get half X poison counters, rounded up.'],
+  },
+  'stat-of-the-creature-that-died': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'], controller: 'you' }, from: 'battlefield', to: 'graveyard' } as EventPattern], [{ op: 'gainLife', who: you, amount: { q: 'stat', stat: 'power', of: { ref: 'event', role: 'subject' } } } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever a creature you control dies, you gain life equal to the power of the creature that died.', 'Whenever a creature you control dies, you gain life equal to its power.'],
+    near: ['Whenever a creature you control dies, you gain life equal to the toughness of the creature that died.', 'Whenever a creature you control dies, you gain life equal to the power of the creature that attacked.'],
+  },
+  'counters-among-group': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'counters', on: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, kind: 'any' } } as EffectStep]),
+    readings: ['You gain life equal to the number of counters among creatures you control.', 'You gain life equal to the number of counters on creatures you control.'],
+    near: ['You gain life equal to the number of counters among creatures your opponents control.', 'You gain life equal to the number of counters among lands you control.'],
+  },
+});
+
+// pc-counters-4 (precon lane pc-counters): "Then" after a "you may" sentence
+Object.assign(EXAMPLES, {
+  'then-after-may': {
+    def: spell([{ op: 'may', who: you, do: [draw()] } as EffectStep, { op: 'discard', who: you, count: 1 } as EffectStep]),
+    readings: ['You may draw a card. Then discard a card.', 'You may draw a card. Discard a card.'],
+    near: ['You may draw a card. If you do, discard a card.', 'You may draw a card. Then discard two cards.'],
+  },
 });
 
 describe('design 6.8 (G6): the number of alternative groups per file is the number the table was reviewed for', () => {
@@ -5556,6 +5644,15 @@ Object.assign(EXAMPLES, {
     ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
     readings: ['Enchanted permanent is a colorless land with "{T}: Add {C}{C}" and loses all other card types and abilities.'],
     near: ['Enchanted permanent is a land with "{T}: Add {C}{C}" and loses all other card types and abilities.', 'Enchanted permanent is a colorless land with "{T}: Add {C}{C}" and loses all other abilities.', 'Enchanted permanent is a colorless Forest land with "{T}: Add {C}{C}" and loses all other card types and abilities.'],
+  },
+});
+// pc-statics-2 (render/mods.ts, invented wording): a static identity that takes every other ability, card type and creature type away
+Object.assign(EXAMPLES, {
+  'creature-identity-loses-others': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 4, types: { set: ['Artifact', 'Creature'] }, subtypes: { set: ['Frog'] } }, { layer: 6, removeAll: true, add: [{ kind: 'keyword', keyword: 'defender', text: 'Defender' }] }, { layer: '7b', power: 0, toughness: 1 }] } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ['Enchanted creature is a Frog artifact creature with base power and toughness 0/1 and has defender, and it loses all other abilities, card types, and creature types.'],
+    near: ['Enchanted creature is a Frog artifact creature with base power and toughness 0/1 and has defender, and it loses all other abilities and card types.', 'Enchanted creature is a Frog artifact creature with base power and toughness 0/1 and has defender, and it loses all other abilities, card types, and creature types until end of turn.', 'Enchanted creature is a Frog creature with base power and toughness 0/1 and has defender, and it loses all other abilities, card types, and creature types.', 'Enchanted creature is a Frog artifact creature with base power and toughness 1/1 and has defender, and it loses all other abilities, card types, and creature types.'],
   },
 });
 Object.assign(EXAMPLES, {
@@ -7580,5 +7677,279 @@ Object.assign(EXAMPLES, {
     ctx: creature,
     readings: [`When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play it.`, `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may play that card.`],
     near: [`When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, you may play it.`, `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its owner may cast it.`, `When Test Card enters, ${TREK7_HAND.replace('Look', 'look')} For as long as that card remains exiled, its controller may play it.`],
+  },
+} satisfies Record<string, Example>);
+
+// pc-players-1 (precon lane pc-players; CR cites from memory, unverified): a group's computed stat said with X (steps-zones.ts#move), and "draw N cards for each ..." (steps-cards.ts)
+const PCP1_ISLANDS: Quantity = { q: 'count', of: { ref: 'each', filter: { subtypes: ['Island'], controller: 'you' } } };
+Object.assign(EXAMPLES, {
+  'pcp1-move-where-x-group': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { types: ['Creature'], controller: 'opponent', toughness: { op: '<=', value: PCP1_ISLANDS } } }, to: { zone: 'hand' } } as EffectStep]),
+    readings: [
+      "Return each creature your opponents control with toughness X or less to its owner's hand, where X is the number of Islands you control.",
+      "Return all creatures your opponents control with toughness less than or equal to the number of Islands you control to their owners' hands.",
+    ],
+    near: [
+      "Return each creature your opponents control with toughness X or more to its owner's hand, where X is the number of Islands you control.",
+      "Return each creature your opponents control with toughness X or less to its owner's hand, where X is the number of Swamps you control.",
+    ],
+  },
+  'pcp1-then-each-sacrifices': {
+    def: spell([{ op: 'sacrificeChoice', who: { ref: 'each', who: 'player' }, filter: { notTypes: ['Land'] }, count: 1, mode: 'keepEachType', keepTypes: ['Artifact', 'Creature', 'Enchantment', 'Planeswalker'], keepFilter: {}, chooser: you } as EffectStep]),
+    readings: [
+      'For each player, you choose from among the permanents that player controls an artifact, a creature, an enchantment, and a planeswalker. Then each player sacrifices all other nonland permanents they control.',
+      'For each player, you choose from among the permanents that player controls an artifact, a creature, an enchantment, and a planeswalker. Each player sacrifices all other nonland permanents they control.',
+    ],
+    near: [
+      'For each player, you choose from among the permanents that player controls an artifact, a creature, an enchantment, and a planeswalker. Then each player sacrifices all other permanents they control.',
+      'For each player, you choose from among the permanents that player controls an artifact, a creature, an enchantment, and a land. Then each player sacrifices all other nonland permanents they control.',
+    ],
+  },
+  'pcp1-draw-n-for-each': {
+    def: spell([{ op: 'draw', who: you, count: { q: 'math', op: '*', args: [2, { q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, controlsVs: { filter: { types: ['Creature'] }, op: '<', than: you } }] } } as EffectStep]),
+    readings: ['Draw two cards for each opponent who controls fewer creatures than you.', 'Draw cards equal to twice the number of opponents who control fewer creatures than you.'],
+    near: ['Draw three cards for each opponent who controls fewer creatures than you.', 'Draw two cards for each opponent who controls more creatures than you.'],
+  },
+} satisfies Record<string, Example>);
+
+// pc-exile-play-1 (precon lane pc-exile-play; CR 202.3, 608.2g, 118.9; cites from memory, unverified): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'cast-hand-free-mv-or-less': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Sorcery'] }], notTypes: ['Land'], zone: 'hand', owner: 'you', isCard: true, manaValue: { op: '<=', value: 2 } } }, min: 0, max: 1, as: 'cast' } as EffectStep,
+      { op: 'cast', who: you, what: bound('cast'), free: true } as EffectStep,
+    ]),
+    readings: [
+      'You may cast a sorcery spell from your hand with mana value less than or equal to 2 without paying its mana cost.',
+      'You may cast a sorcery spell from your hand with mana value 2 or less without paying its mana cost.',
+      'You may cast a sorcery spell with mana value 2 or less from your hand without paying its mana cost.',
+    ],
+    near: [
+      'You may cast a sorcery spell from your hand with mana value 2 or greater without paying its mana cost.',
+      'You may cast a sorcery spell from your hand with mana value 3 or less without paying its mana cost.',
+      'You may cast a sorcery spell from your graveyard with mana value 2 or less without paying its mana cost.',
+    ],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'cast-hand-free-mv-where-x': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Sorcery'] }], notTypes: ['Land'], zone: 'hand', owner: 'you', isCard: true, manaValue: { op: '<=', value: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you', zone: 'battlefield' } } } } } }, min: 0, max: 1, as: 'cast' } as EffectStep,
+      { op: 'cast', who: you, what: bound('cast'), free: true } as EffectStep,
+    ]),
+    readings: [
+      'You may cast a sorcery spell from your hand with mana value less than or equal to the number of creatures you control without paying its mana cost.',
+      'You may cast a sorcery spell with mana value X or less from your hand without paying its mana cost, where X is the number of creatures you control.',
+    ],
+    near: [
+      'You may cast a sorcery spell with mana value X or more from your hand without paying its mana cost, where X is the number of creatures you control.',
+      'You may cast a sorcery spell with mana value X or less from your hand without paying its mana cost, where X is the number of lands you control.',
+      'You may cast a sorcery spell with mana value X or less from your graveyard without paying its mana cost, where X is the number of creatures you control.',
+    ],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'cast-self-graveyard-or-exile': {
+    def: { kind: 'static', text: '', zone: ['graveyard', 'exile'], effects: [
+      { s: 'permit', who: you, action: 'cast', of: { self: true }, from: 'graveyard' },
+      { s: 'permit', who: you, action: 'cast', of: { self: true }, from: 'exile' },
+    ] } as AbilityDef,
+    ctx: creature,
+    readings: ['You may cast Test Card from your graveyard or from exile.', 'You may cast Test Card from exile or from your graveyard.'],
+    near: ['You may cast Test Card from your graveyard or from your hand.', 'You may cast Test Card from your graveyard.', 'You may cast Test Card from exile or from your library.'],
+  },
+} satisfies Record<string, Example>);
+// p2-pt-3 (CR 102.3, 404.1, 406.1, 613.4c): a count of cards opponents own, one by one (Umbris, Fear Manifest; Wight of Precinct Six)
+const P2PT3_COUNT = (filter: Record<string, unknown>) => ({ kind: 'static', text: '', effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: '7c', power: { q: 'count', of: { ref: 'each', filter } }, toughness: { q: 'count', of: { ref: 'each', filter } } }] }] }) as unknown as AbilityDef;
+// p2-pt-3 (CR 613.4c, 611.3a): a group's conditional pump said with "an additional" (Divine Sacrament)
+const P2PT3_ADDITIONAL = { kind: 'static', text: '', condition: { cond: 'exists', of: { ref: 'each', filter: { isCard: true, owner: 'you', zone: 'graveyard' } }, atLeast: 7 },
+  effects: [{ s: 'continuous', affects: { ref: 'each', filter: { colors: ['W'], types: ['Creature'] } }, mods: [{ layer: '7c', power: 1, toughness: 1 }] }] } as unknown as AbilityDef;
+Object.assign(EXAMPLES, {
+  'opponents-own-for-each': {
+    def: P2PT3_COUNT({ isCard: true, owner: 'opponent', zone: 'exile' }),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['Test Card gets +1/+1 for each card your opponents own in exile.', 'Test Card gets +1/+1 for each card an opponent owns in exile.'],
+    near: ['Test Card gets +1/+1 for each card you own in exile.', 'Test Card gets +1/+1 for each card your opponents own in their graveyards.'],
+  },
+  'additional-pump-static-group': {
+    def: P2PT3_ADDITIONAL,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['White creatures get an additional +1/+1 as long as there are seven or more cards in your graveyard.', 'White creatures get +1/+1 as long as there are seven or more cards in your graveyard.'],
+    near: ['White creatures get an additional +1/+0 as long as there are seven or more cards in your graveyard.', 'Black creatures get an additional +1/+1 as long as there are seven or more cards in your graveyard.'],
+  },
+});
+
+// pc-players-2 (precon lane pc-players; CR cites from memory, unverified): "among creatures on the battlefield", the tied wording of the greatest power, the difference of two hands
+const PCP2_GREATEST: Quantity = { q: 'stat', stat: 'power', of: { ref: 'each', filter: { types: ['Creature'], zone: 'battlefield' } }, agg: 'max' };
+const PCP2_HAND = (of: PlayerRef): Quantity => ({ q: 'zoneSize', zone: 'hand', of });
+Object.assign(EXAMPLES, {
+  'pcp2-among-on-battlefield': {
+    def: spell([{ op: 'gainLife', who: you, amount: PCP2_GREATEST } as EffectStep]),
+    readings: ['You gain life equal to the greatest power among creatures on the battlefield.', 'You gain life equal to the greatest power among creatures.', 'You gain life equal to the highest power among creatures on the battlefield.'],
+    near: ['You gain life equal to the least power among creatures on the battlefield.', 'You gain life equal to the greatest toughness among creatures on the battlefield.'],
+  },
+  'pcp2-greatest-power-or-tied': {
+    def: spell([{ op: 'if', cond: { cond: 'exists', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you', power: { op: '>=', value: PCP2_GREATEST } } } }, then: [draw()] } as EffectStep]),
+    readings: [
+      'If you control a creature with the greatest power among creatures on the battlefield, draw a card.',
+      'If you control the creature with the greatest power or tied for the greatest power, draw a card.',
+    ],
+    near: ['If you control a creature with the least power among creatures on the battlefield, draw a card.', 'If you control the creature with the greatest toughness or tied for the greatest toughness, draw a card.'],
+  },
+  'pcp2-difference-of-two-hands': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'opponent', as: 'b0' } as EffectStep,
+      { op: 'if', cond: { cond: 'compare', left: PCP2_HAND(bound('b0') as PlayerRef), op: '>', right: PCP2_HAND(you) }, then: [{ op: 'draw', who: you, count: { q: 'math', op: '-', args: [PCP2_HAND(bound('b0') as PlayerRef), PCP2_HAND(you)] } } as EffectStep] } as EffectStep,
+    ]),
+    readings: [
+      'Choose an opponent. If that player has more cards in hand than you, draw cards equal to the difference.',
+    ],
+    near: ['Choose an opponent. If that player has more cards in hand than you, draw cards equal to the number of cards in their hand.', 'Choose an opponent. If that player has fewer cards in hand than you, draw cards equal to the difference.'],
+  },
+} satisfies Record<string, Example>);
+
+// pc-combat-1 (lane pc-combat, Commander precons): the attack events of the Curses and of "one of your opponents or a planeswalker an opponent controls"
+Object.assign(EXAMPLES, {
+  'attacks-enchanted-player': {
+    def: trig([{ ev: 'attacks', attacker: { types: ['Creature'] }, count: { op: '>=', value: 1 }, defender: { ref: 'enchantedPlayer' } } as EventPattern], [draw()], { batch: true }),
+    ctx: creature,
+    readings: ['Whenever a player attacks enchanted player with one or more creatures, draw a card.', 'Whenever one or more creatures attack enchanted player, draw a card.', 'Whenever enchanted player is attacked, draw a card.'],
+    near: ['Whenever a player attacks enchanted player with two or more creatures, draw a card.', 'Whenever an opponent attacks enchanted player with one or more creatures, draw a card.', 'Whenever enchanted player is dealt combat damage, draw a card.'],
+  },
+  'attacks-opponent-or-their-planeswalker': {
+    def: trig([{ ev: 'attacks', attacker: { types: ['Creature'] }, defender: 'opponent', orPlaneswalker: true } as EventPattern], [draw()]),
+    ctx: creature,
+    readings: ['Whenever a creature attacks one of your opponents or a planeswalker an opponent controls, draw a card.', 'Whenever a creature attacks one of your opponents or a planeswalker they control, draw a card.'],
+    near: ['Whenever a creature attacks one of your opponents or a planeswalker you control, draw a card.', 'Whenever a creature attacks one of your opponents, draw a card.', 'Whenever a creature attacks you or a planeswalker you control, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+// pc-keywords-mana-1 (precon lane keywords-mana; CR cites from memory, unverified): the readings of its family (invented wordings, design 6.10)
+const PCKM1_MINE = "{T}: Add {C}. If you control an Urza's Power-Plant and an Urza's Tower, add {C}{C} instead.";
+Object.assign(EXAMPLES, {
+  'control-both': {
+    def: xp2Def("Land — Urza's Mine", PCKM1_MINE, '{0}'),
+    readings: [PCKM1_MINE, "{T}: Add {C}. If you control an Urza's Power-Plant and you control an Urza's Tower, add {C}{C} instead."],
+    near: [PCKM1_MINE.replace('Power-Plant and an', 'Power-Plant or an'), PCKM1_MINE.replace('If you control', "If an opponent controls"), PCKM1_MINE.replace('and an Urza\'s Tower', 'and an Urza\'s Mine')],
+  },
+} satisfies Record<string, Example>);
+
+// pc-zones-1 (precon lane pc-zones)
+Object.assign(EXAMPLES, {
+  'rest-of-the-revealed-cards': {
+    def: spell([
+      { op: 'reveal', who: you, what: { ref: 'topCards', player: you, count: 5 }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Land'], is: bound('them'), zone: 'library' } }, min: 0, max: 2, as: 'chosen' } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: bound('them'), not: { is: bound('chosen') }, zone: 'library' } }, to: { zone: 'graveyard' } } as EffectStep,
+    ]),
+    readings: [
+      'Reveal the top 5 cards of your library. Put up to 2 land cards from among them into your hand and the rest into your graveyard.',
+      'Reveal the top 5 cards of your library. Put up to 2 land cards from among them into your hand and the rest of the revealed cards into your graveyard.',
+    ],
+    near: ['Reveal the top 5 cards of your library. Put up to 2 land cards from among them into your hand and the rest of the exiled cards into your graveyard.', 'Reveal the top 5 cards of your library. Put up to 2 land cards from among them into your hand and the rest of the revealed cards into your hand.'],
+  },
+});
+
+// pc-exile-play-2 (precon lane pc-exile-play; CR 305.9, 608.2g; cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'spells-from-among-nonland-cards': {
+    def: rx30Def('Sorcery', 'Each opponent exiles cards from the top of their library until they exile a nonland card. You may cast any number of spells from among those cards without paying their mana costs.'),
+    readings: [
+      'Each opponent exiles cards from the top of their library until they exile a nonland card. You may cast any number of spells from among those nonland cards without paying their mana costs.',
+      'Each opponent exiles cards from the top of their library until they exile a nonland card. You may cast any number of spells from among those cards without paying their mana costs.',
+    ],
+    near: [
+      'Each opponent exiles cards from the top of their library until they exile a nonland card. You may cast any number of spells from among those land cards without paying their mana costs.',
+      'Each opponent exiles cards from the top of their library until they exile a nonland card. You may cast up to two spells from among those nonland cards without paying their mana costs.',
+      'Each opponent exiles cards from the top of their library until they exile a nonland card. You may cast any number of spells from among those nonland cards.',
+    ],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'first-cast-each-turn': {
+    def: { kind: 'static', text: '', effects: [{ s: 'continuous', affects: { ref: 'each', filter: { firstCast: 'turn', controller: 'you', zone: 'stack' } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'cascade', text: 'cascade' }] }] }] } as AbilityDef,
+    ctx: creature,
+    readings: ['The first spell you cast each turn has cascade.', 'The first spell you cast in each turn has cascade.'],
+    near: ['The first spell you cast each turn has flash.', 'The second spell you cast each turn has cascade.', 'The first spell your opponents cast each turn has cascade.'],
+  },
+} satisfies Record<string, Example>);
+
+// pc-combat-3 (lane pc-combat, Commander precons)
+Object.assign(EXAMPLES, {
+  'opponent-attacks-you': {
+    def: trig([{ ev: 'attacks', attacker: { types: ['Creature'], controller: 'opponent' }, count: { op: '>=', value: 2 }, defender: 'you' } as EventPattern], [draw()], { batch: true }),
+    ctx: creature,
+    readings: ['Whenever an opponent attacks you with two or more creatures, draw a card.', 'Whenever two or more creatures your opponents control attack you, draw a card.'],
+    near: ['Whenever an opponent attacks you with three or more creatures, draw a card.', 'Whenever an opponent attacks with two or more creatures, draw a card.', 'Whenever a player attacks you with two or more creatures, draw a card.'],
+  },
+  'attacking-you-or-planeswalker': {
+    def: rx30Def('Creature — Spider', "{2}: Test Card deals 2 damage to target creature that's attacking you or a planeswalker you control."), ctx: creature,
+    readings: ["{2}: Test Card deals 2 damage to target creature that's attacking you or a planeswalker you control.", '{2}: Test Card deals 2 damage to target creature attacking you or a planeswalker you control.'],
+    near: ["{2}: Test Card deals 2 damage to target creature that's attacking you.", "{2}: Test Card deals 2 damage to target creature that's attacking a planeswalker you control."],
+  },
+} satisfies Record<string, Example>);
+
+// pc-players-3 (precon lane pc-players; CR cites from memory, unverified): damage that happens unless the recipient controls a description (steps.ts#clause)
+Object.assign(EXAMPLES, {
+  'pcp3-damage-unless-they-control': {
+    def: spell([{ op: 'damage', source: self, to: t('p'), amount: 4, guard: { cond: 'not', of: { cond: 'exists', of: { ref: 'each', filter: { anyOf: [{ subtypes: ['Goblin'] }], controller: t('p') } } } } } as unknown as EffectStep], [playerTarget('p')]),
+    ctx: creature,
+    readings: ['Test Card deals 4 damage to target player unless they control a Goblin.'],
+    near: ['Test Card deals 4 damage to target player unless you control a Goblin.', 'Test Card deals 5 damage to target player unless they control a Goblin.'],
+  },
+} satisfies Record<string, Example>);
+
+// pc-combat-4 (lane pc-combat, Commander precons)
+Object.assign(EXAMPLES, {
+  'attack-you-unblocked': {
+    def: trig([{ ev: 'attacksUnblocked', attacker: { types: ['Creature'], controller: 'opponent' }, defender: 'you' } as EventPattern], [draw()], { batch: true }),
+    ctx: creature,
+    readings: ["Whenever one or more creatures an opponent controls attack you and aren't blocked, draw a card.", "Whenever one or more creatures your opponents control attack you and aren't blocked, draw a card."],
+    near: ["Whenever one or more creatures you control attack you and aren't blocked, draw a card.", "Whenever one or more creatures an opponent controls attack you, draw a card.", "Whenever one or more creatures an opponent controls attack a player and aren't blocked, draw a card."],
+  },
+} satisfies Record<string, Example>);
+// p2-typechange-4, ported by pc-tokens-3 (CR 113.1a, 702.6a, 613.1f)
+Object.assign(EXAMPLES, {
+  'quoted-then-keyword': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { subtypes: ['Clue'], controller: 'you' } }, mods: [{ layer: 6, add: [
+      { kind: 'keyword', keyword: 'flying', text: 'flying' },
+      { kind: 'triggered', text: 'At the beginning of your upkeep, draw a card.', trigger: { on: [{ ev: 'step', step: 'upkeep', whose: 'you' }] }, effect: { targets: [], steps: [{ op: 'draw', who: { ref: 'you' }, count: 1 }] } },
+    ] as never }] }]),
+    readings: ['Clues you control have flying and "At the beginning of your upkeep, draw a card."', 'Clues you control have "At the beginning of your upkeep, draw a card" and flying.'],
+    near: ['Clues you control have "At the beginning of your upkeep, draw a card" and haste.', 'Clues you control have "At the beginning of your upkeep, draw two cards" and flying.', 'Clues you control have flying, "At the beginning of your upkeep, draw a card" and haste.'],
+  },
+} satisfies Record<string, Example>);
+// pc-tokens-3 (CR 700.4, 400.3, 603.10a): the creatures you own that went from the battlefield to a graveyard this turn
+Object.assign(EXAMPLES, {
+  'put-into-your-graveyard-from-battlefield': {
+    def: spell([{ op: 'createToken', who: { ref: 'you' }, count: { q: 'happenedCount', event: { ev: 'zoneChange', subject: { types: ['Creature'], owner: 'you' }, from: 'battlefield', to: 'graveyard' }, scope: 'turn' }, token: { colors: ['G'], power: 3, subtypes: ['Beast'], toughness: 3, types: ['Creature'] } } as EffectStep], []),
+    readings: ['Create a 3/3 green Beast creature token for each creature put into your graveyard from the battlefield this turn.', 'Create a 3/3 green Beast creature token for each creature you own that died this turn.'],
+    near: ['Create a 3/3 green Beast creature token for each creature put into an opponent\'s graveyard from the battlefield this turn.', 'Create a 3/3 green Beast creature token for each creature put into your graveyard from the battlefield last turn.', 'Create a 3/3 green Beast creature token for each creature put into your graveyard from your library this turn.'],
+  },
+} satisfies Record<string, Example>);
+
+
+// pc-exile-play-4 (precon lane pc-exile-play; CR 118.9, 202.3; cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'pay-life-that-spells-mana-value': {
+    def: rx30Def('Sorcery', 'Exile the top three cards of your library. You may play those cards this turn. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.'),
+    readings: [
+      'Exile the top three cards of your library. You may play those cards this turn. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.',
+      "Exile the top three cards of your library. You may play those cards this turn. If you cast a spell this way, pay life equal to that spell's mana value rather than paying its mana cost.",
+    ],
+    near: [
+      'Exile the top three cards of your library. You may play those cards this turn. If you cast a spell this way, pay life equal to its power rather than pay its mana cost.',
+      "Exile the top three cards of your library. You may play those cards this turn. If you cast a spell this way, pay life equal to that creature's mana value rather than pay its mana cost.",
+    ],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'cast-any-linked-exiled': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { notTypes: ['Land'], is: { ref: 'linked', link: 'exiled' }, zone: 'any' } }, min: 0, max: 'any', as: 'cast' } as EffectStep,
+      { op: 'cast', who: you, what: bound('cast'), free: true } as EffectStep,
+    ]),
+    readings: ['Cast any number of cards exiled with Test Card without paying their mana costs.', 'Cast any number of cards exiled with it without paying their mana costs.'],
+    near: ['Cast any number of cards exiled with Test Card.', 'Cast a card exiled with Test Card without paying its mana cost.', 'Cast any number of cards exiled with an opponent without paying their mana costs.'],
   },
 } satisfies Record<string, Example>);

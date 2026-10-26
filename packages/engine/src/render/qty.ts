@@ -72,6 +72,16 @@ function happened(q: Extract<Quantity, { q: 'happenedCount' }>, st: RenderState)
   if (ev.ev !== 'cast' && q.by !== undefined && q.by !== 'any') throw new NoRenderer('happenedCount.by on an event that is not a cast');
   if (ev.ev === 'zoneChange' && ev.from === 'battlefield' && ev.to === 'graveyard') {
     const isCreature = (ev.subject.types ?? []).length === 1 && ev.subject.types![0] === 'Creature';
+    // pc-tokens-3 (CR 700.4, 400.3; family put-into-your-graveyard-from-battlefield): the permanents you own that went from the battlefield to a graveyard this turn are
+    // also said "creature put into your graveyard from the battlefield this turn" (a card goes to its owner's graveyard; parser/holes/qty.ts)
+    if (ev.subject.owner === 'you' && ev.subject.controller === undefined && ev.subject.isCard === undefined && ev.subject.zone === undefined && ev.subject.stackKind === undefined && q.scope === 'turn' && !before && q.by === undefined) {
+      const f: ObjectFilter = { ...ev.subject, owner: undefined };
+      const own = { plural: `${K.np(ev.subject, st, { det: 'none', plural: true })} that ${isCreature ? 'died' : 'were put into graveyards from the battlefield'} ${scope}`, singular: `${K.np(ev.subject, st, { det: 'none' })} that ${isCreature ? 'died' : 'was put into a graveyard from the battlefield'} ${scope}` };
+      return {
+        plural: alt(own.plural, `${K.np(f, st, { det: 'none', plural: true })} put into your graveyard from the battlefield ${scope}`),
+        singular: alt(own.singular, `${K.np(f, st, { det: 'none', forEach: true })} put into your graveyard from the battlefield ${scope}`),
+      };
+    }
     if (isCreature) {
       const f = { ...ev.subject, types: ev.subject.types };
       const died = { plural: `${K.np(f, st, { det: 'none', plural: true })} that died ${scope}`, singular: `${K.np(f, st, { det: 'none' })} that died ${scope}` };
@@ -297,6 +307,8 @@ export function countParts(q: Quantity, st: RenderState): { plural: string; sing
       // std-rm (CR 122.1): "for each experience counter you have", "for each poison counter they have": the counters of one kind a player has
       if (isPlayerRef(q.on, st)) {
         if (q.kind === 'any') return null;
+        // pc-tokens-1 (CR 122.1f, 102.3; Phyrexian Swarmlord): "for each poison counter your opponents have": the counters of every opponent together (effects/eval.ts sums over the players)
+        if (isYourOpponents(q.on)) return { plural: `${q.kind} counters your opponents have`, singular: `${q.kind} counter your opponents have` };
         const p = K.player(q.on as PlayerRef, st, 'subject');
         const has = p.person === 'sg' ? 'has' : 'have';
         return { plural: `${q.kind} counters ${p.text} ${has}`, singular: `${q.kind} counter ${p.text} ${has}` };
@@ -489,7 +501,11 @@ function statPhrase(q: Extract<Quantity, { q: 'stat' }>, st: RenderState): strin
     // one wording of exactly this set (the commanders a player owns in those two zones)
     if (q.agg === 'max' && q.stat === 'manaValue' && isCommandersOwnedOnBattlefieldOrCommand(q.of.filter)) return 'the greatest mana value of a commander you own on the battlefield or in the command zone';
     const set = K.np(q.of.filter, st, { det: 'none', plural: true });
-    return q.agg === 'max' ? alt(`the greatest ${word} among ${set}`, `the highest ${word} among ${set}`) : `the least ${word} among ${set}`;
+    // pc-players-2 (CR 208.1, 110.1): a set that is just a kind of permanent on the battlefield is also said "among creatures on the battlefield" (High Score)
+    const onBf = Object.keys(q.of.filter).length === 2 && q.of.filter.zone === 'battlefield' && Array.isArray(q.of.filter.types) ? ' on the battlefield' : '';
+    return q.agg === 'max'
+      ? alt(`the greatest ${word} among ${set}`, `the highest ${word} among ${set}`, ...(onBf !== '' ? [`the greatest ${word} among ${set}${onBf}`, `the highest ${word} among ${set}${onBf}`] : []))
+      : alt(`the least ${word} among ${set}`, ...(onBf !== '' ? [`the least ${word} among ${set}${onBf}`] : []));
   }
   // MX3 (CR 701.54e): "your Ring-bearer's power" is the power of one permanent (or none: the quantity fails to determine, CR 608.2b)
   if (!q.sum && q.of.ref === 'each' && 'filter' in q.of && q.of.filter.ringBearer === 'you' && Object.keys(q.of.filter).length === 1) return `${K.obj(q.of, st, 'possessive').text} ${word}`;
@@ -530,7 +546,11 @@ function statPhrase(q: Extract<Quantity, { q: 'stat' }>, st: RenderState): strin
   }
   // std-rh (CR 702.167c, 202.3): what the craft cost exiled is "the exiled card used to craft it" (Jadeheart Attendant): the statistic is said before it
   if (after === null) return q.of.ref === 'linked' && q.of.link === 'exiled' ? alt(own, `the ${word} of the exiled card`) : q.of.ref === 'linked' && q.of.link === 'craft' ? alt(own, `the ${word} of the exiled card used to craft it`) : own;
-  return alt(own, after);
+  // pc-counters-3 (CR 603.10a, 700.4): in a dies trigger, Oracle also names the dying creature "the creature that died": "where X is the power of the creature that died"
+  const trig = st.trigger ?? [];
+  const dies = q.of.ref === 'event' && q.of.role === 'subject' && trig.length === 1 && trig[0]!.ev === 'zoneChange' && trig[0]!.from === 'battlefield' && trig[0]!.to === 'graveyard'
+    && (trig[0]!.subject?.types ?? []).join() === 'Creature' ? [`the ${word} of the creature that died`] : [];
+  return alt(own, after, ...dies);
 }
 
 /** std-rx7: is `q` the counters of the kind a one-pattern trigger's moved object is described with ("with one or more counters on it dies")? */
@@ -542,14 +562,18 @@ export function countersNamedByTrigger(q: Extract<Quantity, { q: 'counters' }>, 
   return named !== undefined && named.kind === q.kind && (named.cmp === undefined || (named.cmp.op === '>=' && named.cmp.value === 1)) && on.ref === 'event' && on.role === 'subject';
 }
 
+/** pc-tokens-1: the players of "your opponents" (every opponent of the controller, CR 102.3). */
+const isYourOpponents = (on: ObjRef | PlayerRef): boolean => on.ref === 'each' && 'who' in on && on.who === 'opponent';
+
 function onPhrase(on: ObjRef | PlayerRef, st: RenderState, kind: string): string {
   const counters = kind === 'any' ? 'counters' : `${kind} counters`;
   if (isPlayerRef(on, st)) {
+    if (isYourOpponents(on)) return `the number of ${counters} your opponents have`; // pc-tokens-1
     const p = K.player(on as PlayerRef, st, 'subject');
     return `the number of ${counters} ${p.text} ${p.person === 'sg' ? 'has' : 'have'}`;
   }
   // r4-fxb (family counters-on-group): the counters on a described group, "on lands you control" (no quantifier) as well as "on all lands you control"
-  if (on.ref === 'each' && 'filter' in on) return `the number of ${counters} on ${alt(K.obj(on as ObjRef, st, 'object').text, K.np(on.filter, st, { det: 'none', plural: true }))}`;
+  if (on.ref === 'each' && 'filter' in on) { const grp = alt(K.obj(on as ObjRef, st, 'object').text, K.np(on.filter, st, { det: 'none', plural: true })); return alt(`the number of ${counters} on ${grp}`, `the number of ${counters} among ${grp}`); } // pc-counters-3: Maester Seymour's "among"
   return `the number of ${counters} on ${K.obj(on as ObjRef, st, 'object').text}`;
 }
 
@@ -582,6 +606,9 @@ function checkGrouping(q: Extract<Quantity, { q: 'math' }>): void {
 /** FAST5 T62: is `q` exactly N minus the amount the intervening "if" being rendered says is fewer than N (parser/lower/quantities.ts#differenceOf)? */
 function isDifference(q: Extract<Quantity, { q: 'math' }>, st: RenderState): boolean {
   // Cloud std-fin (CR 608.2c): also the condition of the `if` step whose branch this is ("Then if you have fewer than three cards in hand, draw cards equal to the difference")
+  // pc-players-2 (CR 402.1, 608.2h): "If that player has more cards in hand than you, draw cards equal to the difference": the bigger amount minus the smaller one
+  if ([st.stepIf, st.interveningIf].some((c) => c?.cond === 'compare' && c.op === '>' && typeof c.left === 'object' && typeof c.right === 'object' && q.op === '-' && q.args.length === 2
+    && JSON.stringify(q.args[0]) === JSON.stringify(c.left) && JSON.stringify(q.args[1]) === JSON.stringify(c.right))) return true;
   return [st.stepIf, st.interveningIf].some((c) => c?.cond === 'compare' && c.op === '<' && typeof c.right === 'number' && q.op === '-' && q.args.length === 2 && q.args[0] === c.right
     && JSON.stringify(q.args[1]) === JSON.stringify(c.left));
 }
@@ -830,6 +857,7 @@ export function qty(q: Quantity, st: RenderState, _o: QtyOpts = {}): string {
     case 'commanderCasts':
       if (q.of !== undefined) throw new NoRenderer('another player\'s commander casts outside "draws X cards plus an additional card for each time they\'ve cast a commander"'); // CMD2
       return `the number of times you've cast ${alt('your commander', 'a commander')} from the command zone this game`;
+    case 'commanderIdentitySize': return "the number of colors in your commanders' color identity"; // pc-statics-2 (CR 903.4)
     default: throw new NoRenderer(`quantity ${(q as { q: string }).q}`);
   }
 }

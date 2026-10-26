@@ -1,0 +1,53 @@
+[
+  {
+    "id": "eff.pcp3.damage.unlessTheyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 109.5"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {p:Player} unless they control {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$p",
+      "amount": "$n",
+      "guard": {
+        "cond": "not",
+        "of": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": "$p"
+            }
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 4 damage to target player unless they control a Goblin."
+      },
+      {
+        "text": "~ deals 2 damage to target opponent unless they control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 4 damage to target player unless you control a Goblin.",
+      "~ deals 4 damage to target player if they control a Goblin.",
+      "~ deals 4 damage to target player unless they control.",
+      "~ deals 2 damage to each opponent unless they control a Goblin."
+    ]
+  }
+]

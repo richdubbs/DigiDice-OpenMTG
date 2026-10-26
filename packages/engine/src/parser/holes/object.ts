@@ -587,11 +587,15 @@ function pluralPronouns(ctx: HoleCtx, pos: number): Alt[] {
   // r5-dig (CR 701.20a, 608.2c): "If this spell was bargained, put the revealed cards onto the battlefield. Otherwise, put the revealed cards into your hand." after
   // "You may reveal up to two creature cards from among them.": the cards an earlier reveal step of the ability revealed (the participle `revealed` of
   // lower/mentions.ts), never another group; unresolved, the sentence stays manual
+  // pc-exile-play-1 (CR 608.2c, 406.1; Dream Pillager, Stolen Strategy): "those exiled cards" are the cards the instruction before exiled, as "those cards" are
+  const exiledCards = phraseAt(ctx, pos, W_THOSE_EXILED_CARDS);
+  if (exiledCards >= 0) out.push({ end: exiledCards, value: anaphorObj({ sort: 'set', number: 'plural', head: 'card', text: 'those exiled cards' }), weak: 1 });
   const revealed = phraseAt(ctx, pos, W_THE_REVEALED_CARDS);
   if (revealed >= 0) out.push({ end: revealed, value: anaphorObj({ sort: 'set', number: 'plural', head: 'card', participle: 'revealed', text: 'the revealed cards' }) });
   return out;
 }
 const W_THE_REVEALED_CARDS = P('the revealed cards');
+const W_THOSE_EXILED_CARDS = P('those exiled cards');
 
 /** Determiner-led phrases that may be joined into a union ("target creature and target artifact", "each creature and each artifact"). */
 function ledPhrases(ctx: HoleCtx, pos: number): Alt[] {
@@ -831,8 +835,13 @@ const W_THE_EXILED_CARDS = P('the exiled cards');
  */
 function theExiledCards(ctx: HoleCtx, pos: number): Alt[] {
   const e = phraseAt(ctx, pos, W_THE_EXILED_CARDS);
-  return e >= 0 ? [{ end: e, value: anaphorObj({ sort: 'set', number: 'plural', head: 'card', participle: 'exiled', text: 'the exiled cards' }) }] : [];
+  const out: Alt[] = e >= 0 ? [{ end: e, value: anaphorObj({ sort: 'set', number: 'plural', head: 'card', participle: 'exiled', text: 'the exiled cards' }) }] : [];
+  // pc-exile-play-2 (CR 608.2c, 406.1; Fevered Suspicion): "those nonland cards" after "exile cards from the top of their library until they exile a nonland card"
+  const n = phraseAt(ctx, pos, W_THOSE_NONLAND_CARDS);
+  if (n >= 0) out.push({ end: n, value: anaphorObj({ sort: 'set', number: 'plural', head: 'card', text: 'those nonland cards' }), weak: 1 });
+  return out;
 }
+const W_THOSE_NONLAND_CARDS = P('those nonland cards');
 
 export const objs: HoleFn = (ctx, pos) => dedupe([
   ...voteObjsAt(ctx, pos), // M12-3 (CR 701.38a): "each permanent with the most votes or tied for most votes"
@@ -1009,6 +1018,7 @@ export const otherTargets: HoleFn = (ctx, pos) => {
 
 const W_THE_REST = [P('the rest'), P('the other')];
 const W_REST_OF_EXILED = P('the rest of the exiled cards'); // std-library-3
+const W_REST_OF_REVEALED = P('the rest of the revealed cards'); // pc-zones-1
 // std-rh (CR 608.2c, 701.20e; Genesis Wave): "all cards revealed this way that weren't put onto the battlefield" is the cards of the revealed group that a choice among it did not
 // put there: the head "rest-not-put" is only given to "the rest" of a choice whose chosen cards are all put onto the battlefield (lower/mentions.ts#restOf), never to the rest
 // after an optional put of one card ("You may put that card onto the battlefield", where a card not put is among them; fail closed)
@@ -1029,6 +1039,9 @@ export const rest: HoleFn = (ctx, pos) => {
   // from among them) left in exile (lower/mentions.ts#restOf, head "rest-exiled")
   const exiled = phraseAt(ctx, pos, W_REST_OF_EXILED);
   if (exiled >= 0) out.push({ end: exiled, value: anaphorObj({ sort: 'set', number: 'plural', head: 'rest-exiled', text: 'the rest of the exiled cards' }) });
+  // pc-zones-1 (CR 608.2c, 701.20a): "the rest of the revealed cards" is "the rest" again (Kruphix's Insight): the cards of the revealed group a choice among it left
+  const revealed = phraseAt(ctx, pos, W_REST_OF_REVEALED);
+  if (revealed >= 0) out.push({ end: revealed, value: anaphorObj({ sort: 'set', number: 'plural', head: 'rest', text: 'the rest of the revealed cards' }) });
   const notPut = phraseAt(ctx, pos, W_REST_NOT_PUT); // std-rh
   if (notPut >= 0) out.push({ end: notPut, value: anaphorObj({ sort: 'set', number: 'plural', head: 'rest-not-put', text: "all cards revealed this way that weren't put onto the battlefield" }) });
   return out;

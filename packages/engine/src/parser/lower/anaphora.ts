@@ -140,7 +140,8 @@ export function resolveAnaphor(a: AnaphorInfo, mentions: readonly Mention[]): Re
   // cmd1 (CR 608.2f): inside "for each opponent, ..." the demonstrative of the iterated noun ("that opponent") names the opponent of the iteration (Mention.iterates):
   // the idiom says so, not a ranking ("Whenever ~ attacks a player, for each opponent, create a token that's tapped and attacking that opponent")
   if (pool.length > 1 && a.head !== undefined) {
-    const it = pool.filter((m) => m.iterates !== undefined && m.iterates === a.head);
+    // pc-keywords-mana-3 (CR 608.2f): and "that player" inside "each opponent faces a villainous choice -- That player ...": the player of the iteration, whatever else the ability mentions
+    const it = pool.filter((m) => m.iterates !== undefined && (m.iterates === a.head || (a.head === 'player' && a.text === 'that player')));
     if (it.length === 1) return { ok: true, mention: it[0]! };
   }
   // std-rx12 (CR 111.1, 608.2c; Iroh, Tea Master): Oracle names an object "that token" only after its own words called it a token ("create a 1/1 white Ally creature
@@ -287,7 +288,7 @@ function implicitCandidate(root: unknown, path: string, a: AnaphorInfo): string 
   const playerWord = (a.sort === 'player' || a.sort === 'any') && (a.head === undefined || PLAYER_HEADS.has(a.head));
   // C6: so is a subject that is a group of players of another kind: "each player who controls the most ...", "each opponent who can't ..." (CR 608.2c)
   const groupOf = (v: Rec): boolean => v['ref'] === 'controlsMost' || (isRec(v['$anaphor']) && v['$anaphor']['participle'] === 'cant');
-  const eachPlayer = step !== null && Object.values(step).some((v) => isRec(v) && ((v['ref'] === 'each' && typeof v['who'] === 'string') || (groupOf(v) && a.participle !== 'cant')));
+  const eachPlayer = step !== null && Object.values(step).some((v) => isRec(v) && (v['ref'] === 'eachWho' || (v['ref'] === 'each' && typeof v['who'] === 'string') || (groupOf(v) && a.participle !== 'cant')));
   if (playerWord && eachPlayer) return 'each player of the subject is a candidate too (CR 608.2c, design 6.4)';
   return null;
 }
@@ -315,7 +316,7 @@ function groupChooser(root: unknown, path: string, a: AnaphorInfo): boolean {
   // "for each player, choose a creature that player controls" (CR 608.2c, 101.4): the choice for each player binds that player while its objects are read
   if (step['op'] === 'chooseObjects' && under === 'from' && isRec(step['perPlayer'])) return true;
   // r5-refs (CR 608.2e, 101.4): ... and in its count ("sacrifices half the creatures they control of their choice": half of that player's creatures), read for each player
-  return step['op'] === 'sacrificeChoice' && (under === 'filter' || under === 'count') && isRec(step['who']) && step['who']['ref'] === 'each' && typeof step['who']['who'] === 'string';
+  return step['op'] === 'sacrificeChoice' && (under === 'filter' || under === 'count') && isRec(step['who']) && (step['who']['ref'] === 'eachWho' || (step['who']['ref'] === 'each' && typeof step['who']['who'] === 'string'));
 }
 
 /**

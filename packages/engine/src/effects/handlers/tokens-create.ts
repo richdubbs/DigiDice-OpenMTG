@@ -20,7 +20,7 @@ import { tokenCardDef, type TokenSpec } from './token-defs';
 import { actOn, addToLink, bindAs, byHand, did, enterAttacking, enteringAttacking, NOTHING, wholeNumber } from './zones-util';
 
 /** cmd1: the `feature:` names of this handler: a token put onto the battlefield attacking a named player (`attacking: {defender}`, CR 508.4). */
-export const TOKEN_FEATURES: readonly string[] = ['createToken.attackingWhom'];
+export const TOKEN_FEATURES: readonly string[] = ['createToken.attackingWhom', 'createToken.exceptReplaced'];
 
 type CreateToken = Extract<EffectStep, { op: 'createToken' }>;
 
@@ -70,6 +70,8 @@ const createTokenStep: StepHandler<CreateToken> = (cx, st) => {
   }
   const def = tokenCardDef(spec);
   if ('reason' in def) return byHand(cx, st, def.reason);
+  // pc-tokens-2 (CR 614.5, 111.1; Academy Manufactor): inside the replacement of a token creation, the step that would make the very token being replaced is skipped (it is made by the event itself)
+  if (st.exceptReplaced === true && cx.event?.token === def.id) return none();
 
   // How each token enters (CR 111.4, 614.1c): tapped, with counters, attached to an object.
   const enter: DestinationFacts = {};

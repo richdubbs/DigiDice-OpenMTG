@@ -41,7 +41,7 @@ export function replacementCtx(g: Game, e: Proposed, c: Candidate): ExecCtx {
   cx.controller = c.controller;
   const sem = semOfNested(g, e);
   const amount = eventAmount(e);
-  const event: EventContext = { ev: sem.ev, roles: sem.roles, before: {}, ...(amount !== undefined ? { amount } : {}) };
+  const event: EventContext = { ev: sem.ev, roles: sem.roles, before: {}, ...(amount !== undefined ? { amount } : {}), ...(e.ev === 'createToken' ? { token: e.token } : {}) };
   cx.event = event;
   return cx;
 }

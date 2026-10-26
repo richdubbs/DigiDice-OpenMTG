@@ -1,0 +1,11 @@
+# ---- Precon lane pc-players, round pc-players-1: gain life equal (imp), draw N for each, loses life equal unless, you have more life than an opponent, a group's stat with X, keep one of each of four types, destroy the rest
+Wall of Reverence
+Archon of Redemption
+Tomb Blade
+Birth of the Imperium
+Survival Cache
+Scourge of Fleets
+Spectral Deluge
+Cataclysmic Gearhulk
+Tragic Arrogance
+Divine Reckoning

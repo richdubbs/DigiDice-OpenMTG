@@ -10,6 +10,7 @@
  */
 import type { Game } from '../core/game';
 import { EngineBug } from '../core/game';
+import { ENTERING_TOGETHER } from './entering-together';
 import { createToken, drawCard, moveObject, shuffleLibrary, type MoveOptions, type PutEnteringCounters } from '../core/zones';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { PayCostDecision } from '../types/decisions';
@@ -268,6 +269,10 @@ function performCreateToken(g: Game, e: Ev<'createToken'>): ObjectId[] {
   if (!entryPipeline) throw new EngineBug('createToken: the entry pipeline is not installed (effects/funnels.ts was not loaded)');
   const pipeline = entryPipeline;
   const out: ObjectId[] = [];
+  // pc-counters-1 (CR 614.12, 616.1): tokens created together enter at the same time, so none applies an "other creatures enter with ..." replacement to the others
+  const previousGroup = ENTERING_TOGETHER.get(g);
+  if (e.count > 1) ENTERING_TOGETHER.set(g, new Set());
+  try {
   for (let i = 0; i < e.count; i++) {
     let facts: DestinationFacts = {};
     let used: ReadonlySet<string> | undefined;
@@ -289,7 +294,9 @@ function performCreateToken(g: Game, e: Ev<'createToken'>): ObjectId[] {
     g.emit({ type: 'tokenCreated', player: e.player, objectId: id });
     applyEnterFacts(g, id, facts, used);
     out.push(id);
+    ENTERING_TOGETHER.get(g)?.add(id);
   }
+  } finally { if (previousGroup) ENTERING_TOGETHER.set(g, previousGroup); else ENTERING_TOGETHER.delete(g); }
   if (out.length > 0) g.log(`${g.player(e.player).name} creates ${out.length === 1 ? 'a' : out.length} ${def.name} token${out.length === 1 ? '' : 's'}.`, { rules: ['CR 111.1', 'CR 701.7a'], level: 'action' });
   return out;
 }

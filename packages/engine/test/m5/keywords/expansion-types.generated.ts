@@ -7515,4 +7515,40 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       }
     }
   ],
+  "overload {3}{U}": [
+    {
+      "kind": "static",
+      "text": "Overload {3}{U}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": {
+            "mana": [
+              {
+                "kind": "generic",
+                "amount": 3
+              },
+              {
+                "kind": "colored",
+                "color": "U"
+              }
+            ]
+          },
+          "name": "overload"
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "overload",
+        "reviewed": true
+      }
+    }
+  ],
 };

@@ -71,7 +71,8 @@ function data(d: Record<string, string | number | boolean | undefined | null>): 
 
 /** Verbs of CR 701 that the engine reports only as a zone change with a cause, seen as actions too (a sacrifice is a move to the graveyard AND a sacrifice). */
 // Standard round 3, r3-trig: craft's materials exiled as its cost are an exile too (rules/pay-parts.ts, CR 702.167a)
-const CAUSE_VERBS: Readonly<Record<string, string>> = { sacrifice: 'sacrifice', discard: 'discard', destroy: 'destroy', exile: 'exile', craft: 'exile' };
+// p2-trigger-events-1 (CR 701.17a): a milled card (effects/handlers/cards-draw.ts#millHandler, the mill cost of rules/pay-parts.ts) is a mill by its owner, as a discard is
+const CAUSE_VERBS: Readonly<Record<string, string>> = { sacrifice: 'sacrifice', discard: 'discard', destroy: 'destroy', exile: 'exile', craft: 'exile', mill: 'mill' };
 
 /** Keyword actions that make a permanent "become" something (the verb the keyword library reports -> the `becomes` kind). */
 const BECOMES_VERBS: Readonly<Record<string, 'monstrous' | 'renowned' | 'saddled' | 'crewed'>> = {
@@ -124,11 +125,13 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         const subject: ObjHandle = PUBLIC_ZONES.includes(e.to) && newObj && e.newId ? { id: e.newId, zone: e.to } : { id: e.oldId, zone: e.from ?? e.to };
         const controller = lk?.object.controller ?? e.controller;
         const before = lk && !created ? { [e.oldId]: lk } : {};
-        const d = data({ from: e.from, to: e.to, oldId: e.oldId, newId: e.newId ?? undefined, cause: e.cause, owner: e.owner, name: e.name, faceDown: e.faceDown }); // faceDown: FAST5X E25
+        const d = data({ from: e.from, to: e.to, oldId: e.oldId, newId: e.newId ?? undefined, cause: e.cause, owner: e.owner, name: e.name, faceDown: e.faceDown, tapped: e.tapped }); // faceDown: FAST5X E25; tapped: pc-tokens-2 (entered tapped)
         push('zoneChange', { subject: objects(subject), player: players(controller) }, d, before);
         // CR 701.17 (sacrifice), 701.9 (discard), 701.8 (destroy), 701.13 (exile) as actions: the same happening seen as a verb.
-        const verb = CAUSE_VERBS[e.cause ?? ''];
-        if (verb) push('action', { subject: objects(subject), player: players(verb === 'discard' ? e.owner : controller) }, data({ ...d, verb }), before);
+        // p2-trigger-events-1 (CR 701.17a): a mill is a card put into a graveyard from a library; one a replacement sent elsewhere is not reported as milled
+        const verb0 = CAUSE_VERBS[e.cause ?? ''];
+        const verb = verb0 === 'mill' && (e.from !== 'library' || e.to !== 'graveyard') ? undefined : verb0;
+        if (verb) push('action', { subject: objects(subject), player: players(verb === 'discard' || verb === 'mill' ? e.owner : controller) }, data({ ...d, verb }), before);
         if (created || (e.cause === 'create token' && e.from === null)) {
           push('createToken', { newObject: objects({ id: e.newId ?? e.oldId, zone: e.to }), player: players(e.controller) }, data({ oldId: e.oldId, newId: e.newId ?? e.oldId }));
         }
@@ -171,7 +174,10 @@ export const normalize: Normalize = (g: Game, events, batch) => {
           };
           // std-rx16 (CR 508.1): `subject` is the attacking creature too, the combatant the event is about (model/lint-roles.ts)
           roles['subject'] = roles['attacker']!;
-          push('attacks', roles, data({ count, alone: count === 1, defenderIsPlayer: isPlayer(a.defender), totalPower }), gone(a.attacker));
+          // pc-combat-1 (CR 508.5, 603.2c): the player attacked, or the controller of the planeswalker attacked ("one or more creatures attack one of your opponents or a
+        // planeswalker they control" is one occurrence for each such player, triggers/occurrences.ts#batchOccurrences)
+        const defendingPlayer = isPlayer(a.defender) ? a.defender : (s.objects[a.defender] ?? s.lki[a.defender]?.object)?.protector ?? controllerOf(a.defender); // a battle's defending player is its protector (CR 508.5)
+        push('attacks', roles, data({ count, alone: count === 1, defenderIsPlayer: isPlayer(a.defender), totalPower, defendingPlayer }), gone(a.attacker));
         }
         break;
       }
@@ -193,7 +199,11 @@ export const normalize: Normalize = (g: Game, events, batch) => {
           seen.add(b.attacker);
         }
         // std-rx35 (CR 509.1h): each attacker no blocker was declared for "attacks and isn't blocked" (its defending player is read from the combat state, effects/refs.ts)
-        for (const a of e.unblocked ?? []) push('attacksUnblocked', { attacker: objects(handle(a)), player: players(controllerOf(a) ?? s.turn.activePlayer) }, data({}), gone(a));
+        // pc-combat-4 (CR 509.1h, 508.1b): `defenderPlayer`, the player attacked (absent when the attacker attacks a planeswalker or battle), for "attack you and aren't blocked"
+        for (const a of e.unblocked ?? []) {
+          const att = s.combat?.attackers.find((x) => x.id === a);
+          push('attacksUnblocked', { attacker: objects(handle(a)), player: players(controllerOf(a) ?? s.turn.activePlayer) }, data({ ...(att !== undefined && att.defender !== null && isPlayer(att.defender) ? { defenderPlayer: att.defender } : {}) }), gone(a));
+        }
         break;
       }
       // p2-combat-flow-2 (CR 509.1h, 509.3c): attackers an effect made blocked "become blocked", once each, with no blocker (so "becomes blocked by a creature" waits)

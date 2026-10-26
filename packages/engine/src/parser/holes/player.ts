@@ -19,7 +19,7 @@ const W_EACH_OF_YOUR_OPPONENTS = P('each of your opponents'); // std-mkm (CR 102
 const W_EACH_PLAYER = P('each player');
 const W_EACH_OTHER_PLAYER = P('each other player');
 // Standard round 4, r4-trig (CR 506.2: the active player is the attacking player; Contested Game Ball): "the attacking player"
-const W_ACTIVE = [P('the active player'), P('active player'), P('the attacking player')];
+const W_ACTIVE = [P('the active player'), P('active player'), P('the attacking player'), P('that attacking player') /* pc-combat-1 (CR 506.2, the Curses) */];
 const W_DEFENDING = [P('the defending player'), P('defending player')];
 const W_THAT_PLAYER = P('that player');
 const W_THAT_OPPONENT = P('that opponent');
@@ -40,6 +40,8 @@ const W_ENCHANTED_PLAYER = P('enchanted player'); // std-rr
 // std-combat-1 (CR 608.2c, 508.1b, 508.5; Sandswirl Wanderglyph): the opponents who attacked you or a planeswalker you control this turn (the history's attacks with that
 // player as the actor and you, or a planeswalker you controlled, as the defender; rules/history.ts reads `orPlaneswalker` from `defenderKind`)
 const W_EACH_OPPONENT_WHO_ATTACKED_YOU = [P('each opponent who attacked you or a planeswalker you control this turn'), P('each opponent who attacked you or a planeswalker you controlled this turn')];
+const W_EACH_OPPONENT_WHO_LOST_LIFE = P('each opponent who lost life this turn'); // pc-players-3
+const W_EACH_PLAYER_WHO_LOST_LIFE = P('each player who lost life this turn');
 const W_PLAYER = P('player');
 const W_PLAYERS = P('players');
 const W_OPPONENT = P('opponent');
@@ -86,6 +88,9 @@ function simplePlayers(ctx: HoleCtx, pos: number): Alt[] {
   add(W_VOTERS_AGREE, { ref: 'voters', agree: true }); // M12F
   add(W_VOTERS_DISAGREE, { ref: 'voters', agree: false });
   // std-rr (CR 303.4, 702.5a): "enchanted player", the player the source Aura ("Enchant player", a Curse) is attached to
+  // pc-players-3 (CR 119.3, 608.2c; Papalymo Totolymo): "each opponent who lost life this turn": the opponents (players) whose life went down this turn, damage included (the game history)
+  add(W_EACH_OPPONENT_WHO_LOST_LIFE, { ref: 'eachWho', who: 'opponent', did: { ev: 'life', change: 'loss' }, scope: 'turn' });
+  add(W_EACH_PLAYER_WHO_LOST_LIFE, { ref: 'eachWho', who: 'player', did: { ev: 'life', change: 'loss' }, scope: 'turn' });
   for (const w of W_EACH_OPPONENT_WHO_ATTACKED_YOU) add(w, { ref: 'eachWho', who: 'opponent', did: { ev: 'attacks', defender: 'you', orPlaneswalker: true }, scope: 'turn' });
   add(W_ENCHANTED_PLAYER, { ref: 'enchantedPlayer' });
   return out;

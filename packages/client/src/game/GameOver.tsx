@@ -13,6 +13,9 @@
  * game screen passes nothing new; an online game has none and shows no panel.
  *
  * RPL-4 (replays design 11): "Report a bug" next to Show the board, when the game screen offers it (`onReportBug`: it opens the bug report dialog).
+ *
+ * Owner, 2026-10-25: a multiplayer game that can be started again asks "Rematch?" instead of a plain Rematch button. Yes shows each player with their
+ * deck (the game's `setup`): "Same decks" starts the rematch at once, "Change decks" opens New game with the same players, decks and options.
  */
 import { placements, type GameResult, type GameView, type PlayerState } from '@openmtg/engine';
 import { useEffect, useRef, useState } from 'react';
@@ -25,6 +28,7 @@ import { Logo3D } from '../branding/Logo3D';
 import { EndScreenReplay } from '../replays/EndScreenReplay';
 import { liveReplayOf, type LiveReplay } from '../replays/live';
 import { playerName, resultHeadline } from './labels';
+import type { GameSetup } from './NewGameScreen';
 
 export interface GameOverProps {
   view: GameView;
@@ -38,6 +42,10 @@ export interface GameOverProps {
   replay?: LiveReplay | null;
   /** RPL-4 (optional): "Report a bug" opens the bug report dialog. Absent: no such button. */
   onReportBug?: () => void;
+  /** What New game started the game with: the rematch question lists each player's deck from it. */
+  setup?: GameSetup;
+  /** Open New game with the same players, decks and options, to change the decks before the rematch. */
+  onChangeDecks?: () => void;
 }
 
 /**
@@ -85,12 +93,14 @@ export function finishingOrder(view: GameView, result: GameResult): FinishRow[] 
   });
 }
 
-export function GameOver({ view, result, onRematch, onNewGame, onHome, brand = BRAND, replay: given, onReportBug }: GameOverProps) {
+export function GameOver({ view, result, onRematch, onNewGame, onHome, brand = BRAND, replay: given, onReportBug, setup, onChangeDecks }: GameOverProps) {
   const nav = useOptionalNav();
   const route = nav?.route;
   const replay = given !== undefined ? given : route?.screen === 'game' ? liveReplayOf(route.connection) : null;
   const [folded, setFolded] = useState(false);
   const [donateDismissed, setDonateDismissed] = useState(false);
+  /** The rematch question of a multiplayer game: asked, answered yes (the decks are shown), or answered no. */
+  const [rematchAnswer, setRematchAnswer] = useState<'ask' | 'yes' | 'no'>('ask');
   const headline = resultHeadline(view, result);
   const multiplayer = view.options.multiplayer !== undefined;
   // CL4: why the game ended when a player conceded (CR 104.3a; online, leaving a running game concedes it): the engine's reason names the last player
@@ -128,8 +138,44 @@ export function GameOver({ view, result, onRematch, onNewGame, onHome, brand = B
           ))}
         </ol>
       )}
+      {multiplayer && onRematch && rematchAnswer !== 'no' && (
+        <section className="game-over-rematch" aria-label="Rematch">
+          {rematchAnswer === 'ask' ? (
+            <>
+              <p className="game-over-rematch-ask">Rematch?</p>
+              <button type="button" className="button-primary" onClick={() => setRematchAnswer('yes')}>
+                Yes
+              </button>
+              <button type="button" onClick={() => setRematchAnswer('no')}>
+                No
+              </button>
+            </>
+          ) : (
+            <>
+              {setup && (
+                <ul className="game-over-decks" aria-label="Decks for the rematch">
+                  {setup.seats.map((seat, i) => (
+                    <li key={i}>
+                      <span className="game-over-place-name">{seat.name}</span>
+                      <span className="game-over-deck">{setup.deckNames[i] ?? ''}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button type="button" className="button-primary" onClick={onRematch}>
+                {setup ? 'Same decks' : 'Rematch'}
+              </button>
+              {onChangeDecks && (
+                <button type="button" onClick={onChangeDecks}>
+                  Change decks
+                </button>
+              )}
+            </>
+          )}
+        </section>
+      )}
       <div className="game-over-buttons">
-        {onRematch && (
+        {onRematch && !multiplayer && (
           <button type="button" className="button-primary" onClick={onRematch}>
             Rematch
           </button>

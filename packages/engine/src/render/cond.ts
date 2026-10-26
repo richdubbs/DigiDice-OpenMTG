@@ -801,6 +801,9 @@ function condBase(c: Condition, st: RenderState): string {
       if (inOneZone !== null) return alt(inOneZone, joinList(c.of.map((x) => K.cond(x, st)), 'and'));
       const both = c.cond === 'all' ? bothSpellsPhrase(c.of, st) : null; // FAST5 T62
       if (both !== null) return alt(both, joinList(c.of.map((x) => K.cond(x, st)), 'and'));
+      // pc-keywords-mana-1 (CR 608.2c; parser/holes/cond.ts#control): "you control an Urza's Power-Plant and an Urza's Tower": the control said once, two descriptions
+      const ctrlBoth = c.cond === 'all' ? controlBothPhrase(c.of, st) : null;
+      if (ctrlBoth !== null) return alt(ctrlBoth, joinList(c.of.map((x) => K.cond(x, st)), 'and'));
       // Standard round 5, r5-trig (CR 305.1, 601.2a; Spider-Man 2099): a land play or a spell cast this turn by you from anywhere other than your hand (parser/holes/cond.ts)
       if (c.cond === 'any' && JSON.stringify(c.of) === JSON.stringify([{ cond: 'happened', event: { ev: 'action', verb: 'playLand', actor: 'you', notFrom: 'hand' }, scope: 'turn' }, { cond: 'happened', event: { ev: 'cast', player: 'you', notFrom: 'hand' }, scope: 'turn' }])) {
         return "you've played a land or cast a spell this turn from anywhere other than your hand";
@@ -885,7 +888,15 @@ function condBase(c: Condition, st: RenderState): string {
       }
       return idiom === null ? plain! : alt(idiom!, plain!);
     }
-    case 'exists': return existsPhrase(c.of, c.atLeast, false, st);
+    case 'exists': {
+      // pc-players-2 (CR 208.1, 608.2h; parser/holes/cond.ts#greatestPower): one creature you control has at least the greatest power among all creatures: also said "you control
+      // the creature with the greatest power or tied for the greatest power" (a tie counts)
+      const f = c.of.ref === 'each' ? c.of.filter : undefined;
+      const p = f?.power;
+      const tied = f !== undefined && c.atLeast === undefined && Object.keys(f).length === 3 && JSON.stringify(f.types) === '["Creature"]' && f.controller === 'you' && p?.op === '>=' && typeof p.value === 'object' && JSON.stringify(p.value) === JSON.stringify({ q: 'stat', stat: 'power', of: { ref: 'each', filter: { types: ['Creature'], zone: 'battlefield' } }, agg: 'max' });
+      const said = existsPhrase(c.of, c.atLeast, false, st);
+      return tied && said !== null ? alt(said, 'you control the creature with the greatest power or tied for the greatest power') : said;
+    }
     case 'prime': { // std-rx1 (CR 603.4; parser/holes/cond.ts#control): "you control a prime number of lands", a count of permanents you control only
       const q = c.of;
       if (typeof q !== 'object' || q.q !== 'count' || q.of.ref !== 'each' || q.of.filter.controller !== 'you') throw new NoRenderer('a prime number of something other than permanents you control');
@@ -1119,6 +1130,22 @@ function bothSpellsPhrase(of: readonly Condition[], st: RenderState): string | n
     kinds.push(K.np({ ...x.event.spell, stackKind: 'spell' }, st, { det: 'a' }));
   }
   return scope === undefined ? null : `you've cast both ${kinds[0]} and ${kinds[1]} ${scopeWords(scope as never)}`;
+}
+
+/**
+ * pc-keywords-mana-1 (CR 608.2c; parser/holes/cond.ts#control): "you control an Urza's Power-Plant and an Urza's Tower" is the `all` of two existences of permanents
+ * you control, each of one description (no count). Null for anything else.
+ */
+function controlBothPhrase(of: readonly Condition[], st: RenderState): string | null {
+  if (of.length !== 2) return null;
+  const parts: string[] = [];
+  for (const x of of) {
+    if (x.cond !== 'exists' || x.atLeast !== undefined || x.of.ref !== 'each') return null;
+    const f = x.of.filter;
+    if (f.controller !== 'you' || (f.zone !== undefined && f.zone !== 'battlefield')) return null;
+    parts.push(K.np(f, st, { det: 'a', noController: true }));
+  }
+  return `you control ${parts[0]} and ${parts[1]}`;
 }
 
 /**
@@ -1708,6 +1735,11 @@ function compareIdiom(c: Extract<Condition, { cond: 'compare' }>, st: RenderStat
     }
     // FAST4 T24: "you gained life this turn" is gaining one or more life this turn (CR 119.3, 119.9; the controller's own count, statics/match.ts)
     case 'zoneSize': {
+      // pc-players-2 (CR 402.1, 608.2c; parser/holes/cond.ts#playerMoreThanYou): "that player has more cards in hand than you": one player's hand against yours
+      if (left.zone === 'hand' && c.op === '>' && typeof right === 'object' && right.q === 'zoneSize' && right.zone === 'hand' && right.of.ref === 'you' && left.of.ref !== 'you' && left.of.ref !== 'each') {
+        const who = K.player(left.of, st, 'subject');
+        return `${who.text} ${who.person === 'sg' ? 'has' : 'have'} more cards in hand than you`;
+      }
       if (num === null || left.zone === 'battlefield' || (c.op !== '>=' && c.op !== '<=' && c.op !== '==' && !(c.op === '<' && left.zone === 'hand'))) return null;
       const zone = left.zone === 'exile' ? 'exile' : `${K.player(left.of, st, 'possessive').text} ${left.zone}`;
       // FAST5 T62 (CR 402.1): "you have fewer than four cards in hand"
@@ -1846,7 +1878,9 @@ function compareIdiom(c: Extract<Condition, { cond: 'compare' }>, st: RenderStat
       // std-lci (CR 119.1, 102.1): "you have the most life or are tied for most life": no opponent has more life than you
       if (left.lifeVs !== undefined) {
         const l = left.lifeVs;
-        if (left.sizeVs !== undefined || l.op !== '>' || l.than.ref !== 'you' || left.of.ref !== 'each' || left.of.who !== 'opponent') return null;
+        if (left.sizeVs !== undefined || (l.op !== '>' && l.op !== '<') || l.than.ref !== 'you' || left.of.ref !== 'each' || left.of.who !== 'opponent') return null;
+        // pc-players-1 (CR 119.1, 102.3): "you have more life than an opponent": at least one opponent's life total is less than yours
+        if (l.op === '<') return c.op === '>=' && right === 1 ? 'you have more life than an opponent' : null;
         // Standard round 6 (CR 119.1, 102.3): "an opponent has more life than you": at least one opponent's life total is greater than yours
         if (c.op === '>=' && right === 1) return 'an opponent has more life than you';
         if (c.op !== '==' || right !== 0) return null;

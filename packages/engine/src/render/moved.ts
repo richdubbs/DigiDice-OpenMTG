@@ -65,7 +65,17 @@ function kindOf(step: string, st: RenderState): MovedKind {
 /** "for each creature destroyed this way" (singular) and "creatures destroyed this way" (plural, "the number of ..."): render/qty.ts#countParts. */
 export function movedCountParts(q: Extract<Quantity, { q: 'resultCount' }>, st: RenderState): { plural: string; singular: string } {
   const kind = kindOf(q.step, st);
-  const { words, rest } = wordsOf(kind, q.which!);
+  const { words, rest: withController } = wordsOf(kind, q.which!);
+  // pc-tokens-1 (CR 608.2c, 608.2h, 400.7; Ceaseless Conflict): "for each nontoken creature you controlled that was destroyed this way": the controller as the object
+  // last existed is said by a relative clause (parser/holes/moved-words.ts#RELATIVE_FRONTS); only "you", which the passive words alone cannot say
+  if (withController.controller === 'you') {
+    const { controller: _controller, ...rest } = withController;
+    return {
+      plural: `${movedNp(rest, kind, st, { det: 'none', plural: true })} you controlled that were ${words}`,
+      singular: `${movedNp(rest, kind, st, { det: 'none', forEach: true })} you controlled that was ${words}`,
+    };
+  }
+  const rest = withController;
   return { plural: `${movedNp(rest, kind, st, { det: 'none', plural: true })} ${words}`, singular: `${movedNp(rest, kind, st, { det: 'none', forEach: true })} ${words}` };
 }
 

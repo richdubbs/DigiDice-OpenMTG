@@ -88,6 +88,7 @@ const W_BLOCKING_OR_BLOCKED_BY = [P('blocking or blocked by'), P('blocking or be
 const W_ATTACKING_ALONE = [P("that's attacking alone"), P('that is attacking alone')]; // CLOUD std-msh (CR 506.5)
 // p2-combat-flow-1 (CR 506.3, 508.1b): "target creature without flying that's attacking you" (Hunting Kavu): attacking you, the player (never a planeswalker you control)
 const W_ATTACKING_YOU = [P("that's attacking you"), P('that is attacking you'), P('that are attacking you'), P('attacking you')];
+const W_ATTACKING_YOU_OR_WALKER = [P("that's attacking you or a planeswalker you control"), P('that is attacking you or a planeswalker you control'), P('that are attacking you or a planeswalker you control'), P('attacking you or a planeswalker you control')]; // pc-combat-3
 const W_ATTACKING_OPPONENT = [P("that's attacking one of your opponents"), P('that is attacking one of your opponents'), P('that are attacking one of your opponents')]; // r4-static
 
 /**
@@ -716,6 +717,9 @@ function playerOfSharing(ctx: HoleCtx, pos: number): Frag[] {
       const w = e >= 0 ? phraseAt(ctx, e, P('with')) : -1;
       if (w < 0) continue;
       for (const o of ctx.call('Obj', w)) out.push({ end: o.end, frag: { sharesWith: { with: o.value as never, quality } }, ...(o.flags ? { flags: o.flags } : {}) });
+      // pc-keywords-mana-2 (CR 903.3d, 903.3e, 205.3m; Path of Ancestry): "shares a creature type with your commander": a commander you own (either one with two), the set form of
+      // `sharesWith` ("some object of it", rules/filter.ts) over the commander wherever it is (the command zone most of the time, CR 903.6); no commander, no match
+      for (const c of yourCommanderAt(ctx, w)) if (c.number === 'singular') out.push({ end: c.end, frag: { sharesWith: { with: { ref: 'each', filter: { ...c.filter, zone: ['battlefield', 'command', 'stack', 'exile', 'hand', 'graveyard', 'library'] } }, quality } } });
     }
   }
   return out;
@@ -751,7 +755,8 @@ const W_ONE_OR_MORE = P('one or more'); // std-rx28
 const W_OR_PLAYER = P('or player'); // std-rx28
 
 /** The keys an item of "that are ..." may carry: kinds of card or permanent only (the head word "cards" adds `isCard`, which the outer noun phrase already says). */
-const ARE_ITEM_KEYS = new Set(['types', 'subtypes', 'allTypes', 'anyOf', 'isCard']);
+// p2-pt-3 (CR 111.1): and tokens, "creatures you control that are Zombies and/or tokens" (a token is a kind of permanent here)
+const ARE_ITEM_KEYS = new Set(['types', 'subtypes', 'allTypes', 'anyOf', 'isCard', 'token']);
 const W_AN_ADVENTURE = P('an adventure');
 const W_ARE_SEPS = [P(', and/or'), P('and/or'), P(', and'), P(', or'), P('or'), P(',')];
 
@@ -1041,6 +1046,8 @@ export function postModAt(ctx: HoleCtx, pos: number): Frag[] {
   for (const ws of W_ATTACKING_OPPONENT) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: 'opponent' } } }); }
   // p2-combat-flow-1 (CR 506.3, 508.1b): "that's attacking you": attacking the player you (rules/filter.ts reads the defender as a player, as above)
   for (const ws of W_ATTACKING_YOU) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: 'you' } } }); }
+  // pc-combat-3 (CR 506.3, 508.1b; Soul Snare): "target creature that's attacking you or a planeswalker you control": attacking you, or a planeswalker you control
+  for (const ws of W_ATTACKING_YOU_OR_WALKER) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: 'you', orPlaneswalker: true } } }); }
   // CLOUD std-misc (CR 105.2; Ancient Cornucopia): "a spell that's one or more colors" is a spell that is not colorless
   if (ths >= 0) { const oc = phraseAt(ctx, ths, W_ONE_OR_MORE_COLORS); if (oc >= 0) out.push({ end: oc, frag: { colorless: false } }); }
   // Cloud std-eoe (CR 202.3): "with mana value of the chosen quality": the parity an earlier "Choose odd or even." of the same ability chose (parser/lower/links.ts)

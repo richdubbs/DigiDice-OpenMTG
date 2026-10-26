@@ -1,0 +1,82 @@
+[
+  {
+    "id": "sta.pcs1.group.have.basept",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} have base power and toughness {pt:BasePT}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Non-Ooze creatures have base power and toughness 3/3."
+      },
+      {
+        "text": "Creatures you control have base power and toughness 1/1."
+      }
+    ],
+    "counterExamples": [
+      "Non-Ooze creatures have base power 3.",
+      "Non-Ooze creatures get +3/+3.",
+      "Non-Ooze creatures have base power and toughness 3/3 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.pcs1.kw.equip.less.if",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2f",
+      "CR 602.2b"
+    ],
+    "pattern": "equip {c:Cost} . this ability costs {m:ManaCost} less to activate if {q:Cond}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": "$c",
+      "costChange": {
+        "kind": "reduce",
+        "mana": "$m"
+      },
+      "costChangeIf": "$q"
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "consumes": [
+      "if"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Equip {4}. This ability costs {2} less to activate if you have one or fewer cards in hand."
+      },
+      {
+        "text": "Equip {3}. This ability costs {1} less to activate if an opponent controls three or more lands."
+      }
+    ],
+    "counterExamples": [
+      "Equip {4}. This ability costs {2} more to activate if you have one or fewer cards in hand.",
+      "Equip {4}. This ability costs {2} less to activate unless you have one or fewer cards in hand.",
+      "Equip {4}. This ability costs {2} less to cast if you have one or fewer cards in hand."
+    ]
+  }
+]

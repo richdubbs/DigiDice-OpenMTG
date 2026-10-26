@@ -182,9 +182,11 @@ describe('std-rh parser, lowering and renderer support', () => {
     expect(fullyAutomated(f), JSON.stringify(f.diagnostics)).toBe(true);
     expect(JSON.stringify(f.abilities)).toContain('"not":{"is":{"ref":"bound","name":"chosen"}}');
   });
-  it('CR 608.2c, 701.20e: after an optional put of the one card a reveal stopped at, "all cards revealed this way that weren\'t put onto the battlefield" includes that card when it was not put: not "the rest", so manual (fail closed)', () => {
+  it('CR 608.2c, 701.20e: after an optional put of the one card a reveal stopped at, "all cards revealed this way that weren\'t put onto the battlefield" includes that card when it was not put: not "the rest"; pc-zones-1 reads it as every revealed card still in the library (mentions.ts#revealedNotPutOf), which that card is when it was not put', () => {
     const f = face('Sorcery', "Reveal cards from the top of your library until you reveal a nonland permanent card. You may put that card onto the battlefield. Then put all cards revealed this way that weren't put onto the battlefield on the bottom of your library in a random order.");
-    expect(fullyAutomated(f)).toBe(false);
+    expect(fullyAutomated(f), JSON.stringify(f.gate)).toBe(true);
+    // (the move reads the revealed cards still in the library, not "the rest" without the card the reveal stopped at)
+    expect(JSON.stringify(f.abilities)).toContain('"filter":{"is":{"ref":"bound","name":"revealed"},"zone":"library"}');
   });
   it('CR 702.167c, 607.2a: "the exiled card used to craft it" is the craft link of the back face', () => {
     const c = parseCard({ name: 'Example Relic // Example Golem', layout: 'transform', mana_cost: '', type_line: 'Artifact // Artifact Creature — Golem', oracle_text: '', colors: [], keywords: [],

@@ -251,12 +251,15 @@ function roleIn(ev: EventPattern, role: EventRole): { filter?: ObjectFilter; pla
       // std-combat-1 (CR 508.1, 508.5; the parser's rule, parser/lower/scope.ts#eventMentions): "Whenever an opponent attacks with creatures, ... that opponent": the
       // clause names the attacking player and not whom the creatures attack, so the player is that opponent and the defender no antecedent
       if (ev.defender === undefined && ev.attacker?.controller === 'opponent' && ev.attacker.self === undefined && (role === 'player' || role === 'defender')) return role === 'player' ? ply('opponent', 'player') : null;
+      // pc-combat-1 (CR 508.1, 303.4; the Curses, parser/lower/scope.ts#eventMentions): "Whenever a player attacks enchanted player with one or more creatures, ... they": the attacking player
+      if (typeof ev.defender === 'object' && (ev.defender as { ref?: string }).ref === 'enchantedPlayer' && ev.attacker?.controller === undefined && ev.attacker?.self === undefined && (role === 'player' || role === 'defender')) return role === 'player' ? ply('any', 'player') : null;
       if (role === 'defender' || role === 'player') return typeof ev.defender === 'string' || ev.defender === undefined ? ply(ev.defender as PlayerPred | undefined, 'defender') : null;
       return null;
     case 'blocks':
       if (role === 'blocker' || role === 'subject') return obj(ev.blocker, 'blocker');
       return role === 'attacker' || role === 'object' ? obj(ev.attacker, 'attacker') : null;
     case 'attacksUnblocked': // std-rx35 (CR 509.1h)
+      if (role === 'player' && ev.defender !== undefined && ev.attacker?.controller !== undefined && ev.attacker.self === undefined) return ply(ev.attacker.controller, 'player'); // pc-combat-4: "that player" is the opponent whose creatures attack
       return role === 'attacker' || role === 'subject' ? obj(ev.attacker, 'attacker') : null;
     case 'becomesBlocked':
       if (role === 'attacker' || role === 'subject') return obj(ev.attacker, 'attacker');
@@ -1251,7 +1254,7 @@ function playerInner(ref: PlayerRef | PlayerPred, st: RenderState, form: Form): 
         return anaphor(info, form, st, key);
       }
       return sg(poss(alt('the chosen player', 'the player you chose')));
-    case 'active': return sg(poss(alt('the active player', 'that player', 'the attacking player'))); // Standard round 4, r4-trig: "the attacking player" (CR 506.2)
+    case 'active': return sg(poss(alt('the active player', 'that player', 'the attacking player', 'that attacking player'))); // Standard round 4, r4-trig: "the attacking player" (CR 506.2)
     case 'defending': return sg(poss(alt('the defending player', 'defending player')));
     case 'iterating': return known ? later() : sg(poss(alt('that player', 'the player')));
     case 'otherOpponents': {
@@ -1277,6 +1280,8 @@ function playerInner(ref: PlayerRef | PlayerPred, st: RenderState, form: Form): 
     }
     case 'eachWho': { // std-combat-1 (CR 608.2c, 508.1b): "each opponent who attacked you or a planeswalker you control this turn" (parser/holes/player.ts), that form only
       const d = ref.did;
+      // pc-players-3 (CR 119.3): "each opponent / player who lost life this turn"
+      if (form !== 'possessive' && ref.scope === 'turn' && JSON.stringify(d) === '{"ev":"life","change":"loss"}') return sg(`each ${ref.who === 'opponent' ? 'opponent' : 'player'} who lost life this turn`);
       if (form === 'possessive' || ref.who !== 'opponent' || ref.scope !== 'turn' || d.ev !== 'attacks' || JSON.stringify(d) !== '{"ev":"attacks","defender":"you","orPlaneswalker":true}') {
         throw new NoRenderer('ref:eachWho other than "each opponent who attacked you or a planeswalker you control this turn"');
       }
@@ -1328,6 +1333,15 @@ export function eachSubjects(filter: ObjectFilter, st: RenderState): { text: str
 }
 
 function eachSubjectWordings(filter: ObjectFilter, st: RenderState, np: (f: ObjectFilter, o: Parameters<typeof K.np>[2]) => string): { text: string; plural: boolean }[] {
+  // pc-exile-play-2 (CR 601.2i, 707.10; Maelstrom Nexus, Wild-Magic Sorcerer): "The first spell you cast each turn has cascade", "The first spell you cast from exile each turn ..."
+  if (filter.firstCast !== undefined && filter.controller === 'you' && filter.zone === 'stack' && filter.not === undefined) {
+    const keys = Object.keys(filter).filter((k) => (filter as Record<string, unknown>)[k] !== undefined).sort().join();
+    const turn = alt('each turn', 'in each turn'); // (family first-cast-each-turn)
+    if (filter.firstCast === 'turn' && keys === 'controller,firstCast,zone') return [{ text: `the first spell you cast ${turn}`, plural: false }];
+    if (filter.firstCast === 'turnFromZone' && keys === 'castFrom,controller,firstCast,zone' && filter.castFrom === 'exile') {
+      return [{ text: `the first spell you cast from exile ${turn}`, plural: false }];
+    }
+  }
   // FAST4 T24: "Artifact spells you cast have convoke", "Each noncreature spell you cast has conspire" (CR 601.2a, 707.10)
   const cast = spellsYouCast(filter);
   // std-rx7 (family type-list): the singular after "each" also lists the types with "and", "Each instant and sorcery spell you cast has casualty 1" (Silverquill)

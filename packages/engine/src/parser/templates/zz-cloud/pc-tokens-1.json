@@ -1,0 +1,243 @@
+[
+  {
+    "id": "eff.pctokens1.forEach.explores",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.44a",
+      "CR 608.2f"
+    ],
+    "pattern": "each {f:Filter} explores",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "action",
+          "action": "explore",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "each"
+            }
+          },
+          "subject": {
+            "ref": "bound",
+            "name": "each"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "action:explore"
+    ],
+    "examples": [
+      {
+        "text": "Each Elf you control explores."
+      },
+      {
+        "text": "Each creature target opponent controls explores."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control explores twice.",
+      "Target creature you control explores.",
+      "Each Elf you control explores, then draws a card."
+    ]
+  },
+  {
+    "id": "eff.pctokens1.token.you.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "you create ( a | an ) {t:TokenDesc} for each {f:Filter}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      },
+      "token": "$t"
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all artifacts. You create a 1/1 green Saproling creature token for each artifact destroyed this way."
+      },
+      {
+        "text": "You create a 2/2 black Zombie creature token for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all artifacts. You create two 1/1 green Saproling creature tokens for each artifact destroyed this way.",
+      "Target opponent creates a 1/1 green Saproling creature token for each artifact you control.",
+      "You create a 1/1 green Saproling creature token for each artifact you control unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.pctokens1.eachOpponentMay.create",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 111.1"
+    ],
+    "pattern": "each opponent may create {n:Qty} {t:TokenDesc}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n",
+          "token": "$t"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent may create two 1/1 white Soldier creature tokens."
+      },
+      {
+        "text": "Draw a card. Each opponent may create a Food token."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent creates two 1/1 white Soldier creature tokens.",
+      "You may create two 1/1 white Soldier creature tokens.",
+      "Each player may create a Food token."
+    ]
+  },
+  {
+    "id": "eff.pctokens1.forEachOpponentWhoDoes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "for each opponent who does , {e:Effects}",
+    "build": {
+      "op": "repeat",
+      "times": {
+        "q": "resultCount",
+        "step": "",
+        "$step": "previous",
+        "$who": "each"
+      },
+      "do": "$e"
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent may create a Food token. For each opponent who does, you create a Food token."
+      },
+      {
+        "text": "Each opponent may create two 1/1 white Soldier creature tokens. For each opponent who does, create two 1/1 white Soldier creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent may create a Food token. For each opponent who doesn't, you create a Food token.",
+      "Draw a card. For each opponent who does, you create a Food token.",
+      "Each opponent may create a Food token. For each player who does, you create a Food token."
+    ]
+  },
+  {
+    "id": "eff.pctokens1.eachOpponentMay.drawAndCreate",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 121.1",
+      "CR 111.1"
+    ],
+    "pattern": "each opponent may draw {n:Qty} card[s] and create {m:Qty} {t:TokenDesc}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n"
+        },
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$m",
+          "token": "$t"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent may draw a card and create a 2/2 black Zombie creature token."
+      },
+      {
+        "text": "Draw a card. Each opponent may draw two cards and create a Food token."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent draws a card and creates a 2/2 black Zombie creature token.",
+      "You may draw a card and create a 2/2 black Zombie creature token.",
+      "Each opponent may create a 2/2 black Zombie creature token and draw a card."
+    ]
+  }
+]

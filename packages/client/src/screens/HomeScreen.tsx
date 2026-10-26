@@ -47,9 +47,10 @@ export function HomeScreen() {
         <p className="home-tagline">A free, open-source fan implementation of the Magic: The Gathering rules. Hot-seat play for two, or play against the computer.</p>
       </div>
       <nav className="home-menu" aria-label="Main menu">
-        <button type="button" className="button-primary home-play" onClick={() => nav.go({ screen: 'newGame' })}>
+        {/* Over a game (its Menu opened Home): the game goes on, so Play returns to it instead of starting another. */}
+        <button type="button" className="button-primary home-play" onClick={() => (nav.inGame ? nav.toGame() : nav.go({ screen: 'newGame' }))}>
           <PlayIcon size={26} />
-          Play
+          {nav.inGame ? 'Back to game' : 'Play'}
         </button>
         <div className="home-secondary">
           {SECONDARY.map((m) => (

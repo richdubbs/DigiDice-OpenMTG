@@ -356,7 +356,21 @@ function mayCopyThoseSpellsGain(s: StepOf<'may'>, st: RenderState): Clause | nul
   return acting('you', sub, sub, { standalone: true, closesScope: true });
 }
 
+/**
+ * pc-keywords-mana-3 (CR 701.55; parser/templates/zz-cloud/pc-keywords-mana-3.json): "Target opponent faces a villainous choice -- They lose 3 life, or you draw two cards.":
+ * the `may` of `villainous`, a choice between its two lists of instructions (`do`, then `otherwise`) made by `who`. The options are said as instructions of their own.
+ */
+function villainousOptions(s: StepOf<'may'>, st: RenderState): string {
+  if (s.otherwise === undefined || s.otherwise.length === 0 || s.as !== undefined || s.anyOne === true) throw new NoRenderer('a villainous choice needs two options and nothing else');
+  return `${K.steps(s.do, st, { nested: true })}, or ${K.steps(s.otherwise, st, { nested: true })}`;
+}
+
 const mayClause = (s: StepOf<'may'>, st: RenderState): Clause => {
+  if (s.villainous === true) {
+    const who = K.player(s.who, st, 'subject');
+    const text = `${who.text} faces a villainous choice -- ${villainousOptions(s, st)}`;
+    return acting(playerKey(s.who) ?? 'x', text, text, { standalone: true, closesScope: true });
+  }
   const folded = tapOrUntap(s, st) ?? unlessHas(s, st) ?? eachMayShuffleThenDraw(s, st) ?? unlessHasPower(s, st) ?? mayImpulse(s, st) ?? mayCopyThoseSpellsGain(s, st);
   if (folded) return folded;
   const key = playerKey(s.who);
@@ -386,7 +400,9 @@ const mayClause = (s: StepOf<'may'>, st: RenderState): Clause => {
   // r4-moved: an option of yours that begins with a search of your library is also "If you search your library this way" later (render/cond.ts)
   const first = s.do[0] as { op?: string; who?: { ref?: string }; zone?: string; owner?: unknown; alsoZones?: unknown } | undefined;
   const searched = key === 'you' && s.otherwise === undefined && first?.op === 'search' && first.who?.ref === 'you' && first.zone === 'library' && first.owner === undefined && first.alsoZones === undefined;
-  bind(st, s.as, { nouns: [], plural: false, actor: key, optional: true, ...(searched ? { searched: true as const } : {}), ...(anyWho !== undefined ? { anyOne: true as const } : {}) });
+  // pc-tokens-1 (CR 608.2d, 101.4): the players of a group who did it are counted by "For each opponent who does, ..." (#repeat)
+  const eachMay = s.who.ref === 'each' && 'who' in s.who && (s.who.who === 'opponent' || s.who.who === 'player') && s.anyOne !== true && s.otherwise === undefined ? s.who.who : undefined;
+  bind(st, s.as, { nouns: [], plural: false, actor: key, optional: true, ...(searched ? { searched: true as const } : {}), ...(anyWho !== undefined ? { anyOne: true as const } : {}), ...(eachMay !== undefined ? { eachMay } : {}) });
   let standalone = false;
   if (s.otherwise && s.otherwise.length > 0) {
     const other = K.steps(s.otherwise, st, { actor: key });
@@ -1061,6 +1077,20 @@ export const CLAUSES_FLOW = {
     const controlled = controlledReturnedEach(s, st);
     if (controlled !== null) return controlled;
     const punisher = eachUnlessThey(s, st); // std-mkm: before the body binds "that player" in `st`
+    // pc-keywords-mana-3 (CR 701.55): "Each opponent faces a villainous choice -- That player discards a card, or you draw a card."
+    const only0 = s.do.length === 1 ? s.do[0] : undefined;
+    if (only0?.op === 'may' && only0.villainous === true && JSON.stringify(only0.who) === JSON.stringify({ ref: 'bound', name: s.as }) && over.ref === 'each' && 'who' in over && (over.who === 'opponent' || over.who === 'player')) {
+      return plain(`each ${thing} faces a villainous choice -- ${villainousOptions(only0, st)}`, { standalone: true });
+    }
+    // pc-keywords-mana-3 (CR 701.55, 119.3): "Each opponent who lost 3 or more life this turn faces a villainous choice -- ..." (a guard on the iteration player)
+    const self0 = JSON.stringify({ ref: 'bound', name: s.as });
+    if (only0?.op === 'if' && only0.else === undefined && only0.intervening === undefined && only0.then.length === 1 && over.ref === 'each' && 'who' in over && over.who === 'opponent'
+      && only0.cond.cond === 'compare' && only0.cond.op === '>=' && typeof only0.cond.right === 'number' && JSON.stringify(only0.cond.left) === JSON.stringify({ q: 'lifeLostThisTurn', of: { ref: 'bound', name: s.as } })) {
+      const inner = only0.then[0]!;
+      if (inner.op === 'may' && inner.villainous === true && JSON.stringify(inner.who) === self0) {
+        return plain(`each ${thing} who lost ${only0.cond.right} or more life this turn faces a villainous choice -- ${villainousOptions(inner, st)}`, { standalone: true });
+      }
+    }
     const body = K.steps(s.do, st);
     // std-rx32 (CR 608.2f): what every iteration bound under `gather` is several objects after the loop ("those tokens")
     const gathered = s.gather !== undefined ? st.info.get(`b:${s.gather}`) : undefined;
@@ -1114,6 +1144,11 @@ export const CLAUSES_FLOW = {
       const who = spec?.players?.who === 'opponent' ? alt(said, 'those opponents') : said;
       const what = K.np({ ...t.didNot.which, zone: 'hand' }, st, { det: 'a', noZone: true }); // a discarded card: a card in a hand (the zone is not printed)
       return plain(`for each of ${who} who ${alt("didn't", 'did not')} discard ${what}, ${body}`, { standalone: true, leadThen: true });
+    }
+    // pc-tokens-1 (CR 608.2c, 608.2d): the number of players of the group of the `may` right before who did it, "For each opponent who does, create a Treasure token."
+    if (typeof t === 'object' && t.q === 'resultCount' && t.which === undefined && t.maxPerOwner === undefined) {
+      const group = st.info.get(`b:${t.step}`)?.eachMay;
+      if (group !== undefined) return plain(`for each ${group} who does, ${body}`, { standalone: true, leadThen: true });
     }
     const each = typeof s.times === 'object' ? countPartsOf(s.times, st) : null;
     if (each !== null) return plain(alt(`do the following ${n}: ${body}`, `repeat the following process ${n}: ${body}`, `for each ${each.singular}, ${body}`), { standalone: true, leadThen: true });

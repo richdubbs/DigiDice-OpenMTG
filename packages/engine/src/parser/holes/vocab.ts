@@ -80,6 +80,13 @@ function build(lex: Lexicon, keywords: ParseOptions['keywords']): Vocab {
       if (!subtypes.has(plural)) subtypes.set(plural, { name: st.singular, plural: true, cls: st.class });
     }
     maxWords = Math.max(maxWords, singular.split(' ').length, plural.split(' ').length);
+    // pc-keywords-mana-1 (CR 205.3i): the land type "Urza's" (Urza's Mine, Urza's Tower, Urza's Power-Plant) has a possessive: two tokens for the tokenizer ("urza", "'s"),
+    // as in a keyword name below
+    const split = singular.replace(/(\w)'s\b/g, "$1 's");
+    if (split !== singular) {
+      subtypes.set(split, subtypes.get(singular)!);
+      maxWords = Math.max(maxWords, split.split(' ').length);
+    }
   }
 
   const colors = new Map<string, Color>(CR_COLORS);

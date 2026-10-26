@@ -113,7 +113,7 @@ export const sacrifice: StepHandler<Step<'sacrifice'>> = (cx, st) => {
  * that match the filter (CR 701.21a). With no more such permanents than the count, there is no choice: all of them (CR 608.2d).
  */
 /** The value forms of the sacrificeChoice op this module runs (model/cap-walk.ts emits them; model/capabilities.ts registers them). */
-export const OP_FORMS: readonly string[] = ['op:sacrificeChoice.keepEachType', 'op:sacrificeChoice.cantAs', 'op:sacrificeChoice.groupChooser', 'op:sacrificeChoice.perPlayerCount', 'op:sacrificeChoice.exploit', 'op:counter.toIf', 'op:counter.sourceEffect'];
+export const OP_FORMS: readonly string[] = ['op:sacrificeChoice.keepEachType', 'op:sacrificeChoice.keepTypes', 'op:sacrificeChoice.keepFilter', 'op:sacrificeChoice.chooser', 'op:sacrificeChoice.cantAs', 'op:sacrificeChoice.groupChooser', 'op:sacrificeChoice.perPlayerCount', 'op:sacrificeChoice.exploit', 'op:counter.toIf', 'op:counter.sourceEffect'];
 
 /**
  * C6 (CR 608.2e, 101.4): "Each opponent sacrifices a creature with the greatest power among creatures they control": while one player of a group (`who` is
@@ -123,7 +123,7 @@ export const OP_FORMS: readonly string[] = ['op:sacrificeChoice.keepEachType', '
  * half of each player's own creatures): it is read for each player in turn (capability `op:sacrificeChoice.perPlayerCount` when it reads that player).
  */
 function asChooser<T>(cx: Parameters<StepHandler>[0], st: Step<'sacrificeChoice'>, p: PlayerId, read: () => T): T {
-  if (st.who.ref !== 'each') return read();
+  if (st.who.ref !== 'each' && st.who.ref !== 'eachWho') return read(); // pc-players-3: and "each opponent who lost life this turn"
   const before = cx.iterating;
   cx.iterating = p;
   try {
@@ -153,12 +153,17 @@ function keepEachType(cx: Parameters<StepHandler>[0], st: Step<'sacrificeChoice'
   const chosen: ObjHandle[] = [];
   for (const p of players) {
     const mine = asChooser(cx, st, p, () => findObjects(g.s, { ...st.filter, zone: 'battlefield' }, filterCtxOf(cx))).filter((o) => controllerOf(g.s, o) === p && !o.phasedOut);
+    // pc-players-1 (CR 205.2a, 608.2d): the kept ones are chosen among `keepFilter` when it is given (Tragic Arrogance: lands may be chosen, never sacrificed), by `chooser` when
+    // it is given (you choose for each player); only for `keepTypes` when given (Cataclysmic Gearhulk: not battles)
+    const keepPool = st.keepFilter === undefined ? mine
+      : asChooser(cx, st, p, () => findObjects(g.s, { ...st.keepFilter!, zone: 'battlefield' }, filterCtxOf(cx))).filter((o) => controllerOf(g.s, o) === p && !o.phasedOut);
+    const chooser = st.chooser === undefined ? p : (resolvePlayers(cx, st.chooser)[0] ?? p);
     const kept = new Set<ObjectId>();
-    for (const type of PERMANENT_TYPES) {
-      const pool = mine.filter((o) => charsOfObject(g.s, o).types.includes(type)).map((o) => o.id);
+    for (const type of st.keepTypes ?? PERMANENT_TYPES) {
+      const pool = keepPool.filter((o) => charsOfObject(g.s, o).types.includes(type as (typeof PERMANENT_TYPES)[number])).map((o) => o.id);
       if (pool.length <= k) { for (const id of pool) kept.add(id); continue; }
       const ans = g.choose({
-        kind: 'chooseObjects', player: p, prompt: `Choose ${k === 1 ? `a ${type.toLowerCase()}` : `${k} ${type.toLowerCase()} permanents`} you control to keep (the rest of your permanents are sacrificed).`,
+        kind: 'chooseObjects', player: chooser, prompt: `Choose ${k === 1 ? `${/^[aeiou]/i.test(type) ? 'an' : 'a'} ${type.toLowerCase()}` : `${k} ${type.toLowerCase()} permanents`} ${chooser === p ? 'you control' : `${g.player(p).name} controls`} to keep (the rest of ${chooser === p ? 'your' : 'their'} permanents are sacrificed).`,
         options: pool, min: k, max: k, rules: ['CR 110.4', 'CR 608.2d', 'CR 608.2e'],
       });
       for (const id of ans.ids) kept.add(id);
@@ -174,7 +179,7 @@ export const sacrificeChoice: StepHandler<Step<'sacrificeChoice'>> = (cx, st) =>
   const g = cx.g;
   if (st.mode === 'keepEachType') return keepEachType(cx, st);
   // r5-refs: a count that reads the choosing player of a group is read for each of them (asChooser); any other count is one number for all of them
-  const perPlayer = st.mode !== 'all' && st.who.ref === 'each' && JSON.stringify(st.count).includes('"ref":"iterating"');
+  const perPlayer = st.mode !== 'all' && (st.who.ref === 'each' || st.who.ref === 'eachWho') && JSON.stringify(st.count).includes('"ref":"iterating"');
   const n = st.mode === 'all' ? Infinity : perPlayer ? 1 : evalQty(cx, st.count);
   // C6 review (CR 101.3): with no count to fall short of, nobody "can't" (the name is bound on every path, design 3.1 rule 6)
   const noneCant = (): StepResult => { if (st.cantAs !== undefined) cx.bindings.set(st.cantAs, { objects: [], players: [], snapshots: {} }); return NOTHING; };

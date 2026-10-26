@@ -68,6 +68,9 @@ export function batchOccurrences(patterns: readonly EventPattern[], matched: rea
   // players is one occurrence for each player attacked, with the creatures attacking that player (a player named as the defender, never "or a planeswalker")
   // (TriggerDef.wholeBatch, "whenever one or more of your opponents are attacked", keeps the whole batch instead: triggers/collect.ts, CR 603.2c)
   const attacked = patterns.length > 0 && patterns.every((p) => p.ev === 'attacks' && p.defender !== undefined && p.defender !== 'planeswalker' && p.defender !== 'battle' && p.orPlaneswalker !== true);
+  // pc-combat-1 (CR 603.2c, 508.5): ... and "one or more creatures attack one of your opponents or a planeswalker they control": one occurrence for each opponent
+  // attacked, directly or through a planeswalker they control (the `defendingPlayer` of the attack)
+  const attackedOrWalker = patterns.length > 0 && patterns.every((p) => p.ev === 'attacks' && p.defender === 'opponent' && p.orPlaneswalker === true);
   // M12 audit (CR 603.2c, 510.2): "whenever one or more creatures you control deal combat damage to a player" is one occurrence for each player dealt damage, with
   // the damage dealt to that player, so "that player" is that one player (the Professional Face-Breaker and Popular Entertainer rulings: damage to two players
   // at once triggers it twice); a pattern that also names a permanent ("a player or planeswalker") keeps the whole batch, and "to one or more players" is
@@ -85,11 +88,11 @@ export function batchOccurrences(patterns: readonly EventPattern[], matched: rea
     }
     return [...byRoll.values()];
   }
-  if (patterns.length === 0 || (!actions && !attacked && !damaged && !patterns.every((p) => p.ev === 'counters'))) return [matched as SemEvent[]];
+  if (patterns.length === 0 || (!actions && !attacked && !attackedOrWalker && !damaged && !patterns.every((p) => p.ev === 'counters'))) return [matched as SemEvent[]];
   const out: SemEvent[][] = [];
   const byRecipient = new Map<string, SemEvent[]>();
   for (const e of matched) {
-    const key = JSON.stringify(attacked ? e.roles.defender ?? null : damaged ? e.roles.recipient ?? null : actions || e.data['onPlayer'] === true ? e.roles.player ?? null : e.roles.subject ?? null);
+    const key = JSON.stringify(attackedOrWalker ? e.data['defendingPlayer'] ?? null : attacked ? e.roles.defender ?? null : damaged ? e.roles.recipient ?? null : actions || e.data['onPlayer'] === true ? e.roles.player ?? null : e.roles.subject ?? null);
     let group = byRecipient.get(key);
     if (group === undefined) {
       group = [];
@@ -114,6 +117,11 @@ function occurrenceAmount(patterns: readonly EventPattern[]): NumberCmp | undefi
 
 /** The pattern each event of a batch is matched with: without the occurrence's amount (above), else the pattern itself. */
 export function perEventPattern(p: EventPattern, patterns: readonly EventPattern[]): EventPattern {
+  // pc-combat-3 (CR 508.1a-b, 603.2c): the count of "an opponent attacks you with two or more creatures" is of the attackers at THAT player (each attack event is matched without it)
+  if (attackedCount(patterns) !== undefined && p.ev === 'attacks') {
+    const { count: _count, ...rest } = p;
+    return rest;
+  }
   if (p.ev !== 'damage' || occurrenceAmount(patterns) === undefined) return p;
   const { amount: _amount, ...rest } = p;
   return rest;
@@ -124,4 +132,21 @@ export function byOccurrenceAmount(patterns: readonly EventPattern[], groups: Se
   const want = occurrenceAmount(patterns);
   if (want === undefined) return groups;
   return groups.filter((group) => cmpMatches(want, group.reduce((t, e) => t + (typeof e.data['amount'] === 'number' ? e.data['amount'] : 0), 0)));
+}
+
+/**
+ * pc-combat-3 (CR 508.1a-b, 603.2c; Everett K. Ross): "Whenever an opponent attacks you with two or more creatures" counts the creatures attacking that player, not all the
+ * attackers of the declaration (one attacking you and one attacking your planeswalker are not two). Only a lone attacks pattern with a player defender (no planeswalker) and a
+ * count above one; the occurrences are the attackers at each player attacked (batchOccurrences), and the count is of the occurrence.
+ */
+function attackedCount(patterns: readonly EventPattern[]): NumberCmp | undefined {
+  const p = patterns[0];
+  if (patterns.length !== 1 || p?.ev !== 'attacks' || p.count === undefined || p.defender === undefined || p.defender === 'planeswalker' || p.defender === 'battle' || p.orPlaneswalker === true) return undefined;
+  return typeof p.count.value === 'number' && p.count.value > 1 ? p.count : undefined;
+}
+
+/** The occurrences of an attack batch that have enough attackers at the player attacked (above); every occurrence for any other pattern. */
+export function byAttackedCount(patterns: readonly EventPattern[], groups: SemEvent[][]): SemEvent[][] {
+  const want = attackedCount(patterns);
+  return want === undefined ? groups : groups.filter((g) => cmpMatches(want, g.length));
 }

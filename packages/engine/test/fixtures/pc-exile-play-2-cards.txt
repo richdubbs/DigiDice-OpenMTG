@@ -1,0 +1,4 @@
+# pc-exile-play-2 (precon lane pc-exile-play; test/cloud/pc-exile-play-2, golden pc-exile-play-2-review.json): the first spell cast each turn has cascade, spells from among those nonland cards
+Maelstrom Nexus
+Wild-Magic Sorcerer
+Fevered Suspicion

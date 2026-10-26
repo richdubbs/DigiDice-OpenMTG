@@ -30,7 +30,7 @@ import { installHistoryCounter, wasCastKept } from '../statics/match';
 import { partyCreatureOf, partySize, type PartyCreature } from '../statics/party';
 import { compareNumbers, playerPredMatches } from '../rules/predicates';
 import type { ExecCtx } from './api';
-import { commanderCastsOf } from '../statics/commander';
+import { commanderCastsOf, commandersOf, identityManaColors } from '../statics/commander';
 import { stationsUsingToughness } from '../statics/hooks';
 import { charsThroughLayer7b } from '../statics/layers';
 import { PERMANENT_TYPES } from '../statics/subtypes';
@@ -379,6 +379,8 @@ const QTY: QtyTable = {
   // was ever cast from the command zone), which is the right number there too. M11-1 counts the casts (CommanderRec.casts).
   // CMD2 (CR 903.8): `of`, another player's casts ("for each time they've cast a commander from the command zone this game")
   commanderCasts: (cx, q) => { if (q.of === undefined) return commanderCastsOf(cx.g.s, cx.controller); const p = onePlayer(cx, q.of, 'a count of commander casts'); return p === undefined ? undefined : commanderCastsOf(cx.g.s, p); },
+  // pc-statics-2 (CR 903.4, 903.4f): the colors of the controller's commanders' identity; 0 without a commander; unknown identity is not guessed
+  commanderIdentitySize: (cx) => { if (commandersOf(cx.g.s, cx.controller).length === 0) return undefined; const c = identityManaColors(cx.g.s, cx.controller); return c === 'unknown' ? undefined : c.length; },
   eventAmount: (cx) => cx.event?.amount,
   // CLOUD std-misc (CR 608.2c-d, 607.2d): the number chosen by the linked "Choose a number ..." of this resolution (or remembered by the source)
   chosenNumber: (cx, q) => {

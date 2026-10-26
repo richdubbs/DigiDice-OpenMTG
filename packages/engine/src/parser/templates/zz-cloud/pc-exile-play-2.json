@@ -1,0 +1,107 @@
+[
+  {
+    "id": "sta.pcep2.firstSpell.cascade",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 702.85a",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "the first spell you cast ( each turn | in each turn ) has cascade",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "firstCast": "turn",
+          "controller": "you",
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "cascade",
+              "text": "cascade"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first spell you cast in each turn has cascade."
+      },
+      {
+        "text": "When ~ enters, you gain 11 life.\nThe first spell you cast in each turn has cascade."
+      }
+    ],
+    "counterExamples": [
+      "The second spell you cast in each turn has cascade.",
+      "The first spell you cast in each turn has flash.",
+      "The first spell your opponents cast in each turn has cascade."
+    ]
+  },
+  {
+    "id": "sta.pcep2.firstSpell.fromZone.cascade",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 702.85a",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "the first spell you cast from exile ( each turn | in each turn ) has cascade",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "firstCast": "turnFromZone",
+          "castFrom": "exile",
+          "controller": "you",
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "cascade",
+              "text": "cascade"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first spell you cast from exile in each turn has cascade."
+      },
+      {
+        "text": "When ~ enters, you gain 11 life.\nThe first spell you cast from exile in each turn has cascade."
+      }
+    ],
+    "counterExamples": [
+      "The first spell you cast from exile has cascade.",
+      "The first spell you cast from exile in each turn has trample.",
+      "The first spell you cast from your graveyard in each turn has cascade."
+    ]
+  }
+]

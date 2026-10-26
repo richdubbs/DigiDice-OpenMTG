@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScreenHeader } from '../app/ScreenHeader';
 import { useNav } from '../app/nav';
 import { DEFAULT_FORMAT, commanderCount, deckNotes, unplayableReason } from '../game/config';
-import { DeckOptions } from '../game/DeckOptions';
+import { DeckChooser } from '../game/DeckOptions';
 import type { GameDeck } from '../game/services';
 import { MAX_NAME_LENGTH, settingsStore, type SettingsStore } from '../settings/settings';
 import { useSettings } from '../settings/useSettings';
@@ -193,13 +193,7 @@ export function JoinScreen({ services = defaultOnlineServices, settings = settin
               Your name
               <input type="text" value={name} maxLength={MAX_NAME_LENGTH} disabled={joining} onChange={(e) => setName(e.target.value)} />
             </label>
-            <label>
-              Deck
-              <select value={deckId} onChange={(e) => setDeckId(e.target.value)} disabled={decks === null || joining}>
-                <option value="">{decks === null ? 'Loading decks…' : 'Choose a deck…'}</option>
-                <DeckOptions decks={decks ?? []} />
-              </select>
-            </label>
+            <DeckChooser decks={decks ?? []} value={deckId} onChange={setDeckId} disabled={decks === null || joining} placeholder={decks === null ? 'Loading decks…' : 'Choose a deck…'} />
             <label>
               Host address and join code
               <input

@@ -1,0 +1,269 @@
+[
+  {
+    "id": "eff.pczones1.put.ownersLibrary.fourthFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.3",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} into its owner 's library fourth from the top",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 4
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target creature into its owner's library fourth from the top. Scry 1."
+      },
+      {
+        "text": "Put target artifact an opponent controls into its owner's library fourth from the top. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature into its owner's graveyard fourth from the top.",
+      "Put target creature into your library fourth from the top.",
+      "Put target creature into its owner's library fourth from the bottom."
+    ]
+  },
+  {
+    "id": "eff.pczones1.put.ownersLibrary.beneathTopX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.3",
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 107.3"
+    ],
+    "pattern": "put {o:Obj} into its owner 's library just beneath the top {n:Qty} cards of that library",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": {
+            "q": "math",
+            "op": "+",
+            "args": [
+              "$n",
+              1
+            ]
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target creature into its owner's library just beneath the top X cards of that library."
+      },
+      {
+        "text": "Put target artifact into its owner's library just beneath the top three cards of that library. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature into its owner's graveyard just beneath the top X cards of that library.",
+      "Put target creature into your library just beneath the top X cards of that library.",
+      "Put target creature into its owner's library just beneath the bottom X cards of that library."
+    ]
+  },
+  {
+    "id": "eff.pczones1.dig.revealUntil.putAllRevealedHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 608.2c",
+      "CR 401.1"
+    ],
+    "pattern": "reveal cards from the top of your library until you reveal {f:DiscardDesc} , then put all cards revealed this way into your hand",
+    "build": [
+      {
+        "op": "revealUntil",
+        "who": {
+          "ref": "you"
+        },
+        "filter": "$f",
+        "as": "hit",
+        "revealed": "revealed"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "until",
+      "then",
+      "all",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal an artifact card, then put all cards revealed this way into your hand."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal a creature card, then put all cards revealed this way into your hand. Scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal an artifact card, then put all cards revealed this way into your graveyard.",
+      "Reveal cards from the top of your library until you reveal an artifact card, then put that card into your hand.",
+      "Reveal cards from the top of your library until you reveal an artifact card, then put all cards revealed this way on the bottom of your library."
+    ]
+  },
+  {
+    "id": "eff.pczones1.dig.upTo.hand.rest.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 401.1"
+    ],
+    "pattern": "put up to {n:Qty} {f:CardsDesc} from among {g:Seen} into your hand and {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. Put up to two artifact cards from among them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Reveal the top four cards of your library. Put up to two land cards from among them into your hand and the rest of the revealed cards into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. Put up to two artifact cards from among them onto the battlefield and the rest into your graveyard.",
+      "Look at the top five cards of your library. Put up to two artifact cards from among them into your hand and the rest on the bottom of your library.",
+      "Look at the top five cards of your library. Put two artifact cards from among them into your hand and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.pczones1.player.shufflesIntoLibraryThenDraws",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "the owner of {o:Obj} shuffles it into their library , then draws {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "ownerOf",
+            "object": "$o"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        }
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        },
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "The owner of target creature shuffles it into their library, then draws a card."
+      },
+      {
+        "text": "The owner of target artifact shuffles it into their library, then draws three cards."
+      }
+    ],
+    "counterExamples": [
+      "Target player shuffles target creature into their library, then draws a card.",
+      "The owner of target creature shuffles it into their library, then discards a card.",
+      "The owner of target creature shuffles it into their library, then you draw a card."
+    ]
+  }
+]

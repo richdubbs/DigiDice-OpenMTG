@@ -710,6 +710,13 @@
         "castFrom": {
           "$ref": "#/definitions/ZoneName"
         },
+        "firstCast": {
+          "type": "string",
+          "enum": [
+            "turn",
+            "turnFromZone"
+          ]
+        },
         "manaCostHasX": {
           "type": "boolean"
         },
@@ -1181,7 +1188,10 @@
             },
             "scope": {
               "type": "string",
-              "const": "turn"
+              "enum": [
+                "turn",
+                "attacking"
+              ]
             }
           },
           "required": [
@@ -2750,6 +2760,19 @@
           "properties": {
             "q": {
               "type": "string",
+              "const": "commanderIdentitySize"
+            }
+          },
+          "required": [
+            "q"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "q": {
+              "type": "string",
               "const": "ask"
             },
             "text": {
@@ -3039,6 +3062,9 @@
             },
             "attacker": {
               "$ref": "#/definitions/ObjectFilter"
+            },
+            "defender": {
+              "$ref": "#/definitions/PlayerPred"
             }
           },
           "required": [
@@ -5337,6 +5363,10 @@
               "type": "boolean",
               "const": true
             },
+            "villainous": {
+              "type": "boolean",
+              "const": true
+            },
             "as": {
               "$ref": "#/definitions/Name"
             },
@@ -6206,6 +6236,10 @@
               "type": "boolean",
               "const": true
             },
+            "shareLandType": {
+              "type": "boolean",
+              "const": true
+            },
             "as": {
               "$ref": "#/definitions/Name"
             },
@@ -6557,6 +6591,18 @@
               "type": "boolean",
               "const": true
             },
+            "keepTypes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "keepFilter": {
+              "$ref": "#/definitions/ObjectFilter"
+            },
+            "chooser": {
+              "$ref": "#/definitions/PlayerRef"
+            },
             "as": {
               "$ref": "#/definitions/Name"
             },
@@ -6651,6 +6697,10 @@
             },
             "count": {
               "$ref": "#/definitions/Quantity"
+            },
+            "exceptReplaced": {
+              "type": "boolean",
+              "const": true
             },
             "tapped": {
               "type": "boolean"
@@ -9767,6 +9817,12 @@
         "cantBeCountered": {
           "type": "boolean",
           "const": true
+        },
+        "entersWith": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CounterSpec"
+          }
         }
       },
       "required": [
@@ -9875,6 +9931,9 @@
             "kind"
           ],
           "additionalProperties": false
+        },
+        "costChangeIf": {
+          "$ref": "#/definitions/Condition"
         }
       },
       "required": [
@@ -10582,6 +10641,9 @@
                 "copiedCounters": {
                   "type": "boolean",
                   "const": true
+                },
+                "duration": {
+                  "$ref": "#/definitions/Duration"
                 }
               },
               "required": [
@@ -10869,6 +10931,10 @@
           }
         },
         "anyManaType": {
+          "type": "boolean",
+          "const": true
+        },
+        "anyManaColor": {
           "type": "boolean",
           "const": true
         },

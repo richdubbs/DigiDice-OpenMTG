@@ -100,8 +100,8 @@ describe('C1 guard G9 (design 6.8): examples and counter-examples', () => {
     expect(lord.templatesUsed.filter((id) => id.startsWith('eff.c1.'))).toEqual([]);
   });
   // std-rx26: "has convoke / improvise / affinity for <filter>" is a nextSpell rider `keyword` now (CR 601.2a, 601.2f); any other keyword still has no rider
-  it('the effect shapes that need a new engine mechanic stay manual: riders on the next spell you cast other than "can\'t be countered" and a cost keyword (no such rider)', () => {
-    expect(fullyAutomated(parsedWith('The next spell you cast this turn has cascade.'))).toBe(false);
+  it('the effect shapes that need a new engine mechanic stay manual: riders on the next spell you cast other than "can\'t be countered" and a cost keyword (no such rider; cascade and storm are riders since pc-exile-play-3)', () => {
+    expect(fullyAutomated(parsedWith('The next spell you cast this turn has flash.'))).toBe(false);
   });
   it('"the next spell you cast this turn has convoke" is automated now (std-rx26 nextSpell rider `keyword`, CR 601.2a, 702.51a)', () => {
     expect(fullyAutomated(parsedWith('The next spell you cast this turn has convoke.'))).toBe(true);

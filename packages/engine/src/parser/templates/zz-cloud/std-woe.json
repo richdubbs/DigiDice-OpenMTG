@@ -693,7 +693,7 @@
       "Choose an option.",
       "Choose target opponent."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {

@@ -1,0 +1,397 @@
+[
+  {
+    "id": "eff.pcc1.energy.amountEqual",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.14",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} get[s] an amount of {e} equal to {n:Qty}",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "energy",
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "You get an amount of {E} equal to the number of Elves you control."
+      },
+      {
+        "text": "Target player gets an amount of {E} equal to the highest toughness among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "You get an amount of {E} for each Elf you control.",
+      "You get an amount of mana equal to the number of Elves you control.",
+      "You pay an amount of {E} equal to the number of Elves you control."
+    ]
+  },
+  {
+    "id": "rep.pcc1.others.enter.nAdditionalCounters.plural",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6"
+    ],
+    "pattern": "{f:Filter} enter with {n:Count} additional {k:CounterKind} counters on them",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Other Elves you control enter with two additional +1/+1 counters on them."
+      },
+      {
+        "text": "Artifact creatures you control enter with three additional charge counters on them."
+      }
+    ],
+    "counterExamples": [
+      "Other Elves you control enter with two additional +1/+1 counters on it.",
+      "Other Elves you control enter with two +1/+1 counters on them.",
+      "Other Elves you control enter with two additional +1/+1 counters on them for each Goblin you control.",
+      "Other Elves you control enter tapped with two additional +1/+1 counters on them."
+    ]
+  },
+  {
+    "id": "rep.pcc1.others.enters.xAdditionalCounters.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 107.3"
+    ],
+    "pattern": "each {f:Filter} enters with an additional x {k:CounterKind} counters on it , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Each other Elf you control enters with an additional X +1/+1 counters on it, where X is the number of cards in your hand."
+      },
+      {
+        "text": "Each creature you control enters with an additional X charge counters on it, where X is the number of Forests you control."
+      }
+    ],
+    "counterExamples": [
+      "Each other Elf you control enters with an additional X +1/+1 counters on it.",
+      "Each other Elf you control enters with an additional X +1/+1 counters on it, where Y is the number of cards in your hand.",
+      "Each other Elf you control enters with X +1/+1 counters on it, where X is the number of cards in your hand.",
+      "Each other Elf you control enters with an additional X +1/+1 counters on them, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "rep.pcc1.others.enters.numberAdditionalCounters.equal",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 107.3"
+    ],
+    "pattern": "each {f:Filter} enters with a number of additional {k:CounterKind} counters on it equal to {q:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Each other Elf you control enters with a number of additional +1/+1 counters on it equal to the number of cards in your hand."
+      },
+      {
+        "text": "Each creature you control enters with a number of additional charge counters on it equal to ~'s toughness."
+      }
+    ],
+    "counterExamples": [
+      "Each other Elf you control enters with a number of additional +1/+1 counters on it.",
+      "Each other Elf you control enters with a number of +1/+1 counters on it equal to the number of cards in your hand.",
+      "Each other Elf you control enters with a number of additional +1/+1 counters on them equal to the number of cards in your hand.",
+      "Each other Elf you control enters with a number of additional +1/+1 counters on it equal to the number of cards in your hand unless it is blue."
+    ]
+  },
+  {
+    "id": "sta.pcc1.attached.pump.foreach.counterOnSelf.addType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 613.1d",
+      "CR 122.1",
+      "CR 301.5a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each {k:CounterKind} counter on ~ and is (a | an) {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k"
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "$k"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+1 for each charge counter on ~ and is a Rogue in addition to its other types."
+      },
+      {
+        "text": "Equipped creature gets +1/+1 for each oil counter on ~ and is an Elf in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+1 for each charge counter on ~ and is a Rogue.",
+      "Equipped creature gets +1/+1 for each charge counter on ~ and is a Rogue until end of turn.",
+      "Equipped creature gets +1/+1 for each charge counter on it and is a Rogue in addition to its other types.",
+      "Equipped creature gets +1/+1 for each charge counter on ~ and has flying.",
+      "Equipped creature gets +2/+0 for each charge counter on ~, is a Rogue in addition to its other types, and has first strike."
+    ]
+  },
+  {
+    "id": "rep.pcc1.graveyard.others.enters.additionalCounter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 113.6",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6"
+    ],
+    "pattern": "as long as ~ is in your graveyard , each {f:Filter} enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is in your graveyard, each Elf you control enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "As long as ~ is in your graveyard, each artifact creature you control enters with an additional charge counter on it."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is on the battlefield, each Elf you control enters with an additional +1/+1 counter on it.",
+      "As long as ~ is in your graveyard, each Elf you control enters with a +1/+1 counter on it.",
+      "As long as ~ is in a graveyard, each Elf you control enters with an additional +1/+1 counter on it.",
+      "As long as ~ is in your graveyard, each Elf you control enters with an additional +1/+1 counter on them."
+    ]
+  },
+  {
+    "id": "rep.pcc1.self.enters.counters.list4",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.1b",
+      "CR 122.6"
+    ],
+    "pattern": "~ enters with ( a | an ) {k1:CounterKind} counter , ( a | an ) {k2:CounterKind} counter , ( a | an ) {k3:CounterKind} counter , and ( a | an ) {k4:CounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k1",
+                "count": 1
+              },
+              {
+                "kind": "$k2",
+                "count": 1
+              },
+              {
+                "kind": "$k3",
+                "count": 1
+              },
+              {
+                "kind": "$k4",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter, a flying counter, a deathtouch counter, and a shield counter on it."
+      },
+      {
+        "text": "~ enters with a menace counter, a trample counter, a lifelink counter, and a first strike counter on it."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter, a flying counter, a deathtouch counter, or a shield counter on it.",
+      "~ enters with a +1/+1 counter, a flying counter, a deathtouch counter, and a shield counter on target creature.",
+      "~ enters with a +1/+1 counter, a flying counter, a deathtouch counter, and a shield counter on it for each Elf you control.",
+      "Target creature enters with a +1/+1 counter, a flying counter, a deathtouch counter, and a shield counter on it."
+    ]
+  }
+]

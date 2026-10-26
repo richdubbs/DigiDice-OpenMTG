@@ -20,7 +20,7 @@ import type { Color } from '../types/mana';
 import { COLORS, spentAtLeast } from '../types/mana';
 import type { GameObject, GameState, ObjHandle } from '../types/state';
 import type { Chars } from '../rules/characteristics';
-import { commanderCastsOf, isCommander } from './commander';
+import { commanderCastsOf, commandersOf, identityManaColors, isCommander } from './commander';
 import { partyCreatureOf, partySize, type PartyCreature } from './party';
 import { readLink } from './links';
 import { LAND_TYPES, PERMANENT_TYPES, subtypeClass } from './subtypes';
@@ -81,6 +81,7 @@ export const STATIC_FILTER_FIELDS: ReadonlySet<string> = new Set([
   'blockingObject', 'blockedByObject', 'blockingOrBlockedBy', // p2-combat-flow-1: CR 509.1g-h, 506.4, as rules/filter.ts reads them
   'attackedThisTurn', // FAST5X E28: "creatures that attacked this turn", "as long as ~ attacked this turn" (CR 508.1, 611.3a), as rules/filter.ts reads it
   'attachedWith', // trek-9 (CR 301.5, 303.4), as rules/filter.ts reads it
+  'firstCast', // pc-exile-play-2: "the first spell you cast each turn" (CR 601.2i), as rules/filter.ts reads it
 ]);
 
 /**
@@ -109,6 +110,7 @@ export const STATIC_QUANTITY_KINDS: ReadonlySet<string> = new Set([
   'costCount', // std-costs-1 (CR 601.2b, 601.2f): "for each permanent sacrificed this way" (the number announced for an optional cost)
   'kickCount', // M6-0 (CR 702.33d-e); faceUpX (CR 702.37f) is read by the interpreter only until M6-3 needs it in a static ability
   'commanderCasts', // M11-0 (CR 903.8): Commander's Insignia
+  'commanderIdentitySize', // pc-statics-2 (CR 903.4): the colors of the commanders' identity (an activated ability's life cost, actions/activate.ts#abilityPlan)
   'speed', // FAST5X-4 (CR 702.179f): "where X is your speed"
   'unspentMana', // FAST5X E19 (CR 106.4): "as long as you have six or more unspent mana"
   'happenedCount', // CLOUD std-ecl (CR 611.3a): "where X is the number of creatures that entered the battlefield under your control this turn"
@@ -350,6 +352,7 @@ function match(cx: EvalCx, id: ObjectId, f: ObjectFilter): boolean {
   if (f.stackKind !== undefined && !stackKindOk(o, f.stackKind)) return false;
   // std-rf (CR 601.2a, 707.10): the zone a spell was cast from, as rules/filter.ts reads it (a copy was never cast, so it has none)
   if (f.castFrom !== undefined && (o.stack?.castFrom ?? o.cast?.from) !== f.castFrom) return false;
+  if (f.firstCast !== undefined && !(o.zone === 'stack' && (f.firstCast === 'turn' ? o.stack?.castOrdinal?.turn : o.stack?.castOrdinal?.fromZone) === 1)) return false; // pc-exile-play-2 (CR 601.2i), as rules/filter.ts#firstCastOk
   // FAST5X E28 (CR 508.1, 611.3a): declared as an attacker this turn, as this object (CR 400.7), read from the turn's history like rules/history.ts
   // #attackedThisTurn (statics may not import rules/history, design 5.4; rules/characteristics.ts keys its cache on the history when a definition reads it)
   if (f.attackedThisTurn !== undefined && attackedThisTurnIn(cx.s, id) !== f.attackedThisTurn) return false;
@@ -397,7 +400,9 @@ function attackingMatches(cx: EvalCx, id: ObjectId, want: boolean | { defender: 
     if (cx.s.players.some((p) => p.id === d)) return playerMatches(cx, want.defender, d);
     return cx.all.get(d)?.types.includes('Planeswalker') === true && playerMatches(cx, want.defender, a.defendingPlayer);
   }
-  return a !== undefined && a.defendingPlayer !== undefined && playerMatches(cx, want.defender, a.defendingPlayer);
+  // pc-counters-3 (CR 506.3, 508.1b; review of Sentry Bot): "attacking you" is the player, as rules/filter.ts tests it: an attacker of a planeswalker or a battle is not attacking its controller
+  const d = a?.defender;
+  return a !== undefined && typeof d === 'string' && cx.s.players.some((p) => p.id === d) && playerMatches(cx, want.defender, d);
 }
 
 /** FAST4 T33: the characteristics of the permanents attached to a permanent (CR 301.5, 303.4), as this evaluation sees them. */
@@ -481,11 +486,13 @@ export function playersOf(cx: EvalCx, ref: PlayerRef | ObjRef): PlayerId[] {
     case 'linked': return readLink(objOf(cx, cx.source), ref.link)?.players ?? [];
     case 'defending': return cx.defending !== undefined ? [cx.defending] : []; // FAST3 T16: only an attack question names one (CR 506.2, 508.1c)
     case 'enchantedPlayer': return attachedPlayer(cx.s, cx.source !== null ? cx.s.objects[cx.source] : undefined); // std-rr (CR 303.4, 702.5a)
-    case 'eachWho': { // std-combat-1 (CR 608.2c, 611.3a): the players of `who` who did it in the scope's history, read now (rules/history.ts#countHistory)
+    case 'eachWho': { // pc-combat-1: `attacking` is read as the effect resolves (effects/refs.ts), never by a static
+      if (ref.scope === 'attacking') return [];
+      // std-combat-1 (CR 608.2c, 611.3a): the players of `who` who did it in the scope's history, read now (rules/history.ts#countHistory)
       if (historyCounter === null) throw new Error('statics/match.ts: no history counter is installed (effects/eval.ts installs rules/history.ts#countHistory)');
       const count = historyCounter;
       const env = { you: cx.controller, ...(cx.source !== null ? { sourceId: cx.source } : {}), resolvePlayers: (r: PlayerRef) => playersOf(cx, r), qty: (q: Quantity) => evalQuantity(cx, q) };
-      return livePlayers(cx).filter((p) => (ref.who === 'player' || p !== cx.controller) && count(cx.s, ref.did, ref.scope, { ref: 'fixed', players: [p] }, env) > 0);
+      return livePlayers(cx).filter((p) => (ref.who === 'player' || p !== cx.controller) && count(cx.s, ref.did, (ref.scope as 'turn'), { ref: 'fixed', players: [p] }, env) > 0);
     }
     case 'seat': { // M12-1 (m12 design D6): the next / previous player in turn order still in the game (CR 101.4, 103.1), from `of` (you by default)
       const from = ref.of !== undefined ? playersOf(cx, ref.of) : [cx.controller];
@@ -641,13 +648,20 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
     }
     case 'counters': {
       if (isPlayerRef(q.on)) {
-        const p = playerOf(cx, q.on);
-        const ps = cx.s.players.find((x) => x.id === p);
-        if (ps === undefined) return undefined;
-        const bag = ps.counters;
-        // std-rx24 (CR 122.1f): a player's poison counters are kept apart (`PlayerState.poison`), as effects/eval.ts#counters reads them
-        if (q.kind === 'poison') return ps.poison;
-        return q.kind === 'any' ? ps.poison + Object.values(bag).reduce((a, b) => a + b, 0) : bag[q.kind] ?? 0;
+        // pc-tokens-1 (CR 122.1f, 102.3; review fix): "for each poison counter your opponents have" is the counters of every player the reference names added together
+        // (effects/eval.ts#counters sums too); with none named the count is undefined
+        const named = playersOf(cx, q.on);
+        if (named.length === 0) return undefined;
+        let total = 0;
+        for (const id of named) {
+          const ps = cx.s.players.find((x) => x.id === id);
+          if (ps === undefined) return undefined;
+          const bag = ps.counters;
+          // std-rx24 (CR 122.1f): a player's poison counters are kept apart (`PlayerState.poison`), as effects/eval.ts#counters reads them
+          if (q.kind === 'poison') total += ps.poison;
+          else total += q.kind === 'any' ? ps.poison + Object.values(bag).reduce((a, b) => a + b, 0) : bag[q.kind] ?? 0;
+        }
+        return total;
       }
       const ids = objectsOf(cx, q.on);
       let t = 0;
@@ -761,6 +775,7 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
       const paid = o?.zone === 'stack' ? o.stack?.costsPaid : o?.cast?.costsPaid;
       return paid?.counts?.[q.name] ?? 0;
     }
+    case 'commanderIdentitySize': { if (commandersOf(cx.s, cx.controller).length === 0) return undefined; const c = identityManaColors(cx.s, cx.controller); return c === 'unknown' ? undefined : c.length; } // pc-statics-2 (CR 903.4, 903.4f)
     case 'commanderCasts': return q.of === undefined ? commanderCastsOf(cx.s, cx.controller) : undefined; // M11-0, CR 903.8; CMD2: another player's count is not read here (fail closed)
     default: return undefined;
   }

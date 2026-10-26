@@ -51,7 +51,8 @@ export interface TargetEnv {
  *   - absent (`undefined`): read X exactly as the resolution reads it (`effects/eval.ts`: the stack object's X, else the X its source was cast with, CR 107.3m,
  *     else 0). The CR 608.2b re-check uses this.
  */
-export type AnnouncedX = number | 'unannounced' | { upTo: number };
+/** `spell`: the check is for casting a spell with X (pc-statics-1: only then is the source judged by a larger X, rules/targets.ts#targetOptions), never for an ability. */
+export type AnnouncedX = number | 'unannounced' | { upTo: number; spell?: true };
 
 /** The X a count (`Count`: min, max, a division total, a group limit) is read with: before X is announced, X = 0 (the announcement that always exists, CR 107.3b). */
 export const countX = (x: AnnouncedX | undefined): number => (typeof x === 'number' ? x : 0);
@@ -152,22 +153,34 @@ export function targetOptions(s: GameState, spec: TargetSpec, controller: Player
   });
   const out: TargetOptions = { objects: [], players: [] };
   const kind = spec.kind;
+  // pc-statics-1 (CR 601.2b-c, 202.3e): while X is not announced the source's mana value is not known (X counts as 0 off the stack): a target protected from "mana value N or
+  // less" only at X = 0 is still a legal choice for some X, so the source (a spell, never the permanent behind an ability) is also judged with the largest X that can
+  // be paid (`upTo`, else a large one); X = 0, judged first, covers "N or greater"
+  const xRelaxed = typeof xs === 'object' && xs.spell === true;
+  const spellAtX = typeof xs === 'number' && SPELL_X_TRIAL.on; // a trial X of a spell whose target filter reads X (programHasTargets)
+  const targetable = (state: GameState, id: ObjectId, who: PlayerId, source?: ObjectId): boolean => {
+    if (isTargetable(state, id, who, source)) return true;
+    const src = (xRelaxed || spellAtX) && source !== undefined ? state.objects[source] : undefined;
+    if (src === undefined || src.kind === 'ability' || src.zone === 'battlefield' || !(charsOfObject(state, src).manaCost ?? []).some((c) => c.kind === 'variable' && c.name === 'X')) return false;
+    const big: GameState = { ...state, objects: { ...state.objects, [source!]: { ...src, zone: 'stack', stack: { ...(src.stack ?? { kind: 'spell', face: src.face, targets: [], costsPaid: {}, caster: who }), x: typeof xs === 'number' ? xs : (xs as { upTo: number }).upTo } as typeof src.stack } } };
+    return isTargetable(big, id, who, source);
+  };
   if (kind === 'object' || kind === 'objectOrPlayer') {
     for (const o of findObjects(s, filter ?? {}, ctx)) {
       if (o.kind === 'ability' || o.id === stackId || o.phasedOut) continue; // CR 702.26b: a phased-out permanent is treated as though it doesn't exist
-      if (isTargetable(s, o.id, controller, sourceId)) out.objects.push(o.id);
+      if (targetable(s, o.id, controller, sourceId)) out.objects.push(o.id);
     }
   }
   if (kind === 'anyTarget') {
     // CR 115.4: a creature, planeswalker or battle (on the battlefield) or a player; the filter narrows it further.
     for (const o of findObjects(s, { ...(filter ?? {}), zone: 'battlefield' }, ctx)) {
       if (o.id === stackId || o.phasedOut || !charsOfObject(s, o).types.some((t) => ANY_TARGET_TYPES.includes(t))) continue; // CR 702.26b
-      if (isTargetable(s, o.id, controller, sourceId)) out.objects.push(o.id);
+      if (targetable(s, o.id, controller, sourceId)) out.objects.push(o.id);
     }
   }
   if (kind === 'spell' || kind === 'stackObject') {
     for (const o of findObjects(s, { ...(filter ?? {}), zone: 'stack' }, ctx)) {
-      if (o.kind !== 'ability' && o.id !== stackId && isTargetable(s, o.id, controller, sourceId)) out.objects.push(o.id); // CR 115.5: not itself
+      if (o.kind !== 'ability' && o.id !== stackId && targetable(s, o.id, controller, sourceId)) out.objects.push(o.id); // CR 115.5: not itself
     }
   }
   if (kind === 'ability' || kind === 'stackObject') {
@@ -185,7 +198,7 @@ export function targetOptions(s: GameState, spec: TargetSpec, controller: Player
       if (who === 'you' && p.id !== controller) continue;
       if (who === 'opponent' && p.id === controller) continue;
       if (refPlayers && !refPlayers.includes(p.id)) continue;
-      if (!isTargetable(s, p.id, controller, sourceId)) continue; // CR 115.1, 702.11b: a player can't be targeted by a spell the effect forbids (Leyline of Sanctity)
+      if (!targetable(s, p.id, controller, sourceId)) continue; // CR 115.1, 702.11b: a player can't be targeted by a spell the effect forbids (Leyline of Sanctity)
       out.players.push(p.id);
     }
   }
@@ -366,6 +379,9 @@ export function targetRange(s: GameState, spec: TargetSpec, available: TargetOpt
 
 const MAX_LEAVES = 2000;
 
+/** pc-statics-1: set while programHasTargets tries each X of a spell being cast, so targetOptions reads the source's mana value at that X (CR 601.2b, 202.3e). */
+const SPELL_X_TRIAL = { on: false };
+
 /** Candidates of a spec minus the ones its `distinctFrom` forbids (CR 115.3: "another target" differs from the targets of the listed specs). */
 export function candidatesFor(
   s: GameState, spec: TargetSpec, controller: PlayerId, sourceId: ObjectId | undefined, stackId: ObjectId | undefined, chosen: ReadonlyMap<string, readonly TargetChoice[]>, x?: AnnouncedX,
@@ -471,9 +487,13 @@ function searchSpecs(
 export function programHasTargets(
   s: GameState, program: EffectProgram, controller: PlayerId, sourceId?: ObjectId, stackId?: ObjectId, required: (spec: TargetSpec) => boolean = (sp) => sp.onlyIf === undefined, x?: AnnouncedX,
 ): boolean {
-  if (typeof x === 'object') {
-    if (!programFiltersMentionX(program)) return programHasTargets(s, program, controller, sourceId, stackId, required, 'unannounced');
-    for (let n = 0; n <= x.upTo; n++) if (programHasTargets(s, program, controller, sourceId, stackId, required, n)) return true;
+  // pc-statics-1: a program whose filters don't read X keeps the bound ({ upTo }) for targetOptions, which judges an X spell by the largest X payable
+  if (typeof x === 'object' && programFiltersMentionX(program)) {
+    const before = SPELL_X_TRIAL.on;
+    SPELL_X_TRIAL.on = x.spell === true;
+    try {
+      for (let n = 0; n <= x.upTo; n++) if (programHasTargets(s, program, controller, sourceId, stackId, required, n)) return true;
+    } finally { SPELL_X_TRIAL.on = before; }
     return false;
   }
   const own = specsFeasible(s, program.targets, required, controller, sourceId, stackId, x);

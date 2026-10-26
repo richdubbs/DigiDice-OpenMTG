@@ -30,7 +30,7 @@ import { costUseDenial } from '../rules/cant';
 import { abilityCostModsFor, modifyMana, type CostModHit } from '../statics/costmods';
 import { charsViewOf } from '../statics/rule-sources';
 import { staticAnyColorForAbility } from '../statics/play-permits';
-import { evalCondition } from '../statics/match';
+import { evalCondition, evalQuantity } from '../statics/match';
 import { payPlan, resolveAnyCounts, type Paid } from '../rules/pay';
 import { applyOptions, payableWith, tapForManaOption } from '../rules/payment-options';
 import { emitCrime } from '../rules/crime';
@@ -58,7 +58,12 @@ function abilityPlan(s: GameState, def: ActivatedAbilityDef, x: CostX, source: O
   // std-rx32 (CR 609.4b): "you may spend mana as though it were mana of any color to activate abilities of creatures you control" (its controller activates it, CR 602.2)
   const controller = s.objects[source]?.controller;
   const anyColor = controller !== undefined && staticAnyColorForAbility(s, controller, source);
-  const plan: CostPlan = { ...planFromCostDef(def.cost, x), spend: { kind: 'ability', id: source, ...(keyword !== undefined ? { keyword } : {}), ...(anyColor ? { anyColor: true as const } : {}) } };
+  // pc-statics-2 (CR 118.3, 602.2b, 903.4): a life payment of a computed amount ("Pay life equal to the number of colors in your commanders' color identity") is
+  // worked out as the total cost is determined; an amount that cannot be read stays computed, and the plan then holds a manual part, so the ability is not offered
+  const cost = def.cost?.other?.some((p) => p.kind === 'payLife' && typeof p.amount === 'object') && controller !== undefined
+    ? { ...def.cost, other: def.cost.other.map((p) => { if (p.kind !== 'payLife' || typeof p.amount !== 'object') return p; const v = evalQuantity({ s, all: charsViewOf(s), source, controller }, p.amount); return v === undefined ? p : { ...p, amount: v }; }) }
+    : def.cost;
+  const plan: CostPlan = { ...planFromCostDef(cost, x), spend: { kind: 'ability', id: source, ...(keyword !== undefined ? { keyword } : {}), ...(anyColor ? { anyColor: true as const } : {}) } };
   if (def.reducedByManaCost !== true || plan.mana.length === 0 || !enteredThisTurn(s, source)) return plan;
   const src = s.objects[source];
   const printed = src ? charsOfObject(s, src).manaCost : null;

@@ -229,9 +229,12 @@
         "name": "Junk Token", "types": ["Artifact"], "subtypes": ["Junk"], "colors": [],
         "text": "{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.",
         "abilities": [
-          {"kind": "manual", "shape": "activated", "text": "{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.",
-           "reason": "\"You may play that card this turn\" (a permission tied to the exiled card) and the sorcery timing of a manual ability are not automated yet",
-           "cost": {"tap": true, "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]}}
+          {"kind": "activated", "text": "{T}, Sacrifice this token: Exile the top card of your library. You may play that card this turn. Activate only as a sorcery.", "sorcerySpeed": true,
+           "cost": {"tap": true, "other": [{"kind": "sacrifice", "filter": {}, "count": 1, "self": true}]},
+           "effect": {"targets": [], "steps": [
+             {"op": "move", "what": {"ref": "topCards", "player": {"ref": "you"}, "count": 1}, "to": {"zone": "exile"}, "as": "impulse"},
+             {"op": "effect", "duration": {"d": "endOfTurn"}, "effects": [{"s": "permit", "who": {"ref": "you"}, "action": "play", "of": {"is": {"ref": "bound", "name": "impulse"}}}]}
+           ]}}
         ]
       }]
     },

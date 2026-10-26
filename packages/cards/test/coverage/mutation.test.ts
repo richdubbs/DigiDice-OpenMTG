@@ -18,6 +18,11 @@ describe('WP25 G9: effect examples are parsed as spell text, and a template with
     expect(exampleTypeLines({ kind: 'rider' }, 'Destroy target artifact. It can\'t be regenerated.')).toEqual(['Instant', 'Sorcery']);
     expect(exampleTypeLines({ kind: 'trigger' }, 'When ~ enters, draw a card.')).toEqual(['Creature — Spirit']);
   });
+  it('CR 301.5, 303.4: a static example about the equipped creature is an Equipment\'s, one about the enchanted creature an Aura\'s', () => {
+    expect(exampleTypeLines({ kind: 'static' }, 'Equipped creature gets +1/+1 for each charge counter on ~ and is a Rogue in addition to its other types.')).toEqual(['Artifact — Equipment']);
+    expect(exampleTypeLines({ kind: 'static' }, 'Enchanted creature gets +1/+1 and has flying.')).toEqual(['Enchantment — Aura']);
+    expect(exampleTypeLines({ kind: 'static' }, 'Creatures you control get +1/+0.')).toEqual(['Enchantment']);
+  });
   it('CR 611.2a: "Enchanted creature gets +2/+1 until end of turn." is checked as a spell, so its near misses are tried (the duration dropped among them)', () => {
     const engine = createCoverageEngine({ templates: [...BOOTSTRAP_TEMPLATES.filter((t) => t.id !== 'eff.pump'), enchanted] });
     const r = nearMissMutations([enchanted], engine);

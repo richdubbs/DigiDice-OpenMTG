@@ -1,0 +1,194 @@
+[
+  {
+    "id": "eff.pcep4.cast.spellsFromGroup.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast spells from among {o:Group} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of target opponent's library. You may cast spells from among those cards this turn."
+      },
+      {
+        "text": "Exile the top three cards of your library. You may cast spells from among them until your next end step."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of target opponent's library. You may cast spells from among those cards.",
+      "Exile the top two cards of target opponent's library. You may cast spells from among those cards this turn without paying their mana costs.",
+      "Exile the top two cards of target opponent's library. You may cast creature spells from among those cards this turn."
+    ]
+  },
+  {
+    "id": "rid.pcep4.castThisWay.lifeCost.thatSpell",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 202.3",
+      "CR 601.2b",
+      "CR 601.3",
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 400.7"
+    ],
+    "pattern": "if you cast a spell this way , pay life equal to that spell 's mana value rather than ( pay | paying ) its mana cost",
+    "build": {
+      "$patchPrevious": {
+        "@oneOf": [
+          {
+            "@require": {
+              "effects.0.s": "permit",
+              "effects.0.action": "lookAt",
+              "effects.1.s": "permit",
+              "effects.1.action": "play",
+              "effects.1.fromTop": true,
+              "effects.2": null
+            },
+            "effects": [
+              {},
+              {
+                "costChange": {
+                  "@new": {
+                    "kind": "set",
+                    "life": "manaValue"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "@require": {
+              "effects.0.s": "permit",
+              "effects.1": null
+            },
+            "effects": [
+              {
+                "costChange": {
+                  "@new": {
+                    "kind": "set",
+                    "life": "manaValue"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "if",
+      "this way",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top four cards of target player's library. You may play those cards this turn. If you cast a spell this way, pay life equal to that spell's mana value rather than pay its mana cost."
+      },
+      {
+        "text": "Exile the top three cards of your library. You may cast spells from among them this turn. If you cast a spell this way, pay life equal to that spell's mana value rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top four cards of target player's library. You may play those cards this turn. If you cast a spell this way, pay life equal to that spell's power rather than pay its mana cost.",
+      "Destroy target creature. If you cast a spell this way, pay life equal to that spell's mana value rather than pay its mana cost.",
+      "Exile the top four cards of target player's library. You may play those cards this turn. If you cast a spell this way, you lose life equal to that spell's mana value."
+    ]
+  },
+  {
+    "id": "eff.pcep4.cast.anyNumber.linked.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9",
+      "CR 406.1"
+    ],
+    "pattern": "cast any number of cards exiled with ( ~ | it ) without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target nonland card from an opponent's graveyard.\n{2}, {T}, Sacrifice ~: Cast any number of cards exiled with ~ without paying their mana costs."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top card of defending player's library.\nWhenever ~ deals combat damage to a player, cast any number of cards exiled with it without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target nonland card from an opponent's graveyard.\n{2}, {T}, Sacrifice ~: Cast a card exiled with ~ without paying its mana cost.",
+      "When ~ enters, exile target nonland card from an opponent's graveyard.\n{2}, {T}, Sacrifice ~: Cast any number of cards exiled with ~.",
+      "When ~ enters, exile target nonland card from an opponent's graveyard.\n{2}, {T}, Sacrifice ~: Cast any number of cards in exile without paying their mana costs."
+    ]
+  }
+]

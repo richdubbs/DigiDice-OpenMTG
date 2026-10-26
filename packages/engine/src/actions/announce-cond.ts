@@ -34,6 +34,7 @@ export const ANNOUNCE_READABLE: readonly string[] = [
   'announce.cond.all', 'announce.cond.any', 'announce.cond.not', 'announce.cond.compare', 'announce.cond.exists', 'announce.cond.matches', 'announce.cond.turnOf',
   'announce.cond.wasCast', 'announce.cond.ask',
   'announce.qty.X', 'announce.qty.count', 'announce.qty.life', 'announce.qty.zoneSize', 'announce.qty.math', 'announce.qty.counters',
+  'announce.qty.kickCount', // pc-zones-3 (CR 702.33d, 601.2c, 603.3d): "up to X target creature cards ..., where X is the number of times ~ was kicked", the kicks of the source's cast record
   'announce.qty.eventAmount', // r3-choose (CR 603.3d): the amount of the event a triggered ability is put on the stack for (AnnounceEnv.eventAmount)
   'announce.qty.modesChosen', // Standard round 3, r3-trig (CR 700.2, 603.3c): the modes chosen for the spell of a cast trigger (AnnounceEnv.modesChosen)
   'announce.qty.startingLife', // FAST5 T60 (CR 103.4, 602.5b): "activate only if you have at least 7 life more than your starting life total"
@@ -104,6 +105,8 @@ export interface AnnounceEnv {
    * X then needs SOME X from 0 to it to have targets (actions/announce.ts#announcedX); without it the filter is only relaxed.
    */
   xMax?: number;
+  /** pc-statics-1: the check is for casting a spell (not an ability) whose X is bounded by `xMax` (rules/targets.ts#AnnouncedX). */
+  castingSpell?: true;
   /** The zone the spell is being cast from. */
   castFrom?: CastOrigin; // trek-11: or 'outside' (CR 400.11)
   /**
@@ -167,6 +170,8 @@ export function announceQty(env: AnnounceEnv, q: Quantity): number | undefined {
   const ctx = filterCtxOf(env);
   switch (q.q) {
     case 'X': return env.x;
+    // pc-zones-3 (CR 702.33d): the kicks of the spell being announced, or of the cast record of the permanent whose triggered ability puts its targets on the stack
+    case 'kickCount': return q.name !== undefined ? undefined : env.costsPaid.kicked ?? env.s.objects[env.sourceId]?.cast?.costsPaid.kicked ?? env.s.lki[env.sourceId]?.object.cast?.costsPaid.kicked ?? 0; // (the permanent that already left: its last known information, CR 603.10a)
     case 'eventAmount': return env.eventAmount; // r3-choose (CR 603.3d): the triggering event's amount; undefined outside a triggered ability whose event has one
     case 'modesChosen': return env.modesChosen; // Standard round 3, r3-trig (CR 700.2, 603.3c): undefined outside a triggered ability of a cast event
     // FAST5X E22 (CR 700.11): the permanent cards put into the announcing player's graveyard this turn; core/zones.ts#moveObject counts each as it arrives,

@@ -1,0 +1,14 @@
+# p2-trigger-events-1 (Phase 2 lane p2-trigger-events; test/cloud/p2-trigger-events-1, golden p2-trigger-events-1-review.json)
+# trigger events: mills, enters tapped, put into a graveyard / exiled from the battlefield, plays another land, enters from your graveyard; ~ or another <type> dies
+Zellix, Sanity Flayer
+Glowing One
+Mirelurk Queen
+Amulet of Vigor
+Tiller Engine
+Gremlin Infestation
+City of Traitors
+Jokulmorder
+Phyrexian Dragon Engine
+Dredging Claw
+Headless Rider
+Polukranos Reborn // Polukranos, Engine of Ruin

@@ -185,6 +185,12 @@ function buildRefs(build: unknown, out: Set<string>): void {
   // `not` and the zone `to`), for a condition a template spells out in its own words ("If you don't put the card onto the battlefield, ...", zz-cloud/look3.json):
   // lower/conditions.ts#resolveDid names the instruction it reads, or the sentence is manual (unbound-reference)
   // std-rx31 INTERFACE CHANGE (additive): or `"$step":"castThisWay"` with `not`, "if it wasn't cast this way" (the one optional cast of yours earlier in the ability, resolveDid)
+  // pc-tokens-1 INTERFACE CHANGE (additive): the quantity of "For each opponent who does, ..." (template eff.pctokens1.forEach*WhoDoes): the players who did the optional action of the
+  // "each opponent may ..." right before it; lower/conditions.ts#resolveMayCount names that `may`, or the sentence is manual (unbound-reference)
+  if ('$step' in o && o['q'] === 'resultCount') {
+    if (o['step'] !== '' || o['$step'] !== 'previous' || o['$who'] !== 'each' || Object.keys(o).length !== 4) throw new Error('$step on a quantity must be {"q":"resultCount","step":"","$step":"previous","$who":"each"}');
+    return;
+  }
   if ('$step' in o && o['$step'] === 'castThisWay') {
     if (o['cond'] !== 'did' || o['step'] !== '' || o['not'] !== true || Object.keys(o).length !== 4) throw new Error('$step "castThisWay" must be {"cond":"did","step":"","$step":"castThisWay","not":true}');
     return;

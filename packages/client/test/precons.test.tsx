@@ -3,11 +3,11 @@
  * every deck is a whole Commander deck, and the deck pickers list them in their own group with their commanders.
  */
 import { readFileSync } from 'node:fs';
-import { cleanup, render, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { PRECONS_MD, PRECONS_PATH, generatePrecons, meldResultsOf, oracleName, serializePrecons } from '../../../scripts/gen-precons';
 import { unplayableReason } from '../src/game/config';
-import { DeckOptions, deckOptionLabel } from '../src/game/DeckOptions';
+import { DeckChooser, DeckOptions, deckOptionLabel } from '../src/game/DeckOptions';
 import { PRACTICE_DECKS } from '../src/game/practiceDecks';
 import { preconDecks, type PreconRow } from '../src/game/precons';
 import type { GameDeck } from '../src/game/services';
@@ -62,7 +62,7 @@ describe('DeckOptions', () => {
     id, name, set: 'TST', released: '2026-01-01', colors: 'G', commander: [[1, commander]], main: [[99, 'Forest']],
   });
 
-  it('groups the decks: yours, the built-in ones, then the precons with their commanders', async () => {
+  it('groups the decks: yours, the built-in ones, then the precons by year with their commanders', async () => {
     const { preconDeck } = await import('../src/game/precons');
     const decks = [saved, PRACTICE_DECKS[0]!, preconDeck(row('precon:a', 'Alpha', 'Test Bear')), preconDeck(row('precon:b', 'Beta', 'Test Elk'))];
     const { container } = render(
@@ -71,8 +71,19 @@ describe('DeckOptions', () => {
       </select>,
     );
     const groups = [...container.querySelectorAll('optgroup')];
-    expect(groups.map((g) => g.label)).toEqual(['Your decks', 'Built-in decks', 'Commander precons (2)']);
+    expect(groups.map((g) => g.label)).toEqual(['Your decks', 'Built-in decks', 'Commander precons 2026 (2)']);
     expect(within(groups[2]!).getAllByRole('option').map((o) => o.textContent)).toEqual(['Alpha (TST 2026) · Test Bear', 'Beta (TST 2026) · Test Elk']);
+  });
+
+  it('puts each year of precons in its own group, newest first', async () => {
+    const { preconDeck } = await import('../src/game/precons');
+    const decks = [preconDeck(row('precon:a', 'Alpha', 'Test Bear')), preconDeck({ ...row('precon:c', 'Gamma', 'Test Owl'), released: '2024-05-03' })];
+    const { container } = render(
+      <select aria-label="Deck">
+        <DeckOptions decks={decks} />
+      </select>,
+    );
+    expect([...container.querySelectorAll('optgroup')].map((g) => g.label)).toEqual(['Commander precons 2026 (1)', 'Commander precons 2024 (1)']);
   });
 
   it('leaves out a group with no decks', () => {
@@ -82,5 +93,30 @@ describe('DeckOptions', () => {
       </select>,
     );
     expect([...container.querySelectorAll('optgroup')].map((g) => g.label)).toEqual(['Your decks']);
+  });
+});
+
+describe('DeckChooser', () => {
+  const saved: GameDeck = { id: 'saved:1', name: 'My deck', deck: { main: [{ name: 'Forest', count: 60 }], sideboard: [] } };
+  const row = (id: string, name: string, released: string): PreconRow => ({
+    id, name, set: 'TST', released, colors: 'G', commander: [[1, 'Test Bear']], main: [[99, 'Forest']],
+  });
+
+  it('narrows the deck list by category, then the precons by year', async () => {
+    const { preconDeck } = await import('../src/game/precons');
+    const decks = [saved, preconDeck(row('precon:a', 'Alpha', '2026-01-01')), preconDeck(row('precon:b', 'Beta', '2024-01-01'))];
+    render(<DeckChooser decks={decks} value="" onChange={() => {}} />);
+    const deckNames = () => within(screen.getByRole('combobox', { name: 'Deck' })).getAllByRole('option').map((o) => o.textContent);
+    expect(deckNames()).toEqual(['Choose a deck…', 'My deck', 'Alpha (TST 2026) · Test Bear', 'Beta (TST 2024) · Test Bear']);
+    expect(screen.queryByRole('combobox', { name: 'Year' })).toBeNull();
+    fireEvent.change(screen.getByRole('combobox', { name: 'Show' }), { target: { value: 'precons' } });
+    expect(deckNames()).toEqual(['Choose a deck…', 'Alpha (TST 2026) · Test Bear', 'Beta (TST 2024) · Test Bear']);
+    fireEvent.change(screen.getByRole('combobox', { name: 'Year' }), { target: { value: '2024' } });
+    expect(deckNames()).toEqual(['Choose a deck…', 'Beta (TST 2024) · Test Bear']);
+  });
+
+  it('has no category dropdowns with only one kind of deck', () => {
+    render(<DeckChooser decks={[saved]} value="" onChange={() => {}} />);
+    expect(screen.queryByRole('combobox', { name: 'Show' })).toBeNull();
   });
 });

@@ -148,8 +148,8 @@ describe('std-rx26 parser, lowering and renderer support', () => {
     expect(fullyAutomated(f)).toBe(true);
     expect(JSON.stringify(f.abilities)).toContain('"rider":"keyword","keyword":{"kind":"keyword","keyword":"affinity","text":"affinity","filter":{"types":["Artifact"]}}');
   });
-  it('a rider keyword other than affinity, convoke and improvise is not offered (cascade has no template; the capability walk refuses it)', () => {
-    expect(understood(face('{T}: The next spell you cast this turn has cascade.'))).toBe(false);
+  it('a rider keyword other than the ones named is not offered (flash has no template; the capability walk refuses it; cascade and storm are pc-exile-play-3\'s)', () => {
+    expect(understood(face('{T}: The next spell you cast this turn has flash.'))).toBe(false);
   });
   it('CR 702.170a: "Plotting cards from your hand costs {2} less" is a costMod of the plot action only (not of spells)', () => {
     const f = face('Plotting cards from your hand costs {2} less.');

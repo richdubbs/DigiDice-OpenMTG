@@ -169,14 +169,19 @@ interface Pred {
   bareBlocks?: true; blockedBy?: ObjectFilter;
 }
 const sf = (s: Subj): ObjectFilter => s.obj ?? {};
+/** pc-counters-1: "a permanent you control", "another permanent": a description of permanents that says no more than who controls or owns them. */
+const plainPermanents = (f: ObjectFilter): boolean => Object.entries(f).every(([k, v]) => v === undefined || k === 'controller' || k === 'owner' || k === 'other') && f.self !== true;
 
 /**
  * Who or what is attacked (CR 508.1b: a player, a planeswalker or a battle). M12-3: "you or a planeswalker you control" is `defender: 'you'` with
  * `orPlaneswalker` (W_YOU_OR_YOUR_PLANESWALKER below), never narrowed to "you".
  */
 const W_YOU_OR_YOUR_PLANESWALKER = P('you or a planeswalker you control');
+const W_ENCHANTED_PLAYER_ATTACKED = P('enchanted player is attacked'); // pc-combat-1
+const W_OPPONENT_OR_THEIR_PLANESWALKER = [P('one of your opponents or a planeswalker an opponent controls'), P('one of your opponents or a planeswalker they control')]; // pc-combat-1
 const DEFENDERS: [string[], PlayerPred | 'planeswalker' | 'battle'][] = [
   [P('you'), 'you'], [P('a player'), 'any'], [P('an opponent'), 'opponent'], [P('one of your opponents'), 'opponent'] /* r5-refs (CR 508.1b): Oracle's other name for an opponent */, [P('a planeswalker'), 'planeswalker'], [P('a battle'), 'battle'],
+  [P('enchanted player'), { ref: 'enchantedPlayer' }] /* pc-combat-3 (CR 303.4, 508.1b): "a creature attacks enchanted player" (the Curses) */,
 ];
 
 const BASIC_LAND_TYPES = ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest'];
@@ -198,6 +203,20 @@ const W_WHILE_SADDLED = P('while saddled'); // FAST5X E3
 const W_EXPLOITED: readonly [string[], ObjectFilter | undefined][] = [[P('a creature'), undefined], [P('a nontoken creature'), { types: ['Creature'], token: false }]]; // std-rx17 (CR 702.110b)
 const W_EXPLORED_KIND: readonly [string[], 'land' | 'nonland'][] = [[P('a land card'), 'land'], [P('a nonland card'), 'nonland']]; // std-lci (CR 701.44a)
 
+/**
+ * p2-trigger-events-1 (CR 110.1, 110.4): a subject that can only be a permanent: "a permanent ...", an attached object ("enchanted artifact"), or a description by
+ * card types with no "card" and no zone ("a creature you control"); never the object itself, a card, a spell or a token said by its noun.
+ */
+function permanentSubject(s: Subj): boolean {
+  const f = s.obj;
+  if (f === undefined || f.self !== undefined || f.isCard !== undefined || f.zone !== undefined || f.stackKind !== undefined || s.batch) return false;
+  if (s.head === 'permanent' || f.attachedToSource === true) return true;
+  return s.head === 'type' && ((f.types?.length ?? 0) > 0 || (f.subtypes?.length ?? 0) > 0);
+}
+
+/** p2-trigger-events-1 (CR 701.17a): a description of cards ("a nonland card", "one or more creature cards"): what a player mills. */
+const cardSubject = (f: ObjectFilter | undefined): boolean => f !== undefined && f.isCard === true && f.self === undefined && f.zone === undefined;
+
 function objectPredicates(ctx: HoleCtx, pos: number): Pred[] {
   const out: Pred[] = [];
   const at = (words: readonly string[], make: Pred['make']): void => { const e = phraseAt(ctx, pos, words); if (e >= 0) out.push({ end: e, make }); };
@@ -215,6 +234,14 @@ function objectPredicates(ctx: HoleCtx, pos: number): Pred[] {
     // Standard round 4, r4-trig (CR 400.7, 603.6a; Fire Lord Zuko): "a permanent you control enters from exile": put onto the battlefield from exile
     const fx = phraseAt(ctx, e, P('from exile'));
     if (fx >= 0) out.push({ end: fx, make: (s) => (s.obj?.self === true ? null : { ev: 'zoneChange', subject: sf(s), from: 'exile', to: 'battlefield' }) });
+    // p2-trigger-events-1 (CR 603.6a, 614.1c, 110.5b; Amulet of Vigor, Tiller Engine): "a permanent you control enters tapped": put onto the battlefield tapped (an
+    // "enters tapped" replacement applied before it entered), the counterpart of "enters untapped" above
+    const tp = phraseAt(ctx, e, P('tapped'));
+    if (tp >= 0) out.push({ end: tp, make: (s) => { const f = mergeFilter(sf(s), { tapped: true }); return f === null ? null : { ev: 'zoneChange', subject: f, to: 'battlefield' }; } });
+    // p2-trigger-events-1 (CR 400.3, 603.6a; Phyrexian Dragon Engine, Dredging Claw): "enters from your graveyard": put onto the battlefield from a graveyard, which is
+    // its owner's, so the object is one you own (the object itself too: a card that left another player's graveyard under your control never came from yours)
+    const fg = phraseAt(ctx, e, P('from your graveyard'));
+    if (fg >= 0) out.push({ end: fg, make: (s) => { const f = mergeFilter(sf(s), { owner: 'you' }); return f === null || s.batch ? null : { ev: 'zoneChange', subject: f, from: 'graveyard', to: 'battlefield' }; } });
   }
   // Cloud std-eoe (CR 700.4, 603.6c, 603.10a): "dies or is put into exile": put into a graveyard or into exile from the battlefield (Syr Vondam, Sunstar Exemplar);
   // the subject is a permanent (a creature you control, ~), whose leaves-the-battlefield ability looks back to the battlefield
@@ -251,8 +278,15 @@ function objectPredicates(ctx: HoleCtx, pos: number): Pred[] {
       // owner's graveyard and came from their owner's library, so only "your graveyard" with "from your library" is read
       const fl = owner === 'you' ? phraseAt(ctx, z.end, P('from your library')) : -1;
       if (fl >= 0) out.push({ end: fl, make: (s) => { const f = subject(s); return f === null ? null : { ev: 'zoneChange', subject: f, from: 'library', to: 'graveyard' }; } });
+      // pc-counters-1 (CR 700.4, 603.6c; Aetherworks Marvel): "Whenever a permanent you control is put into a graveyard": a permanent is on the battlefield, so the zone it
+      // is put there from is the battlefield; only the plain description of permanents (a controller, an owner, "other"), never a card's or an object's own words
+      if (owner === undefined) out.push({ end: z.end, make: (s) => (plainPermanents(sf(s)) ? { ev: 'zoneChange', subject: sf(s), from: 'battlefield', to: 'graveyard' } : null) });
       const fa = phraseAt(ctx, z.end, P('from anywhere'));
       if (fa >= 0) out.push({ end: fa, make: (s) => { const f = subject(s); return f === null ? null : { ev: 'zoneChange', subject: f, to: 'graveyard' }; } });
+      // p2-trigger-events-1 (CR 110.1, 603.6c, 603.10a; Aetherworks Marvel, Gremlin Infestation): "a permanent you control is put into a graveyard", "when enchanted
+      // artifact is put into a graveyard": only a permanent is described so (a card says "card"), so it can only come from the battlefield. Never the object itself
+      // (old wordings of "~ is put into a graveyard" may mean from anywhere) and never a description of a card or of a zone
+      if (owner === undefined) out.push({ end: z.end, make: (s) => (permanentSubject(s) ? { ev: 'zoneChange', subject: sf(s), from: 'battlefield', to: 'graveyard' } : null) });
     }
   }
   // std-lci (CR 701.44a-b): "Whenever a creature you control explores", "... explores a land card" / "... explores a nonland card" (the card it revealed)
@@ -274,6 +308,13 @@ function objectPredicates(ctx: HoleCtx, pos: number): Pred[] {
   for (const be of [P('is put into the command zone from anywhere'), P('are put into the command zone from anywhere')]) {
     at(be, (s) => (s.obj?.commander === true ? { ev: 'zoneChange', subject: sf(s), to: 'command' } : null));
   }
+  // p2-trigger-events-1 (CR 406.3, 603.6c, 603.10a; Soulherder, Shard of the Void Dragon): "is exiled from the battlefield", "is put into exile from the battlefield"
+  for (const w of [P('is exiled from the battlefield'), P('are exiled from the battlefield'), P('is put into exile from the battlefield'), P('are put into exile from the battlefield')]) {
+    at(w, (s) => ({ ev: 'zoneChange', subject: sf(s), from: 'battlefield', to: 'exile' }));
+  }
+  // p2-trigger-events-1 (CR 701.17a, 603.2c; Mirelurk Queen): "one or more nonland cards are milled", "a creature card is milled": cards a player mills (the
+  // action `mill`, any player); only a description of cards
+  for (const w of [P('is milled'), P('are milled')]) at(w, (s) => (cardSubject(s.obj) ? { ev: 'action', verb: 'mill', object: sf(s) } : null));
   at(P('is exiled'), (s) => ({ ev: 'zoneChange', subject: sf(s), to: 'exile' }));
   at(P('are exiled'), (s) => ({ ev: 'zoneChange', subject: sf(s), to: 'exile' }));
   // CLOUD std-msh (CR 400.3, 603.10a, 603.6c): "Whenever another nonland permanent you control is returned to its owner's hand": a permanent put into its
@@ -290,6 +331,16 @@ function objectPredicates(ctx: HoleCtx, pos: number): Pred[] {
     // std-rx35 (CR 509.1h): "Whenever ~ attacks and isn't blocked": an attacker no blocker was declared for, as blockers are declared
     const nb = phraseAt(ctx, e, P("and isn't blocked"));
     if (nb >= 0) out.push({ end: nb, make: (s) => ({ ev: 'attacksUnblocked', attacker: sf(s) }) });
+    // pc-combat-4 (CR 509.1h, 508.1b; Coveted Jewel): "one or more creatures an opponent controls attack you and aren't blocked": unblocked attackers of a player
+    for (const [ws, defender] of DEFENDERS) {
+      if (defender === 'planeswalker' || defender === 'battle' || defender === 'any') continue; // 'any' ("attacks a player and isn't blocked"): "that player" would then be the defending player, but the event's `player` role is the attacker's controller
+      const d = phraseAt(ctx, e, ws);
+      if (d < 0) continue;
+      for (const nbw of [P("and aren't blocked"), P("and isn't blocked")]) {
+        const n2 = phraseAt(ctx, d, nbw);
+        if (n2 >= 0) out.push({ end: n2, make: (s) => ({ ev: 'attacksUnblocked', attacker: sf(s), defender }) });
+      }
+    }
     // FAST5X E3 (CR 702.171b, 508.1): "~ attacks while saddled": the attacker has the saddled designation as it attacks
     const ws = phraseAt(ctx, e, W_WHILE_SADDLED);
     if (ws >= 0) out.push({ end: ws, make: (s) => (s.obj?.self === true ? { ev: 'attacks', attacker: { ...sf(s), saddled: true } } : null) });
@@ -306,6 +357,12 @@ function objectPredicates(ctx: HoleCtx, pos: number): Pred[] {
     // M12-3 (CR 506.3, 508.1b): "attacks you or a planeswalker you control" (`orPlaneswalker`)
     const yp = phraseAt(ctx, e, W_YOU_OR_YOUR_PLANESWALKER);
     if (yp >= 0) out.push({ end: yp, make: (s) => ({ ev: 'attacks', attacker: sf(s), defender: 'you', orPlaneswalker: true }) });
+    // pc-combat-1 (CR 506.3, 508.1b; Gahiji, Honored One and Frontier Warmonger): "attacks one of your opponents or a planeswalker an opponent controls": an attack on an
+    // opponent or on a planeswalker an opponent controls (`orPlaneswalker` with the defender `opponent`)
+    for (const ws of W_OPPONENT_OR_THEIR_PLANESWALKER) {
+      const op = phraseAt(ctx, e, ws);
+      if (op >= 0) out.push({ end: op, make: (s) => ({ ev: 'attacks', attacker: sf(s), defender: 'opponent', orPlaneswalker: true }) });
+    }
   }
   for (const w of [P('blocks'), P('block')]) {
     const e = phraseAt(ctx, pos, w);
@@ -378,6 +435,9 @@ function objectPredicates(ctx: HoleCtx, pos: number): Pred[] {
       if (c.cmp.op !== '>=' || typeof c.cmp.value !== 'number') continue;
       const d = phraseAt(ctx, c.end, P('damage'));
       if (d >= 0) out.push({ end: d, make: (s) => (s.obj === undefined || s.head === 'permanent' ? null : { ev: 'damage', source: sf(s), amount: c.cmp as NumberCmp }) });
+      // pc-players-3 (CR 120.2, 510.2, 603.2c; Dragonborn Champion): "whenever a source you control deals 5 or more damage to a player": the damage the subject dealt at once to that recipient
+      const to = d >= 0 ? phraseAt(ctx, d, P('to')) : -1;
+      if (to >= 0) for (const r of damageRecipients(ctx, to)) out.push({ end: r.end, make: (s) => (s.obj === undefined || s.head === 'permanent' ? null : { ev: 'damage', source: sf(s), recipient: r.recipient, amount: c.cmp as NumberCmp } as EventPattern) });
     }
   }
 
@@ -608,6 +668,31 @@ function playerPredicates(ctx: HoleCtx, pos: number): PPred[] {
       if (one >= 0) for (const n of npAlts(ctx, one)) if (n.number === 'plural') out.push({ end: n.end, make: (pl) => ({ ev: 'action', verb, actor: pl, object: n.filter }), batch: true });
     }
   }
+  // p2-trigger-events-1 (CR 701.17a, 603.2c; Glowing One, Zellix, Sanity Flayer): "a player mills a nonland card" (each card milled), "a player mills one or more
+  // creature cards" (once for each player's mill): the cards milled, judged in the graveyard they went to; only a description of cards
+  for (const ws of [P('mill'), P('mills')]) {
+    const e = phraseAt(ctx, pos, ws);
+    if (e < 0) continue;
+    const t = ctx.toks[e]?.norm;
+    if (t === 'a' || t === 'an') for (const n of npAlts(ctx, e + 1)) if (n.number === 'singular' && cardSubject(n.filter)) out.push({ end: n.end, make: (pl) => ({ ev: 'action', verb: 'mill', actor: pl, object: n.filter }) });
+    const one = phraseAt(ctx, e, P('one or more'));
+    if (one >= 0) for (const n of npAlts(ctx, one)) if (n.number === 'plural' && cardSubject(n.filter)) out.push({ end: n.end, make: (pl) => ({ ev: 'action', verb: 'mill', actor: pl, object: n.filter }), batch: true });
+  }
+  // p2-trigger-events-1 (CR 305.1, 109.1; City of Traitors, Jokulmorder): "you play another land", "you play an Island", "an opponent plays a nonbasic land": the land
+  // played, described (`another` is a land other than the object itself). A bare "a land" is the reading below, never a second one
+  for (const ws of [P('play'), P('plays')]) {
+    const e = phraseAt(ctx, pos, ws);
+    if (e < 0) continue;
+    const t = ctx.toks[e]?.norm;
+    if (t !== 'a' && t !== 'an' && t !== 'another') continue;
+    for (const n of npAlts(ctx, e + 1)) {
+      if (n.number !== 'singular' || n.filter.zone !== undefined || n.filter.isCard !== undefined || n.filter.self !== undefined || n.filter.other !== undefined) continue;
+      const land = (n.filter.types ?? []).includes('Land') || (n.filter.subtypes ?? []).every((x) => BASIC_LAND_TYPES.includes(x)) && (n.filter.subtypes?.length ?? 0) > 0;
+      if (!land || (t !== 'another' && JSON.stringify(n.filter) === '{"types":["Land"]}')) continue;
+      const object: ObjectFilter = t === 'another' ? { ...n.filter, other: true } : n.filter;
+      out.push({ end: n.end, make: (pl) => ({ ev: 'action', verb: 'playLand', actor: pl, object }) });
+    }
+  }
   at(P('play a land'), (pl) => ({ ev: 'action', verb: 'playLand', actor: pl }));
   // Standard round 4, r4-trig (CR 701.23a; Wan Shi Tong, Librarian): "an opponent searches their library", "you search your library": a search of the player's own library
   at(P('searches their library'), (pl) => (pl === 'you' ? null : { ev: 'action', verb: 'search', actor: pl, searched: 'ownLibrary' }));
@@ -752,7 +837,13 @@ function youAttack(ctx: HoleCtx, pos: number): Alt[] {
  */
 function playerAttacksWith(ctx: HoleCtx, pos: number): Alt[] {
   const out: Alt[] = [];
-  for (const [ws, controller] of [[P('a player attacks with'), undefined], [P('an opponent attacks with'), 'opponent']] as const) {
+  // pc-combat-1 (CR 508.1b, 303.4, 603.2c; Curse of Opulence): "whenever enchanted player is attacked": creatures attacking the player the source Aura is attached to
+  // (never a planeswalker they control, CR 506.3), once for the declaration; the same event as "a player attacks enchanted player with one or more creatures"
+  const ea = phraseAt(ctx, pos, W_ENCHANTED_PLAYER_ATTACKED);
+  if (ea >= 0) out.push({ end: ea, value: [{ ev: 'attacks', attacker: { types: ['Creature'] }, count: { op: '>=', value: 1 }, defender: { ref: 'enchantedPlayer' } } satisfies EventPattern], flags: ['batch'] });
+  // pc-combat-1 (CR 508.1b, 303.4, 603.2c; the Curses): "whenever a player attacks enchanted player with one or more creatures": the declaration's attackers that attack the
+  // player the source Aura is attached to (a planeswalker that player controls is not that player, CR 506.3), at least N of them; one occurrence for the declaration
+  for (const [ws, controller, defender] of [[P('a player attacks with'), undefined, undefined], [P('an opponent attacks with'), 'opponent', undefined], [P('a player attacks enchanted player with'), undefined, { ref: 'enchantedPlayer' }]] as const) {
     const w = phraseAt(ctx, pos, ws);
     if (w < 0) continue;
     for (const c of cmpAt(ctx, w)) {
@@ -760,14 +851,37 @@ function playerAttacksWith(ctx: HoleCtx, pos: number): Alt[] {
       for (const n of npAlts(ctx, c.end)) {
         if (n.number !== 'plural' || n.filter.controller !== undefined) continue;
         const f = controller === undefined ? n.filter : mergeFilter(n.filter, { controller });
-        if (f) out.push({ end: n.end, value: [{ ev: 'attacks', attacker: f, count: c.cmp as NumberCmp } satisfies EventPattern], flags: ['batch'] });
+        if (f) out.push({ end: n.end, value: [{ ev: 'attacks', attacker: f, count: c.cmp as NumberCmp, ...(defender !== undefined ? { defender } : {}) } satisfies EventPattern], flags: ['batch'] });
       }
     }
+    if (defender !== undefined) continue;
     // std-combat-1 (CR 508.1a, 603.2c; Tomik, Wielder of Law): "whenever an opponent attacks with creatures": a declaration by that player with one or more attackers, once
     // per declaration (the plural noun of creatures with no count; "two or more of those creatures ..." is an intervening "if" of its own, parser/holes/cond.ts)
     if (ctx.toks[w]?.norm === 'creatures') {
       const f = controller === undefined ? { types: ['Creature'] } : { types: ['Creature'], controller };
       out.push({ end: w + 1, value: [{ ev: 'attacks', attacker: f as ObjectFilter, count: { op: '>=', value: 1 } } satisfies EventPattern], flags: ['batch'] });
+    }
+  }
+  return out;
+}
+
+/**
+ * pc-combat-3 (CR 508.1a-b, 603.2c; Lulu, Stern Guardian and Everett K. Ross): "whenever an opponent attacks you [with two or more creatures]": a declaration by an opponent whose
+ * attackers attack you (the player, never a planeswalker you control, CR 506.3), at least N of them (one for "attacks you"); one occurrence for the declaration.
+ */
+function opponentAttacksYou(ctx: HoleCtx, pos: number): Alt[] {
+  const out: Alt[] = [];
+  const e0 = phraseAt(ctx, pos, P('an opponent attacks you'));
+  if (e0 < 0) return out;
+  const base = { ev: 'attacks' as const, defender: 'you' as const };
+  out.push({ end: e0, value: [{ ...base, attacker: { types: ['Creature'], controller: 'opponent' }, count: { op: '>=', value: 1 } } satisfies EventPattern], flags: ['batch'] });
+  const w = phraseAt(ctx, e0, P('with'));
+  if (w >= 0) for (const c of cmpAt(ctx, w)) {
+    if (c.cmp.op !== '>=') continue;
+    for (const n of npAlts(ctx, c.end)) {
+      if (n.number !== 'plural' || n.filter.controller !== undefined) continue;
+      const f = mergeFilter(n.filter, { controller: 'opponent' });
+      if (f) out.push({ end: n.end, value: [{ ...base, attacker: f, count: c.cmp as NumberCmp } satisfies EventPattern], flags: ['batch'] });
     }
   }
   return out;
@@ -971,7 +1085,7 @@ function opponentsAttacked(ctx: HoleCtx, pos: number): Alt[] {
 const W_IS_CAST_FROM_EXILE = P('is cast from exile'); // std-control-1
 
 export const event: HoleFn = (ctx, pos) => {
-  const out: Alt[] = [...stepEvents(ctx, pos), ...youAttack(ctx, pos), ...playerAttacksWith(ctx, pos), ...counterEvents(ctx, pos), ...youPutCounters(ctx, pos), ...stateEvents(ctx, pos), ...ringEvents(ctx, pos), ...voteEvents(ctx, pos), ...opponentsDealtNoncombat(ctx, pos),
+  const out: Alt[] = [...stepEvents(ctx, pos), ...youAttack(ctx, pos), ...playerAttacksWith(ctx, pos), ...opponentAttacksYou(ctx, pos), ...counterEvents(ctx, pos), ...youPutCounters(ctx, pos), ...stateEvents(ctx, pos), ...ringEvents(ctx, pos), ...voteEvents(ctx, pos), ...opponentsDealtNoncombat(ctx, pos),
     ...sourceDamage(ctx, pos), ...opponentsDealtDamage(ctx, pos)]; // Cloud std-woe: sourceDamage; std-mkm: playerAttacksWith; std-rr: opponentsDealtDamage
   out.push(...opponentsAttacked(ctx, pos)); // CLOUD std-tmt
   // std-control-1 (CR 601.2a, 400.7): "~ is cast from exile" (Emrakul, the Exigent Doom's "until this card is cast from exile"): the card moves from exile to the stack,

@@ -1,0 +1,5 @@
+# pc-exile-play-3 (precon lane pc-exile-play; test/cloud/pc-exile-play-3, golden pc-exile-play-3-review.json): the next spell has cascade or storm
+Dark Apostle
+Sloppity Bilepiper
+Crackling Spellslinger
+Smoldering Stagecoach

@@ -162,4 +162,6 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   provoke: kw('provoke', 'Provoke'), // CR 702.39a
   // trek-1 (lane trek, Star Trek reminder text): an alternative cost from the graveyard that also returns a creature you control, exiled on leaving the stack
   'beam me up {2}{U}': kw('beam me up', 'Beam me up {2}{U}', { cost: mana('{2}{U}') }),
+  // pc-keywords-mana-1 (precon lane keywords-mana, CR 702.96a): an alternative cost; the spell is rewritten when it is cast (effects/overload.ts)
+  'overload {3}{U}': kw('overload', 'Overload {3}{U}', { cost: mana('{3}{U}') }),
 };

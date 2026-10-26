@@ -81,9 +81,16 @@ function manaDynamic(d: ManaProduction, st: RenderState): string {
       if (d.from !== undefined) {
         const per = countParts(d.count, st);
         if (d.from.length !== 2 || !per) throw new NoRenderer('mana of a limited choice of types for each unit, other than "{A} or {B} for each ..."');
-        return `{${d.from[0]}} or {${d.from[1]}} for each ${per.singular}`;
+        // pc-keywords-mana-2 (CR 106.1, 107.3; Fungal Reaches): the X of the cost counted again as the amount, "Add X mana in any combination of {R} and/or {G}"
+        const eachWay = `{${d.from[0]}} or {${d.from[1]}} for each ${per.singular}`;
+        return typeof d.count === 'object' && (d.count.q === 'countersRemoved' || d.count.q === 'X') ? alt(eachWay, `X mana in any combination of {${d.from[0]}} and/or {${d.from[1]}}`) : eachWay;
       }
-      return typeof d.count === 'number' && d.count === 1 ? 'one mana of any color' : `${n(d.count)} mana in any combination of colors`;
+      // pc-keywords-mana-2 (CR 106.1, 106.4; Coalition Relic): "one mana of any color for each charge counter removed this way": each counted unit of its own color
+      const perUnit = typeof d.count === 'object' ? countParts(d.count, st) : null;
+      const plain = typeof d.count === 'number' && d.count === 1 ? 'one mana of any color' : `${n(d.count)} mana in any combination of colors`;
+      // pc-keywords-mana-2 (CR 107.3, 106.1; Selvala, Heart of the Wilds): "Add X mana in any combination of colors, where X is the greatest power among creatures you control"
+      const whereX = typeof d.count === 'object' && d.count.q !== 'X' ? `X mana in any combination of colors, where X is ${K.qty(d.count, st)}` : null;
+      return perUnit !== null || whereX !== null ? alt(plain, ...(perUnit !== null ? [`one mana of any color for each ${perUnit.singular}`] : []), ...(whereX !== null ? [whereX] : [])) : plain;
     }
     case 'anyOneColor': {
       // FAST5 T48 (CR 106.1b): "Add X {G} or X {W}, where X is the number of other creatures you control": X mana of one of the listed types
@@ -187,6 +194,11 @@ function spellNp(f: ObjectFilter, st: RenderState, plural: boolean): string {
 /** The spells of a mana restriction: one description, or several joined by "or" ("a Dragon spell or an Omen spell", the `anyOf` of the parser). */
 function spellsPhrase(f: ObjectFilter, st: RenderState, plural: boolean): string {
   const keys = Object.keys(f).filter((k) => (f as Record<string, unknown>)[k] !== undefined);
+  // pc-keywords-mana-1 (CR 205.2a, 205.3, 106.6): "instant, sorcery, Demon, and Spirit spells" (Séance Board): the card types, then the subtypes, one list with the head said once
+  if (plural && keys.length === 1 && keys[0] === 'anyOf' && f.anyOf!.length > 1 && f.anyOf!.every((x) => Object.keys(x).length === 1 && (x.types !== undefined || x.subtypes !== undefined))) {
+    const names = f.anyOf!.flatMap((x) => x.types ?? x.subtypes ?? []);
+    if (names.length >= 3) return `${names.slice(0, -1).join(', ')}, ${alt('and', 'or', 'and/or')} ${names[names.length - 1]} spells`;
+  }
   if (keys.length === 1 && keys[0] === 'anyOf' && f.anyOf!.length > 1) return f.anyOf!.map((x) => spellNp(x, st, plural)).join(' or ');
   return spellNp(f, st, plural);
 }
@@ -252,6 +264,12 @@ function restrictionText(r: ManaRestriction, st: RenderState): string {
  * spell, it gains haste until end of turn", "if any of that mana is spent on a creature spell, ...", "... , that spell can't be countered".
  */
 function riderText(r: ManaSpentRider, st: RenderState): string {
+  // pc-keywords-mana-2 (CR 614.1c, 106.6; Biophagus): "If this mana is spent to cast a creature spell, that creature enters with an additional +1/+1 counter on it"
+  if (r.entersWith !== undefined) {
+    const only = r.entersWith.length === 1 && r.entersWith[0]!.count === 1 && r.gains === undefined && r.cantBeCountered === undefined && r.any === undefined;
+    if (!only || JSON.stringify(r.spells) !== JSON.stringify({ types: ['Creature'] })) throw new NoRenderer('a mana rider that puts counters on the spell other than one counter on a creature spell');
+    return `if ${alt('this mana', 'that mana')} is spent to cast a creature spell, that creature enters with an additional ${r.entersWith[0]!.kind} counter on it`;
+  }
   if ((r.gains === undefined) === (r.cantBeCountered === undefined)) throw new NoRenderer('a mana rider needs exactly one of gains and cantBeCountered');
   const what = r.gains !== undefined ? `it gains ${keywordWords(r.gains, st)} until end of turn` : "that spell can't be countered";
   return `if ${r.any === true ? 'any of that mana' : 'that mana'} is spent on ${spellsPhrase(r.spells, st, false)}, ${what}`;
@@ -357,7 +375,11 @@ export const CLAUSES_CARDS = {
       // history ("... the number of cards that were put into target player's graveyard from their library this turn") it is read on the copy of the state from
       // before the amount was said (beforePer), so every reading names things first (wave 7 merge: one "X cards, where X is" form for both lines)
       const firsts = per && beforeBase !== null ? perForms(c as Quantity, st, beforeBase).filter((x) => x !== per.singular).map((x) => `a card for each ${x}`) : [];
-      const forms = [...(per ? [`a card for each ${per.singular}`, ...firsts, ...extra] : []), ...(xForm !== null ? [xForm] : []), ...(half !== null ? [half] : [])];
+      // pc-players-1 (CR 121.1, 608.2h): "draw two cards for each opponent who controls fewer lands than you": a fixed number (2 or more) times a count said with "for each"
+      const times = typeof c === 'object' && c.q === 'math' && c.op === '*' && c.args.length === 2 && typeof c.args[0] === 'number' && Number.isInteger(c.args[0]) && c.args[0] >= 2 && typeof c.args[1] === 'object' ? c.args : null;
+      const many = times !== null ? countParts(times[1] as Quantity, cloneState(st)) : null;
+      const manyForm = times !== null && many !== null ? [`${numWord(times[0] as number)} cards for each ${many.singular}`] : [];
+      const forms = [...(per ? [`a card for each ${per.singular}`, ...firsts, ...extra] : []), ...manyForm, ...(xForm !== null ? [xForm] : []), ...(half !== null ? [half] : [])];
       return forms.length > 0 ? alt(base, ...forms) : base;
     });
     // FAST4 T26: the cards drawn, for a later "discard one of them" (CR 121.2, 608.2c; effects/handlers/cards-draw.ts binds exactly the cards drawn)
@@ -571,6 +593,7 @@ export const CLAUSES_CARDS = {
       const zones = s.alsoZones !== undefined && s.alsoZones.length > 0
         ? (listed.length >= 3 ? alt(joinList(listed, 'and/or'), `${listed.slice(0, -1).join(', ')} and/or ${listed[listed.length - 1]}`) : joinList(listed, 'and/or')) : s.zone;
       let text = `${poss} ${zones} for ${what}`;
+      if (s.shareLandType === true) text += ' that share a land type'; // pc-zones-2 (CR 205.3i): the cards found share a land type
       const plural = s.max !== 1 || s.and !== undefined;
       // FAST3 T17: "reveal that card" names the card just found, as "reveal it" does (CR 701.20a, 701.23a: the search is its only antecedent)
       if (s.reveal === true) text += `${alt(', reveal', ' and reveal')} ${plural ? alt('them', 'those cards') : alt('it', 'that card')}`; // FAST5 T75: "search your library for up to two Forest cards and reveal them" (Flourishing Bloom-Kin); std-hob: "reveal those cards" names the found cards as "reveal them" does (CR 701.20a, 701.23a; Cultivate); r3-refs: one card too, "search your library for a creature or land card and reveal it"
@@ -628,10 +651,12 @@ export const CLAUSES_CARDS = {
     // std-copy-3 (CR 106.6, 603.2): "Add {R}. When that mana is spent to cast a red instant or sorcery spell, copy that spell ..." (`whenSpent`), only after fixed mana of
     // your own with nothing else said of it; inside, "that spell" is the spell cast (the trigger's `cast` event, as for a delayed trigger)
     if (s.whenSpent !== undefined) {
-      if (s.units === undefined || s.who.ref !== 'you' || s.restriction !== undefined || s.keep !== undefined) throw new NoRenderer('"when that mana is spent" after mana other than fixed mana of your own');
+      // pc-keywords-mana-2 (CR 903.4; Path of Ancestry): and after "one mana of any color in your commander's color identity"
+      const identity = s.dynamic?.kind === 'commanderIdentity' ? s.dynamic : undefined;
+      if ((s.units === undefined && identity === undefined) || s.who.ref !== 'you' || s.restriction !== undefined || s.keep !== undefined) throw new NoRenderer('"when that mana is spent" after mana other than fixed mana of your own');
       const whenSpent = s.whenSpent;
       const units = s.units;
-      const c = byPlayer(s.who, st, 'add', () => manaUnits(units));
+      const c = byPlayer(s.who, st, 'add', () => (units !== undefined ? manaUnits(units) : manaDynamic(identity!, st)));
       const ev = K.events([{ ev: 'cast', player: 'you', spell: whenSpent.spells }], st, 'present');
       if (!ev.startsWith('you cast ')) throw new NoRenderer('the spells of "when that mana is spent to cast"');
       const saved = st.trigger;
@@ -677,7 +702,10 @@ export const CLAUSES_CARDS = {
     const d = s.dynamic;
     if (d?.kind === 'anyOneColor' && d.from === undefined && s.who.ref === 'you' && !s.restriction && !s.rider && s.keep === undefined && typeof d.count === 'object' && d.count.q !== 'X') {
       const powers = d.count.q === 'distinct' && d.count.what === 'powers' && d.count.among.ref === 'each' ? K.np(d.count.among.filter, st, { det: 'none', plural: true }) : null;
-      const chosen = [`choose a color. add an amount of mana of that color equal to ${K.qty(d.count, st)}`, ...(powers !== null ? [`choose a color. add one mana of that color for each different power among ${powers}`] : [])];
+      // pc-keywords-mana-1 (CR 106.1, 122.1; parser/templates/zz-cloud/pc-keywords-mana-1.json): "... for each charge counter on ~" counts the counters of one kind on the object
+      const perCounter = d.count.q === 'counters' && d.count.kind !== 'any' ? countParts(d.count, st) : null;
+      const chosen = [`choose a color. add an amount of mana of that color equal to ${K.qty(d.count, st)}`, ...(powers !== null ? [`choose a color. add one mana of that color for each different power among ${powers}`] : []),
+        ...(perCounter !== null ? [`choose a color. add one mana of that color for each ${perCounter.singular}`] : [])];
       return acting(c.actor ?? 'you', alt(c.imp, ...chosen), alt(c.sub, ...chosen), { standalone: true });
     }
     // std-mkm (CR 500.5, 106.4): "Until end of turn, you don't lose this mana as steps and phases end" (and firebending's "until end of combat ... as steps end"),

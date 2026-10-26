@@ -114,7 +114,7 @@
       "effects": [{ "s": "continuous", "affects": { "ref": "each", "filter": "$f" }, "mods": [{ "layer": "7c", "power": "$pt.p", "toughness": "$pt.t" }] }]
     },
     "subject": "none",
-    "consumes": ["each"],
+    "consumes": ["each", "each other"],
     "examples": [
       { "text": "Each Goblin you control gets +2/+0 until end of turn." },
       { "text": "Each creature you control gets +1/+1 until end of turn." }

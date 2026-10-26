@@ -54,6 +54,7 @@ import { applyPaymentOptions, emergePayableCandidates, emergeReduction, payableW
 import { partCandidates } from '../rules/cost-pick';
 import { castTiming, splitSecondDenial } from '../rules/timing';
 import { announceCond, type AnnounceEnv } from './announce-cond';
+import { OVERLOAD, overloadablePrograms } from '../effects/overload';
 import { announceTargets, chooseModes, chooseX, describeTargets, effectivePrograms, emitBecameTarget, modeCosts, modesDenial, programsDenial } from './announce';
 import { CAST_OPTION_PROVIDERS, castOptionProvider, castOptionsOf, isKickerName, type AdditionalOption, type AlternativeOption, type CastOptionProvider } from './cast-options';
 import { announceMandatoryCosts, announceOptionalCosts, commanderTaxCost, countCap, groupedCostsDenial, ungroupedMandatoryCosts, withAnnouncedCount } from './cast-costs';
@@ -62,7 +63,7 @@ import { costModsFor, modifyMana, type CostModHit } from '../statics/costmods';
 import { spellTargetTotal } from '../rules/target-total';
 import { charsViewOf, overlayAsSpell } from '../statics/rule-sources';
 import { evalQuantity } from '../statics/match';
-import { anyManaTypePermit, type GrantedAlternative, grantedAlternatives, graveyardInsteadPermit, graveyardMethod, graveyardMethodIndex, graveyardPermitUses, type GraveyardUse, isGrantedAltMethod, isLinkedFreeMethod, isNamedFreeMethod, lifeCostOf, linkedPermitLifeCost, linkedPermitUses, type LinkedUse, namedPermit, namedPermitAdventureOnly, namedPermitIncrease, namedSingleKey, outsideCastUses, paidCastPermitted, playPermitted, staticAnyManaType, topPermitFor } from '../statics/play-permits';
+import { anyManaColorPermit, anyManaTypePermit, type GrantedAlternative, grantedAlternatives, graveyardInsteadPermit, graveyardMethod, graveyardMethodIndex, graveyardPermitUses, type GraveyardUse, isGrantedAltMethod, isLinkedFreeMethod, isNamedFreeMethod, lifeCostOf, linkedPermitLifeCost, linkedPermitUses, type LinkedUse, namedPermit, namedPermitAdventureOnly, namedPermitIncrease, namedSingleKey, outsideCastUses, paidCastPermitted, playPermitted, staticAnyManaType, topPermitFor } from '../statics/play-permits';
 import { installResolutionCaster, type ResolutionCastOptions } from '../effects/cast-hook';
 import { recordCastChecks } from './cast-checks';
 import { lockNextSpellKeywords, takeNextSpellRiders } from '../core/turn-effects';
@@ -524,7 +525,15 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
 
   // M6-0: targets a cast option adds (mutate's non-Human creature with the same owner, CR 702.140a) are announced with the spell's own (CR 601.2c)
   const extra = provider?.extraTargets?.(view!, o);
-  const programs = extra && extra.length > 0 ? [...spellPrograms(chars), { targets: extra, steps: [] }] : spellPrograms(chars);
+  const ownPrograms = extra && extra.length > 0 ? [...spellPrograms(chars), { targets: extra, steps: [] }] : spellPrograms(chars);
+  // CR 702.96a-b: cast for its overload cost the spell has no targets and says "each" where it said "target" (actions/overload.ts); a spell that can't be rewritten
+  // faithfully is not offered for it (fail closed)
+  const manualSpell = chars.abilities.some((a) => a.def.kind === 'manual' && (a.def.shape === 'spell' || a.def.shape === 'unknown'));
+  const overloaded = alt?.name === OVERLOAD ? (manualSpell ? null : overloadablePrograms(ownPrograms)) : undefined;
+  if (alt?.name === OVERLOAD && overloaded === null) {
+    return { denial: deny(`This engine build can't change "target" to "each" in ${chars.name}, so it is not offered with overload.`, 'CR 702.96a') };
+  }
+  const programs = overloaded ?? ownPrograms;
   const altCost = alt?.cost;
   // The mana is for this spell: restricted mana (Cavern of Souls) pays only if the spell matches (CR 106.6).
   // "Without paying its mana cost" (CR 118.9, 608.2g; WP14) pays nothing for the base cost; additional costs are still paid (CR 118.9d).
@@ -533,7 +542,7 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   // Standard round I (CR 609.4b, 107.4c): 'color' when a static ability only lets the caster spend mana as though it were mana of any color
   const anyManaType: boolean | 'color' = during?.anyManaType === true || (permitted && !byTop && !fused && anyManaTypePermit(s, player, id))
     || linkUse?.anyManaType === true // std-rx27: the linked permission it is cast with
-    ? true : staticAnyManaType(s, player, id, chars);
+    ? true : staticAnyColorOrType(staticAnyManaType(s, player, id, chars), permitted && !byTop && !fused && anyManaColorPermit(s, player, id));
   // FAST5X E23 (CR 601.2a, 708.4, 202.3e): the spell is read as it would be: this face, face down when cast face down, with the X the plan is for
   const spendFor = (x: CostX): SpendContext => ({
     kind: 'spell', id, face, ...(provider?.faceDown === true ? { faceDown: true as const } : {}), ...(typeof x === 'number' ? { x } : {}), ...(anyManaType ? { anyType: anyManaType === 'color' ? ('color' as const) : (true as const) } : {}),
@@ -563,11 +572,13 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   // CR 601.2c, 601.2h: a target filter that reads X needs SOME X the player can pay for to have a target (WP30 review: the legal actions are exact enough for the
   // UI). The bound is the largest X the base and mandatory costs allow (the X of optional costs and modes comes later and only adds to the cost); a spell
   // with no X to announce has X = 0.
-  if (programs.some(programFiltersMentionX)) {
+  // pc-statics-1: and a spell with X in its cost, whose targets may be protected from "mana value N or less" (rules/targets.ts#targetOptions judges it with the largest X)
+  if (programs.some(programFiltersMentionX) || baseHasX) {
     const hasX = baseHasX || mandatory.some(costHasX);
     const scanAll = costFilterHasX(altCost) || mandatory.some(costFilterHasX);
     const xs = hasX ? payableXs((n) => payNow(addPlans(base(n), planFromCostDefs(mandatory, n))) === null, scanAll) : [0];
     aenv.xMax = xs.length ? xs[xs.length - 1]! : 0;
+    if (baseHasX) aenv.castingSpell = true; // pc-statics-1
   }
   const noTarget = deny(`${chars.name} needs a target but there is no legal one.`, 'CR 601.2c', 'CR 115.1');
   const unplayable = programsDenial(s, programs, player, id, noTarget, undefined, aenv);
@@ -934,6 +945,13 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
   // Storm (CR 702.40a) counts the spells cast this turn by ALL players before this one, not only the caster's.
   const spellsBefore = g.s.players.reduce((n, p) => n + p.turnStats.spellsCast, 0);
   g.player(player).turnStats.spellsCast++;
+  // pc-exile-play-2 (CR 601.2i): the spell's place among the spells its caster cast this turn, and among those cast from the same zone ("the first spell you cast from exile each turn")
+  {
+    const ts = g.player(player).turnStats;
+    const counts = (ts.castFromCount ??= {});
+    counts[castFrom ?? 'hand'] = (counts[castFrom ?? 'hand'] ?? 0) + 1;
+    spell.stack.castOrdinal = { turn: ts.spellsCast, fromZone: counts[castFrom ?? 'hand']! };
+  }
   // M11-1, CR 903.8, 702.124d: one more cast of THIS commander from the command zone, counted as it becomes cast whatever happens to the spell later
   const commander = fromCommandZone ? commanderOfCard(g.s, spell.cardId) : undefined;
   if (commander) commander.rec.casts++;
@@ -1038,4 +1056,9 @@ function withTargetTotals(costs: CostDef[], total: number): CostDef[] {
     return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fix(x)]));
   };
   return costs.map((c) => fix(c) as CostDef);
+}
+
+/** pc-exile-play-1 (CR 609.4b, 107.4c): mana of any type (a static ability's) wins over mana as though of any color (a static ability's or the permission's). */
+function staticAnyColorOrType(fromStatic: boolean | 'color', colorPermit: boolean): boolean | 'color' {
+  return fromStatic === true ? true : colorPermit ? 'color' : fromStatic;
 }

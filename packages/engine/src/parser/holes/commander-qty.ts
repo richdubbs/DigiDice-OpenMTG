@@ -10,6 +10,7 @@ import type { ObjectFilter, Quantity } from '../../types/ability';
 import type { Alt, HoleCtx } from './core';
 import { P, phraseAt } from './core';
 
+const W_IDENTITY_SIZE = P("the number of colors in your commanders' color identity"); // pc-statics-2 (CR 903.4)
 const W_GREATEST_COMMANDER_MV = P('the greatest mana value of a commander you own on the battlefield or in the command zone');
 
 /** The commanders "you own on the battlefield or in the command zone" (the zones are an array: both are searched, CR 400.1). A new object each time. */
@@ -22,5 +23,8 @@ export function commanderQtyAt(ctx: HoleCtx, pos: number): Alt[] {
     const value: Quantity = { q: 'stat', stat: 'manaValue', agg: 'max', of: { ref: 'each', filter: commandersOwnedBattlefieldOrCommand() } };
     out.push({ end: e, value });
   }
+  // pc-statics-2 (CR 903.4, 903.4f): the number of colors in the identity of your commanders (War Room)
+  const id = phraseAt(ctx, pos, W_IDENTITY_SIZE);
+  if (id >= 0) out.push({ end: id, value: { q: 'commanderIdentitySize' } });
   return out;
 }

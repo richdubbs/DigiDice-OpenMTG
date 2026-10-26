@@ -27,6 +27,7 @@ import { performArrangeLibrary, performLink, performRenewLibrary } from '../perf
 import { performExiledSeers, performUntilMove } from '../perform-direct';
 import { attachable } from './zones-status';
 import { proposeMeasured } from './lifedamage';
+import { ENTERING_TOGETHER } from '../entering-together';
 import { filterCtxOf, isCurrent, resolveObjs, resolvePlayers } from '../refs';
 import { matchesFilter } from '../../rules/filter';
 import {
@@ -253,6 +254,9 @@ const moveStep: StepHandler<Move> = (cx, st) => {
   const intoLibrary = new Map<ObjectId, ObjectId>(); // H1: the object each card became in a library (for the secret arrangement below)
   const randomPlaces = new Set<PlayerId>();
   // FAST5X E28 review (CR 603.10a): permanents that leave together are each as they were before the first one left (a persist granted by another one moved)
+  const previousGroup = ENTERING_TOGETHER.get(g);
+  if (plans.filter((p) => p.dest === 'battlefield').length > 1) ENTERING_TOGETHER.set(g, new Set()); // pc-counters-1 (CR 614.12): the new objects join as they arrive; restored below
+  try {
   leavingTogether(g, plans.flatMap((p) => (p.h.zone === 'battlefield' ? [p.h.id] : [])), () => {
     for (const plan of plans) {
       const { dest, facts } = plan;
@@ -271,6 +275,7 @@ const moveStep: StepHandler<Move> = (cx, st) => {
       const m = proposeMove(cx, h, dest, facts);
       if (!m.ok) continue;
       moved.push(m);
+      if (m.to?.zone === 'battlefield') ENTERING_TOGETHER.get(g)?.add(m.to.id); // the new object (CR 400.7) enters with the others
       if (m.to?.zone === 'library') {
         intoLibrary.set(plan.h.id, m.to.id);
         if (st.to.position === 'random') randomPlaces.add(g.s.objects[m.to.id]!.owner);
@@ -292,6 +297,7 @@ const moveStep: StepHandler<Move> = (cx, st) => {
       }
     }
   });
+  } finally { if (previousGroup) ENTERING_TOGETHER.set(g, previousGroup); else ENTERING_TOGETHER.delete(g); }
   // H1 (CR 400.2, 401.4): the order nobody else may learn, once every card is in its library; cards each put at a random place make the whole library new.
   for (const order of secret) performArrangeLibrary(g, order.flatMap((id) => intoLibrary.get(id) ?? []));
   for (const p of randomPlaces) performRenewLibrary(g, p);

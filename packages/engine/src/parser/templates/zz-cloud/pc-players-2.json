@@ -1,0 +1,92 @@
+[
+  {
+    "id": "eff.pcp2.draw.many.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 121.1"
+    ],
+    "pattern": "^ draw {n:Qty} cards if {c:Cond}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards if you control four or more attacking creatures."
+      },
+      {
+        "text": "Draw three cards if you've gained 4 or more life this turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards unless you control four or more attacking creatures.",
+      "You gain 1 life and draw two cards if you control four or more attacking creatures.",
+      "Draw two cards if."
+    ]
+  },
+  {
+    "id": "eff.pcp2.player.returnsFromGraveyard.toHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 404.1",
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "{p:Player} return[s] a card from their graveyard to their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "hand",
+          "owner": "$p"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player returns a card from their graveyard to their hand."
+      },
+      {
+        "text": "Target opponent returns a card from their graveyard to their hand. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player returns two cards from their graveyard to their hand.",
+      "Target player returns a card from your graveyard to their hand.",
+      "Target player returns a creature card from their graveyard to their hand."
+    ]
+  }
+]

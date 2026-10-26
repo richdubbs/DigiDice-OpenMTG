@@ -76,7 +76,7 @@ export const PLAY_PERMIT_CAPABILITIES: readonly string[] = [
   'permit:spendMana.anyTypeFor',
   'permit:spendMana.anyColorAbilities', // std-rx32 (CR 609.4b): isSpendAnyColorAbilitiesPermit, actions/activate.ts
   // FAST5X E29 (CR 609.4b): "and mana of any type can be spent to cast that spell"; "you may play it if you control a Kavu" (a condition read each time)
-  'feature:permit.play.anyManaType', 'feature:permit.cast.anyManaType', 'feature:permit.play.while', 'feature:permit.cast.while',
+  'feature:permit.play.anyManaType', 'feature:permit.cast.anyManaType', 'feature:permit.play.anyManaColor', 'feature:permit.cast.anyManaColor', 'feature:permit.play.while', 'feature:permit.cast.while',
   // GY1 (CR 305.1, 116.2a, 404.1): "You may play lands from your graveyard" (a static ability; isGraveyardLandPermit)
   'permit:play.zone',
   // C10 (CR 601.3, 601.3e, 601.2f, 614.1c): casting from the graveyard (isGraveyardPermit), its additional cost and "enters with" rider
@@ -349,6 +349,23 @@ export function anyManaTypePermit(s: GameState, player: PlayerId, id: ObjectId):
 }
 
 /**
+ * pc-exile-play-1 (CR 609.4b, 107.4c): does a permission that names `id` and lets `player` cast it now also say "you may spend mana as though it were mana of any color
+ * to cast that spell"? Read like anyManaTypePermit; the caller lets a permission for mana of any type win.
+ */
+export function anyManaColorPermit(s: GameState, player: PlayerId, id: ObjectId): boolean {
+  if (!s.continuousEffects.some((r) => r.effect.s === 'permit' && r.effect.anyManaColor === true)) return false;
+  const ctx = ruleContext(s);
+  if (!ctx) return false;
+  return ctx.sources.some((src) => {
+    const e = src.effect;
+    if (e.s !== 'permit' || e.anyManaColor !== true || !isObjectPermit(e) || !refIncludes(cxOf(ctx, src), e.who, player)) return false;
+    if (e.laterTurn === true && !(src.startedTurn !== undefined && s.turn.number > src.startedTurn)) return false;
+    if (e.while !== undefined && !evalCondition(cxOf(ctx, src), e.while)) return false;
+    return namedObjects(e, s, player).some((h) => h.id === id && s.objects[id]?.zone === h.zone);
+  });
+}
+
+/**
  * r5-repl (CR 614.1a, 400.7): where a spell `player` casts from this object goes instead of a graveyard because a permission that names it says so ("You may
  * cast it this turn. If that spell would be put into a graveyard, exile it instead."), with the permission's source name for the log; undefined when no such
  * permission of `player`'s functions. A "your graveyard" permission (`yours`) applies only to a card `player` owns (the spell goes to its owner's graveyard,
@@ -416,7 +433,7 @@ export function namedPermit(s: GameState, player: PlayerId, id: ObjectId, land: 
 // ---- FAST5X E14: the top card of a library (CR 401.5, 601.3, 305.1) ------------------------------------------------------------------------------------
 
 /** The optional fields of a permission (a `lookAt` honored here has none of them). */
-const OPTIONAL_FIELDS = ['of', 'from', 'asThough', 'count', 'costChange', 'grants', 'laterTurn', 'fromTop', 'oncePerTurn', 'anyManaType', 'while', 'addCost', 'entersWith', 'graveyardInstead', 'firstSpellThisTurn', 'plotCost'] as const;
+const OPTIONAL_FIELDS = ['of', 'from', 'asThough', 'count', 'costChange', 'grants', 'laterTurn', 'fromTop', 'oncePerTurn', 'anyManaType', 'anyManaColor', 'while', 'addCost', 'entersWith', 'graveyardInstead', 'firstSpellThisTurn', 'plotCost'] as const;
 
 /**
  * FAST5X E14: a permission for the card on top of a library: "You may cast creature spells from the top of your library", "You may play lands from the top of
@@ -428,7 +445,7 @@ export function isTopPermit(p: PermissionDef): boolean {
   if (p.from !== undefined || p.asThough !== undefined || p.count !== undefined || p.grants !== undefined || p.laterTurn !== undefined) return false;
   // std-exile-play-1-1 (CR 118.9): the one cost honored here is "pay life equal to its mana value rather than pay its mana cost" (topPermitFor)
   if (p.costChange !== undefined && !isLifeCostChange(p.costChange)) return false;
-  if (p.anyManaType !== undefined || p.while !== undefined) return false; // FAST5X E29: honored on named objects only
+  if (p.anyManaType !== undefined || p.anyManaColor !== undefined || p.while !== undefined) return false; // FAST5X E29: honored on named objects only
   if (p.addCost !== undefined) return false; // C10: honored on graveyard permissions only (fail closed)
   // std-rx27 (CR 614.1c): "If you cast a creature spell this way, that creature enters with ...": a cast permission's rider, for the spells `entersWithIf` describes
   if (p.entersWith !== undefined && !(p.action === 'cast' && p.entersWithIf !== undefined && validCounters(p.entersWith))) return false;

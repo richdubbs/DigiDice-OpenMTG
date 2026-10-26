@@ -40,6 +40,11 @@ export const PASSIVE: readonly (readonly [readonly string[], MovedKind, ObjectFi
   [P('you put on top of your library'), 'top', { owner: 'you' }],
 ];
 
+/** pc-tokens-1: the words in front of a passive in a relative clause ("you controlled that was destroyed this way", "you controlled that were sacrificed this way"), with what they add. */
+const RELATIVE_FRONTS: readonly (readonly [readonly (readonly string[])[], ObjectFilter])[] = [
+  [[P('you controlled that was'), P('you controlled that were')], { controller: 'you' }],
+];
+
 /** The destination a kind of move has (`did.to`); the other kinds are actions that report what they moved wherever it went (CR 701.8a, 701.9a, 701.21a). */
 export const MOVED_TO: Readonly<Partial<Record<MovedKind, 'exile' | 'graveyard' | 'battlefield' | 'hand'>>> = { exiled: 'exile', graveyard: 'graveyard', battlefield: 'battlefield', hand: 'hand' };
 /** The op of a kind that is an action of its own (the `$op` marker of a condition: a destroy needs none, it is FAST5X E17's reading). */
@@ -73,6 +78,14 @@ export function movedFragAt(ctx: HoleCtx, pos: number): { end: number; frag: Obj
   for (const [ws, kind, adds] of PASSIVE) {
     const e = phraseAt(ctx, pos, ws);
     if (e >= 0) out.push({ end: e, frag: { [MOVED_MARK]: kind, ...adds } as ObjectFilter, weak: 1 });
+    // pc-tokens-1 (CR 608.2c, 608.2h): the relative clause, "for each nontoken creature you controlled that was destroyed this way" (Ceaseless Conflict): the same
+    // description with the clause's own words in front; "you controlled" is the controller as the object last existed on the battlefield (CR 400.7)
+    for (const [front, extra] of RELATIVE_FRONTS) {
+      for (const w of front) {
+        const f = phraseAt(ctx, pos, [...w, ...ws]);
+        if (f >= 0) out.push({ end: f, frag: { [MOVED_MARK]: kind, ...adds, ...extra } as ObjectFilter, weak: 1 });
+      }
+    }
   }
   return out;
 }

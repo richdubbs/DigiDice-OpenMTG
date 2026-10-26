@@ -142,6 +142,21 @@ function zoneChange(ev: Extract<EventPattern, { ev: 'zoneChange' }>, st: RenderS
     const me = subjectOf({ self: true }, st, o, false);
     return { subject: me.text, predicate: `${verb(['enters', 'enter', 'entered'], tense, me.plural)} untapped`, plural: me.plural };
   }
+  // p2-trigger-events-1 (CR 603.6a, 110.5b; parser/holes/event.ts): "a permanent you control enters tapped": the status it entered with, said after the verb,
+  // of any subject but the object itself
+  // (std-rx19 pins another object's "enters untapped" as manual: only "tapped" is said here)
+  if (toBf && from === undefined && f.tapped === true && f.self === undefined) {
+    const { tapped: _t, ...rest } = f;
+    const s = subjectOf(rest, st, o, false);
+    return { subject: s.text, predicate: `${verb(['enters', 'enter', 'entered'], tense, s.plural)} tapped`, plural: s.plural };
+  }
+  // p2-trigger-events-1 (CR 400.3, 603.6a; parser/holes/event.ts): "a creature enters from your graveyard": the graveyard is its owner's, so the subject is said
+  // without its owner ("you own")
+  if (toBf && from?.length === 1 && from[0] === 'graveyard' && f.owner === 'you') {
+    const { owner: _o, ...rest } = f;
+    const s = isSelfOnly(rest) ? subjectOf({ self: true }, st, o, false) : subjectOf(rest, st, o, false);
+    return { subject: s.text, predicate: `${verb(['enters', 'enter', 'entered'], tense, s.plural)} from your graveyard`, plural: s.plural };
+  }
   // Precon round O, std-ro (CR 700.4, 404.1): a card goes to its owner's graveyard, so "~ is put into your graveyard from the battlefield" is ~ dying while you own it
   // (the object itself and its owner, the one pair `np.ts` does not word; any other owned subject: std-rp's put-into-your-graveyard below)
   const ownerGraveyard = fromBf && to?.length === 1 && to[0] === 'graveyard' && (f.owner === 'you' || f.owner === 'opponent');
@@ -185,7 +200,13 @@ function zoneChange(ev: Extract<EventPattern, { ev: 'zoneChange' }>, st: RenderS
     // p2-replace-events-2 (CR 614.1a, 113.6; family self-would-be-put-into-graveyard): the object itself in a replacement ("If this permanent would be put into a
     // graveyard, you may put it on top of its owner's library instead.", Pulmonic Sliver) leaves "from the battlefield" unsaid: its ability works only there
     const selfWould = isSelfOnly(f) && tense === 'would' ? [passive('put into a graveyard', tense, sub.plural)] : [];
-    const generic0 = creature ? dies : unknownSelf ? alt(dies, put) : alt(put, put2, dies);
+    // pc-counters-1 (CR 700.4; parser/holes/event.ts#plainPermanents): "whenever a permanent you control is put into a graveyard" leaves "from the battlefield" unsaid:
+    // a permanent is on the battlefield (a description of permanents that says no more than who controls or owns them)
+    // p2-trigger-events-1 (CR 110.1, 603.6c; Aetherworks Marvel): a permanent's description ("a permanent you control", "enchanted artifact") put into a graveyard can
+    // only come from the battlefield, so Oracle may leave "from the battlefield" unsaid (family permanent-put-into-graveyard)
+    const bareAlt = !creature && !unknownSelf && Object.entries(f).every(([k, v]) => v === undefined || k === 'controller' || k === 'owner' || k === 'other') && sub.text.includes('permanent') ? [passive('put into a graveyard', tense, sub.plural)] : [];
+    const bareOk = !isSelfOnly(f) && f.isCard === undefined && f.zone === undefined && f.owner === undefined && o.batch !== true;
+    const generic0 = creature ? (bareOk ? alt(dies, passive('put into a graveyard', tense, sub.plural)) : dies) : unknownSelf ? alt(dies, put) : bareAlt.length > 0 ? alt(put, put2, dies, ...bareAlt) : bareOk ? alt(put, put2, dies, passive('put into a graveyard', tense, sub.plural)) : alt(put, put2, dies);
     const generic = selfWould.length > 0 ? alt(generic0, ...selfWould) : generic0;
     if (owner === 'you' && !isSelfOnly(f) && f.controller === undefined && !didnt) {
       const bare = subjectOf({ ...f, owner: undefined }, st, o, zoneless, head);
@@ -207,7 +228,8 @@ function zoneChange(ev: Extract<EventPattern, { ev: 'zoneChange' }>, st: RenderS
     return { subject, predicate: `${verb(['dies', 'die', 'died'], tense, sub.plural)} or ${passive('put into exile', tense, sub.plural)}`, plural: sub.plural };
   }
   if (fromBf && to?.length === 1 && to[0] === 'exile') {
-    return { subject, predicate: alt(`${passive('put into exile', tense, sub.plural)} from the battlefield`, passive('exiled', tense, sub.plural)), plural: sub.plural };
+    // p2-trigger-events-1 (CR 406.3; Soulherder): also "is exiled from the battlefield" (family exiled-from-the-battlefield)
+    return { subject, predicate: alt(`${passive('put into exile', tense, sub.plural)} from the battlefield`, passive('exiled', tense, sub.plural), `${passive('exiled', tense, sub.plural)} from the battlefield`), plural: sub.plural };
   }
   if (fromBf && to?.length === 1 && to[0] === 'hand') {
     return { subject, predicate: alt(`${passive('returned to its owner\'s hand', tense, sub.plural)}`, `${passive('put into a hand', tense, sub.plural)} from the battlefield`), plural: sub.plural };
@@ -241,7 +263,7 @@ function zoneChange(ev: Extract<EventPattern, { ev: 'zoneChange' }>, st: RenderS
 }
 
 /** The events that have a "one or more" wording (CR 603.2c). Any other event with `batch` is refused: the flag would be lost. */
-const BATCHABLE = new Set(['zoneChange', 'attacks', 'blocks', 'becomesBlocked', 'damage', 'becomes', 'counters', 'action', 'createToken', 'dieRoll']);
+const BATCHABLE = new Set(['zoneChange', 'attacks', 'blocks', 'becomesBlocked', 'damage', 'becomes', 'counters', 'action', 'createToken', 'dieRoll', 'attacksUnblocked']);
 
 function eventParts(ev: EventPattern, st: RenderState, tense: Tense, o: EventOpts, ownFrom?: string): Parts {
   if (o.batch === true && !BATCHABLE.has(ev.ev)) throw new NoRenderer(`"one or more" for the event ${ev.ev}`);
@@ -358,10 +380,13 @@ function eventParts(ev: EventPattern, st: RenderState, tense: Tense, o: EventOpt
       st.mentioned.add('e:attacker');
       const def = ev.defender;
       // M12-3 (CR 506.3, 508.1b): "attacks you or a planeswalker you control"
-      if (ev.orPlaneswalker === true && (def !== 'you' || ev.count !== undefined || o.batch === true)) throw new NoRenderer('orPlaneswalker other than "you or a planeswalker you control" of one attacker');
-      const orPw = ev.orPlaneswalker === true ? ' or a planeswalker you control' : '';
+      // pc-combat-1 (CR 506.3, 508.1b; Gahiji, Honored One and Frontier Warmonger): "attacks one of your opponents or a planeswalker an opponent controls" (also "they control"), of one
+      // attacker or the batch of "one or more creatures attack ..."
+      const oppOrWalker = ev.orPlaneswalker === true && def === 'opponent' && ev.count === undefined && ev.alone === undefined;
+      if (ev.orPlaneswalker === true && !oppOrWalker && (def !== 'you' || ev.count !== undefined || o.batch === true)) throw new NoRenderer('orPlaneswalker other than "you or a planeswalker you control" of one attacker');
+      const orPw = ev.orPlaneswalker === true && !oppOrWalker ? ' or a planeswalker you control' : '';
       // r5-refs (CR 508.1b; family attacks-one-of-your-opponents): Oracle also calls the opponent attacked "one of your opponents"
-      const defender = def === undefined ? '' : def === 'planeswalker' ? ' a planeswalker' : def === 'battle' ? ' a battle' : def === 'opponent' && !orPw ? alt(' an opponent', ' one of your opponents')
+      const defender = def === undefined ? '' : def === 'planeswalker' ? ' a planeswalker' : def === 'battle' ? ' a battle' : oppOrWalker ? alt(' one of your opponents or a planeswalker an opponent controls', ' one of your opponents or a planeswalker they control') : def === 'opponent' && !orPw ? alt(' an opponent', ' one of your opponents')
         : ` ${K.player(def, st, 'object').text}${orPw}`;
       // CLOUD std-tmt (CR 506.2, 603.2c; family opponents-are-attacked): "one or more of your opponents are attacked", one occurrence for the declaration
       // (TriggerDef.wholeBatch); "one or more creatures attack an opponent" is one for each opponent attacked (std-tla), so the two are no longer one reading
@@ -410,12 +435,21 @@ function eventParts(ev: EventPattern, st: RenderState, tense: Tense, o: EventOpt
         }
         // std-mkm (CR 508.1a, 603.2c): "whenever a player attacks with three or more creatures", "whenever an opponent attacks with ..." (the active player's
         // declaration; parser/holes/event.ts#playerAttacksWith)
-        if (a && (a.controller === undefined || a.controller === 'opponent') && tense === 'present' && !defender && ev.count.op === '>=') {
+        // pc-combat-1 (CR 508.1b, 303.4; the Curses): ... and the attackers' player attacking enchanted player, "whenever a player attacks enchanted player with one or more creatures"
+        const enchantedDef = typeof def === 'object' && (def as { ref?: string }).ref === 'enchantedPlayer' && a?.controller === undefined;
+        // pc-combat-3 (CR 508.1a-b, 603.2c; Lulu, Stern Guardian, Everett K. Ross): "whenever an opponent attacks you [with two or more creatures]" (parser/holes/event.ts#opponentAttacksYou)
+        const oppAttacksYou = def === 'you' && ev.orPlaneswalker !== true && a?.controller === 'opponent' && o.batch === true;
+        if (a && (a.controller === undefined || a.controller === 'opponent') && tense === 'present' && ((!defender || enchantedDef) || oppAttacksYou) && ev.count.op === '>=') {
           const rest: ObjectFilter = { ...a, controller: undefined };
           if (Object.values(rest).some((v) => v !== undefined)) {
             const who = a.controller === 'opponent' ? 'an opponent' : 'a player';
             // std-combat-1 (CR 508.1a, 603.2c; family attacks-with-creatures): one or more creatures of a declaration, "whenever an opponent attacks with creatures"
             const bare = ev.count.value === 1 && Object.keys(rest).every((k) => (rest as Record<string, unknown>)[k] === undefined || k === 'types') && JSON.stringify(rest.types) === '["Creature"]';
+            if (enchantedDef) return { subject: '', predicate: alt(`${cw} ${kind} attack${defender}`, `a player attacks${defender} with ${cw} ${K.np(rest, st, { det: 'none', plural: true })}`, ...(bare ? ['enchanted player is attacked'] : [])), plural: true };
+            if (oppAttacksYou) {
+              const bareOne = ev.count.value === 1 && JSON.stringify(rest.types) === '["Creature"]' && Object.keys(rest).every((k) => (rest as Record<string, unknown>)[k] === undefined || k === 'types');
+              return { subject: '', predicate: alt(`${cw} ${kind} attack you`, `an opponent attacks you with ${cw} ${K.np(rest, st, { det: 'none', plural: true })}`, ...(bareOne ? ['an opponent attacks you'] : [])), plural: true };
+            }
             return { subject: '', predicate: alt(`${cw} ${kind} attack`, `${who} attacks with ${cw} ${K.np(rest, st, { det: 'none', plural: true })}`, ...(bare ? [`${who} attacks with creatures`] : [])), plural: true };
           }
         }
@@ -435,6 +469,15 @@ function eventParts(ev: EventPattern, st: RenderState, tense: Tense, o: EventOpt
     }
     // std-rx35 (CR 509.1h): "Whenever ~ attacks and isn't blocked" (present tense only: the trigger's own words)
     case 'attacksUnblocked': {
+      // pc-combat-4 (CR 509.1h, 508.1b; Coveted Jewel): "one or more creatures an opponent controls attack you and aren't blocked", the unblocked attackers of a player
+      if (ev.defender !== undefined) {
+        if (tense !== 'present' || typeof ev.defender !== 'string' || ev.defender === 'any') throw new NoRenderer('"attack <player> and aren\'t blocked" other than present tense and a named player');
+        const who = K.player(ev.defender, st, 'object').text;
+        const sb = ev.attacker ? subjectOf(ev.attacker, st, o) : o.batch ? { text: 'one or more creatures', plural: true } : { text: 'a creature', plural: false };
+        // "creatures an opponent controls" is also said "creatures your opponents control" (family attacks-one-of-your-opponents' sibling: the same set)
+        const subjText = ev.attacker?.controller === 'opponent' && sb.plural ? alt(sb.text, sb.text.replace('your opponents control', 'an opponent controls')) : sb.text;
+        return sb.plural ? { subject: subjText, predicate: `attack ${who} and aren't blocked`, plural: true } : { subject: sb.text, predicate: `attacks ${who} and isn't blocked`, plural: false };
+      }
       if (tense !== 'present' || o.batch) throw new NoRenderer('"attacks and isn\'t blocked" in another tense or as a batch');
       const subj = ev.attacker ? subjectOf(ev.attacker, st, o) : { text: 'a creature', plural: false };
       if (subj.plural) throw new NoRenderer('"attack and aren\'t blocked" of several creatures');
@@ -815,6 +858,12 @@ function actionParts(ev: Extract<EventPattern, { ev: 'action' }>, st: RenderStat
     const s = subjectOf(ev.object, st, o);
     return { subject: s.text, predicate: passive(passiveVerbs[verbWord]!, tense, s.plural), plural: s.plural };
   }
+  // p2-trigger-events-1 (CR 701.17a; parser/holes/event.ts): "one or more nonland cards are milled" (no player named: any player's mill), the cards in the
+  // graveyard they went to
+  if (verbWord === 'mill' && ev.actor === undefined && ev.object !== undefined && tense === 'present') {
+    const s = subjectOf({ ...ev.object, zone: 'graveyard' }, st, o, true, 'card');
+    return { subject: s.text, predicate: passive('milled', tense, s.plural), plural: s.plural };
+  }
   const p = playerSubject(ev.actor ?? 'any', st);
   st.mentioned.add('e:player');
   // Cloud r3-repl (CR 701.17a, 614.1a): a replaced mill is "if an opponent would mill one or more cards" (the mill proposal, effects/proposal-kinds/mill.ts)
@@ -833,8 +882,10 @@ function actionParts(ev: Extract<EventPattern, { ev: 'action' }>, st: RenderStat
   if (verbWord !== 'playLand' && ev.from !== undefined) throw new NoRenderer(`the zone of the action ${verbWord}`);
   // std-lci (CR 701.9a): what a player discards is a card in their hand ("whenever an opponent discards a land card"), never a permanent; CMD4 (CR 702.29a): so is
   // what a player cycles ("whenever you cycle a creature card"); ~ itself keeps its own name
+  // p2-trigger-events-1 (CR 701.17a): what a player mills is a card ("whenever a player mills a nonland card"), judged in the graveyard it went to
   const what = (verbWord === 'discard' || verbWord === 'cycle') && ev.object !== undefined && ev.object.zone === undefined && ev.object.self === undefined
-    ? { ...ev.object, zone: 'hand' as const } : ev.object;
+    ? { ...ev.object, zone: 'hand' as const }
+    : verbWord === 'mill' && ev.object !== undefined && ev.object.zone === undefined && ev.object.self === undefined ? { ...ev.object, zone: 'graveyard' as const } : ev.object;
   const noZone = what !== ev.object ? { noZone: true } : {};
   // CLOUD std-misc: "whenever you sacrifice ~ or another artifact" (the sacrificed object of a sacrifice by the controller, CR 701.21a)
   const one = (f: ObjectFilter): string => (verbWord === 'sacrifice' && ev.actor === 'you' ? selfOrAnother(f, f, st, K.np(f, st, { det: 'a' })) : K.np(f, st, { det: 'a', ...noZone }));
@@ -1058,7 +1109,14 @@ export function events(list: EventPattern[], st: RenderState, tense: Tense, o: E
   }
   const diesAll = list.every((e) => e.ev === 'zoneChange' && e.from === 'battlefield' && e.to === 'graveyard');
   if (diesAll && parts.every((p) => p.subject !== '' && !p.plural) && new Set(parts.map((p) => p.subject)).size === parts.length) {
-    return alt(joined, `${joinList(parts.map((p) => p.subject), 'or')} ${passive('put into a graveyard', tense, false)} from the battlefield`);
+    // p2-trigger-events-1 (CR 700.4; Headless Rider): and "dies" when the first subject is the object itself and it is a creature ("~ or another nontoken Zombie you
+    // control dies": the others are described by a creature type, as FAST1 T4's "another Zombie you control dies"; family dies-wording)
+    const own = st.ctx.selfTypes?.map((t) => t.toLowerCase());
+    // ("another" says the object itself is of the others' kind: their creature types are its own, as render/evt.ts#selfOrAnother requires; anything else fails closed)
+    const kindOfSelf = (f: ObjectFilter): boolean => !isSelfOnly(f) && f.allTypes === undefined && (f.types ?? []).every((t) => t === 'Creature') && (f.subtypes ?? []).every((t) => own?.includes(t.toLowerCase()) === true);
+    const selfDies = tense === 'present' && parts[0]!.subject === '~' && own?.includes('creature') === true && list.slice(1).every((e) => e.ev === 'zoneChange' && kindOfSelf(e.subject));
+    const both = `${joinList(parts.map((p) => p.subject), 'or')} ${passive('put into a graveyard', tense, false)} from the battlefield`;
+    return selfDies ? alt(joined, both, `${joinList(parts.map((p) => p.subject), 'or')} dies`) : alt(joined, both);
   }
   return joined;
 }

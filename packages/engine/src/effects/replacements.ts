@@ -18,6 +18,7 @@
  * 616.1 want it). One field the matcher leaves to its callers is evaluated here: `is` (a fixed set of objects, CR 611.2c) at the top of a role filter; a pattern
  * with `is` anywhere else never matches. `zoneChange.cause` is compared with the cause of the move.
  */
+import { ENTERING_TOGETHER } from './entering-together';
 import type { Game } from '../core/game';
 import type { Condition, Destination, EventPattern, ObjectFilter, ReplacementBody, ReplacementDef, StaticAbilityDef } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
@@ -220,13 +221,20 @@ export function matchProposed(g: Game, pattern: EventPattern, e: Proposed, sourc
   return matchEvent(p, semOf(g, e), { g, source, controller, lookBack: false });
 }
 
-/** Cloud r3-repl: does the token definition `defId` (the face `face`) match `f`, a filter of card types (any of, CR 205.2a) and `token`? Fails closed otherwise. */
+/**
+ * Cloud r3-repl: does the token definition `defId` (the face `face`) match `f`, a filter of card types (any of, CR 205.2a) and `token`? Fails closed otherwise.
+ * pc-tokens-2 (CR 205.3, 111.10): also subtypes (all of them) and `anyOf` (one of several such filters): "a Clue, Food, or Treasure token" (Academy Manufactor).
+ */
 function tokenDefMatches(g: Game, f: ObjectFilter, defId: string, face: number): boolean {
-  if (Object.keys(f).some((k) => k !== 'types' && k !== 'token')) return false;
+  if (Object.keys(f).some((k) => k !== 'types' && k !== 'token' && k !== 'subtypes' && k !== 'anyOf')) return false;
   if (f.token === false) return false;
-  const types = g.s.defs[defId]?.faces[face]?.types;
+  const chars = g.s.defs[defId]?.faces[face];
+  const types = chars?.types;
   if (!types) return false;
-  return f.types === undefined || f.types.some((t) => (types as string[]).includes(t));
+  if (f.types !== undefined && !f.types.some((t) => (types as string[]).includes(t))) return false;
+  if (f.subtypes !== undefined && !f.subtypes.every((t) => ((chars?.subtypes ?? []) as string[]).includes(t))) return false;
+  if (f.anyOf !== undefined && !f.anyOf.some((a) => tokenDefMatches(g, a, defId, face))) return false;
+  return true;
 }
 
 // ---- conditions ---------------------------------------------------------------------------------------------------------------------
@@ -427,6 +435,7 @@ function foreignCandidates(g: Game, e: Proposed, at: MatchGame): Candidate[] {
   for (const x of entries) {
     const o = g.s.objects[x.object];
     if (!o || o.zone !== x.zone) continue;
+    if (x.effect.body.b === 'enters' && ENTERING_TOGETHER.get(g)?.has(o.id) === true) continue; // CR 614.12: entering at the same time
     if (!bodyFits(e, x.effect.body, g)) continue;
     const controller = controllerOf(g.s, o);
     if (!matchProposed(at(), x.effect.replaces, e, o.id, controller)) continue;

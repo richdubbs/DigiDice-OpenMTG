@@ -50,6 +50,8 @@ export interface RefInfo {
   anyOne?: true;
   /** std-rx31 ADDITION (optional): the binding records whether you cast a spell you were offered to cast ("You may cast it. Otherwise, ...", render/steps-flow.ts). */
   castOption?: true | 'inIf';
+  /** pc-tokens-1 ADDITION (optional), CR 608.2d, 101.4: the binding records which players of a group did the optional action of "each opponent may ..." ("For each opponent who does, ...", render/steps-flow.ts#repeat). */
+  eachMay?: 'opponent' | 'player';
   /** std-rx31 ADDITION (optional): the binding records a move of the one card a choice revealed ("If you didn't put the revealed card onto the battlefield this way", render/cond.ts). */
   revealedPut?: true;
   /**

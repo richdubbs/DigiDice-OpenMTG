@@ -14,7 +14,7 @@ import { lookBackApplies, lookBackKinds } from './lookback';
 import { isManaActivationPattern, isTriggeredManaAbility } from './forms';
 import { historyMatches, type FactsEnv } from '../rules/history';
 import { matchEvent } from './match';
-import { batchOccurrences, byOccurrenceAmount, occurrences, perEventPattern } from './occurrences';
+import { batchOccurrences, byAttackedCount, byOccurrenceAmount, occurrences, perEventPattern } from './occurrences';
 import { triggersPossible } from './possible';
 import { hasReadAhead } from '../statics/levels';
 import { keywordRegistry } from '../keywords/registry';
@@ -446,7 +446,7 @@ function collectWith(g: Game, all: readonly SemEvent[], mode: CollectMode, histo
       // CR 603.2c; PUSH1 T2: the combat damage of a step is one event for a damage trigger that names one side of it (CR 510.2, triggers/occurrences.ts)
       // ... and the counters put on ONE creature are one occurrence of "one or more counters are put on a creature" (triggers/occurrences.ts#batchOccurrences)
       // CLOUD std-misc (CR 603.2c): "one or more players discard one or more cards" is the whole batch, once (TriggerDef.wholeBatch)
-      let groups = ab.def.kind === 'triggered' && ab.def.trigger.batch ? (ab.def.trigger.wholeBatch === true ? [matched] : batchOccurrences(patterns, matched)) : byOccurrenceAmount(patterns, occurrences(patterns, matched));
+      let groups = ab.def.kind === 'triggered' && ab.def.trigger.batch ? (ab.def.trigger.wholeBatch === true ? [matched] : byAttackedCount(patterns, batchOccurrences(patterns, matched))) : byOccurrenceAmount(patterns, occurrences(patterns, matched));
       const trig = ab.def.kind === 'triggered' ? ab.def.trigger : undefined;
       // FAST4 T27 (CR 603.2, 603.2c): "for the first time each turn": only the first occurrence of the turn, and none when one happened before this batch
       let firstUnknown = false;

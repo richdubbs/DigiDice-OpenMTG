@@ -1,0 +1,3 @@
+# pc-exile-play-4 (precon lane pc-exile-play; test/cloud/pc-exile-play-4, golden pc-exile-play-4-review.json): cast spells from among exiled cards for life, any number of linked cards free
+Xander's Pact
+Izzet Chemister

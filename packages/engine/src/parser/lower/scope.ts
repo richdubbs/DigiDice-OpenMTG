@@ -190,6 +190,9 @@ export function eventMentions(on: readonly EventPattern[], batch: boolean, selfH
       // std-combat-1 (CR 508.1, 508.5, 608.2c; Tomik, Wielder of Law): "Whenever an opponent attacks with creatures, ... that opponent loses 3 life": the clause names the
       // attacking player (the opponent whose creatures attack) and not whom they attack, so the defending player is no antecedent of "that opponent" / "they"
       if (role === 'defender' && on.every((p) => p.ev === 'attacks' && p.defender === undefined && p.attacker?.controller === 'opponent' && p.attacker.self === undefined)) continue;
+      // pc-combat-1 (CR 508.1, 303.4; the Curses): "Whenever a player attacks enchanted player with one or more creatures, that attacking player may discard a card. If the player
+      // does, they draw a card": the defender is named "enchanted player" in the clause, and "they" / "that player" are the attacking player (the `player` role) alone
+      if (role === 'defender' && on.every((p) => p.ev === 'attacks' && isRec(p.defender) && (p.defender as { ref?: string }).ref === 'enchantedPlayer' && p.attacker?.controller === undefined && p.attacker?.self === undefined)) continue;
       // a damaged "recipient" may be a player or an object; the role reads as a player reference only when the pattern says it is a player
       if (role === 'recipient' && !on.every((p) => p.ev === 'damage' && p.recipient?.player !== undefined && p.recipient.object === undefined)) continue;
       out.push({ sort: 'player', number: 'singular', heads: ['player', 'opponent'], ref: { ref: 'event', role }, origin: 'event', unit: -1 });

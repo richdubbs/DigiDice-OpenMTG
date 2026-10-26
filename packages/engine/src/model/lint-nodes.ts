@@ -396,9 +396,9 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
             && (node.path.startsWith(`${a.path}/do/`) || node.path.startsWith(`${a.path}/otherwise/`))) inLoop = true;
           // C6 (CR 608.2e, 101.4): "each opponent sacrifices a creature with the greatest power among creatures they control": the sacrifice of a group binds each
           // choosing player as iterating while that player chooses (effects/handlers/zones-remove.ts#asChooser); only in its filter
-          if (a.def === 'EffectStep' && a.value['op'] === 'sacrificeChoice' && rec(a.value['who'])['ref'] === 'each' && node.path.startsWith(`${a.path}/filter/`)) inLoop = true;
+          if (a.def === 'EffectStep' && a.value['op'] === 'sacrificeChoice' && (rec(a.value['who'])['ref'] === 'each' || rec(a.value['who'])['ref'] === 'eachWho') && node.path.startsWith(`${a.path}/filter/`)) inLoop = true;
           // r5-refs (CR 608.2e, 101.4): ... and in its count, which the handler reads for each choosing player ("sacrifices half the creatures they control")
-          if (a.def === 'EffectStep' && a.value['op'] === 'sacrificeChoice' && rec(a.value['who'])['ref'] === 'each' && a.value['mode'] !== 'all' && node.path.startsWith(`${a.path}/count/`)) inLoop = true;
+          if (a.def === 'EffectStep' && a.value['op'] === 'sacrificeChoice' && (rec(a.value['who'])['ref'] === 'each' || rec(a.value['who'])['ref'] === 'eachWho') && a.value['mode'] !== 'all' && node.path.startsWith(`${a.path}/count/`)) inLoop = true;
           // std-rx30 (CR 608.2e, 101.4): "Each player loses half their life, then discards half the cards in their hand": the amount of a life change or the count of a
           // discard of a group, which the handler reads for each player (effects/handlers/cards-util.ts#readFor)
           if (a.def === 'EffectStep' && (a.value['op'] === 'loseLife' || a.value['op'] === 'gainLife') && rec(a.value['who'])['ref'] === 'each' && node.path.startsWith(`${a.path}/amount/`)) inLoop = true;
@@ -726,7 +726,7 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
       }
       if (st['op'] !== 'if') return false;
       const lists = [st['then'], ...(st['else'] !== undefined ? [st['else']] : [])];
-      return lists.every((l) => Array.isArray(l) && l.length > 0 && l.every((x) => rec(x)['op'] === 'addMana' && Array.isArray(rec(x)['units']) && rec(x)['guard'] === undefined));
+      return lists.every((l) => Array.isArray(l) && l.length > 0 && l.every((x) => rec(x)['op'] === 'addMana' && (Array.isArray(rec(x)['units']) || typeof rec(rec(x)['dynamic'])['kind'] === 'string') && rec(x)['guard'] === undefined)); // pc-keywords-mana-2: and a dynamic production
     }
 
     /** r3-cost: "Add {R}. When you do, ..." (a reflexive trigger of the mana the ability adds, CR 603.12; the resolver runs it, the trigger uses the stack). */

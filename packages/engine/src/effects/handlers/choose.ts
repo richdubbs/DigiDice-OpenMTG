@@ -286,7 +286,7 @@ const COLOR_WORDS: Record<string, (typeof COLORS)[number]> = { w: 'W', u: 'U', b
 /** CR 205.2a. */
 const CARD_TYPES = ['Artifact', 'Battle', 'Conspiracy', 'Creature', 'Dungeon', 'Enchantment', 'Instant', 'Kindred', 'Land', 'Phenomenon', 'Plane', 'Planeswalker', 'Scheme', 'Sorcery', 'Vanguard'];
 /** CR 205.3i, spelled as rules/filter.ts spells them. */
-const LAND_TYPES = ['Cave', 'Desert', 'Forest', 'Gate', 'Island', 'Lair', 'Locus', 'Mine', 'Mountain', 'Plains', 'Planet', 'Power-Plant', 'Sphere', 'Swamp', 'Tower', 'Town', 'Urza’s'];
+export const LAND_TYPES = ['Cave', 'Desert', 'Forest', 'Gate', 'Island', 'Lair', 'Locus', 'Mine', 'Mountain', 'Plains', 'Planet', 'Power-Plant', 'Sphere', 'Swamp', 'Tower', 'Town', 'Urza’s'];
 
 const NAME_LISTS: Partial<Record<ChoiceKind, readonly string[]>> = { creatureType: [...ALL_CREATURE_TYPES], cardType: CARD_TYPES, landType: LAND_TYPES };
 

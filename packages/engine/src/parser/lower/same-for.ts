@@ -14,6 +14,21 @@ const sameForNode = (u: Unit): Rec | null => {
   return isRec(only) && only['lower'] === 'sameFor' ? only : null;
 };
 
+/** pc-combat-1 (CR 608.2c, 508.1, 303.4; the Curses): the node of "Each opponent attacking that player does the same" (template eff.pccombat1.attackersDoTheSame). */
+const attackersNode = (u: Unit): Rec | null => {
+  const only = u.steps.length === 1 ? u.steps[0] : undefined;
+  return isRec(only) && only['lower'] === 'attackersDoSame' ? only : null;
+};
+
+/**
+ * pc-combat-1 (CR 608.2c, 508.1a, 303.4; Curse of Opulence, Curse of Vitality): the opponents who attack the player the source Aura is attached to, "each opponent attacking that
+ * player" (the attackers of one declaration are all the active player's, CR 508.1a, so these are the opponents with a creature attacking enchanted player). The player of
+ * `eachWho` with scope `attacking` reads them as the effect resolves (the opponents who control a creature attacking that player; effects/refs.ts), as the Curse of Opulence ruling says.
+ */
+export const ATTACKING_ENCHANTED_PLAYER = { ref: 'eachWho', who: 'opponent', did: { ev: 'attacks', defender: { ref: 'enchantedPlayer' } }, scope: 'attacking' } as const;
+/** The instructions "does the same" repeats for those players: a player's own draw, life gain or token creation (the performer is the `who` of the step). */
+const SAME_FOR_PLAYER = ['draw', 'gainLife', 'createToken'];
+
 /** The one keyword the step names (its keyword tests and keyword counters), or null when it names none, two, or the keyword in any other place. */
 function onlyKeyword(step: Rec): string | null {
   const seen = new Set<string>();
@@ -49,10 +64,19 @@ function listedKeywords(what: unknown): string[] | null {
 }
 
 export function lowerSameFor(draft: Draft): Draft {
-  if (!sequences(draft).some((seq) => seq.some((u) => sameForNode(u) !== null))) return draft;
+  if (!sequences(draft).some((seq) => seq.some((u) => sameForNode(u) !== null || attackersNode(u) !== null))) return draft;
   const d = cloneDraft(draft);
   for (const seq of sequences(d)) {
     seq.forEach((u, i) => {
+      if (u.manual === undefined && attackersNode(u) !== null) {
+        const prev = seq[i - 1];
+        const failA = (reason: string): void => setManual(u, { code: 'unbound-reference', reason: `"each opponent attacking that player does the same": ${reason} (CR 608.2c)` });
+        const step = prev?.steps.length === 1 ? prev.steps[0] : undefined;
+        if (prev === undefined || i !== 1 || prev.manual !== undefined || prev.rider !== undefined || !isRec(step)) { failA('the sentence before it is not the one understood instruction of the ability'); return; }
+        if (typeof step['op'] !== 'string' || !SAME_FOR_PLAYER.includes(step['op']) || JSON.stringify(step['who']) !== '{"ref":"you"}') { failA('the instruction before it is not a draw, life gain or token creation of the controller'); return; }
+        u.steps = [{ ...clone(step), who: { ...ATTACKING_ENCHANTED_PLAYER } }];
+        return;
+      }
       const node = sameForNode(u);
       if (u.manual !== undefined || node === null) return;
       const prev = seq[i - 1];

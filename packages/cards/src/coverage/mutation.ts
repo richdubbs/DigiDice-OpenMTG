@@ -196,6 +196,9 @@ export function exampleTypeLines(t: Pick<Template, 'kind'>, text: string): strin
   // std-typechange-2 (CR 306.8): a static ability about the object's own loyalty counters is a planeswalker's ("During your turn, as long as ~ has two or more loyalty
   // counters on it, ~ is a 2/5 Samurai creature ...": the renderer says that identity of a planeswalker only)
   if (t.kind === 'static' && /^during your turn, as long as ~ has [^,]* loyalty counters? on it,/i.test(text)) return ['Legendary Planeswalker — Example'];
+  // precon combined copy (CR 301.5, 303.4): "Equipped creature ..." is an Equipment's static ability; on an Aura the renderer says "enchanted creature", so such an
+  // example never parsed fully there and a template whose examples all begin "Equipped" had no near miss tried
+  if (t.kind === 'static' && /^equipped\b/i.test(text)) return ['Artifact — Equipment'];
   if (t.kind === 'static') return [/^(enchant|equip)/i.test(text) ? 'Enchantment — Aura' : 'Enchantment'];
   return [...new Set(['Instant', 'Sorcery', guessTypeLine(text)])];
 }

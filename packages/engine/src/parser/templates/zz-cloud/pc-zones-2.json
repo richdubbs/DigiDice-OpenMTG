@@ -1,0 +1,233 @@
+[
+  {
+    "id": "eff.pczones2.player.searches.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 110.2a",
+      "CR 608.2c",
+      "CR 102.3",
+      "CR 101.4"
+    ],
+    "pattern": "each player searches their library for ( a | an ) {f:Filter} card , puts it onto the battlefield , then shuffles",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player searches their library for a basic land card, puts it onto the battlefield, then shuffles."
+      },
+      {
+        "text": "Each player searches their library for a Swamp card, puts it onto the battlefield, then shuffles. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player searches their library for a basic land card, puts it onto the battlefield tapped, then shuffles.",
+      "Each player searches their library for a basic land card, puts it into their hand, then shuffles.",
+      "Target opponent searches their library for a basic land card, puts it onto the battlefield, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.pczones2.player.manifests.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.40a",
+      "CR 701.40b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} manifest[s] the top card of their library",
+    "build": {
+      "op": "action",
+      "action": "manifest",
+      "who": "$p"
+    },
+    "subject": "player",
+    "needs": [
+      "action:manifest"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature. Its controller manifests the top card of their library."
+      },
+      {
+        "text": "Destroy target artifact. Its controller manifests the top card of their library."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature. Its controller manifests the top two cards of their library.",
+      "Exile target creature. Its controller manifests the top card of your library.",
+      "Exile target creature. Its controller manifests the top card of their library face up."
+    ]
+  },
+  {
+    "id": "eff.pczones2.is.colorSubtype.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 105.3",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 611.2a",
+      "CR 400.7"
+    ],
+    "pattern": "( {o:ItIs} | {o:Obj} is ) ( a | an ) {c:Color} {st:Subtypes} in addition to its other colors and types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "add": [
+                  "$c"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. It's a blue Zombie in addition to its other colors and types."
+      },
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. That creature is a red Elf in addition to its other colors and types."
+      }
+    ],
+    "counterExamples": [
+      "It's a blue Zombie in addition to its other colors and types.",
+      "Return target creature card from your graveyard to the battlefield. It's a blue Zombie.",
+      "Return target creature card from your graveyard to the battlefield. It's a blue Zombie in addition to its other colors and types until end of turn.",
+      "Return target creature card from your graveyard to the battlefield. It's a blue Zombie in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.pczones2.search.upTo.shareLandType.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 205.3i",
+      "CR 701.24a",
+      "CR 110.2a"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards that share a land type , put them onto the battlefield tapped , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "shareLandType": true,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "then",
+      "share"
+    ],
+    "needs": [
+      "op:search.shareLandType"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to three basic land cards that share a land type, put them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Search your library for up to two land cards that share a land type, put them onto the battlefield tapped, then shuffle. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three basic land cards, put them onto the battlefield tapped, then shuffle.",
+      "Search your library for up to three basic land cards that share a land type, put them onto the battlefield, then shuffle.",
+      "Search your library for up to three basic land cards that share a creature type, put them onto the battlefield tapped, then shuffle."
+    ]
+  }
+]

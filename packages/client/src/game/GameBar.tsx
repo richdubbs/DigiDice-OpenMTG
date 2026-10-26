@@ -1,5 +1,5 @@
 /**
- * The game's top bar (branding slot 3, docs/design/branding.md): the Menu button with the DigiDice logo mark (Settings, About, Report a bug and a quiet
+ * The game's top bar (branding slot 3, docs/design/branding.md): the Menu button with the DigiDice logo mark (Home, Decks, Replays, Images, Settings, About, Report a bug and a quiet
  * Donate only when brand.json has a URL), the turn, active player and step, Undo (hot-seat), Concede and Leave. Concede and Leave ask first.
  *
  * While the hot-seat pass cover is up (`covered`) the bar sits inside the cover and shows only Concede (CR 104.3a: at any time) and Leave: nothing of
@@ -38,6 +38,11 @@ export interface GameBarProps {
   /** Open Settings or About; the game stays where it is (the route keeps its connection). */
   onSettings: () => void;
   onAbout: () => void;
+  /**
+   * Optional: open Home, Decks, Replays or Images the same way, the game staying where it is (owner, 2026-10-25: every menu but Play stays usable during
+   * a game). Absent: the menu has only Settings and About.
+   */
+  onOpen?: (screen: MenuScreen) => void;
   /** Inside the hot-seat pass cover: only Concede and Leave. */
   covered?: boolean;
   /** RPL-2 (optional): Leave goes at once, without asking (a replay: nothing is lost by leaving it). Absent or false: Leave asks while the game runs. */
@@ -49,8 +54,16 @@ export interface GameBarProps {
 
 type Panel = 'concede' | 'leave' | 'menu';
 
+export type MenuScreen = 'home' | 'decks' | 'replays' | 'images';
+const MENU_SCREENS: { screen: MenuScreen; label: string }[] = [
+  { screen: 'home', label: 'Home' },
+  { screen: 'decks', label: 'Decks' },
+  { screen: 'replays', label: 'Replays' },
+  { screen: 'images', label: 'Images' },
+];
+
 export function GameBar({
-  view, undo, concedable, onConcede, onLeave, leaveConcedes = false, leaveConfirm, onSettings, onAbout, covered = false, leaveAtOnce = false, onReportBug, brand = BRAND,
+  view, undo, concedable, onConcede, onLeave, leaveConcedes = false, leaveConfirm, onSettings, onAbout, onOpen, covered = false, leaveAtOnce = false, onReportBug, brand = BRAND,
 }: GameBarProps) {
   const [open, setOpen] = useState<Panel | null>(null);
   const concedeButton = useRef<HTMLButtonElement>(null);
@@ -128,7 +141,13 @@ export function GameBar({
       </div>
       {open === 'menu' && (
         <div id="game-menu" className="game-menu" role="group" aria-label="Game menu">
-          <button ref={first} type="button" onClick={onSettings}>
+          {onOpen &&
+            MENU_SCREENS.map((m, i) => (
+              <button key={m.screen} {...(i === 0 ? { ref: first } : {})} type="button" onClick={() => onOpen(m.screen)}>
+                {m.label}
+              </button>
+            ))}
+          <button {...(onOpen ? {} : { ref: first })} type="button" onClick={onSettings}>
             Settings
           </button>
           <button type="button" onClick={onAbout}>

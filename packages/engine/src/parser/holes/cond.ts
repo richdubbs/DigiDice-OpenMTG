@@ -235,6 +235,19 @@ function control(ctx: HoleCtx, pos: number): Alt[] {
     const t = ctx.toks[s.end]?.norm;
     const push = (end: number, c: Condition, flags?: string[]): void => { out.push({ end, value: s.neg ? { cond: 'not', of: c } : c, ...(flags && flags.length > 0 ? { flags } : {}) }); };
     if (t === 'a' || t === 'an') for (const n of npAlts(ctx, s.end + 1)) { const f = n.number === 'singular' ? withController(n.filter, s.pred) : null; if (f) push(n.end, exists(f), n.flags); }
+    // pc-keywords-mana-1 (CR 205.3i, 608.2c; Urza's Mine: "If you control an Urza's Power-Plant and an Urza's Tower"): a permanent of each of two descriptions. One object can be
+    // both when it fits both ("an artifact and a creature"), so it is two `exists` and not two objects. Only the positive form: "you don't control A and B" is ambiguous
+    if (!s.neg && s.pred === 'you' && (t === 'a' || t === 'an')) {
+      for (const n of npAlts(ctx, s.end + 1)) {
+        const f = n.number === 'singular' ? withController(n.filter, s.pred) : null;
+        const art = ctx.toks[n.end + 1]?.norm;
+        if (!f || ctx.toks[n.end]?.norm !== 'and' || (art !== 'a' && art !== 'an')) continue;
+        for (const m of npAlts(ctx, n.end + 2)) {
+          const g = m.number === 'singular' ? withController(m.filter, s.pred) : null;
+          if (g) out.push({ end: m.end, value: { cond: 'all', of: [exists(f), exists(g)] }, ...(n.flags.length + m.flags.length > 0 ? { flags: [...n.flags, ...m.flags] } : {}) });
+        }
+      }
+    }
     // FAST5 T62 (CR 303.4b): "you control an enchanted creature": a creature an Aura is attached to (the bare "enchanted creature" is the object the source Aura is attached to)
     if ((t === 'a' || t === 'an') && ctx.toks[s.end + 1]?.norm === 'enchanted') {
       for (const n of npAlts(ctx, s.end + 2)) {
@@ -1737,6 +1750,7 @@ const unannounced = (alts: Alt[]): Alt[] => alts.map((a) => ({ ...a, flags: [...
 const W_CARDS_ARE_IN_YOUR_GRAVEYARD = P('cards are in your graveyard');
 const W_OPPONENT_MORE_CARDS_IN_HAND = P('an opponent has more cards in hand than you');
 const W_OPPONENT_MORE_LIFE = P('an opponent has more life than you');
+const W_YOU_MORE_LIFE_THAN_OPPONENT = P('you have more life than an opponent'); // pc-players-1
 
 const W_SOURCES_YOU_CONTROLLED_DEALT = P('sources you controlled dealt damage this turn');
 const W_SOURCES_YOU_CONTROLLED_DEALT_N = P('sources you controlled dealt'); // std-rB
@@ -1804,6 +1818,43 @@ function opponentMoreLife(ctx: HoleCtx, pos: number): Alt[] {
   const e = phraseAt(ctx, pos, W_OPPONENT_MORE_LIFE);
   if (e < 0) return [];
   return [{ end: e, value: compare({ q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, lifeVs: { op: '>', than: { ref: 'you' } } }, '>=', 1) }];
+}
+
+/**
+ * pc-players-1 (CR 119.1, 102.3): "you have more life than an opponent" (Survival Cache): at least one opponent's life total is less than yours (`countPlayers.lifeVs` with
+ * `<`: each opponent judged alone, however many there are). Life changes during a turn, so it is checked as the ability resolves.
+ */
+function youMoreLifeThanOpponent(ctx: HoleCtx, pos: number): Alt[] {
+  const e = phraseAt(ctx, pos, W_YOU_MORE_LIFE_THAN_OPPONENT);
+  if (e < 0) return [];
+  return [{ end: e, value: compare({ q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, lifeVs: { op: '<', than: { ref: 'you' } } }, '>=', 1) }];
+}
+
+const W_MORE_CARDS_IN_HAND_THAN_YOU = P('more cards in hand than you');
+const W_MORE_LIFE_THAN_YOU = P('more life than you');
+
+/**
+ * pc-players-2 (CR 402.1, 119.1, 608.2c; Slithermuse, Sandstone Oracle): "that player has more cards in hand than you", "that player has more life than you": the player an
+ * earlier instruction named (an anaphor the anaphora pass resolves, lower/anaphora.ts; the opponent chosen) has a bigger hand (a higher life total) than you do, read as the
+ * instruction is performed. Only a single-player reference and only "more ... than you".
+ */
+function playerMoreThanYou(ctx: HoleCtx, pos: number): Alt[] {
+  const out: Alt[] = [];
+  for (const p of ctx.call('Player', pos)) {
+    const v = p.value as Record<string, unknown>;
+    if (v === null || typeof v !== 'object' || !('$anaphor' in v || ONE_PLAYER_REFS.has(String(v['ref'])))) continue;
+    if (v['ref'] === 'you') continue;
+    for (const h of W_HAS) {
+      const has = phraseAt(ctx, p.end, h);
+      if (has < 0) continue;
+      const flags = p.flags ? { flags: p.flags } : {};
+      const hand = phraseAt(ctx, has, W_MORE_CARDS_IN_HAND_THAN_YOU);
+      if (hand >= 0) out.push({ end: hand, value: compare({ q: 'zoneSize', zone: 'hand', of: v as never }, '>', { q: 'zoneSize', zone: 'hand', of: { ref: 'you' } }), ...flags });
+      const life = phraseAt(ctx, has, W_MORE_LIFE_THAN_YOU);
+      if (life >= 0) out.push({ end: life, value: compare({ q: 'life', of: v as never }, '>', { q: 'life', of: { ref: 'you' } }), ...flags });
+    }
+  }
+  return out;
 }
 
 const W_SPELL_WARPED = P('a spell was warped this turn');
@@ -2384,7 +2435,7 @@ function atoms(ctx: HoleCtx, pos: number): Alt[] {
     ...unannounced(W_PLAYED_OR_CAST_ELSEWHERE.flatMap((w) => { const e = phraseAt(ctx, pos, w); return e >= 0 ? [{ end: e, value: playedOrCastElsewhere() }] : []; })), // r5-trig (CR 305.1, 601.2a)
     // std-lci's zone changes of the turn ("activate only if an artifact entered the battlefield under your control this turn") are flagged as every history is: an
     // activation restriction keeps one the announcement reads (lower/activation.ts#condOf; std-blb's turnHistoryAtAnnouncement, the one reader of this turn's history)
-    ...unannounced([...zoneHistory(ctx, pos), ...t23Misc(ctx, pos), ...warped(ctx, pos), ...e22History(ctx, pos), ...earlyTurn(ctx, pos), ...opponentHandSize(ctx, pos), ...opponentMoreLife(ctx, pos)]),
+    ...unannounced([...zoneHistory(ctx, pos), ...t23Misc(ctx, pos), ...warped(ctx, pos), ...e22History(ctx, pos), ...earlyTurn(ctx, pos), ...opponentHandSize(ctx, pos), ...opponentMoreLife(ctx, pos), ...youMoreLifeThanOpponent(ctx, pos), ...playerMoreThanYou(ctx, pos)]),
     ...unannounced(sourcesDealtDamage(ctx, pos)), // cloud r3-mech (CR 120.1, 719.3a): "three or more sources you controlled dealt damage this turn"
     ...unannounced(p2iv2CondAt(ctx, pos)), // p2-intervening-2 (CR 603.4; parser/holes/p2iv2.ts)
     ...graveyardSize(ctx, pos), // FAST5 T53 (CR 404.1)

@@ -1,0 +1,150 @@
+[
+  {
+    "id": "eff.pcep3.nextSpell.has.cascade",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.85a",
+      "CR 702.40a"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn has cascade",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "keyword",
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "cascade",
+        "text": "cascade"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: The next spell you cast this turn has cascade."
+      },
+      {
+        "text": "{1}, {T}: Scry 1. The next artifact spell you cast this turn has cascade."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: The next spell you cast has cascade.",
+      "{1}, {T}: The next spell an opponent casts this turn has cascade.",
+      "{1}, {T}: Spells you cast this turn have cascade."
+    ]
+  },
+  {
+    "id": "eff.pcep3.nextSpell.has.storm",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.85a",
+      "CR 702.40a"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn has storm",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "keyword",
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "storm",
+        "text": "storm"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: The next spell you cast this turn has storm."
+      },
+      {
+        "text": "{1}, {T}: Scry 1. The next artifact spell you cast this turn has storm."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: The next spell you cast has storm.",
+      "{1}, {T}: The next spell an opponent casts this turn has storm.",
+      "{1}, {T}: Spells you cast this turn have storm."
+    ]
+  },
+  {
+    "id": "eff.pcep3.nextSpell.two.each.cascade",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.85a",
+      "CR 702.40a"
+    ],
+    "pattern": "the next {f:Filter} and the next {g:Filter} you cast this turn each have cascade",
+    "build": [
+      {
+        "op": "nextSpell",
+        "who": {
+          "ref": "you"
+        },
+        "filter": "$f",
+        "rider": "keyword",
+        "keyword": {
+          "kind": "keyword",
+          "keyword": "cascade",
+          "text": "cascade"
+        }
+      },
+      {
+        "op": "nextSpell",
+        "who": {
+          "ref": "you"
+        },
+        "filter": "$g",
+        "rider": "keyword",
+        "keyword": {
+          "kind": "keyword",
+          "keyword": "cascade",
+          "text": "cascade"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "next",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: The next artifact spell and the next enchantment spell you cast this turn each have cascade."
+      },
+      {
+        "text": "{1}, {T}: Scry 1. The next creature spell and the next land spell you cast this turn each have cascade."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: The next artifact spell and the next enchantment spell you cast this turn each have storm.",
+      "{1}, {T}: The next artifact spell or the next enchantment spell you cast this turn each have cascade.",
+      "{1}, {T}: The next artifact spell and the next enchantment spell you cast each have cascade."
+    ]
+  }
+]

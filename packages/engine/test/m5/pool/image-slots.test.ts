@@ -147,8 +147,8 @@ describe('WP24 token variants: the interpreter\'s token and the index\'s token s
       for (const card of getTokens(t)) expect(keys(compileCard(card, noAbilityCompiler))).toEqual(oracleTokenVariantKeys(card));
     }
     const spirits = getTokens('Spirit').flatMap(oracleTokenVariantKeys);
-    expect(spirits).toHaveLength(6); // FAST5 MX6: the endure cards' white Spirit tokens (1/1, 2/2, 3/3, X/X) joined the fixture set; std-cardcopy-5: Kaya, Spirits' Justice's white-black 1/1
-    expect(new Set(spirits).size).toBe(6);
+    expect(spirits).toHaveLength(7); // FAST5 MX6: the endure cards' white Spirit tokens (1/1, 2/2, 3/3, X/X) joined the fixture set; std-cardcopy-5: Kaya, Spirits' Justice's white-black 1/1; pc-tokens-1: Ceaseless Conflict's red-white 3/2
+    expect(new Set(spirits).size).toBe(7);
     expect(spirits).toContain('Spirit (1/1 W Creature — Spirit; Flying)');
   });
 

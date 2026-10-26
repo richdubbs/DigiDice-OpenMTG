@@ -1,0 +1,127 @@
+[
+  {
+    "id": "eff.pccombat1.player.mayDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} may discard {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "may",
+        "who": "$p",
+        "do": [
+          {
+            "op": "discard",
+            "who": "$p",
+            "count": "$n"
+          }
+        ]
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent attacks with creatures, that player may discard a card."
+      },
+      {
+        "text": "Whenever a creature an opponent controls dies, its controller may discard two cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent attacks with creatures, that player may discard a card at random.",
+      "Whenever an opponent attacks with creatures, that player discards a card.",
+      "Whenever an opponent attacks with creatures, that player may draw a card."
+    ]
+  },
+  {
+    "id": "eff.pccombat1.player.mayCreateTapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 608.2d",
+      "CR 614.1c"
+    ],
+    "pattern": "{p:Player} may create {n:Qty} tapped {t:TokenDesc}",
+    "build": [
+      {
+        "op": "may",
+        "who": "$p",
+        "do": [
+          {
+            "op": "createToken",
+            "who": "$p",
+            "count": "$n",
+            "token": "$t",
+            "tapped": true
+          }
+        ]
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent attacks with creatures, that player may create a tapped 1/1 white Soldier creature token."
+      },
+      {
+        "text": "Whenever a creature an opponent controls dies, its controller may create two tapped Treasure tokens."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent attacks with creatures, that player may create a 1/1 white Soldier creature token.",
+      "Whenever an opponent attacks with creatures, that player creates a tapped 1/1 white Soldier creature token.",
+      "Whenever an opponent attacks with creatures, that player may create a tapped 1/1 white Soldier creature token that's attacking."
+    ]
+  },
+  {
+    "id": "eff.pccombat1.attackersDoTheSame",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 508.1",
+      "CR 506.3",
+      "CR 303.4"
+    ],
+    "pattern": "each opponent attacking that player does the same",
+    "build": {
+      "lower": "attackersDoSame"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "attacking",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Whenever enchanted player is attacked, draw a card. Each opponent attacking that player does the same."
+      },
+      {
+        "text": "Whenever enchanted player is attacked, you gain 3 life. Each opponent attacking that player does the same."
+      }
+    ],
+    "counterExamples": [
+      "Whenever enchanted player is attacked, draw a card. Each opponent who attacked that player does the same.",
+      "Each opponent attacking that player does the same.",
+      "Whenever enchanted player is attacked, draw a card. Each player attacking that player does the same."
+    ]
+  }
+]

@@ -121,6 +121,9 @@ export const SUPPORTED: readonly string[] = [
   // trek-2 (CR 700.2, 601.2b, 602.2b, 603.3c; "face a dilemma" is a new term, its rule number unverified): actions/announce.ts#chooseModes emits `actionPerformed`
   // 'faceDilemma' for the player who chooses one or more modes of a spell being cast, an ability being activated or a triggered ability being put on the stack
   'ev.action.faceDilemma',
+  // p2-trigger-events-1: CR 701.17a, a card moved from a library to a graveyard with the cause 'mill' (the mill op and the mill cost) is the owner's action `mill`
+  // (normalize.ts#CAUSE_VERBS), one for each card milled
+  'ev.action.mill',
 ];
 
 const isQuantityCmp = (c: NumberCmp | undefined): boolean => c !== undefined && typeof c.value !== 'number';

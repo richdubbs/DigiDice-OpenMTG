@@ -40,6 +40,7 @@ const COPY_ENTERS: MovePart = {
     const rec = copyRecord({
       id: g.newEffectId(), target: { id: o.id, zone: o.zone }, snapshot, of: { id: of.id, zone: of.zone }, source: { id: o.id, zone: o.zone }, sourceName: name,
       controller: o.controller, timestamp: o.timestamp, turn: g.s.turn.number, // CR 613.7: it is a copy from the moment it enters
+      ...(f.copyDuration ? { duration: f.copyDuration } : {}), // pc-tokens-2: "until end of turn" (CR 611.2)
     });
     g.s.continuousEffects.push(rec);
     // E20: the choices made on the hypothetical copy (CR 614.12) belong to this copy effect's link namespace

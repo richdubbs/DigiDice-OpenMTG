@@ -1,4 +1,4 @@
-// The Home screen's automation panel (screens/HomeProgress.tsx): one progress bar per measured group, Standard first, the values from the stats file.
+// The Home screen's automation panel (screens/HomeProgress.tsx): one progress bar per measured group, all cards first, the values from the stats file.
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { HomeProgress, type CoverageStats } from '../src/screens/HomeProgress';
@@ -21,19 +21,19 @@ const STATS: CoverageStats = {
 };
 
 describe('HomeProgress', () => {
-  it('shows Standard first, then all cards, the formats and each Standard set, with the measured values', () => {
+  it('shows all cards first, then Standard, the formats and each Standard set, with the measured values', () => {
     render(<HomeProgress stats={STATS} />);
     const bars = screen.getAllByRole('progressbar');
     expect(bars.map((b) => b.getAttribute('aria-label'))).toEqual([
-      'Standard: cards fully automated',
       'All cards: cards fully automated',
+      'Standard: cards fully automated',
       'Modern: cards fully automated',
       'FDN: cards fully automated',
       'BLB: cards fully automated',
     ]);
-    expect(bars[0]!.getAttribute('aria-valuenow')).toBe('93.5');
-    expect(bars[0]!.getAttribute('aria-valuetext')).toBe('93.5%, 187 of 200 cards');
-    expect(bars[1]!.getAttribute('aria-valuenow')).toBe('64');
+    expect(bars[0]!.getAttribute('aria-valuenow')).toBe('64');
+    expect(bars[1]!.getAttribute('aria-valuenow')).toBe('93.5');
+    expect(bars[1]!.getAttribute('aria-valuetext')).toBe('93.5%, 187 of 200 cards');
     // Without animation (tests have no matchMedia) the numbers are the final ones at once.
     expect(screen.getByText('93.5%')).toBeTruthy();
     expect(screen.getByText(/13 to go/)).toBeTruthy();

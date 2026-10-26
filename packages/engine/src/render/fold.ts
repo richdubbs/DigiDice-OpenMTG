@@ -19,6 +19,8 @@ import { bind, byPlayer, countedNoun, destPhrase, handChoice, isComputed } from 
 import { MILLED_KEY, cloneState, playerKey, withVariants, type RenderState } from './state';
 import { alt, COLOR_WORD, joinList, NoRenderer, numWord, parseMarked, pluralize, serializeMarked, signed, withArticle, type MarkedNode } from './text';
 import { foldStdDsk } from './fold-stddsk';
+import { foldPcEp3 } from './fold-pcep3'; // pc-exile-play-3
+import { foldPcEp4 } from './fold-pcep4'; // pc-exile-play-4
 import { foldR4Refs, foldR4RefsEarly } from './fold-r4refs';
 import { foldR5Refs } from './fold-r5refs';
 import { foldR5Fxz } from './fold-r5fxz';
@@ -33,6 +35,8 @@ import { foldStdControl1 } from './fold-stdcontrol1';
 import { foldP2Damage2 } from './fold-p2damage2'; // p2-damage-2
 import { foldP2Damage3 } from './fold-p2damage3'; // p2-damage-3
 import { foldStdCombat2 } from './fold-stdcombat2'; // std-combat-2
+import { foldPcCombat1 } from './fold-pccombat1'; // pc-combat-1
+import { foldPcCombat4 } from './fold-pccombat4'; // pc-combat-4
 import { foldStdCombat5 } from './fold-stdcombat5';
 import { foldP2ReplaceDamage1 } from './fold-p2rd1'; // p2-replace-damage-1
 import { foldStdExile3 } from './fold-stdexile3';
@@ -42,10 +46,14 @@ import { foldP2CombatFlow1 } from './fold-p2cf1';
 import { foldP2GroupActions1 } from './fold-p2ga1'; // p2-group-actions-1
 import { returnRandomFromGraveyard, revealRandomFromHand } from './fold-p2coinflip1'; // p2-coinflip-1
 import { foldP2GroupActions2 } from './fold-p2ga2'; // p2-group-actions-2
+import { foldPcPlayers1 } from './fold-pcp1'; // pc-players-1
 import { foldP2ReplaceDamage4 } from './fold-p2rd4'; // p2-replace-damage-4
 import { foldTrek3 } from './fold-trek3'; // trek-3
 import { foldTrek8 } from './fold-trek8'; // trek-8
 import { foldTrek9 } from './fold-trek9'; // trek-9
+import { foldPcTokens1 } from './fold-pctokens1'; // pc-tokens-1
+import { foldPcZones1 } from './fold-pczones1'; // pc-zones-1
+import { foldPcZones2 } from './fold-pczones2'; // pc-zones-2
 import { movedInfo } from './moved';
 
 export interface Folded {
@@ -3009,7 +3017,7 @@ function castAnyFromExiledFree(list: EffectStep[], i: number, st: RenderState): 
   const them = K.obj(is, st, 'object');
   if (!them.plural || them.text === AMBIGUOUS) return null;
   const mv = manaValue === undefined ? '' : ` with mana value ${K.qty(manaValue.value, st)} or less`;
-  const text = `you may cast ${a.max === 'any' ? 'any number of' : `up to ${numWord(a.max as number)}`} ${spells}${mv} from among ${them.text} without paying their mana costs`;
+  const text = `you may cast ${a.max === 'any' ? 'any number of' : `up to ${numWord(a.max as number)}`} ${spells}${mv} from among ${spells === 'spells' && them.text !== 'them' ? alt(them.text, 'those nonland cards') : them.text} without paying their mana costs`; // pc-exile-play-2 (family spells-from-among-nonland-cards)
   return { clauses: [acting('you', text, text, { closesScope: true })], consumed: 2 };
 }
 
@@ -3082,7 +3090,12 @@ function castFromHandFreeMv(list: EffectStep[], i: number, st: RenderState): Fol
   const v = f.manaValue.value;
   const amount = typeof v === 'object' && v !== null && 'q' in v && v.q === 'eventAmount' ? 'that damage' : K.qty(v, st);
   const text = `you may cast ${spell} from your hand with mana value less than or equal to ${amount} without paying its mana cost`;
-  return { clauses: [acting('you', text, text, { closesScope: true })], consumed: 2 };
+  // pc-exile-play-1 (family cast-hand-free-mv-or-less): a number says "with mana value 8 or less", after "from your hand" or before it
+  const short = typeof v === 'number';
+  // (a computed number may be said as X: "..., where X is the number of attacking creatures")
+  const read = short ? alt(text, `you may cast ${spell} from your hand with mana value ${amount} or less without paying its mana cost`, `you may cast ${spell} with mana value ${amount} or less from your hand without paying its mana cost`)
+    : alt(text, `you may cast ${spell} with mana value x or less from your hand without paying its mana cost, where x is ${amount}`);
+  return { clauses: [acting('you', read, read, { closesScope: true })], consumed: 2 };
 }
 
 /**
@@ -3501,6 +3514,8 @@ function saddledOrCreatureByType(list: EffectStep[], i: number, st: RenderState)
 }
 
 export function foldAt(list: EffectStep[], i: number, st: RenderState): Folded | null {
+  const pcCombat4 = foldPcCombat4(list, i, st); // pc-combat-4: shapes only its own template builds
+  if (pcCombat4 !== null) return pcCombat4;
   const returned = returnSelfAndMilled(list, i, st); // Standard round I
   if (returned !== null) return returned;
   const linked = linkedReturnOne(list, i, st); // CLOUD std-tmt
@@ -3515,6 +3530,8 @@ export function foldAt(list: EffectStep[], i: number, st: RenderState): Folded |
   if (rx31 !== null) return rx31;
   const combat1 = foldStdCombat1(list, i, st); // std-combat-1: shapes only its own templates build
   if (combat1 !== null) return combat1;
+  const pcCombat1 = foldPcCombat1(list, i, st); // pc-combat-1: shapes only its own template and lowering build
+  if (pcCombat1 !== null) return pcCombat1;
   const costs2 = foldStdCosts2(list, i, st); // std-costs-2: shapes only its own templates build
   if (costs2 !== null) return costs2;
   const lib2 = foldStdLibrary2(list, i, st); // std-library-2: shapes only its own templates and lowering build
@@ -3551,6 +3568,14 @@ export function foldAt(list: EffectStep[], i: number, st: RenderState): Folded |
   if (trek8 !== null) return trek8;
   const trek9 = foldTrek9(list, i, st); // trek-9: shapes only its own templates build
   if (trek9 !== null) return trek9;
+  const pcZones2 = foldPcZones2(list, i, st); // pc-zones-2: shapes only its own templates build
+  if (pcZones2 !== null) return pcZones2;
+  const pcp1 = foldPcPlayers1(list, i, st); // pc-players-1: shapes only its own templates build
+  if (pcp1 !== null) return pcp1;
+  const pcTokens1 = foldPcTokens1(list, i, st); // pc-tokens-1: shapes only its own templates build
+  if (pcTokens1 !== null) return pcTokens1;
+  const pcZones1 = foldPcZones1(list, i, st); // pc-zones-1: shapes only its own templates build
+  if (pcZones1 !== null) return pcZones1;
   return chooseThenCastFree(list, i) ?? castFromHandFreeMv(list, i, st) /* r4-cost */ ?? castFromGroupFree(list, i, st) ?? castFromLinkedExile(list, i, st) /* std-re */ ?? exileUpToOneFromGraveyard(list, i, st) /* std-exile-play-2-3 */ ?? castFromOwnedExileWithCounters(list, i) /* std-exile-play-2-2 */ ?? exileOneOfEachColorFromRevealed(list, i, st) /* std-exile-play-2-4 */ ?? castFromEachOpponentGraveyard(list, i) /* std-rx27 */ ?? castFromOwnZone(list, i, st) /* std-rw7 */ ?? exileTopXThenCastAnyFree(list, i, st) ?? castAnyFromExiledFree(list, i, st) /* r3-cost */ ?? revealCardsFromHand(list, i, st) ?? lookCloakRest(list, i, st) ?? cloakFromHand(list, i) ?? exilePileCloak(list, i, st)
     ?? dreadBinnedToHand(list, i, st) ?? putOfThemAndRest(list, i, st) ?? eachCardTypeFromGroup(list, i, st) /* std-library-3 */ ?? restOfExiledToHand(list, i, st) /* std-library-3 */ ?? putAnyFromGroupAndRest(list, i, st) ?? putThatAndRest(list, i, st) ?? exileRandomFromGraveyard(list, i, st) ?? returnRandomFromGraveyard(list, i, st) /* p2-coinflip-1 */ ?? revealRandomFromHand(list, i, st) /* p2-coinflip-1 */ ?? putUpToTotalFromGroupAndRest(list, i, st) ?? putOfThem(list, i, st) /* r4-repl */ ?? putAnyFromGroup(list, i, st) /* r4-fxz, r4-repl */ ?? revealTopAndPut(list, i, st) /* r4-dig */ ?? playerLooksThenExilesFaceDown(list, i, st) /* r4-dig */ ?? putEitherFromGroup(list, i, st) ?? putEitherFromHand(list, i, st) /* r4-fxz */ ?? putAllFromGroupAndRest(list, i, st) /* r4-fxz */ ?? putAllRevealedSplit(list, i, st) /* std-rx1 */ ?? chooseUpToFromGroup(list, i, st) /* r4-dig */ ?? chooseUpToFromGroupThenReveal(list, i, st) /* r5-dig */ ?? otherChoosesThenChosenAndRest(list, i, st) /* r5-dig */ ?? forEachOwnerMayPlay(list, i, st) /* r5-dig */ ?? playerRevealsUntilToGraveyard(list, i, st) /* r5-dig */ ?? revealOneFromHand(list, i, st) /* r4-dig */ ?? putAnyOfHitsAndRestOfRevealed(list, i, st) /* r4-dig */ ?? chooseFromGroup(list, i, st)
     ?? chooseRandomFromGroup(list, i, st) ?? chooseRandomLinkedThenBattlefield(list, i, st) ?? sourceOfChoiceShield(list, i, st) ?? textChange(list, i, st) ?? tapThenCounters(list, i, st) ?? tapThenFreeze(list, i, st) ?? gainControlThenUntap(list, i, st) /* r4-trig */ ?? chooseThenUntap(list, i, st)
@@ -3562,5 +3587,5 @@ export function foldAt(list: EffectStep[], i: number, st: RenderState): Folded |
     ?? youAndPlayerDraw(list, i, st) ?? youAndPlayerEachDraw(list, i, st) ?? youAndPlayerEachCreate(list, i, st) /* std-rx18 */ ?? millThenPutFromAmong(list, i, st) ?? millThenPutAll(list, i, st) ?? threePuts(list, i, st) ?? twoPuts(list, i, st)
     ?? pumpThenSelfDamage(list, i, st) ?? chooseThenTapAny(list, i, st) ?? chooseThenRemoveFromEach(list, i, st) ?? lookPutBackUpToRest(list, i, st) ?? chooseThenTurnFaceUp(list, i, st)
     ?? chooseOneThenSuspect(list, i, st) ?? chooseOneThenCounter(list, i, st) ?? chooseOneThenCopyToken(list, i, st) /* std-rj */ ?? twoExtraCombats(list, i) ?? chooseThenRemoveAnyCounter(list, i, st) ?? countersAndLifeWhereX(list, i, st) /* r4-fxb */ ?? foldStdDsk(list, i, st) ?? chooseThenDestroy(list, i, st) ?? chooseThenAttach(list, i, st) ?? millThenPutEachMilled(list, i, st)
-    ?? sacrificeAnyThenWhereX(list, i, st) /* std-rx29 */ ?? chooseThenSacrificeAny(list, i, st) /* Cloud C7 */ ?? tokenAndToken(list, i, st) /* CMD5 */ ?? chooseThenCounters(list, i, st) /* r3-refs */ ?? chooseAnyThenRemoveCounter(list, i, st) /* std-rx14 */ ?? flickerObjAndUpToOne(list, i, st) /* std-rx14 */ ?? foldR4Refs(list, i, st) /* r4-refs */ ?? whereXThenIfX(list, i, st) /* r4-fxz */ ?? foldR5Refs(list, i, st) /* r5-refs */ ?? foldR5Fxz(list, i, st) /* r5-fxz */ ?? foldStdRs(list, i, st) /* std-rs */ ?? sharedWhereX(list, i, st) ?? saddledOrCreatureByType(list, i, st) /* std-rw6 */ ?? foldStdCombat2(list, i, st) /* std-combat-2 */ ?? foldStdExile3(list, i, st) /* std-exile-play-1-3 */; // the folds of every slice; cloud std-spm's sharedWhereX last, after every specific fold
+    ?? sacrificeAnyThenWhereX(list, i, st) /* std-rx29 */ ?? chooseThenSacrificeAny(list, i, st) /* Cloud C7 */ ?? tokenAndToken(list, i, st) /* CMD5 */ ?? chooseThenCounters(list, i, st) /* r3-refs */ ?? chooseAnyThenRemoveCounter(list, i, st) /* std-rx14 */ ?? flickerObjAndUpToOne(list, i, st) /* std-rx14 */ ?? foldR4Refs(list, i, st) /* r4-refs */ ?? whereXThenIfX(list, i, st) /* r4-fxz */ ?? foldR5Refs(list, i, st) /* r5-refs */ ?? foldR5Fxz(list, i, st) /* r5-fxz */ ?? foldStdRs(list, i, st) /* std-rs */ ?? sharedWhereX(list, i, st) ?? saddledOrCreatureByType(list, i, st) /* std-rw6 */ ?? foldStdCombat2(list, i, st) /* std-combat-2 */ ?? foldStdExile3(list, i, st) /* std-exile-play-1-3 */ ?? foldPcEp3(list, i, st) /* pc-exile-play-3 */ ?? foldPcEp4(list, i, st) /* pc-exile-play-4 */; // the folds of every slice; cloud std-spm's sharedWhereX last, after every specific fold
 }

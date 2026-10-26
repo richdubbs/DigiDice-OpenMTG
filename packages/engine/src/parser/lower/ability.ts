@@ -284,7 +284,7 @@ function buildProgram(pieces: ProgramPiece[], face: FaceInfo, ue: UnitEnv, acc: 
   };
   const sequence = (ps: readonly ProgramPiece[], prior: readonly Unit[] = []): Unit[] => {
     const us: Unit[] = [];
-    for (const p of joinThoseSpellsGain(joinGainsSuspend(joinSpeedFloor(joinFightsDifferent(joinPreventedThisWay(joinChosenFromOutside(joinRevealedByTheOther(joinRoundDown(joinAlternatingPicks(joinOnlyAttackers(ps))))))))))) us.push(unitOf(p, [...prior, ...us]));
+    for (const p of joinThoseSpellsGain(joinGainsSuspend(joinSpeedFloor(joinFightsDifferent(joinPreventedThisWay(joinChosenFromOutside(joinRevealedByTheOther(joinRoundDown(joinAlternatingPicks(joinOnlyAttackers(joinYouChooseKeepFour(joinChoosesDestroyRest(ps))))))))))))) us.push(unitOf(p, [...prior, ...us]));
     // CLOUD std-fra (guard G10): a sentence-initial "Then if ..." that eff.stdfra.then.effects reads stays a sentence the parser does not understand where an "If you do"
     // sentence follows it (a conditional instruction is not an instruction done "you do": the "if you do" would read it)
     return us.map((u, i) => {
@@ -438,6 +438,45 @@ function reflexiveModes(p: EffectProgram, thatMany = false): void {
   }
   if (thatMany) modes.max = { q: 'resultCount', step: did };
   p.steps.push({ op: 'reflexive', when: { did }, targets: [], modes, do: [] });
+}
+
+/**
+ * pc-players-1 (CR 101.4, 608.2d, 701.8a): "Each player chooses a creature they control. Destroy the rest." (Divine Reckoning) is one instruction: the sentence that has every
+ * player choose is joined to a next one "Destroy the rest.", so one template reads both (eff.pcp1.eachPlayer.chooses.destroyRest). Any other sentences are left as they are.
+ */
+function joinChoosesDestroyRest<P extends { tokens: Tok[] }>(pieces: readonly P[]): P[] {
+  const out: P[] = [];
+  for (let i = 0; i < pieces.length; i++) {
+    const p = pieces[i]!;
+    const next = pieces[i + 1];
+    if (next !== undefined && norms(p.tokens).startsWith('each player chooses ') && norms(p.tokens).endsWith(' they control .') && norms(next.tokens) === 'destroy the rest .') {
+      out.push({ ...p, tokens: [...p.tokens, ...next.tokens] });
+      i++;
+      continue;
+    }
+    out.push(p);
+  }
+  return out;
+}
+
+/**
+ * pc-players-1 (CR 101.4, 608.2d, 701.21a): "For each player, you choose from among the permanents that player controls an artifact, a creature, an enchantment, and a
+ * planeswalker. Then each player sacrifices all other nonland permanents they control." (Tragic Arrogance) is one instruction, the choices and the sacrifice of the rest: the
+ * first sentence is joined to the next, so one template reads both (eff.pcp1.youChoose.keepFourTypes). Any other sentences are left as they are.
+ */
+function joinYouChooseKeepFour<P extends { tokens: Tok[] }>(pieces: readonly P[]): P[] {
+  const out: P[] = [];
+  for (let i = 0; i < pieces.length; i++) {
+    const p = pieces[i]!;
+    const next = pieces[i + 1];
+    if (next !== undefined && norms(p.tokens).startsWith('for each player , you choose from among the permanents that player controls ') && /^(then )?each player sacrifices all other nonland permanents they control/.test(norms(next.tokens))) {
+      out.push({ ...p, tokens: [...p.tokens, ...next.tokens] });
+      i++;
+      continue;
+    }
+    out.push(p);
+  }
+  return out;
 }
 
 /**
@@ -1207,7 +1246,7 @@ const delayedDrawYou = (st: EffectProgram['steps'][number]): boolean =>
 const manaBranch = (st: EffectProgram['steps'][number]): boolean => {
   if (st.op !== 'if' || st.guard !== undefined) return false;
   const lists = [st.then, ...(st.else !== undefined ? [st.else] : [])];
-  return lists.every((l) => Array.isArray(l) && l.length > 0 && l.every((x) => x.op === 'addMana' && Array.isArray((x as { units?: unknown }).units) && x.guard === undefined));
+  return lists.every((l) => Array.isArray(l) && l.length > 0 && l.every((x) => x.op === 'addMana' && (Array.isArray((x as { units?: unknown }).units) || resolvedDynamic(x)) && x.guard === undefined)); // pc-keywords-mana-2: and a resolved dynamic production
 };
 /**
  * FAST2 T7 (INTERFACE CHANGE, mirrors model/cap-walk.ts#nativeManaEffect): an `addMana` whose mana is decided as it resolves ("one mana of the chosen color",

@@ -28,6 +28,7 @@ import { evalCond } from './eval';
 import { askManual, notesOf, startNotes } from './manual';
 import { performAbilityGone, performLink } from './perform';
 import { readLink } from '../statics/links';
+import { OVERLOAD, overloadProgram } from './overload';
 
 const NOTHING: StepResult = { performed: false, count: 0 };
 
@@ -137,7 +138,9 @@ function spellPlan(g: Game, obj: GameObject): Plan {
   const ordered = c.abilities.map((a, i) => ({ a, i })).sort((x, y) => place(x.a) - place(y.a) || x.i - y.i).map((x) => x.a);
   for (const a of ordered) {
     if (a.def.kind === 'spell') {
-      const p = flattenProgram(a.def.effect, obj.stack!.modes, a.def.text, origins);
+      // CR 702.96a-b: a spell cast for its overload cost has no targets and says "each" where it said "target" (actions/overload.ts; the cast refused it if it can't be rewritten)
+      const effect = obj.stack!.costsPaid.alternative === OVERLOAD ? overloadProgram(a.def.effect) ?? a.def.effect : a.def.effect;
+      const p = flattenProgram(effect, obj.stack!.modes, a.def.text, origins);
       targets.push(...p.targets);
       steps.push(...p.steps);
       texts.push(a.def.text);

@@ -1,0 +1,134 @@
+[
+  {
+    "id": "eff.pcc3.energy.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.14",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} get[s] {e} for each {f:Filter}",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "energy",
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You get {E} for each Elf you control."
+      },
+      {
+        "text": "Target player gets {E} for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "You get {E} for each Elf you control unless you pay {2}.",
+      "You get {E}{E} for each Elf you control.",
+      "You pay {E} for each Elf you control.",
+      "You get {E} equal to the number of Elves you control."
+    ]
+  },
+  {
+    "id": "eff.pcc3.counters.player.halfX.up",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.1a",
+      "CR 107.3",
+      "CR 122.1"
+    ],
+    "pattern": "{p:Player} get[s] half x {k:CounterKind} counters , rounded up",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "$k",
+      "count": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          {
+            "q": "X"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player gets half X poison counters, rounded up."
+      },
+      {
+        "text": "You get half X charge counters, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Target player gets half X poison counters.",
+      "Target player gets half X poison counters, rounded down.",
+      "Target creature gets half X poison counters, rounded up.",
+      "Target player gets half Y poison counters, rounded up."
+    ],
+    "consumes": [
+      "half"
+    ]
+  },
+  {
+    "id": "eff.pcc3.counters.player.halfX.down",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 107.1a",
+      "CR 107.3",
+      "CR 122.1"
+    ],
+    "pattern": "{p:Player} get[s] half x {k:CounterKind} counters , rounded down",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "$k",
+      "count": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          {
+            "q": "X"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player gets half X poison counters, rounded down."
+      },
+      {
+        "text": "You get half X charge counters, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "Target player gets half X poison counters.",
+      "Target player gets half X poison counters, rounded up.",
+      "Target creature gets half X poison counters, rounded down.",
+      "Target player gets half Y poison counters, rounded down."
+    ],
+    "consumes": [
+      "half"
+    ]
+  }
+]

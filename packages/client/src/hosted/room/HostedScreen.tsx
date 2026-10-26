@@ -30,7 +30,7 @@ import {
 import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { ScreenHeader } from '../../app/ScreenHeader';
 import { DEFAULT_FORMAT, deckNotes, FORMATS, offeredFormat, unplayableReason } from '../../game/config';
-import { DeckOptions } from '../../game/DeckOptions';
+import { DeckChooser } from '../../game/DeckOptions';
 import type { GameDeck } from '../../game/services';
 import { MAX_NAME_LENGTH, settingsStore, type SettingsStore } from '../../settings/settings';
 import { useSettings } from '../../settings/useSettings';
@@ -292,13 +292,7 @@ function Connected({ server, services, settings }: { server: string; services: H
                   Your name
                   <input type="text" value={name} maxLength={MAX_NAME_LENGTH} onChange={(e) => setName(e.target.value)} />
                 </label>
-                <label>
-                  Deck
-                  <select value={deckId} onChange={(e) => pickDeck(e.target.value)} disabled={decks === null}>
-                    <option value="">{decks === null ? 'Loading decks…' : 'Choose a deck…'}</option>
-                    <DeckOptions decks={decks ?? []} />
-                  </select>
-                </label>
+                <DeckChooser decks={decks ?? []} value={deckId} onChange={pickDeck} disabled={decks === null} placeholder={decks === null ? 'Loading decks…' : 'Choose a deck…'} />
                 <label>
                   Format
                   <select value={format} onChange={(e) => setFormat(e.target.value)} disabled={!connected}>

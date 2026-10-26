@@ -597,7 +597,7 @@ function staticAbility(def: StaticAbilityDef, st: RenderState): string {
   }
   // FAST4 T33: continuous effects of a static ability that functions only in its owner's graveyard (CR 113.6, 604.1: Brawn, Wonder) say so: "As long as ~
   // is in your graveyard and you control a Forest, X" (a card in a graveyard is in its owner's graveyard, CR 404.1)
-  if (def.zone?.length === 1 && def.zone[0] === 'graveyard' && def.effects.length > 0 && def.effects.every((e) => e.s === 'continuous')) {
+  if (def.zone?.length === 1 && def.zone[0] === 'graveyard' && def.effects.length > 0 && def.effects.every((e) => e.s === 'continuous' || (e.s === 'replace' && e.body.b === 'enters'))) { // pc-counters-1: Dearly Departed's replacement, "as long as ~ is in your graveyard, each Human creature you control enters with an additional +1/+1 counter on it" (CR 113.6, 614.12)
     const where = '~ is in your graveyard';
     const cond = def.condition ? `${where} and ${K.cond(def.condition, st)}` : where;
     return endSentence(`as long as ${cond}, ${K.staticEffects(def.effects, st)}`);
@@ -663,10 +663,11 @@ function staticAbility(def: StaticAbilityDef, st: RenderState): string {
   // FAST5X E22 (family additional-pump-static): "As long as there are eight or more permanent cards in your graveyard, ~ gets an additional +2/+2" (descend 8 after
   // descend 4): "an additional" says only that this change adds to the one another ability of the object gives; a change of power and toughness always adds
   // (CR 613.4c), so it is the same continuous effect
-  if (def.effects.some((e) => e.s === 'continuous' && e.mods.some((m) => m.layer === '7c')) && / gets [+-]/.test(body)) {
-    during.push(`as long as ${cond}, ${body.replace(/ gets ([+-])/g, ' gets an additional $1')}`);
+  // p2-pt-3 (same family): a group too, "White creatures get an additional +1/+1 as long as there are seven or more cards in your graveyard" (Divine Sacrament)
+  if (def.effects.some((e) => e.s === 'continuous' && e.mods.some((m) => m.layer === '7c')) && / gets? [+-]/.test(body)) {
+    during.push(`as long as ${cond}, ${body.replace(/ (gets?) ([+-])/g, ' $1 an additional $2')}`);
     // std-rh (same family, additional-pump-static; Elenda, Saint of Dusk): the condition may follow, "~ gets an additional +5/+5 as long as C"
-    during.push(`${body.replace(/ gets ([+-])/g, ' gets an additional $1')} as long as ${cond}`);
+    during.push(`${body.replace(/ (gets?) ([+-])/g, ' $1 an additional $2')} as long as ${cond}`);
   }
   // FAST3 T11: "The second spell you cast each turn costs {1} less to cast" (family second-spell)
   const second = secondSpellCost(def);

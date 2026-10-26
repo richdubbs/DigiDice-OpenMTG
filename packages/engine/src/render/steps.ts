@@ -71,6 +71,17 @@ function withLead(lead: string | null, c: Clause): Clause {
   return { ...c, imp: `${lead}${c.imp}`, sub: `${lead}${c.sub}`, ...(c.have !== undefined ? { have: `${lead}${c.have}` } : {}) };
 }
 
+/** pc-players-3: "they control a commander" for a guard `not exists (a description the recipient controls)` on a step that hurts that recipient (template eff.pcp3.damage.unlessTheyControl). */
+function unlessTheyControl(step: EffectStep, st: RenderState): string | null {
+  const g = step.guard;
+  if (g?.cond !== 'not' || g.of.cond !== 'exists' || g.of.atLeast !== undefined || g.of.of.ref !== 'each') return null;
+  const f = g.of.of.filter;
+  const kinds = f.anyOf;
+  if (kinds?.length !== 1 || Object.keys(f).length !== 2 || step.op !== 'damage' || JSON.stringify(f.controller) !== JSON.stringify(step.to)) return null;
+  if (step.to.ref === 'each' || step.to.ref === 'eachWho' || step.to.ref === 'controlsMost') return null; // a group is judged player by player; the guard is one check for the step
+  return `they control ${K.np(kinds[0]!, cloneState(st), { det: 'a' })}`;
+}
+
 /** A step as a clause, with its guard applied. */
 export function clause(step: EffectStep, st: RenderState): Clause {
   const fn = Object.hasOwn(CLAUSES, step.op) ? CLAUSES[step.op] : undefined;
@@ -99,6 +110,7 @@ export function clause(step: EffectStep, st: RenderState): Clause {
   // std-rx23 (CR 608.2c, 301.5a): right after a trigger, an instruction on the enchanted or equipped object is also said before its condition names it again,
   // "put a +1/+1 counter on equipped creature if it's black" (the instruction names the object, the condition says "it"); read on the state before either is said
   const onAttached = afterTrigger && ['on', 'what'].some((k) => JSON.stringify((step as unknown as Record<string, unknown>)[k]) === JSON.stringify({ ref: 'attachedTo' })) ? cloneState(st) : null;
+  const unlessState = step.op === 'damage' ? cloneState(st) : null; // pc-players-3: the instruction said before its condition names the recipient
   const cond = K.cond(step.guard, st);
   const c = run();
   const body = fragment(c);
@@ -106,7 +118,10 @@ export function clause(step: EffectStep, st: RenderState): Clause {
   const also = afterTrigger ? null : withAlso(body);
   // std-blb: and the condition after it, "It also gets +1/+0 until end of turn if you control a Mouse." (CR 608.2c)
   const bodyFirst = onAttached === null ? null : `${fragment((fn as (s: EffectStep, st: RenderState) => Clause)(step, onAttached))} if ${K.cond(step.guard, onAttached)}`;
-  const text = afterTrigger ? (bodyFirst === null ? `${body} if ${cond}` : alt(`${body} if ${cond}`, bodyFirst)) : alt(`if ${cond}, ${body}`, `${body} if ${cond}`, ...(also !== null ? [`if ${cond}, ${also}`, `${also} if ${cond}`] : []));
+  // pc-players-3 (CR 608.2c, 109.4; template eff.pcp3.damage.unlessTheyControl): a damage step guarded by "that player controls none of these" is also said "... unless they control a commander"
+  const unless = step.op === 'damage' ? unlessTheyControl(step, st) : null;
+  const unlessForms = unless === null || unlessState === null ? [] : [`${fragment((fn as (s: EffectStep, st: RenderState) => Clause)(step, unlessState))} unless ${unless}`];
+  const text = afterTrigger ? (bodyFirst === null && unlessForms.length === 0 ? `${body} if ${cond}` : alt(`${body} if ${cond}`, ...(bodyFirst === null ? [] : [bodyFirst]), ...unlessForms)) : alt(`if ${cond}, ${body}`, `${body} if ${cond}`, ...(also !== null ? [`if ${cond}, ${also}`, `${also} if ${cond}`] : []), ...unlessForms);
   if (first !== null) {
     // p2-refs-2 (CR 701.19c, 608.2c): a guarded destroy that can't be regenerated says its condition after the instruction and the regeneration sentence after that,
     // "Destroy target creature if it's white. A creature destroyed this way can't be regenerated." (Soul Rend)
@@ -268,10 +283,12 @@ function joined(list: EffectStep[], st: RenderState, o: JoinOpts): string {
       // std-mkm (CR 608.2c): "then" only orders the instructions, so the sentence after one that stands alone may also begin with it ("Each player who controls the
       // most creatures investigates. Then destroy all creatures."); never after a "you may" sentence (prev.closesScope), as above. Cloud std-woe's "Then" after a manual
       // step ("... Then shuffle.", family then-after-manual) is one case of it: a manual step stands alone
-      if (prev.closesScope !== true) thenForms.push('. then ');
+      // pc-counters-4 (CR 608.2c): ... and after a "you may" sentence too ("You may put two +1/+1 counters on a creature you control. Then all creatures get -4/-4 until end of turn.", Finality):
+      // "then" orders the instructions only, what follows a may is still not inside it
+      thenForms.push('. then ');
       // p2-refs-2 (CR 608.2d, 608.2c; family may-then-may): a "you may" sentence followed by another "you may" of the same player is also one sentence with ", then"
       // ("You may tap or untap target permanent, then you may tap or untap another target permanent."): each choice is still its own, made in that order
-      else if (prev.actor === 'you' && cur.actor === 'you' && /^you may /.test(fragment(prev)) && /^you may /.test(fragment(cur))) thenForms.push(', then ');
+      if (prev.closesScope === true && prev.actor === 'you' && cur.actor === 'you' && /^you may /.test(fragment(prev)) && /^you may /.test(fragment(cur))) thenForms.push(', then ');
       sep = alt('. ', ...new Set(thenForms));
     }
     // CLOUD std-dft (family serial-comma-after-reveal): a clause that is itself two instructions ("search ... for a card, reveal it") is followed with the serial comma

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "eff.pccombat4.player.drawAndGainControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 701.10",
+      "CR 108.4",
+      "CR 613.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] {n:Qty} card[s] and gain[s] control of {o:Obj}",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "permanent"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 2,
+                "controller": "$p"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "player",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Whenever an opponent casts a spell, that player draws two cards and gains control of ~."
+      },
+      {
+        "text": "Whenever an opponent casts a creature spell, that player draws a card and gains control of ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent casts a spell, that player draws two cards, then gains control of ~.",
+      "Whenever an opponent casts a spell, that player draws two cards and gains control of target artifact.",
+      "Whenever an opponent casts a spell, that player draws two cards and loses control of ~."
+    ]
+  }
+]

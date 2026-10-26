@@ -16,6 +16,8 @@ import { voteQtyAt } from './vote';
 import { isRoomsOnly } from '../../model/room-filter';
 import { commanderQtyAt } from './commander-qty';
 import { p2cst1QtyAt } from './p2cst1';
+import { pcc1QtyAt } from './pccounters1';
+import { pcc3QtyAt } from './pccounters3';
 import { npAlts } from './filter';
 
 const W_NUMBER_OF = P('the number of');
@@ -247,6 +249,12 @@ function atoms(ctx: HoleCtx, pos: number): Alt[] {
     for (const f of ctx.call('Filter', feDied)) {
       const e = phraseAt(ctx, f.end, W_THAT_DIED_THIS_TURN);
       if (e >= 0) out.push({ end: e, value: { q: 'happenedCount', event: { ev: 'zoneChange', subject: f.value as ObjectFilter, from: 'battlefield', to: 'graveyard' }, scope: 'turn' }, weak: (f.weak ?? 0) + 1, ...(f.flags ? { flags: f.flags } : {}) });
+      // pc-tokens-3 (CR 700.4, 400.3; Fresh Meat, Caller of the Claw): "for each creature put into your graveyard from the battlefield this turn" (see historyCounts)
+      const fv = f.value as ObjectFilter;
+      const py = phraseAt(ctx, f.end, W_PUT_INTO_YOUR_GRAVEYARD_FROM_BATTLEFIELD_THIS_TURN);
+      if (py >= 0 && fv.isCard === undefined && fv.stackKind === undefined && fv.zone === undefined && fv.controller === undefined && fv.owner === undefined) {
+        out.push({ end: py, value: { q: 'happenedCount', event: { ev: 'zoneChange', subject: { ...fv, owner: 'you' }, from: 'battlefield', to: 'graveyard' }, scope: 'turn' }, ...(f.weak ? { weak: f.weak } : {}), ...(f.flags ? { flags: f.flags } : {}) });
+      }
     }
   }
   // std-rx14 (CR 603.6a, 400.7; Geralf, the Fleshwright): the same history count where a template wrote "for each" before the hole ("put a +1/+1 counter on it for each
@@ -352,7 +360,12 @@ function atoms(ctx: HoleCtx, pos: number): Alt[] {
       const c = phraseAt(ctx, k.end, P('counter'));
       if (c >= 0) out.push(...playerHasCounters(ctx, c, k.value as string, k.weak));
     }
+    // pc-keywords-mana-1 (CR 122.1; Nardole, Resourceful Cyborg: "Add {U} for each counter on ~"): the singular noun with no kind, the counters of every kind on the object
+    // (the same count as "the number of counters on ~", `kind: 'any'`)
+    const bare = phraseAt(ctx, pos, P('counter'));
+    if (bare >= 0) out.push(...countersOnAt(ctx, bare, 'any'));
   }
+  out.push(...timesKicked(ctx, pos)); // pc-zones-3 (CR 702.33d): "the number of times ~ was kicked"
   out.push(...destroyedThisWay(ctx, pos)); // std-tdm (CR 701.8a, 608.2c): "for each permanent destroyed this way", "the number of creatures destroyed this way"
   out.push(...milledThisWayCount(ctx, pos)); // std-rx35 (CR 701.17a, 608.2c): "for each creature card milled this way"
   // std-rx20 (CR 120.3, 608.2c): "the damage dealt this way": the damage the damage instruction RIGHT BEFORE dealt (`$step` is resolved by
@@ -362,6 +375,8 @@ function atoms(ctx: HoleCtx, pos: number): Alt[] {
   out.push(...countersRemovedAt(ctx, pos)); // std-rx14 (CR 122.1, 608.2c): "for each lore counter removed this way", "the number of counters removed this way"
   out.push(...commanderQtyAt(ctx, pos)); // CMD2 (CR 903.3d): "the greatest mana value of a commander you own on the battlefield or in the command zone"
   out.push(...p2cst1QtyAt(ctx, pos)); // p2-cost-statics-1 (CR 601.2i, 508.1): "for each spell your opponents have cast this turn", "for each creature you attacked with this turn"
+  out.push(...pcc1QtyAt(ctx, pos)); // pc-counters-1 (CR 119.3, 122.1): "for each player who lost life this turn", "the number of opponents who lost life this turn"
+  out.push(...pcc3QtyAt(ctx, pos)); // pc-counters-3 (CR 603.10a, 700.4): "the power of the creature that died"
 
   return out;
 }
@@ -452,6 +467,20 @@ const DESTROYED_NOUNS: Readonly<Record<string, string>> = {
   permanents: 'permanent', creatures: 'creature', artifacts: 'artifact', enchantments: 'enchantment', lands: 'land', planeswalkers: 'planeswalker', battles: 'battle',
 };
 const DESTROYED_SINGULAR: ReadonlySet<string> = new Set(Object.values(DESTROYED_NOUNS));
+
+const W_TIMES_KICKED = [P('the number of times ~ was kicked'), P('the number of times it was kicked')];
+/**
+ * pc-zones-3 (CR 702.33d, 702.33c; Marshal's Anthem): "the number of times ~ was kicked" is the kicks paid as the object was cast (`kickCount`, read from the cast record of the
+ * ability's own object like "if ~ was kicked", parser/lower/anaphora.ts); multikicker or two kicker costs count each payment.
+ */
+function timesKicked(ctx: HoleCtx, pos: number): Alt[] {
+  const out: Alt[] = [];
+  for (const w of W_TIMES_KICKED) {
+    const e = phraseAt(ctx, pos, w);
+    if (e >= 0) out.push({ end: e, value: { q: 'kickCount' } as Quantity });
+  }
+  return out;
+}
 
 /**
  * std-tdm (CR 701.8a, 608.2c): what an earlier destroy step of the ability destroyed, its result count (a destroyed permanent that was indestructible or regenerated
@@ -581,6 +610,12 @@ function historyCounts(ctx: HoleCtx, pos: number): Alt[] {
         }
       }
     }
+    // pc-tokens-3 (CR 700.4, 400.3, 603.10a; Fresh Meat, Caller of the Claw): "for each nontoken creature put into your graveyard from the battlefield this turn": the
+    // turn's zone changes from the battlefield to a graveyard of the permanents you own (a card goes to its owner's graveyard, CR 400.3); only a permanent kind
+    const py = phraseAt(ctx, f.end, W_PUT_INTO_YOUR_GRAVEYARD_FROM_BATTLEFIELD_THIS_TURN);
+    if (py >= 0 && filter.isCard === undefined && filter.stackKind === undefined && filter.zone === undefined && filter.controller === undefined && filter.owner === undefined) {
+      out.push({ end: py, value: { q: 'happenedCount', event: { ev: 'zoneChange', subject: { ...filter, owner: 'you' }, from: 'battlefield', to: 'graveyard' }, scope: 'turn' }, ...(f.flags ? { flags: f.flags } : {}) });
+    }
     const pg = phraseAt(ctx, f.end, W_PUT_INTO_GRAVEYARDS_FROM_BATTLEFIELD_THIS_TURN);
     if (pg >= 0 && filter.isCard === undefined && filter.stackKind === undefined && filter.zone === undefined && filter.controller === undefined && filter.owner === undefined) {
       out.push({ end: pg, value: { q: 'happenedCount', event: { ev: 'zoneChange', subject: filter, from: 'battlefield', to: 'graveyard' }, scope: 'turn' } });
@@ -609,6 +644,7 @@ const W_OPPONENTS_CONTROL_THIS_TURN = [P("your opponents' control this turn"), P
 /** std-r7: "permanents" with nothing else said (every permanent qualifies). */
 const isPermanentOnly = (f: ObjectFilter): boolean => Object.entries(f).every(([k, v]) => v === undefined || (k === 'types' && Array.isArray(v) && v.length === 1 && v[0] === 'Permanent'));
 
+const W_PUT_INTO_YOUR_GRAVEYARD_FROM_BATTLEFIELD_THIS_TURN = P('put into your graveyard from the battlefield this turn'); // pc-tokens-3
 const W_PUT_INTO_GRAVEYARDS_FROM_BATTLEFIELD_THIS_TURN = P('that were put into graveyards from the battlefield this turn'); // r5-moved
 const W_ENTERED_UNDER_YOUR_CONTROL = P('that entered the battlefield under your control this turn');
 /** std-lci (CR 603.10a, 700.4): "for each creature that left the battlefield under your control this turn" and without the controller. */
@@ -667,29 +703,45 @@ function distinctCounts(ctx: HoleCtx, pos: number): Alt[] {
 const W_COLOR_PAIRS_AMONG = P('different color pairs among');
 const W_EXACTLY_TWO_COLORS = P('that are exactly two colors');
 
+/** The counters (of `kind`) on the object, objects or player at `pos` after the word "on" (CR 122.1): "the number of +1/+1 counters on ~", "for each counter on ~". */
+function countersOnAt(ctx: HoleCtx, e: number, kind: string): Alt[] {
+  const out: Alt[] = [];
+  const o = phraseAt(ctx, e, P('on'));
+  if (o < 0) return out;
+  for (const r of ctx.call('Obj', o)) out.push({ end: r.end, value: { q: 'counters', on: r.value as never, kind }, ...(r.flags ? { flags: r.flags } : {}) });
+  // r4-fxb (CR 122.1, 208.1): "the number of +1/+1 counters on lands you control" (Toph, the Blind Bandit): the counters on every object of a group, added up
+  // (effects/eval.ts and statics/match.ts sum them); only a described group of permanents
+  for (const r of ctx.call('Objs', o)) {
+    const v = r.value as { ref?: string; filter?: { zone?: string } };
+    if (v.ref === 'each' && v.filter !== undefined && (v.filter.zone === undefined || v.filter.zone === 'battlefield')) out.push({ end: r.end, value: { q: 'counters', on: r.value as never, kind }, ...(r.flags ? { flags: r.flags } : {}) });
+  }
+  for (const r of ctx.call('Player', o)) out.push({ end: r.end, value: { q: 'counters', on: r.value as never, kind } });
+  return out;
+}
+
+/** pc-counters-3 (CR 122.1): "the number of counters among creatures you control" (Maester Seymour): the same group sum as "on creatures you control" (countersOnAt). */
+function countersAmongAt(ctx: HoleCtx, e: number, kind: string): Alt[] {
+  const out: Alt[] = [];
+  const o = phraseAt(ctx, e, P('among'));
+  if (o < 0) return out;
+  for (const r of ctx.call('Objs', o)) {
+    const v = r.value as { ref?: string; filter?: { zone?: string } };
+    if (v.ref === 'each' && v.filter !== undefined && (v.filter.zone === undefined || v.filter.zone === 'battlefield')) out.push({ end: r.end, value: { q: 'counters', on: r.value as never, kind }, ...(r.flags ? { flags: r.flags } : {}) });
+  }
+  return out;
+}
+
 /** "the number of +1/+1 counters on ~", "... counters on target creature". */
 function counterCounts(ctx: HoleCtx, pos: number): Alt[] {
   const out: Alt[] = [];
-  const on = (e: number, kind: string): void => {
-    const o = phraseAt(ctx, e, P('on'));
-    if (o < 0) return;
-    for (const r of ctx.call('Obj', o)) out.push({ end: r.end, value: { q: 'counters', on: r.value as never, kind }, ...(r.flags ? { flags: r.flags } : {}) });
-    // r4-fxb (CR 122.1, 208.1): "the number of +1/+1 counters on lands you control" (Toph, the Blind Bandit): the counters on every object of a group, added up
-    // (effects/eval.ts and statics/match.ts sum them); only a described group of permanents
-    for (const r of ctx.call('Objs', o)) {
-      const v = r.value as { ref?: string; filter?: { zone?: string } };
-      if (v.ref === 'each' && v.filter !== undefined && (v.filter.zone === undefined || v.filter.zone === 'battlefield')) out.push({ end: r.end, value: { q: 'counters', on: r.value as never, kind }, ...(r.flags ? { flags: r.flags } : {}) });
-    }
-    for (const r of ctx.call('Player', o)) out.push({ end: r.end, value: { q: 'counters', on: r.value as never, kind } });
-  };
   for (const k of ctx.call('CounterKind', pos)) {
     const c = anyPhraseAt(ctx, k.end, W_COUNTER);
     if (c < 0) continue;
-    on(c, k.value as string);
+    out.push(...countersOnAt(ctx, c, k.value as string), ...countersAmongAt(ctx, c, k.value as string));
     out.push(...playerHasCounters(ctx, c, k.value as string, k.weak));
   }
   const c = anyPhraseAt(ctx, pos, W_COUNTER);
-  if (c >= 0) on(c, 'any');
+  if (c >= 0) out.push(...countersOnAt(ctx, c, 'any'), ...countersAmongAt(ctx, c, 'any'));
   return out;
 }
 

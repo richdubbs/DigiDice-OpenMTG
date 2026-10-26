@@ -1,0 +1,155 @@
+[
+  {
+    "id": "eff.pckm3.villainousChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.55",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} faces a villainous choice -- {a:Effects} , or {b:Effects}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": "$a",
+      "otherwise": "$b",
+      "villainous": true
+    },
+    "subject": "none",
+    "consumes": [
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent faces a villainous choice -- They lose 3 life, or you draw two cards."
+      },
+      {
+        "text": "Target player faces a villainous choice -- They discard a card, or you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent faces a villainous choice -- They lose 3 life.",
+      "Target opponent faces a choice -- They lose 3 life, or you draw two cards.",
+      "You face a villainous choice -- You discard a card, or you draw a card."
+    ]
+  },
+  {
+    "id": "eff.pckm3.villainousChoice.eachOpponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.55",
+      "CR 608.2d",
+      "CR 608.2f"
+    ],
+    "pattern": "each opponent faces a villainous choice -- {a:Effects} , or {b:Effects}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "do": "$a",
+          "otherwise": "$b",
+          "villainous": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent faces a villainous choice -- That player discards a card, or you draw a card."
+      },
+      {
+        "text": "Each opponent faces a villainous choice -- That player loses 3 life, or you create a Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent faces a villainous choice -- That player discards a card.",
+      "Each player faces a villainous choice -- That player discards a card, or you draw a card.",
+      "Each opponent faces a choice -- That player discards a card, or you draw a card."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.pckm3.villainousChoice.eachOpponentLostLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.55",
+      "CR 608.2f",
+      "CR 119.3"
+    ],
+    "pattern": "each opponent who lost {n:Qty} or more life this turn faces a villainous choice -- {a:Effects} , or {b:Effects}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "compare",
+            "left": {
+              "q": "lifeLostThisTurn",
+              "of": {
+                "ref": "bound",
+                "name": "each"
+              }
+            },
+            "op": ">=",
+            "right": "$n"
+          },
+          "then": [
+            {
+              "op": "may",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "do": "$a",
+              "otherwise": "$b",
+              "villainous": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent who lost 2 or more life this turn faces a villainous choice -- That player discards a card, or you draw a card."
+      },
+      {
+        "text": "Each opponent who lost 5 or more life this turn faces a villainous choice -- You gain 2 life, or that player discards two cards."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent who lost life this turn faces a villainous choice -- That player discards a card, or you draw a card.",
+      "Each player who lost 2 or more life this turn faces a villainous choice -- That player discards a card, or you draw a card.",
+      "Each opponent who gained 2 or more life this turn faces a villainous choice -- That player discards a card, or you draw a card."
+    ]
+  }
+]

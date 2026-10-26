@@ -6,6 +6,7 @@
  *   color:W|U|B|R|G   a color                  type:Artifact      a card type      supertype:Snow    a supertype
  *   color:any         "all colors"             subtype:goblins    a creature (or other) type, plural as printed
  *   multicolored | monocolored | colorless     everything         protection from everything (CR 702.16j)
+ *   mv:le:N | mv:ge:N "protection from mana value 3 or less / 3 or greater" (pc-statics-1, CR 702.16a, 202.3: the source's mana value)
  *   player:opponents  "each of your opponents": everything the protected permanent's controller's opponents control (std-rx15, CR 702.16b-f; unverified 702.16k).
  *                     Not a characteristic of the source: `hasQuality` never matches it; rules/protection.ts reads the two controllers.
  *
@@ -20,6 +21,8 @@ export interface QualityTarget {
   types: readonly string[];
   subtypes: readonly string[];
   supertypes: readonly string[];
+  /** pc-statics-1: the mana value of the source, for the `mv:` qualities (a source without it never matches one). */
+  manaValue?: number;
 }
 
 const COLOR_WORDS: Record<string, Color> = { white: 'W', blue: 'U', black: 'B', red: 'R', green: 'G' };
@@ -46,6 +49,8 @@ export function parseQuality(text: string, subtypes?: ReadonlySet<string>): stri
   if (TYPE_PLURALS[lower]) return `type:${TYPE_PLURALS[lower]}`;
   if (SUPERTYPE_WORDS[lower]) return `supertype:${SUPERTYPE_WORDS[lower]}`;
   // A creature type (or other subtype), written capitalized and in the plural: "Goblins", "Werewolves", "Elk"; one of the vocabulary's (G2)
+  const mv = /^mana value (\d+) or (less|greater)$/.exec(lower); // pc-statics-1 (CR 702.16a, 202.3)
+  if (mv !== null) return `mv:${mv[2] === 'less' ? 'le' : 'ge'}:${mv[1]}`;
   if (/^[A-Z][a-z]+$/.test(t) && subtypes?.has(lower) === true) return `subtype:${lower}`;
   return null;
 }
@@ -62,6 +67,11 @@ export function hasQuality(c: QualityTarget, quality: string): boolean {
   const i = quality.indexOf(':');
   const kind = quality.slice(0, i);
   const value = quality.slice(i + 1);
+  if (kind === 'mv') { // pc-statics-1: "mv:le:3", "mv:ge:3" (CR 702.16a, 202.3)
+    const [cmp, n] = value.split(':');
+    if (c.manaValue === undefined || n === undefined) return false;
+    return cmp === 'le' ? c.manaValue <= Number(n) : cmp === 'ge' ? c.manaValue >= Number(n) : false;
+  }
   switch (kind) {
     case 'color': return value === 'any' ? c.colors.length > 0 : c.colors.includes(value);
     case 'type': return c.types.includes(value);
@@ -80,6 +90,7 @@ export function qualityText(quality: string): string {
     case 'color': return value === 'any' ? 'all colors' : ({ W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' } as Record<string, string>)[value] ?? value;
     case 'type': return `${value.toLowerCase()}s`;
     case 'player': return value === 'opponents' ? 'each of your opponents' : value; // std-rx15
+    case 'mv': { const [cmp, n] = value.split(':'); return `mana value ${n ?? ''} or ${cmp === 'le' ? 'less' : 'greater'}`; }
     default: return value;
   }
 }

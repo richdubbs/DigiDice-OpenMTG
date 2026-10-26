@@ -35,6 +35,7 @@ export function putCopyOnStack(g: Game, original: GameObject, controller: Player
   const stack: StackInfo = JSON.parse(JSON.stringify(info)) as StackInfo; // plain data: the copy never aliases the original's choices (design 4.3)
   stack.isCopy = true;
   delete stack.pendingId; // std-copy-6 (CR 707.10): a copy is not the trigger the original was
+  delete stack.castOrdinal; // pc-exile-play-2 (CR 707.10): a copy was not cast, so it is no "first spell cast"; a copy that IS cast (CR 707.12) gets its own ordinal in actions/cast.ts
   delete stack.castFrom; // CR 707.10: a copy isn't cast, so it wasn't cast from anywhere (the costs paid, kicker and alternative costs, ARE copied)
   // CR 607.2q, 707.10: a linked ability refers only to cards exiled to pay the cost of the spell that became that permanent; a copy isn't cast and paid no
   // cost, so the permanent it becomes is linked to nothing the original's cost exiled (FAST5X E11 review: Champion of the Clachan and its cycle)

@@ -1,0 +1,9 @@
+# pc-exile-play-1 (precon lane pc-exile-play; test/cloud/pc-exile-play-1, golden pc-exile-play-1-review.json): free casts from hand by mana value, casting from the
+# graveyard or exile, copies of a spell twice, casting spells from among exiled cards (mana of any color)
+Marvo, Deep Operative
+Epistolary Librarian
+Squee, the Immortal
+Bygone Marvels
+Apex of Power
+Dream Pillager
+Stolen Strategy

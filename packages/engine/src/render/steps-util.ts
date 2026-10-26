@@ -352,6 +352,10 @@ export function destPhrase(d: Destination, st: RenderState, plural: boolean, pre
       if (d.position === 'random') return `into ${lib} at random`;
       if (d.position && typeof d.position === 'object') {
         const nth = d.position.nth;
+        // pc-zones-1 (CR 401.3): "just beneath the top X cards of that library" is the place after those cards, the Nth from the top with N one more than the number said
+        if (typeof nth === 'object' && nth.q === 'math' && nth.op === '+' && nth.args.length === 2 && nth.args[1] === 1) {
+          return `into ${lib} just beneath the top ${K.qty(nth.args[0]!, st)} cards of that library`;
+        }
         const digits = `${K.qty(nth, st)}${typeof nth === 'number' ? ordinalSuffix(nth) : ''}`;
         // r4-refs (CR 401.3): Oracle spells the place out, "into its owner's library third from the top"
         const word = typeof nth === 'number' ? ORDINAL_WORD[nth] : undefined;

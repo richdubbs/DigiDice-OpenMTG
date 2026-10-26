@@ -1,6 +1,6 @@
 /**
  * The Home screen's automation panel (left side): how close the card pool is to playing fully by the rules engine, as glowing neon bars that fill up when
- * Home opens. Standard is the headline (the project finishes Standard first), then all cards, the upcoming Star Trek set (its cards known so
+ * Home opens. All cards is the headline, at the top (owner, 2026-10-25), then Standard (the project finishes Standard first), the upcoming Star Trek set (its cards known so
  * far), the other formats and each Standard set. The numbers are measured, not live: scripts/coverage-stats.ts writes
  * coverage-stats.json from a whole-index snapshot after each merge wave. A card counts as done only when it is full (every ability automated; partial and
  * manual cards are played partly or wholly by hand).
@@ -117,8 +117,8 @@ export function HomeProgress({ stats = measured as CoverageStats }: { stats?: Co
         <span className="hp-kicker">Rules engine progress</span>
         <h2 className="hp-title neon-title">Cards automated</h2>
       </header>
-      {standard && <Bar label="Standard" counts={standard} size="hero" delay={250} />}
-      <Bar label="All cards" counts={stats.all} size="big" delay={550} />
+      <Bar label="All cards" counts={stats.all} size="hero" delay={250} />
+      {standard && <Bar label="Standard" counts={standard} size="big" delay={550} />}
       {spot && (
         <section className="hp-spot" aria-label={`${spot.name}: currently known cards`}>
           <span className="hp-spot-kicker">Upcoming set · out {out}</span>

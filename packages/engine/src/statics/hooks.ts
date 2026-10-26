@@ -165,6 +165,7 @@ export const RULE_HOOK_ACTIONS: Readonly<Record<string, true>> = {
   'feature:costMod.times': true, // FAST4 T21: `mana` applied `times` times ("{2}{R} more for each target beyond the first", statics/costmods.ts#modifyMana)
   'feature:spellTargetCount.filter': true, // FAST4 T21: "if it targets a tapped creature" (statics/costmods.ts#filteredTargetCount, CR 601.2c, 601.2f)
   'feature:cost.abilityTargets': true, // r4-cost: an activated ability's announced targets in its cost (statics/costmods.ts#targetValue, actions/activate.ts, CR 601.2c, 602.2b)
+  'feature:keyword.costChange.if': true, // pc-statics-1: "Equip {2}. This ability costs {2} less to activate if you have one or fewer cards in hand." (the same, under a condition)
   'feature:keyword.costChange': true, // r4-cost: "Equip {4}. This ability costs ..." (keywords/expand.ts gives it to the keyword's activated ability, CR 601.2f, 702.6a)
   'restrict:cant': true,
   'restrict:onlyIf': true,

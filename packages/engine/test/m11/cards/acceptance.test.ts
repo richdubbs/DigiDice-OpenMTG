@@ -48,8 +48,10 @@ describe('M11-4 acceptance: the cards compile as the design says (default compil
   });
 
   // std-typechange-1: Yuriko is full since ninjutsu names the returned creature's defender (CR 702.49c, keywords/data/ninjutsu.json)
-  it('partial with the reasons the design gives: Opal Palace and Path of Ancestry (the mana is automated, the rider on spending it is manual); Yuriko is full (CR 702.49c)', () => {
-    for (const name of ['Opal Palace', 'Path of Ancestry']) {
+  // pc-keywords-mana-2: Path of Ancestry is full since the scry trigger of its mana is data (addMana.whenSpent, "shares a creature type with your commander")
+  it('partial with the reasons the design gives: Opal Palace (the mana is automated, the rider on spending it is manual); Path of Ancestry and Yuriko are full (CR 702.49c)', () => {
+    expect(def('Path of Ancestry').automation.level).toBe('full');
+    for (const name of ['Opal Palace']) {
       const d = def(name);
       expect(d.automation.level, name).toBe('partial');
       expect(JSON.stringify(d.faces[0]!.abilities), name).not.toContain('commanderIdentity'); // the whole mana line is manual: never a mana ability without its rider

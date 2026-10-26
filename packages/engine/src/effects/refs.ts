@@ -343,8 +343,16 @@ export function resolvePlayers(cx: ExecCtx, ref: PlayerRef): PlayerId[] {
       return players.filter((_, i) => counts[i] === best);
     }
     case 'eachWho': { // std-combat-1 (CR 608.2c, 102.1): the players of `who` who did it in the scope's history, in APNAP order (CR 101.4)
+      // pc-combat-1 (CR 508.1, 506.4): `attacking` is live: who controls a creature attacking that player now, as the effect resolves
+      if (ref.scope === 'attacking') {
+        const d = ref.did.ev === 'attacks' ? ref.did.defender : undefined;
+        if (d === undefined || d === 'planeswalker' || d === 'battle') return [];
+        const found = findObjects(g.s, { types: ['Creature'], zone: 'battlefield', attacking: { defender: d } }, filterCtxOf(cx));
+        const owners = new Set(found.map((o) => controllerOf(g.s, o)));
+        return g.apnap().filter((p) => (ref.who === 'player' || p !== cx.controller) && owners.has(p));
+      }
       const env = { you: cx.controller, sourceId: cx.source.id, resolvePlayers: (r: PlayerRef) => resolvePlayers(cx, r) };
-      return g.apnap().filter((p) => (ref.who === 'player' || p !== cx.controller) && countHistory(g.s, ref.did, ref.scope, { ref: 'fixed', players: [p] }, env) > 0);
+      return g.apnap().filter((p) => (ref.who === 'player' || p !== cx.controller) && countHistory(g.s, ref.did, (ref.scope as 'turn'), { ref: 'fixed', players: [p] }, env) > 0);
     }
     case 'voters': {
       const voters = votersOf(cx, ref.agree);

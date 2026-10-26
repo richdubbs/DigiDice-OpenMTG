@@ -61,6 +61,7 @@ import cloudP2Coinflip2 from './templates/zz-cloud/p2-coinflip-2.json';
 import cloudP2Coinflip3 from './templates/zz-cloud/p2-coinflip-3.json';
 import cloudP2CombatFlow1 from './templates/zz-cloud/p2-combat-flow-1.json';
 import cloudP2CombatFlow2 from './templates/zz-cloud/p2-combat-flow-2.json';
+import cloudPcPlayers1 from './templates/zz-cloud/pc-players-1.json';
 import cloudR3Choose from './templates/zz-cloud/r3-choose.json';
 import cloudR3Copy from './templates/zz-cloud/r3-copy.json';
 import cloudR3Cost from './templates/zz-cloud/r3-cost.json';
@@ -381,6 +382,7 @@ import cloudP2PlayerRules2 from './templates/zz-cloud/p2-player-rules-2.json';
 import cloudP2PlayerRules3 from './templates/zz-cloud/p2-player-rules-3.json';
 import cloudP2Pt1 from './templates/zz-cloud/p2-pt-1.json';
 import cloudP2Pt2 from './templates/zz-cloud/p2-pt-2.json';
+import cloudP2Pt3 from './templates/zz-cloud/p2-pt-3.json';
 import cloudP2Refs1 from './templates/zz-cloud/p2-refs-1.json';
 import cloudP2Refs2 from './templates/zz-cloud/p2-refs-2.json';
 import cloudP2Refs3 from './templates/zz-cloud/p2-refs-3.json';
@@ -394,7 +396,30 @@ import cloudP2ReplaceEvents3 from './templates/zz-cloud/p2-replace-events-3.json
 import cloudP2Typechange1 from './templates/zz-cloud/p2-typechange-1.json';
 import cloudP2Typechange2 from './templates/zz-cloud/p2-typechange-2.json';
 import cloudP2Typechange3 from './templates/zz-cloud/p2-typechange-3.json';
+import cloudP2Typechange4 from './templates/zz-cloud/p2-typechange-4.json';
+import cloudPcStatics2 from './templates/zz-cloud/pc-statics-2.json';
 import cloudP2ZoneMoves1 from './templates/zz-cloud/p2-zone-moves-1.json';
+import cloudPcCombat1 from './templates/zz-cloud/pc-combat-1.json';
+import cloudPcCombat2 from './templates/zz-cloud/pc-combat-2.json';
+import cloudPcCombat4 from './templates/zz-cloud/pc-combat-4.json';
+import cloudPcCounters1 from './templates/zz-cloud/pc-counters-1.json';
+import cloudPcCounters2 from './templates/zz-cloud/pc-counters-2.json';
+import cloudPcCounters3 from './templates/zz-cloud/pc-counters-3.json';
+import cloudPcExilePlay1 from './templates/zz-cloud/pc-exile-play-1.json';
+import cloudPcExilePlay2 from './templates/zz-cloud/pc-exile-play-2.json';
+import cloudPcExilePlay3 from './templates/zz-cloud/pc-exile-play-3.json';
+import cloudPcExilePlay4 from './templates/zz-cloud/pc-exile-play-4.json';
+import cloudPcKeywordsMana1 from './templates/zz-cloud/pc-keywords-mana-1.json';
+import cloudPcKeywordsMana2 from './templates/zz-cloud/pc-keywords-mana-2.json';
+import cloudPcKeywordsMana3 from './templates/zz-cloud/pc-keywords-mana-3.json';
+import cloudPcPlayers2 from './templates/zz-cloud/pc-players-2.json';
+import cloudPcPlayers3 from './templates/zz-cloud/pc-players-3.json';
+import cloudPcStatics1 from './templates/zz-cloud/pc-statics-1.json';
+import cloudPcTokens1 from './templates/zz-cloud/pc-tokens-1.json';
+import cloudPcTokens2 from './templates/zz-cloud/pc-tokens-2.json';
+import cloudPcZones1 from './templates/zz-cloud/pc-zones-1.json';
+import cloudPcZones2 from './templates/zz-cloud/pc-zones-2.json';
+import cloudPcZones3 from './templates/zz-cloud/pc-zones-3.json';
 import cloudStdCardcopy13 from './templates/zz-cloud/std-cardcopy-13.json';
 import cloudStdCardcopy7 from './templates/zz-cloud/std-cardcopy-7.json';
 import cloudStdExilePlay13 from './templates/zz-cloud/std-exile-play-1-3.json';
@@ -494,6 +519,7 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/p2-player-rules-3.json', cloudP2PlayerRules3], // p2-player-rules-3 (Phase 2 lane p2-player-rules; path order: after 'p2-player-rules-2'): "As long as C, your opponents can't cast spells during your turn" (CR 611.3a)
   ['zz-cloud/p2-pt-1.json', cloudP2Pt1], // p2-pt-1 (Phase 2 lane p2-pt; path order: 'p2-' sorts after 'look3', before 'r3-'): power/toughness pumps and exchanges, see the file
   ['zz-cloud/p2-pt-2.json', cloudP2Pt2], // p2-pt-2 (Phase 2 lane p2-pt; path order: 'p2-pt' sorts after 'p2-player', before 'p2-replace'): group pumps with grants and per-object counts, see the file
+  ['zz-cloud/p2-pt-3.json', cloudP2Pt3], // p2-pt-3 (Phase 2 lane p2-pt; path order: 'p2-pt' sorts after 'p2-player', before 'p2-replace'): group and attached pumps (counts, colors, conditions), see the file
   ['zz-cloud/p2-refs-1.json', cloudP2Refs1], // p2-refs-1 (Phase 2 lane p2-refs; path order: 'p2-refs-1' sorts after 'look3', before 'r3-choose'): plural "the exiled cards" links (CR 607.2a)
   ['zz-cloud/p2-refs-2.json', cloudP2Refs2], // p2-refs-2 (Phase 2 lane p2-refs; path order: 'p2-refs-2' sorts after 'look3', before 'r3-choose'): "<noun> destroyed this way can't be regenerated" (CR 701.19c)
   ['zz-cloud/p2-refs-3.json', cloudP2Refs3], // p2-refs-3 (Phase 2 lane p2-refs; path order: 'p2-refs-3' sorts after 'p2-refs-2', before 'p2-replace-damage-1'): "spells with the chosen name can't be cast" (CR 601.3, 607.2d)
@@ -507,7 +533,31 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/p2-typechange-1.json', cloudP2Typechange1], // p2-typechange-1 (Phase 2 lane p2-typechange; path order: 'p2-' sorts after 'look3', before 'r3-'): type changes, see the file
   ['zz-cloud/p2-typechange-2.json', cloudP2Typechange2], // p2-typechange-2 (lane p2-typechange): colors and types added, becomes a <color> artifact, ~ becomes an enchantment
   ['zz-cloud/p2-typechange-3.json', cloudP2Typechange3], // p2-typechange-3 (Phase 2 lane p2-typechange; path order: 'p2-' sorts after 'p2-replace-', before 'r3-'): see the file
+  ['zz-cloud/p2-typechange-4.json', cloudP2Typechange4], // p2-typechange-4 (lane p2-typechange): all creature types with a pump, see the file
   ['zz-cloud/p2-zone-moves-1.json', cloudP2ZoneMoves1], // p2-zone-moves-1 (Phase 2 lane p2-zone-moves; path order: 'p2-zone-moves-1' sorts after 'look3', before 'r3-choose'): wheels, "then draws that many cards minus N", "the greatest number of cards a player discarded this way" (CR 701.9a, 121.1)
+  ['zz-cloud/pc-combat-1.json', cloudPcCombat1], // pc-combat-1 (Commander precon lane pc-combat; path order: 'pc-combat-1' sorts after 'p2-zone-moves-1', before 'r1'): combat triggers and riders, see the file's templates
+  ['zz-cloud/pc-combat-2.json', cloudPcCombat2], // pc-combat-2 (precon lane pc-combat; path order: 'pc-combat-2' sorts before 'pc-exile-play-1'): put a card from hand onto the battlefield tapped and attacking
+  ['zz-cloud/pc-combat-4.json', cloudPcCombat4], // pc-combat-4 (precon lane pc-combat; path order: 'pc-combat-4' sorts before 'pc-exile-play-1'): draw cards and gain control of this permanent, untap it
+  ['zz-cloud/pc-counters-1.json', cloudPcCounters1], // pc-counters-1 (precon lane pc-counters; path order: 'pc-' sorts after 'p2-', before 'r3-'): counters and energy, see the file
+  ['zz-cloud/pc-counters-2.json', cloudPcCounters2], // pc-counters-2 (precon lane pc-counters; path order: 'pc-' sorts after 'p2-', before 'r3-'): pumps counting counters, see the file
+  ['zz-cloud/pc-counters-3.json', cloudPcCounters3], // pc-counters-3 (precon lane pc-counters; path order: 'pc-counters-3' after 'pc-counters-2'): energy per object, see the file
+  ['zz-cloud/pc-exile-play-1.json', cloudPcExilePlay1], // pc-exile-play-1 (precon lane pc-exile-play; path order: 'pc-' sorts after 'p2-', before 'r3-'): casting and playing from exile, copies of spells
+  ['zz-cloud/pc-exile-play-2.json', cloudPcExilePlay2], // pc-exile-play-2 (precon lane pc-exile-play; path order: after 'p2-', before 'r3-'): the first spell cast each turn
+  ['zz-cloud/pc-exile-play-3.json', cloudPcExilePlay3], // pc-exile-play-3 (precon lane pc-exile-play; path order: after 'pc-exile-play-2', before 'r3-'): the next spell has cascade or storm
+  ['zz-cloud/pc-exile-play-4.json', cloudPcExilePlay4], // pc-exile-play-4 (precon lane pc-exile-play; path order: after 'pc-exile-play-1', before 'r3-'): cast spells from among a group this turn, pay life
+  ['zz-cloud/pc-keywords-mana-1.json', cloudPcKeywordsMana1], // pc-keywords-mana-1 (precon lane keywords-mana; path order: 'pc-' sorts after 'p2-', before 'r3-'): "Choose a color. Add one mana of that color for each <kind> counter on <object>"
+  ['zz-cloud/pc-keywords-mana-2.json', cloudPcKeywordsMana2], // pc-keywords-mana-2 (precon lane keywords-mana; path order: 'pc-' sorts after 'p2-', before 'r3-'): mana riders and mana abilities, see the file
+  ['zz-cloud/pc-keywords-mana-3.json', cloudPcKeywordsMana3], // pc-keywords-mana-3 (precon lane keywords-mana; path order: 'pc-' sorts after 'p2-', before 'r3-'): "faces a villainous choice"
+  ['zz-cloud/pc-players-1.json', cloudPcPlayers1], // pc-players-1 (precon lane pc-players; path order: 'pc-' sorts after 'p2-zone-moves-1', before 'r3-'): imp gain life equal, draw N cards for each, loses life equal unless
+  ['zz-cloud/pc-players-2.json', cloudPcPlayers2], // pc-players-2 (precon lane pc-players; path order after pc-players-1): draw N cards if <condition>
+  ['zz-cloud/pc-players-3.json', cloudPcPlayers3], // pc-players-3 (precon lane pc-players; path order after pc-players-2): damage unless they control
+  ['zz-cloud/pc-statics-1.json', cloudPcStatics1], // pc-statics-1 (precon lane pc-statics; path order: 'pc-' sorts after 'p2-zone-moves-1', before 'r3-choose'): see the file
+  ['zz-cloud/pc-statics-2.json', cloudPcStatics2], // pc-statics-2 (precon lane pc-statics; path order: 'pc-' sorts after 'p2-zone-moves-1', before 'r3-choose'): see the file
+  ['zz-cloud/pc-tokens-1.json', cloudPcTokens1], // pc-tokens-1 (lane pc-tokens, precon decks; path order: 'pc-tokens-1' sorts after 'p2-zone-moves-1', before 'r3-choose'): token and copy readings
+  ['zz-cloud/pc-tokens-2.json', cloudPcTokens2], // pc-tokens-2 (lane pc-tokens, precon decks; path order: 'pc-tokens-2' sorts after 'pc-players-1', before 'r3-choose'): copies, replacements
+  ['zz-cloud/pc-zones-1.json', cloudPcZones1], // pc-zones-1 (precon lane pc-zones; appended at the end of the zz-cloud block): library placement, reveal until and put all revealed, digs
+  ['zz-cloud/pc-zones-2.json', cloudPcZones2], // pc-zones-2 (precon lane pc-zones; path order: 'pc-' sorts after 'p2-zone-moves-1', before 'r3-'): searches that share a land type, each player searches and puts onto the battlefield, manifest by another player, a color and a type added to a returned creature
+  ['zz-cloud/pc-zones-3.json', cloudPcZones3], // pc-zones-3 (precon lane pc-zones; path order: 'pc-zones' sorts after 'pc-players', before 'r3-'): conditional permissions to play lands and cast spells from the top of the library
   ['zz-cloud/r3-choose.json', cloudR3Choose], // r3-choose (Standard round 3; path order: 'r3-' sorts after 'look3', before 'std-'): targets, choices and modes, on Cloud std-eoe's "choose <targets>" (CR 601.2b-c, 700.2)
   ['zz-cloud/r3-copy.json', cloudR3Copy], // r3-copy (Standard round 3, path order: 'r3-' sorts after 'look3', before 'std-'): copies and control: token copies made by another player, "becomes a copy" with a leading duration or an exception, "become copies" (CR 707, 706, 108.4)
   ['zz-cloud/r3-cost.json', cloudR3Cost], // r3-cost (Standard round 3, path order: 'r3-cost' sorts after 'look3', before 'std-'): costs and mana (CR 601.2f, 118, 605, 106)

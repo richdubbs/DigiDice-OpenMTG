@@ -372,6 +372,22 @@ describe('in-game menu (branding slot 3)', () => {
     expect(screen.getByTestId('route').textContent).toBe('about');
   });
 
+  it('opens Home, Decks, Replays and Images too, without ending the game (owner, 2026-10-25)', () => {
+    render(renderGameApp(started(), { brand: brandWith(null) }));
+    acceptCover();
+    for (const [name, route] of [['Home', 'home'], ['Decks', 'decks'], ['Replays', 'replays'], ['Images', 'images']] as const) {
+      fireEvent.click(screen.getByRole('button', { name: /Menu/ }));
+      fireEvent.click(within(screen.getByRole('group', { name: 'Game menu' })).getByRole('button', { name }));
+      expect(screen.getByTestId('route').textContent).toBe(route);
+      fireEvent.click(screen.getByRole('button', { name: 'Test back' }));
+      // Back on the same game, no new cover.
+      expect(screen.queryByTestId('route')).toBeNull();
+      expect(screen.queryByRole('dialog', { name: /^Pass to/ })).toBeNull();
+    }
+    fireEvent.click(screen.getByRole('button', { name: /Menu/ }));
+    expect(within(screen.getByRole('group', { name: 'Game menu' })).queryByRole('button', { name: 'Play' })).toBeNull();
+  });
+
   it('holds a quiet Donate link only when brand.json has a URL; Esc closes the menu', () => {
     render(renderGameApp(started(), { brand: brandWith('https://example.org/donate') }));
     acceptCover();

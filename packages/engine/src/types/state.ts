@@ -123,6 +123,8 @@ export interface PlayerState {
     lifeGained: number; lifeLost: number; spellsCast: number; cardsDrawn: number; damageDealtToOpponents?: number; descended?: number; manaSpentOnSpells?: number; coinFlips?: number;
     /** r5-repl INTERFACE CHANGE (additive): `cardsDrawn` as this player's draw step began this turn (core/steps.ts); absent before it (CR 504.1). */
     drawStepFrom?: number;
+    /** pc-exile-play-2 INTERFACE CHANGE (additive), CR 601.2i: the spells this player cast this turn, by the zone each was cast from ("the first spell you cast from exile each turn"). */
+    castFromCount?: Record<string, number>;
   };
 
   // ---- M11-0 ADDITIONS (m11 design 4.2; all optional and absent outside a Commander game, so every earlier state and action log is unchanged) ----
@@ -268,6 +270,8 @@ export interface StackInfo {
   flags?: string[];
   /** Zone the card was cast from (aftermath: exile instead of leaving the stack, CR 702.127a); trek-11: or `'outside'`, from outside the game (CR 400.11). */
   castFrom?: CastOrigin;
+  /** pc-exile-play-2 INTERFACE CHANGE (additive), CR 601.2i: which spell this was among those its caster cast this turn (`turn`), and among those cast from the same zone (`fromZone`); 1 is the first. */
+  castOrdinal?: { turn: number; fromZone: number };
   /** FAST4 T27 INTERFACE CHANGE (additive): the player who cast the spell (CR 601.2a), kept in the permanent's cast record (`GameObject.cast.by`). */
   caster?: PlayerId;
   /** std-rx22 INTERFACE CHANGE (additive): the spell's controller changed while it was on the stack (core/control.ts); copied to `GameObject.cast.controlLost`. */
@@ -438,6 +442,8 @@ export interface EventContext {
   roles: Partial<Record<EventRole, RoleValue>>;
   /** "that much": damage dealt, life gained, cards drawn, counters put. */
   amount?: number;
+  /** pc-tokens-2 INTERFACE CHANGE (additive): of a `createToken` event being replaced, the definition id of the token (`createToken.exceptReplaced` skips a step that would make that very token). */
+  token?: string;
   /** INTEGRATION ADDITION (W1): of a `cast` event, the spells cast this turn by all players before that spell (CR 702.40a); read by `{q:'spellsBefore'}` (storm). */
   spellsBefore?: number;
   /** FAST5X E9 INTERFACE CHANGE (additive): of a `cast` event, the amount of mana spent to cast that spell (CR 601.2h); read by `{q:'spellManaSpent'}` (increment, CR 702.191a). */

@@ -273,6 +273,9 @@ export function abilityList(abilities: AbilityDef[], st: RenderState, noun: stri
   // std-r8 (CR 702.1, 113.1a; family keyword-list-quoted): two or more keywords and ONE quoted ability are also one list, each keyword an item of its own:
   // 'has first strike, trample, indestructible, haste, and "Whenever ..."' grants the same abilities as 'has first strike, trample, indestructible, and haste and "..."'
   if (!commaInside && kw.length >= 2 && other.length === 1 && !qualified) return alt(plain, [...kw.map((k) => `${keywordWords(k as never, st)}, `), `and ${bits[first]!}`].join(''));
+  // p2-typechange-4 (CR 113.1a, 702.6a; family quoted-then-keyword): one keyword and one quoted ability are also said quoted ability first, without its period:
+  // 'have "Equipped creature gets +2/+0" and equip {2}' (Armed with Proof, Arterial Alchemy) grants the same abilities as 'have equip {2} and "..."'
+  if (!commaInside && kw.length === 1 && other.length === 1 && !qualified) return alt(plain, `${quotedListItem(quotedAbility(other[0]!, st, noun), 'none')} and ${bits[0]!}`);
   if (!commaInside || kw.length < 2 || qualified) return plain;
   const each = [...kw.map((k) => `${keywordWords(k as never, st)}, `), ...bits.slice(first).map((b, i) => (i === other.length - 1 ? `and ${b}` : `${b} `))].join('');
   return alt(plain, each);
@@ -626,6 +629,7 @@ function identity(e: ContinuousEffectDef, pl: boolean, st: RenderState, isStatic
     else if (addOnly && !isStatic && !pl && !allTypes && !bp && colorAdd !== '' && (types.add.length === 0 ? subs.add.length > 0 : subs.add.length === 0) && supers.add.length === 0) {
       const colored = `${colorAdd} ${desc}`;
       out.preds.push(`${verbBe} ${article(colored)} ${colored} in addition to its other colors and types`);
+      out.inAddition = `${verbBe} ${article(colored)} ${colored} in addition to its other colors and types`; // pc-zones-2 (CR 611.2a): "It's a black Zombie in addition to its other colors and types" for an effect without a duration
     }
     else if (addOnly) {
       out.typeAdd = out.preds.length; // FAST5 T41: a resolved effect says it last too ("gets +3/+1 and becomes a Dinosaur in addition to its other types")
@@ -1228,6 +1232,17 @@ function continuousOne(e: ContinuousEffectDef, st: RenderState, duration: Durati
       const subs = m4['subtypes'] === undefined ? '' : ((m4['subtypes'] as { set: string[] }).set).join(' ');
       const list = mapEnds(abilityList(m6['add'] as AbilityDef[], cloneState(st), noun), (lit) => lit.replace(/\."$/, '"'));
       text = alt(text, `${subject} is a colorless ${subs}${subs === '' ? '' : ' '}${noun} with ${list} and loses all other card types and abilities`);
+    }
+    // pc-statics-2 (CR 205.1b, 613.1d, 613.1f, 613.4b; Darksteel Mutation): a static ability that makes its object an artifact creature of one subtype with a base power and
+    // toughness and abilities, taking every other ability, card type and creature type away: "Enchanted creature is an Insect artifact creature with base power and toughness
+    // 0/1 and has indestructible, and it loses all other abilities, card types, and creature types." (setting the types is losing the others)
+    if (isStatic && !dur && !pl && e.mods.length === 3 && m4?.['layer'] === 4 && m5?.['layer'] === 6 && m6?.['layer'] === '7b' && m5['removeAll'] === true && Array.isArray(m5['add']) && (m5['add'] as unknown[]).length > 0
+      && m5['remove'] === undefined && m5['cantHave'] === undefined && m4['supertypes'] === undefined && m4['named'] === undefined && JSON.stringify(m4['types']) === JSON.stringify({ set: ['Artifact', 'Creature'] })
+      && Array.isArray((m4['subtypes'] as { set?: unknown } | undefined)?.set) && ((m4['subtypes'] as { set: string[] }).set).length === 1 && Object.keys(m4['subtypes'] as object).length === 1
+      && typeof m6['power'] === 'number' && typeof m6['toughness'] === 'number') {
+      const sub = (m4['subtypes'] as { set: string[] }).set[0]!;
+      const list = abilityList(m5['add'] as AbilityDef[], cloneState(st), 'creature');
+      text = alt(text, `${subject} is ${withArticle(sub)} artifact creature with base power and toughness ${String(m6['power'])}/${String(m6['toughness'])} and has ${list}, and it loses all other abilities, card types, and creature types`);
     }
     // std-rx30 (CR 205.1a, 611.2b, 613.1d, 613.1f): a resolved effect with a duration that sets its objects' card type to artifact with one subtype, takes all their
     // abilities away and grants others: "For as long as ~ remains on the battlefield, the chosen permanents become Treasure artifacts with "{T}, Sacrifice this

@@ -15,7 +15,7 @@
  * A token that is being created (`from: null`) enters through core/zones.ts#createToken, which has no move parts: its copy effect begins here, as the choice is
  * made (the token object exists, in no zone yet, CR 614.12a), with the token's timestamp.
  */
-import type { CopyExcept } from '../../types/ability';
+import type { CopyExcept, Duration } from '../../types/ability';
 import type { CopiableValues, ContinuousEffectRec, GameObject } from '../../types/state';
 import { additionalCountersOf, charsFromCopiable, concreteSnapshot, copiableOrWhy, copyRecord, HYPOTHETICAL_COPY } from '../../statics/copy';
 import type { DestinationFacts } from '../api';
@@ -30,7 +30,7 @@ import { replacementCtx } from '../instead';
 const COPY_PART: EntersPart = {
   field: 'copy',
   capability: 'body:enters.copy',
-  extraCapabilities: ['body:enters.copy.then', 'body:enters.copy.copiedCounters'],
+  extraCapabilities: ['body:enters.copy.then', 'body:enters.copy.copiedCounters', 'body:enters.copy.duration'],
   apply(g, e, body, c) {
     const spec = body.copy;
     const o = g.s.objects[e.object.id];
@@ -72,7 +72,7 @@ const COPY_PART: EntersPart = {
     // permanent has on it": the counters on the chosen object now, as it enters, each kind with its number
     const copied = spec.copiedCounters === true ? Object.entries(of.counters).filter(([, n]) => n > 0).map(([kind, count]) => ({ kind, count })) : [];
     const additional = copied.length > 0 ? [...(additional0 ?? []), { counters: copied }] : additional0;
-    const facts: Partial<DestinationFacts> = { copyOf: { id: of.id, zone: of.zone }, copyExcept: spec.except, copyAdditional: additional, ...(spec.tapped === true ? { tapped: true } : {}) };
+    const facts: Partial<DestinationFacts> = { copyOf: { id: of.id, zone: of.zone }, copyExcept: spec.except, copyAdditional: additional, ...(spec.tapped === true ? { tapped: true } : {}), ...(spec.duration !== undefined ? { copyDuration: spec.duration } : {}) };
     // r4-copy (CR 603.12, 614.12): "When you do, exile that card.": once the object entered, the steps run in the replacement's context with the copied object bound
     if (spec.then !== undefined) {
       const then = spec.then;
@@ -85,7 +85,7 @@ const COPY_PART: EntersPart = {
       });
     }
     if (e.from === null) {
-      const rec = beginTokenCopy(g, o, of, spec.except ?? [], c.sourceName);
+      const rec = beginTokenCopy(g, o, of, spec.except ?? [], c.sourceName, spec.duration);
       // CR 707.9e: the additional effects apply as the token enters (performCreateToken applies the facts' counters)
       const extra = rec ? additionalCounters(g, o, rec.copy!, additional ?? []) : [];
       if (extra.length > 0) facts.counters = [...(e.destination.counters ?? []), ...extra];
@@ -102,7 +102,7 @@ const COPY_PART: EntersPart = {
     if ('reason' in snapshot) return;
     alt.continuousEffects = [...alt.continuousEffects, copyRecord({
       id: HYPOTHETICAL_COPY, target: { id: o.id, zone: o.zone }, snapshot, of: { id: of.id, zone: of.zone }, source: { id: o.id, zone: o.zone }, sourceName: '',
-      controller: o.controller, timestamp: o.timestamp, turn: alt.turn.number,
+      controller: o.controller, timestamp: o.timestamp, turn: alt.turn.number, ...(facts.copyDuration ? { duration: facts.copyDuration } : {}),
     })];
   },
 };
@@ -110,10 +110,10 @@ const COPY_PART: EntersPart = {
 type G = Parameters<EntersPart['apply']>[0];
 
 /** A token being created enters as a copy: the effect begins now, with the token's timestamp (see the file comment). */
-function beginTokenCopy(g: G, o: GameObject, of: GameObject, except: readonly CopyExcept[], sourceName: string): ContinuousEffectRec | null {
+function beginTokenCopy(g: G, o: GameObject, of: GameObject, except: readonly CopyExcept[], sourceName: string, duration?: Duration): ContinuousEffectRec | null {
   const name = g.nameOf(o.id);
   const ofName = g.nameOf(of.id);
-  const r = beginCopy(g, o, of, except, { source: { id: o.id, zone: 'battlefield' }, sourceName, controller: o.controller, timestamp: o.timestamp });
+  const r = beginCopy(g, o, of, except, { source: { id: o.id, zone: 'battlefield' }, sourceName, controller: o.controller, timestamp: o.timestamp, ...(duration ? { duration } : {}) });
   if ('reason' in r) {
     g.log(`${name} can't enter as a copy of ${ofName} automatically (${r.reason}); apply the copy by hand.`, { rules: ['CR 707.5'], level: 'manual' });
     return null;

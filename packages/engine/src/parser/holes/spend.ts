@@ -63,7 +63,10 @@ function linkChosen(f: ObjectFilter): ObjectFilter | null {
 function spellFilter(f: ObjectFilter): ObjectFilter | null {
   const { stackKind, zone, ...rest } = f;
   if (stackKind !== 'spell') return null;
-  if (rest.anyOf !== undefined || rest.not !== undefined || rest.controller !== undefined || rest.targets !== undefined) return null;
+  if (rest.not !== undefined || rest.controller !== undefined || rest.targets !== undefined) return null;
+  // pc-keywords-mana-1 (CR 205.2a, 205.3, 106.6): "instant, sorcery, Demon, and Spirit spells" (Séance Board): the any-of of card types and subtypes a list of mixed names
+  // is (holes/filter.ts#shape), nothing else beside it; any other any-of is a coordination of spell descriptions this function does not build (spellsCast does)
+  if (rest.anyOf !== undefined && !(Object.keys(rest).length === 1 && rest.anyOf.every((a) => Object.keys(a).every((k) => k === 'types' || k === 'subtypes')))) return null;
   let out: ObjectFilter = rest;
   if (zone !== undefined && zone !== 'stack') {
     if (typeof zone !== 'string' || zone === 'any' || zone === 'battlefield' || zone === 'library') return null;

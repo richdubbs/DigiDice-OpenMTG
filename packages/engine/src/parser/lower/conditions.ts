@@ -679,6 +679,44 @@ function resolveCountersPut(d: Draft, seq: Unit[], at: number, prefix: Unit[]): 
   if (!ok) setManual(u, { code: 'unbound-reference', reason: '"the counters put this way" with no instruction putting counters right before it to refer to (CR 122.6, 608.2c)', unresolved: true });
 }
 
+const isMayCount = (n: unknown): n is Rec => isRec(n) && n['q'] === 'resultCount' && n['$step'] === 'previous' && n['$who'] === 'each';
+
+/**
+ * pc-tokens-1 (CR 608.2c, 608.2d, 101.4): "For each opponent who does, ..." (`{q:'resultCount', step:'', $step:'previous', $who:'each'}`, template
+ * eff.pctokens1.forEachWhoDoes) counts the players who did the optional action of the "each opponent may ..." right before it: the `may` step of a group of players
+ * (`who` is `each`) gets an `as` name and the quantity names it (the `may` handler's result count is the number of players who did it). Anything else right before
+ * (no such `may`, one with an `otherwise`, the quantity inside a nested step list) leaves the sentence manual (not contagious: it was manual before this reading);
+ * a manual sentence right before is the antecedent and poisons the reader (taint T1).
+ */
+function resolveMayCount(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
+  const u = seq[at]!;
+  let ok = true;
+  u.steps = [...u.steps];
+  for (let i = 0; i < u.steps.length && ok; i++) {
+    let name: string | undefined;
+    u.steps[i] = rewrite(u.steps[i]!, (node, path) => {
+      if (!ok || !isMayCount(node)) return undefined;
+      const parts = path.split('/').filter((x) => x !== '');
+      if (parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? ''))) { ok = false; return undefined; }
+      if (name === undefined) {
+        const p = previousInstruction(seq, at, i, '', prefix);
+        if (p !== null && isUnit(p)) {
+          // a sentence of this sequence right before it that is not understood is the antecedent: the reader is manual with it (taint T1), not contagious
+          name = freshName(d, 'did');
+          p.lostNames = [...(p.lostNames ?? []), name];
+        } else {
+          if (p === null || p['op'] !== 'may' || p['otherwise'] !== undefined || p['anyOne'] === true || p['guard'] !== undefined || !isRec(p['who']) || p['who']['ref'] !== 'each') { ok = false; return undefined; }
+          if (typeof p['as'] !== 'string') p['as'] = freshName(d, 'did');
+          name = p['as'] as string;
+        }
+      }
+      return { q: 'resultCount', step: name };
+    }) as Rec;
+  }
+  // not contagious (no `unresolved`): the sentence alone is manual, as it was when no template read it, so no other instruction of the ability is lost (guard G10)
+  if (!ok) setManual(u, { code: 'unbound-reference', reason: '"for each opponent who does" with no "each opponent may ..." right before it to refer to (CR 608.2c, 608.2d)' });
+}
+
 /**
  * M12-3 (CR 701.38a-b): the vote markers of the Cond, Qty and Objs holes (parser/holes/vote.ts) name the vote BEFORE them in the ability: a top-level vote
  * step earlier in the same sentence or in an earlier sentence of the sequence ("Starting with you, each player votes for carnage or homage. If carnage gets
@@ -1172,6 +1210,7 @@ export function lowerConditions(input: Draft): Draft {
       if (!u.manual) resolveLifeLost(d, seq, i, prefix); // M12-3
       if (!u.manual) resolveCountersRemoved(d, seq, i, prefix); // std-rx14
       if (!u.manual) resolveCountersPut(d, seq, i, prefix); // trek-6
+      if (!u.manual) resolveMayCount(d, seq, i, prefix); // pc-tokens-1
       if (!u.manual) resolveDamageDealt(d, seq, i, prefix); // std-rx20
       if (!u.manual) resolveVotes(d, seq, i, prefix); // M12-3
       if (!u.manual) resolveDid(d, seq, i, prefix);

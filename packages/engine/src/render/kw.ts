@@ -22,6 +22,7 @@ export function qualityWords(quality: string): string {
     case 'subtype': return value.charAt(0).toUpperCase() + value.slice(1);
     case 'chosen': return `the chosen ${value}`; // MX2 (additive): "protection from the chosen color" (CR 607.2d)
     case 'player': return value === 'opponents' ? 'each of your opponents' : quality; // std-rx15 (CR 702.16b-f): "protection from each of your opponents"
+    case 'mv': { const [cmp, n] = value.split(':'); return `mana value ${n ?? ''} or ${cmp === 'le' ? 'less' : 'greater'}`; } // pc-statics-1 (CR 702.16a, 202.3)
     default: return value;
   }
 }
@@ -226,7 +227,8 @@ export function keywordLine(k: KeywordAbilityDef, st: RenderState): string {
       if (k.costChange.kind !== 'reduce') throw new NoRenderer('a face-up cost that is increased');
       return `${line}. This cost is reduced by ${amount}${per}.`;
     }
-    return `${line}. This ability costs ${amount} ${k.costChange.kind === 'increase' ? 'more' : 'less'} to activate${per}.`;
+    const when = k.costChangeIf === undefined ? '' : JSON.stringify(k.costChangeIf) === JSON.stringify({ cond: 'turnOf', whose: 'you' }) ? ' during your turn' : ` if ${K.cond(k.costChangeIf, st)}`; // pc-statics-1 (CR 601.2f)
+    return `${line}. This ability costs ${amount} ${k.costChange.kind === 'increase' ? 'more' : 'less'} to activate${per}${when}.`;
   }
   // FAST5X E27 (CR 602.5b): "Equip--Pay 3 life. Activate only once each turn."
   if (k.limit !== undefined) {

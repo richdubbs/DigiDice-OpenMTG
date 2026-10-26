@@ -82,6 +82,7 @@ import { playerName } from './labels';
 import { PassCover } from './PassCover';
 import { RevealNotice } from './RevealNotice';
 import { sealConnection } from './sealed';
+import type { GameSetup } from './NewGameScreen';
 import { gameSfx, playCues, quietGameSounds, setGameSoundsMuted, soundClock } from './sound';
 import { DEFAULT_SLOTS, type GameSlots } from './slots';
 import './game.css';
@@ -102,6 +103,8 @@ export interface GameScreenProps {
   hosted?: HostedLink;
   /** Each player's deck sleeve (the game route's `sleeves`), kept for a rematch. */
   sleeves?: PlayerSleeves;
+  /** What New game started the game with (the game route's `setup`), kept for a rematch; the end screen's "Change decks" opens New game with it. */
+  setup?: GameSetup;
 }
 
 /** A per-connection key, so a rematch (a new connection on the same route) starts with a fresh screen state. */
@@ -147,7 +150,7 @@ function isTyping(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
 }
 
-function GameTable({ connection: source, rematch, slots = DEFAULT_SLOTS, coverDelayMs = 600, brand = BRAND, settings = settingsStore(), online, hosted, sleeves }: GameScreenProps) {
+function GameTable({ connection: source, rematch, slots = DEFAULT_SLOTS, coverDelayMs = 600, brand = BRAND, settings = settingsStore(), online, hosted, sleeves, setup }: GameScreenProps) {
   const nav = useNav();
   // Online: leaving the screen for good leaves the game at the local server (the other side gets a bye) and closes the page's socket. The server
   // concedes a running game for this player first (CL4, CR 104.3a), so the other side sees that it won and why.
@@ -361,6 +364,7 @@ function GameTable({ connection: source, rematch, slots = DEFAULT_SLOTS, coverDe
       {...(leaveConfirm ? { leaveConfirm } : {})}
       onSettings={() => nav.go({ screen: 'settings' })}
       onAbout={() => nav.go({ screen: 'about' })}
+      onOpen={(screen) => nav.go({ screen })}
       onReportBug={reportBug}
       covered={covered}
       brand={brand}
@@ -419,7 +423,10 @@ function GameTable({ connection: source, rematch, slots = DEFAULT_SLOTS, coverDe
                         <GameOver
                           view={view}
                           result={view.result}
-                          {...(rematch ? { onRematch: () => nav.reset({ screen: 'game', connection: sealConnection(rematch()), rematch, ...(sleeves ? { sleeves } : {}) }) } : {})}
+                          {...(rematch
+                            ? { onRematch: () => nav.reset({ screen: 'game', connection: sealConnection(rematch()), rematch, ...(sleeves ? { sleeves } : {}), ...(setup ? { setup } : {}) }) }
+                            : {})}
+                          {...(setup ? { setup, onChangeDecks: () => leaveTo({ screen: 'newGame', setup }) } : {})}
                           onNewGame={() => leaveTo({ screen: 'newGame' })}
                           onHome={() => leaveTo()}
                           onReportBug={reportBug}

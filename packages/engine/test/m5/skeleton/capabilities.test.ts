@@ -81,6 +81,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       'op:reflexive.if' /* FAST5X E16: a reflexive trigger that waits for a result of the step, CR 603.12, 120.10 (model/capabilities.ts) */,
       'op:chooseObjects.groupLimit' /* FAST5 T66: "up to two creature cards with total mana value 4 or less" (effects/handlers/choose.ts#OP_FORMS) */,
       'op:sacrificeChoice.keepEachType' /* FAST5 T66: "chooses a permanent of each permanent type and sacrifices the rest" (effects/handlers/zones-remove.ts#OP_FORMS) */,
+      'op:sacrificeChoice.keepTypes', 'op:sacrificeChoice.keepFilter', 'op:sacrificeChoice.chooser' /* pc-players-1: Cataclysmic Gearhulk, Tragic Arrogance (effects/handlers/zones-remove.ts#OP_FORMS) */,
       'op:addMana.keepEndOfTurn' /* CLOUD std-mkm: "Until end of turn, you don't lose this mana as steps and phases end", CR 500.5, 106.4 (effects/handlers/cards-mana.ts#OP_FORMS) */,
       'op:pay.costLink' /* std-rx24: an exile cost's link, champion (CR 607.2k; effects/handlers/pay.ts#OP_FORMS) */, 'op:sacrificeChoice.exploit' /* std-rx17: an exploit ability's sacrifice (CR 702.110b; zones-remove.ts#OP_FORMS) */, 'op:sacrificeChoice.cantAs', 'op:discard.cantAs' /* C6: "each opponent who can't", the players who can't (CR 101.3; zones-remove.ts, cards-draw.ts#OP_FORMS) */,
       'op:sacrificeChoice.groupChooser' /* C6: the choosing player of a group read as iterating in the filter (CR 608.2e; zones-remove.ts#asChooser) */,
@@ -111,6 +112,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       'op:moveCounters.anyKind', 'op:moveCounters.upTo' /* p2-counters-move-1: "move a counter from ...", "move any number of counters from ...", CR 122.5, 608.2d (effects/handlers/counters.ts#movePlan) */,
       'op:moveCounters.distribute' /* p2-counters-move-4: "move any number of +1/+1 counters from ~ onto other creatures", divided, CR 122.5, 608.2d (effects/handlers/counters.ts#moveDistributed) */,
       'op:fight.pairs' /* p2-damage-2: "each of those tokens fights a different one of those creatures", CR 701.14a, 608.2d (effects/handlers/lifedamage.ts#OP_FORMS) */,
+      'op:search.shareLandType' /* pc-zones-2: "basic land cards that share a land type", CR 205.3i (effects/handlers/cards-library.ts#OP_FORMS) */,
       'op:flipCoin.called' /* p2-coinflip-3: "flip three coins. For each flip you win, ...", each flip called, CR 705.2 (effects/handlers/game.ts#OP_FORMS) */];
     expect((byPrefix.get('op') ?? []).sort(), 'op').toEqual([...ops.map((op) => `op:${op}`), ...forms].sort());
     for (const op of ops) expect(Object.hasOwn(OP_HANDLERS, op) && Object.hasOwn(RENDERERS, op), op).toBe(true); // design 5.2: a handler AND a renderer
@@ -368,7 +370,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       // r3-choose: "choose one that hasn't been chosen [this turn]" (actions/announce.ts#usedModes, CR 700.2, 603.3c)
       'feature:modes.unchosen',
       // r3-choose: the triggering event's amount read at announcement, "up to that many target creatures" (actions/announce-cond.ts#announceQty, CR 603.3d)
-      'feature:announce.qty.eventAmount',
+      'feature:announce.qty.eventAmount', 'feature:announce.qty.kickCount' /* pc-zones-3 */,
       // Standard round 3, r3-trig: the modes chosen for the spell of a cast trigger read at announcement (CR 700.2, 603.3c), a modal spell cast (CR 700.2) and the
       // total power of a declaration's attackers (CR 508.1) as event forms (triggers/forms.ts)
       'feature:announce.qty.modesChosen', 'feature:ev.cast.modal', 'feature:ev.attacks.power', 'feature:ev.cause.craft' /* exiled as craft's material, CR 702.167a */,
@@ -381,6 +383,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       'feature:additionalCost.chooseType', // std-costs-2: a creature type chosen as an additional cost is announced (actions/cast-costs.ts, CR 601.2b, 607.2d)
       'feature:q.commanderCasts.of', // CMD2: another player's commander casts (effects/eval.ts#QTY_FEATURES; Commander's Insight, CR 903.8)
       'feature:createToken.attackingWhom', // cmd1: tokens created attacking a named player (effects/handlers/tokens-create.ts, CR 508.4)
+      'feature:createToken.exceptReplaced', // pc-tokens-2: a step of a token-creation replacement that skips the very token being replaced (effects/handlers/tokens-create.ts, CR 614.5)
       'feature:wasCast.fromOwner', // Standard round 4, r4-trig: "if it was cast from your graveyard" (effects/eval.ts#wasCast, CR 400.3, 601.2a)
       // Standard round 4, r4-trig: a land played from anywhere other than the hand (CR 305.1) and a player who becomes the target (CR 115.1) as event forms (triggers/forms.ts)
       'feature:ev.action.playLand.notFrom', 'feature:ev.becomes.targeted.player',
@@ -413,7 +416,7 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       // std-rx3: "you may cast those cards without paying their mana costs" on a permission for named objects (statics/play-permits.ts#isFreeCost, CR 118.9, 601.2b)
       'feature:permit.cast.free', 'feature:permit.play.free',
       // std-mana-1: riders on mana spent on a spell (core/mana-riders.ts, CR 106.6) and "tap <a permanent> for mana" read with the activation's {T} (rules/mana.ts, CR 106.12)
-      'feature:mana.spentRider', 'feature:trigger.tappedForMana',
+      'feature:mana.spentRider', 'feature:mana.spentRider.entersWith', 'feature:trigger.tappedForMana',
       'feature:mana.devotionColor', // p2-mana-2: "choose a color. add an amount of mana of that color equal to your devotion to that color" (effects/handlers/cards-mana.ts, CR 700.5)
       // std-exile-play-2-1: the life cost on a resolved permission for named objects (statics/play-permits.ts#namedLifeCost, CR 118.9); an additional cost on a
       // static linked cast permission (isLinkedRiderPermit, CR 601.2f, 118.8)
@@ -474,6 +477,11 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       'feature:ev.action.faceDilemma', // trek-2: "whenever you face a dilemma", one or more modes chosen (actions/announce.ts#chooseModes emits it; CR 700.2)
       'feature:triggerMod.lifeGain', // trek-2: "if you gaining life causes a triggered ability ... to trigger" (triggers/collect.ts#TRIGGER_MOD_CAPABILITIES, CR 603.2d)
       'feature:announce.qty.distinct.names.each', // trek-5: "activate only if you control seven or more differently named lands" (actions/announce-cond.ts, CR 201.2, 602.5b)
+      'feature:permit.play.anyManaColor', 'feature:permit.cast.anyManaColor', // pc-exile-play-1: "you may spend mana as though it were mana of any color to cast that spell" on a permission for named objects (CR 609.4b, 107.4c; statics/play-permits.ts#anyManaColorPermit)
+      // pc-statics-1: the condition of a keyword's cost change, "Equip {2}. This ability costs {2} less to activate if you have one or fewer cards in hand." (keywords/expand.ts, CR 601.2f)
+      'feature:keyword.costChange.if',
+      // p2-trigger-events-1: "whenever a player mills a nonland card" (CR 701.17a; triggers/normalize.ts reports a milled card as its owner's action `mill`)
+      'feature:ev.action.mill',
     ].sort());
   });
 

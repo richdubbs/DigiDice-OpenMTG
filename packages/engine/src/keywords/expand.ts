@@ -167,7 +167,9 @@ export function expandKeyword(data: KeywordDefData, kw0: KeywordAbilityDef, ctx:
     // FAST5X E27 (CR 602.5b): "Activate only once each turn." printed on the keyword's line restricts the activated ability it stands for
     const limited = kw.limit !== undefined && ability.kind === 'activated' ? { limit: { ...kw.limit } } : {};
     // r4-cost (CR 601.2f, 602.2b): "This ability costs {1} less to activate for each ..." printed on the keyword's line changes the cost of the ability it stands for
-    const changed = kw.costChange !== undefined && ability.kind === 'activated' ? { costChange: JSON.parse(JSON.stringify(kw.costChange)) as typeof kw.costChange } : {};
+    const changed = kw.costChange !== undefined && ability.kind === 'activated'
+      ? { costChange: JSON.parse(JSON.stringify(kw.costChange)) as typeof kw.costChange, ...(kw.costChangeIf !== undefined ? { costChangeIf: JSON.parse(JSON.stringify(kw.costChangeIf)) as typeof kw.costChangeIf } : {}) } // pc-statics-1: its condition
+      : {};
     out.push({
       ...ability,
       ...limited,

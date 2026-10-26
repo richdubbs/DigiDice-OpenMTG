@@ -32,6 +32,8 @@ export type GameEvent =
        * "a permanent entered the battlefield face down under your control this turn" reads (triggers/history.ts), whatever happens to it later in the batch.
        */
       faceDown?: true;
+      /** pc-tokens-2 INTERFACE CHANGE (additive): the new object is tapped as it enters the battlefield (CR 614.1c, 603.6a): what "enters tapped" triggers read, whatever happens to it later in the batch. */
+      tapped?: true;
     }
   /**
    * CMDF INTERFACE CHANGE (additive): `commandZone` when the drawn card was the player's commander and its owner put it into the command zone instead of into

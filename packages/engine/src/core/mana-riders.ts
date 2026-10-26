@@ -6,7 +6,7 @@
  * permanent spell carries onto the battlefield (CR 400.7a, core/move-parts/spell-effects.ts); "that spell can't be countered" leaves the flag the counter op
  * reads (CR 101.2). Two units with the same rider apply it once.
  */
-import type { ManaSpentRider, ObjectFilter } from '../types/ability';
+import type { CounterSpec, ManaSpentRider, ObjectFilter } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { ManaUnit } from '../types/state';
 import { matchesFilter } from '../rules/filter';
@@ -23,12 +23,18 @@ export function applySpentRiders(g: Game, player: PlayerId, spellId: ObjectId, s
   for (const u of spent) {
     const r: ManaSpentRider | undefined = u.rider;
     if (r === undefined) continue;
-    const key = `${u.sourceId ?? ''}|${JSON.stringify(r)}`;
+    // each unit carrying a counter rider adds its counters (the Biophagus ruling: all of that mana spent on one creature gives that many counters); the other riders are idempotent
+    const key = `${u.sourceId ?? ''}|${JSON.stringify(r)}${r.entersWith !== undefined ? `|${seen.size}` : ''}`;
     if (seen.has(key)) continue;
     seen.add(key);
     const ctx = filterCtxOutside(g.s, { controller: player, ...(u.sourceId !== undefined ? { sourceId: u.sourceId } : {}) });
     if (!matchesFilter(g.s, spell, { ...(r.spells as ObjectFilter), zone: 'any' }, ctx)) continue;
     if (r.cantBeCountered === true && !(spell.stack.flags ?? []).includes(FLAG_CANT_BE_COUNTERED)) (spell.stack.flags ??= []).push(FLAG_CANT_BE_COUNTERED);
+    if (r.entersWith !== undefined && spell.stack.isCopy !== true) {
+      // CR 614.1c: the permanent enters with the counters; recorded on the spell as a cast permission with an "enters with" rider is (effects/rule-replacements/permit-enters.ts)
+      const cur = spell.stack.permitEnters;
+      spell.stack.permitEnters = { ...(cur ?? { source: u.sourceId !== undefined ? g.nameOf(u.sourceId) : 'mana' }), counters: [...(cur?.counters ?? []), ...(structuredClone(r.entersWith) as CounterSpec[])] };
+    }
     if (r.gains !== undefined) {
       const src = u.sourceId !== undefined ? g.s.objects[u.sourceId] : undefined;
       g.s.continuousEffects.push({
@@ -42,6 +48,6 @@ export function applySpentRiders(g: Game, player: PlayerId, spellId: ObjectId, s
         effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id: spellId, zone: 'stack' }] }, mods: [{ layer: 6, add: [structuredClone(r.gains)] }] },
       });
     }
-    g.log(`${g.nameOf(spellId)} ${r.gains !== undefined ? `gains ${r.gains.keyword} until end of turn` : "can't be countered"}: mana with that rider was spent on it.`, { rules: ['CR 106.6', r.gains !== undefined ? 'CR 611.2c' : 'CR 101.2'], level: 'info' });
+    g.log(`${g.nameOf(spellId)} ${r.entersWith !== undefined ? 'enters with additional counters' : r.gains !== undefined ? `gains ${r.gains.keyword} until end of turn` : "can't be countered"}: mana with that rider was spent on it.`, { rules: ['CR 106.6', r.gains !== undefined ? 'CR 611.2c' : 'CR 101.2'], level: 'info' });
   }
 }

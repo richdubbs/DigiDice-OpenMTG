@@ -31,7 +31,7 @@ import { useNav } from '../app/nav';
 import { LocalConnection } from '../connection/LocalConnection';
 import type { PlayerSleeves } from '../board/sleeves';
 import { DeckBox } from '../decks/chrome';
-import { DeckOptions } from './DeckOptions';
+import { DeckChooser } from './DeckOptions';
 import { formatOption } from '../decks/formats';
 import '../decks/decks.css';
 import { MAX_NAME_LENGTH, settingsStore, stopSettings, type PlayerNames, type SettingsStore } from '../settings/settings';
@@ -67,6 +67,18 @@ export interface SeatSetup {
   name: string;
   deckId: string;
   by: SeatPlayer;
+}
+
+/**
+ * What a game was started with (owner, 2026-10-25: a multiplayer game's end screen asks for a rematch and offers each player's deck): the seats as
+ * New game had them (before the random seating), the format and the starting options. The game route keeps it; "Change decks" opens New game with it.
+ * `deckNames`: each seat's deck name, for the end screen.
+ */
+export interface GameSetup {
+  seats: readonly SeatSetup[];
+  deckNames: readonly string[];
+  format: string;
+  start: StartOptions;
 }
 
 /**
@@ -184,21 +196,22 @@ function initialSeats(names: PlayerNames): SeatSetup[] {
 }
 
 export function NewGameScreen({
-  services = defaultServices, settings = settingsStore(), deckId, hostedServer,
-}: { services?: GameServices; settings?: SettingsStore; deckId?: string; hostedServer?: string | null }) {
+  services = defaultServices, settings = settingsStore(), deckId, setup, hostedServer,
+}: { services?: GameServices; settings?: SettingsStore; deckId?: string; setup?: GameSetup; hostedServer?: string | null }) {
   const nav = useNav();
   // Milestone 13: the DigiDice game server this page may offer (undefined while it is read, null when none is configured).
   const hosted = useHostedServer(hostedServer);
   const s = useSettings(settings);
   const [decks, setDecks] = useState<GameDeck[] | null>(null);
   const [decksError, setDecksError] = useState<string | null>(null);
-  const [seats, setSeats] = useState<SeatSetup[]>(() => initialSeats(s.playerNames));
-  const [format, setFormat] = useState(DEFAULT_FORMAT);
-  const [formatTouched, setFormatTouched] = useState(false);
-  const [start, setStart] = useState<StartOptions>(DEFAULT_START);
+  // A rematch whose decks are being changed (`setup`): the same players, decks, format and options as the game that ended.
+  const [seats, setSeats] = useState<SeatSetup[]>(() => (setup ? setup.seats.map((x) => ({ ...x })) : initialSeats(s.playerNames)));
+  const [format, setFormat] = useState(setup?.format ?? DEFAULT_FORMAT);
+  const [formatTouched, setFormatTouched] = useState(setup !== undefined);
+  const [start, setStart] = useState<StartOptions>(setup?.start ?? DEFAULT_START);
   /** The player typed a starting life: it no longer follows the format (CR 103.4, 903.7). */
-  const [lifeTouched, setLifeTouched] = useState(false);
-  const [checks, setChecks] = useState<Check[]>([NONE, NONE]);
+  const [lifeTouched, setLifeTouched] = useState(setup !== undefined && setup.start.startingLife !== startingLifeFor(setup.format, setup.seats.length));
+  const [checks, setChecks] = useState<Check[]>(() => (setup ? setup.seats.map(() => NONE) : [NONE, NONE]));
   const [playAnyway, setPlayAnyway] = useState(false);
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
@@ -413,6 +426,7 @@ export function NewGameScreen({
       // Each player's card backs are in their deck's sleeve (board/sleeves.tsx).
       const playerSleeves: PlayerSleeves = Object.fromEntries(chosen.flatMap((d, i) => (d && sleeves.get(d.id) ? [[PLAYER_IDS[i]!, sleeves.get(d.id)!]] : [])));
       rememberNames(settings, seats.map((x, i) => ({ name: trimmed[i]!, by: x.by })));
+      const gameSetup: GameSetup = { seats, deckNames: chosen.map((d) => d!.name), format, start };
       if (computers > 0) {
         const ids = (by: SeatPlayer): PlayerId[] => seats.flatMap((x, i) => (x.by === by ? [PLAYER_IDS[i]!] : []));
         const humans = ids('person');
@@ -421,7 +435,7 @@ export function NewGameScreen({
         // RPL-1 (replays design 7.1): every local game is recorded as it is played, a rematch too (replays/record.ts).
         const vsComputer = (c: typeof config) => recordLocalGame(new ComputerGame(c, humans, machines, opts()), { format });
         // FXH (audit m5, CR 400.2): the route and the game screen hold only the sealed connection, never the session behind it (sealed.ts).
-        nav.go({ screen: 'game', connection: sealConnection(vsComputer(config)), rematch: sealedFactory(() => vsComputer({ ...config, seed: services.newSeed() })), sleeves: playerSleeves });
+        nav.go({ screen: 'game', connection: sealConnection(vsComputer(config)), rematch: sealedFactory(() => vsComputer({ ...config, seed: services.newSeed() })), sleeves: playerSleeves, setup: gameSetup });
       } else {
         const rematch = localRematch(config, services.newSeed);
         nav.go({
@@ -429,6 +443,7 @@ export function NewGameScreen({
           connection: sealConnection(recordLocalGame(new LocalConnection(config), { format })),
           rematch: sealedFactory(() => recordLocalGame(rematch(), { format })),
           sleeves: playerSleeves,
+          setup: gameSetup,
         });
       }
     } catch (e) {
@@ -441,57 +456,7 @@ export function NewGameScreen({
 
   return (
     <div className="screen new-game" data-seats={count}>
-      <ScreenHeader title="New game">
-        {/* Format and options on the title line (owner, 2026-10-25): they take no room of their own above the players. */}
-        <div className="new-game-quick" role="group" aria-label="Format and options">
-          <label>
-            Format
-            <select
-              value={format}
-              onChange={(e) => {
-                setFormat(e.target.value);
-                setFormatTouched(true);
-              }}
-            >
-              {FORMATS.map((f) => {
-                const notHere = formatProblem(f.id, count) !== null;
-                return (
-                  <option key={f.id} value={f.id} disabled={notHere}>
-                    {notHere ? `${f.label} (two players only)` : f.label}
-                  </option>
-                );
-              })}
-            </select>
-          </label>
-          <label>
-            Starting life
-            <input
-              type="number"
-              min={1}
-              max={999}
-              value={Number.isNaN(start.startingLife) ? '' : start.startingLife}
-              onChange={(e) => {
-                setLifeTouched(true);
-                setStart((prev) => ({ ...prev, startingLife: e.target.valueAsNumber }));
-              }}
-            />
-          </label>
-          <label>
-            Who plays first
-            <select
-              value={String(start.firstPlayer)}
-              onChange={(e) => setStart((prev) => ({ ...prev, firstPlayer: e.target.value === 'random' ? 'random' : Number(e.target.value) }))}
-            >
-              <option value="random">Random</option>
-              {seats.map((_x, i) => (
-                <option key={i} value={String(i)}>
-                  {trimmed[i] || `Player ${i + 1}`}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </ScreenHeader>
+      <ScreenHeader title="New game" />
       <nav className="hud-panel new-game-online" aria-label="Play online">
         <span className="new-game-legend">Play online against a friend</span>
         <button type="button" onClick={() => nav.go({ screen: 'hostOnline' })}>
@@ -514,6 +479,55 @@ export function NewGameScreen({
           </button>
         )}
       </nav>
+      {/* Format and options under the online box (owner, 2026-10-25), above the players. */}
+      <div className="new-game-quick" role="group" aria-label="Format and options">
+        <label>
+          Format
+          <select
+            value={format}
+            onChange={(e) => {
+              setFormat(e.target.value);
+              setFormatTouched(true);
+            }}
+          >
+            {FORMATS.map((f) => {
+              const notHere = formatProblem(f.id, count) !== null;
+              return (
+                <option key={f.id} value={f.id} disabled={notHere}>
+                  {notHere ? `${f.label} (two players only)` : f.label}
+                </option>
+              );
+            })}
+          </select>
+        </label>
+        <label>
+          Starting life
+          <input
+            type="number"
+            min={1}
+            max={999}
+            value={Number.isNaN(start.startingLife) ? '' : start.startingLife}
+            onChange={(e) => {
+              setLifeTouched(true);
+              setStart((prev) => ({ ...prev, startingLife: e.target.valueAsNumber }));
+            }}
+          />
+        </label>
+        <label>
+          Who plays first
+          <select
+            value={String(start.firstPlayer)}
+            onChange={(e) => setStart((prev) => ({ ...prev, firstPlayer: e.target.value === 'random' ? 'random' : Number(e.target.value) }))}
+          >
+            <option value="random">Random</option>
+            {seats.map((_x, i) => (
+              <option key={i} value={String(i)}>
+                {trimmed[i] || `Player ${i + 1}`}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
       {decks === null ? (
         <p role="status">Loading decks…</p>
       ) : (
@@ -579,14 +593,8 @@ export function NewGameScreen({
                           Name
                           <input type="text" value={seat.name} maxLength={MAX_NAME_LENGTH} onChange={(e) => updateSeat(i, () => ({ name: e.target.value }))} />
                         </label>
-                        <label>
-                          Deck
-                          <select value={seat.deckId} onChange={(e) => pickDeck(i, e.target.value)}>
-                            <option value="">Choose a deck…</option>
-                            {/* Decks the format cannot play are greyed out; not in player 1's list while the format still follows player 1's deck */}
-                            <DeckOptions decks={decks} {...(i > 0 || formatTouched ? { format } : {})} />
-                          </select>
-                        </label>
+                        {/* Decks the format cannot play are greyed out; not in player 1's list while the format still follows player 1's deck */}
+                        <DeckChooser decks={decks} value={seat.deckId} onChange={(id) => pickDeck(i, id)} {...(i > 0 || formatTouched ? { format } : {})} />
                         {unplayable[i] && <p className="game-error">{unplayable[i]}</p>}
                         <CheckLine check={seatChecks[i]!} />
                         {notes.length > 0 && (

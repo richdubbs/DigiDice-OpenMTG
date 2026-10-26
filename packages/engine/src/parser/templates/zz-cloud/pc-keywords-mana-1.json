@@ -1,0 +1,46 @@
+[
+  {
+    "id": "eff.pckm1.mana.chooseColor.forEachCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 122.1",
+      "CR 605.1a"
+    ],
+    "pattern": "choose a color . add one mana of that color for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyOneColor",
+        "count": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose a color. Add one mana of that color for each storage counter on ~."
+      },
+      {
+        "text": "{2}, {T}: Choose a color. Add one mana of that color for each +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose a color. Add one mana of any color for each storage counter on ~.",
+      "{T}: Choose a color. Add two mana of that color for each storage counter on ~.",
+      "{T}: Choose a color. Add one mana of that color for each storage counter on ~ this turn."
+    ]
+  }
+]

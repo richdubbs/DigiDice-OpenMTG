@@ -82,11 +82,11 @@ describe('design 5.2, D2: the finer event forms are named, and only the ones the
     'feature:ev.becomes.monstrous', 'feature:ev.action.cycle',
     // FAST5X E9: scry and surveil (effects/handlers/cards-library.ts emits them, CR 701.22d, 701.25d)
     'feature:ev.action.scry', 'feature:ev.action.surveil',
-    'feature:ev.action.search']; // Standard round 4, r4-trig (CR 701.23a): effects/handlers/cards-library.ts emits it for every zone searched
+    'feature:ev.action.search', // Standard round 4, r4-trig (CR 701.23a): effects/handlers/cards-library.ts emits it for every zone searched
+    'feature:ev.action.mill']; // p2-trigger-events-1 (CR 701.17a): triggers/normalize.ts reports each milled card as its owner's action
   const missing = [
     // CR 701.3d: leaving the battlefield and the 704.5m-n state-based actions don't emit "unattached" yet (WP14 review)
     'feature:ev.becomes.unattached',
-    'feature:ev.action.mill', // FAST5X E9: scry and surveil are emitted and advertised (Standard round 4, r4-trig: search too)
     'feature:ev.becomes.crewed', 'feature:ev.beginTurn.extra', 'feature:ev.becomes.by', 'feature:ev.cmp.quantity',
   ];
 

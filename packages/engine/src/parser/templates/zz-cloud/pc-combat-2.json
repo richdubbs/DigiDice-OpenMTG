@@ -1,0 +1,124 @@
+[
+  {
+    "id": "eff.pccombat2.mayPutFromHand.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 508.4",
+      "CR 400.7"
+    ],
+    "pattern": "you may put {f:Filter} onto the battlefield tapped and attacking",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may put a Goblin creature card from your hand onto the battlefield tapped and attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, you may put an artifact creature card from your hand onto the battlefield tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may put two Goblin creature cards from your hand onto the battlefield tapped and attacking.",
+      "Whenever ~ attacks, you may put a Goblin creature card from your hand onto the battlefield tapped.",
+      "Whenever ~ attacks, put a Goblin creature card from your hand onto the battlefield tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.pccombat2.mayPutFromHand.tappedAttackingPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 508.4",
+      "CR 400.7"
+    ],
+    "pattern": "you may put {f:Filter} onto the battlefield tapped and attacking {p:Player}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": {
+            "defender": "$p"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks an opponent, you may put a land card from your hand onto the battlefield tapped and attacking that opponent."
+      },
+      {
+        "text": "Whenever ~ attacks a player, you may put an artifact creature card from your hand onto the battlefield tapped and attacking that player."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks an opponent, you may put a land card from your hand onto the battlefield tapped and attacking.",
+      "Whenever ~ attacks an opponent, you may put two land cards from your hand onto the battlefield tapped and attacking that opponent.",
+      "Whenever ~ attacks an opponent, put a land card from your hand onto the battlefield tapped and attacking that opponent."
+    ]
+  }
+]

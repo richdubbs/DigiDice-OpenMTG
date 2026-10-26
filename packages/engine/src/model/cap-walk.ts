@@ -150,7 +150,7 @@ function nativeManaEffect(effect: unknown, dynamic: 'all' | 'sourceFree' = 'sour
     const st = rec(s);
     if (st['op'] !== 'if' || st['guard'] !== undefined) return false;
     const lists = [st['then'], ...(st['else'] !== undefined ? [st['else']] : [])];
-    return lists.every((l) => Array.isArray(l) && l.length > 0 && l.every((x) => plain(x) && Array.isArray(rec(x)['units'])));
+    return lists.every((l) => Array.isArray(l) && l.length > 0 && l.every((x) => plain(x))); // pc-keywords-mana-2: and a resolved dynamic production ("add two mana of any one color instead"), run by the resolver as a lone dynamic addMana is
   };
   // r3-cost (CR 603.12, mirrors parser/lower/ability.ts#reflexiveAfterMana): "Add {R}. When you do, ~ deals 1 damage to each opponent": a reflexive trigger with no
   // targets that waits for an addMana step of the effect (the resolver runs it, rules/mana.ts#activateManaAbility; the trigger uses the stack)
@@ -367,7 +367,7 @@ function castStaticForms(n: WalkNode): string[] {
 }
 
 /** The optional fields of a PermissionDef: each wired permission declares the ones it honors (`feature:permit.<action>.<field>`). */
-const PERMIT_FIELDS = ['of', 'from', 'asThough', 'count', 'costChange', 'grants', 'laterTurn', 'oncePerTurn', 'anyManaType', 'while', 'addCost', 'entersWith', 'graveyardInstead', 'asAdventure', 'exileOnLeave', 'single', 'entersWithIf', 'entersSubtypes', 'ownOnly', 'landsEnterTapped', 'attacker', 'alsoOutside'] as const; // FAST5X E2: laterTurn (CR 702.185a); E14: oncePerTurn; E29: anyManaType (CR 609.4b), while; C10: addCost, entersWith; r5-repl: graveyardInstead (CR 614.1a); r5-dig: asAdventure (CR 715.3)
+const PERMIT_FIELDS = ['of', 'from', 'asThough', 'count', 'costChange', 'grants', 'laterTurn', 'oncePerTurn', 'anyManaType', 'anyManaColor', 'while', 'addCost', 'entersWith', 'graveyardInstead', 'asAdventure', 'exileOnLeave', 'single', 'entersWithIf', 'entersSubtypes', 'ownOnly', 'landsEnterTapped', 'attacker', 'alsoOutside'] as const; // FAST5X E2: laterTurn (CR 702.185a); E14: oncePerTurn; E29: anyManaType (CR 609.4b), while; C10: addCost, entersWith; r5-repl: graveyardInstead (CR 614.1a); r5-dig: asAdventure (CR 715.3)
 
 /** std-rx3: `{kind:'set', cost:{}}` and nothing else, "without paying its mana cost" (statics/play-permits.ts#isFreeCost, which the walker cannot import, design 5.4). */
 /**
@@ -511,7 +511,7 @@ function isGraveyardPermitJson(v: Rec): boolean {
 function nextSpellKeywordOk(k: unknown): boolean {
   if (k === null || typeof k !== 'object' || Array.isArray(k)) return false;
   const r = rec(k);
-  if (r['kind'] !== 'keyword' || !['affinity', 'convoke', 'improvise'].includes(String(r['keyword']))) return false;
+  if (r['kind'] !== 'keyword' || ![ 'affinity', 'convoke', 'improvise', 'cascade', 'storm'].includes(String(r['keyword']))) return false;
   return Object.keys(r).every((x) => ['kind', 'keyword', 'text', 'filter'].includes(x)) && (r['keyword'] === 'affinity') === (r['filter'] !== undefined);
 }
 
@@ -606,6 +606,7 @@ function bodyForms(v: Rec): string[] {
     if (v['copy'] !== undefined) out.push('layer:1a'); // CR 614.12, 707.9, 616.1c
     if (rec(v['copy'])['then'] !== undefined) out.push('body:enters.copy.then'); // r4-copy: "When you do, exile that card." (CR 603.12)
     if (rec(v['copy'])['copiedCounters'] !== undefined) out.push('body:enters.copy.copiedCounters'); // trek-4: "If you do, it enters with additional counters ... the copied permanent has" (CR 614.1c)
+    if (rec(v['copy'])['duration'] !== undefined) out.push('body:enters.copy.duration'); // pc-tokens-2: "become a copy ... until end of turn" (CR 611.2)
     if (v['faceDown'] === true) out.push('layer:1b'); // CR 708.2
   } else if (v['b'] === 'modify') {
     for (const k of present(v, 'amount', 'count', 'destination', 'to', 'then', 'link')) out.push(`body:modify.${k}`); // M6-12: then (CR 702.35a); std-ru: link (CR 607.2a)
@@ -754,7 +755,8 @@ function stepForms(v: Rec): string[] {
     case 'exileUntil':
       return v['total'] !== undefined ? ['op:exileUntil.total'] : [];
     case 'search':
-      return [...(v['differentNames'] === true ? ['op:search.differentNames'] : []), ...(v['alsoZones'] !== undefined ? ['op:search.alsoZones'] : []), // CLOUD std-dft: several zones (CR 701.23a)
+      return [...(v['differentNames'] === true ? ['op:search.differentNames'] : []), ...(v['shareLandType'] === true ? ['op:search.shareLandType'] : []), // pc-zones-2
+        ...(v['alsoZones'] !== undefined ? ['op:search.alsoZones'] : []), // CLOUD std-dft: several zones (CR 701.23a)
         ...(v['allZones'] === true ? ['op:search.allZones'] : []), // r4-refs: every zone listed (CR 701.23a)
         // CLOUD C9 INTERFACE CHANGE (additive): "for a basic land card and a Shrine card" (effects/handlers/cards-library.ts#OP_FORMS)
         ...(v['and'] !== undefined ? ['op:search.and'] : []), ...(v['alsoOutside'] === true ? ['op:search.alsoOutside'] : [])]; // std-rx30: and/or outside the game
@@ -779,10 +781,13 @@ function stepForms(v: Rec): string[] {
     case 'sacrificeChoice':
       return [
         ...(v['mode'] === 'keepEachType' ? ['op:sacrificeChoice.keepEachType'] : []),
+        ...(v['keepTypes'] !== undefined ? ['op:sacrificeChoice.keepTypes'] : []), // pc-players-1: the types a permanent is kept for
+        ...(v['keepFilter'] !== undefined ? ['op:sacrificeChoice.keepFilter'] : []), // pc-players-1: the pool the kept ones are chosen among
+        ...(v['chooser'] !== undefined ? ['op:sacrificeChoice.chooser'] : []), // pc-players-1: who chooses for each player
         ...(v['cantAs'] !== undefined ? ['op:sacrificeChoice.cantAs'] : []),
         ...(v['exploit'] === true ? ['op:sacrificeChoice.exploit'] : []), // std-rx17: CR 702.110b
-        ...(rec(v['who'])['ref'] === 'each' && JSON.stringify(v['filter'] ?? null).includes('"ref":"iterating"') ? ['op:sacrificeChoice.groupChooser'] : []),
-        ...(rec(v['who'])['ref'] === 'each' && v['mode'] !== 'all' && JSON.stringify(v['count'] ?? null).includes('"ref":"iterating"') ? ['op:sacrificeChoice.perPlayerCount'] : []), // r5-refs
+        ...((rec(v['who'])['ref'] === 'each' || rec(v['who'])['ref'] === 'eachWho') && JSON.stringify(v['filter'] ?? null).includes('"ref":"iterating"') ? ['op:sacrificeChoice.groupChooser'] : []),
+        ...((rec(v['who'])['ref'] === 'each' || rec(v['who'])['ref'] === 'eachWho') && v['mode'] !== 'all' && JSON.stringify(v['count'] ?? null).includes('"ref":"iterating"') ? ['op:sacrificeChoice.perPlayerCount'] : []), // r5-refs
       ];
     // p2-zone-moves-1 (CR 121.2, 608.2e): "each player discards their hand, then draws that many cards": the count read for each drawing player
     case 'draw':
@@ -803,7 +808,7 @@ function stepForms(v: Rec): string[] {
       // CMD3: "Add {W} or one mana of the chosen color" (effects/handlers/cards-mana.ts#OP_FORMS)
       // std-copy-3 (CR 106.6, 603.2): "When that mana is spent to cast ..." (rules/mana.ts, actions/cast.ts#manaSpentTriggers): fixed mana with no restriction only
       return [...(v['keep'] !== undefined ? [`op:addMana.keep${String(v['keep'])[0]!.toUpperCase()}${String(v['keep']).slice(1)}`] : []), ...(rec(v['dynamic'])['or'] !== undefined ? ['op:addMana.chosenOr'] : []),
-        ...(v['whenSpent'] !== undefined ? [v['units'] !== undefined && v['restriction'] === undefined ? 'feature:mana.whenSpent' : 'feature:mana.whenSpent.other'] : [])];
+        ...(v['whenSpent'] !== undefined ? [(v['units'] !== undefined || (v['dynamic'] as { kind?: string } | undefined)?.kind === 'commanderIdentity') && v['restriction'] === undefined ? 'feature:mana.whenSpent' : 'feature:mana.whenSpent.other'] : [])];
     // FAST4 T31 INTERFACE CHANGE (additive): "remove up to N counters" (effects/handlers/counters.ts#OP_FORMS)
     case 'removeCounters':
       return v['upTo'] === true ? ['op:removeCounters.upTo'] : [];
@@ -1052,6 +1057,7 @@ function usesOfNode(n: WalkNode, out: CapUse[]): void {
       break;
     case 'KeywordAbilityDef':
       add(`keyword:${String(v['keyword'])}`);
+      if (v['costChangeIf'] !== undefined) add('feature:keyword.costChange.if'); // pc-statics-1 (CR 601.2f): the condition of the keyword's cost change
       if (v['costChange'] !== undefined) add('feature:keyword.costChange'); // r4-cost (CR 601.2f, 702.6a): keywords/expand.ts gives it to the activated ability
       if (typeof v['quality'] === 'string' && v['quality'].startsWith('chosen:')) add(chosenQualityForm(n, v['quality'])); // MX2
       if (castCostKeywords.has(String(v['keyword'])) && notPrinted(n) !== null) add('feature:castCost.granted'); // M6-5a; M6-12 registers it (actions/cast.ts#withGrantedCosts)
@@ -1123,13 +1129,14 @@ function usesOfNode(n: WalkNode, out: CapUse[]): void {
         if (v['op'] === 'fromOutside' && !outsideFilterOk(v['filter'])) add('feature:fromOutside.filter');
         if (v['op'] === 'fromOutside' && (v['exactly'] !== undefined || v['differentNames'] !== undefined || v['chooser'] !== undefined)) add('op:fromOutside.chosenAmong'); // std-rx30
         if (v['op'] === 'nextSpell' && !nextSpellFilterOk(v['filter'])) add('feature:nextSpell.filter'); // Standard round 10: only what the spell is (effects/handlers/next-spell.ts)
-        if (v['op'] === 'nextSpell' && v['rider'] === 'keyword' && !nextSpellKeywordOk(v['keyword'])) add('feature:nextSpell.keyword'); // std-rx26: only a cost keyword
+        if (v['op'] === 'nextSpell' && v['rider'] === 'keyword' && !nextSpellKeywordOk(v['keyword'])) add('feature:nextSpell.keyword'); // std-rx26: only a cost keyword, or cascade / storm (pc-exile-play-3)
         if (v['op'] === 'piles' && v['faceDown'] !== undefined) add('feature:piles.faceDown'); // r5-dig (CR 700.3): a face-down and a face-up pile (cards-reveal.ts#faceDownPiles)
         if (v['op'] === 'delay' && v['batch'] === true) add('feature:delay.batch'); // FAST5 T50: "one or more" / "whenever you attack" in a delayed trigger (triggers/delayed.ts)
         if (v['op'] === 'delay' && Array.isArray(v['targets']) && v['targets'].length > 0) add('feature:delay.targets'); // std-tdm: a delayed trigger's own targets (CR 603.7, 603.3d)
         if (v['op'] === 'chooseValue' && v['what'] === 'cardName') add('decision:chooseName');
         if (v['op'] === 'chooseValue' && v['cardKind'] !== undefined) add('feature:choose.cardKind'); // std-rx28 (CR 201.3)
         if (v['op'] === 'putCounters' || v['op'] === 'moveCounters') addAll(counterForms(v['kind'])); // CR 122.1 (WP21 review)
+        if (v['op'] === 'createToken' && v['exceptReplaced'] === true) add('feature:createToken.exceptReplaced'); // pc-tokens-2 (CR 614.5)
         if (v['op'] === 'createToken' && typeof v['attacking'] === 'object' && v['attacking'] !== null) add('feature:createToken.attackingWhom'); // cmd1 (CR 508.4)
       }
       break;
@@ -1286,7 +1293,10 @@ function usesOfNode(n: WalkNode, out: CapUse[]): void {
         // FAST5X E27 (CR 608.2h, 702.21a): a cost paid as an effect resolves (a `pay` step, or ward's cost, which its trigger pays) has its computed amounts
         // read then (effects/handlers/pay.ts#fixedCost), so "pay life equal to ~'s power" is no unread computed count there
         const forms = costPartForms(v as unknown as CostPart);
-        addAll(paidOnResolution(n) ? forms.filter((f) => f !== 'cost:count.quantity') : forms);
+        // pc-statics-2 (CR 118.3, 602.2b, 903.4): an activated ability's life payment of "the number of colors in your commanders' color identity" is worked out when
+        // the cost is determined (actions/activate.ts#abilityPlan); on a mana ability or a spell's cost it stays unread
+        const identityLife = v['kind'] === 'payLife' && rec(v['amount'])['q'] === 'commanderIdentitySize' && n.parent?.def === 'CostDef' && n.parent.parent?.def === 'ActivatedAbilityDef' && n.parent.parent.value['isMana'] !== true;
+        addAll(paidOnResolution(n) || identityLife ? forms.filter((f) => f !== 'cost:count.quantity') : forms);
         if (v['kind'] === 'putCounters') addAll(counterForms(v['counter'])); // CR 122.1 (WP21 review)
         // FAST5X E10: a keyword action that exists only as a cost (waterbend, CR 701.67a: "pay [cost]") is paid by rules/cost.ts and has no macro
         if (v['kind'] === 'action' && !COST_ONLY_ACTIONS.has(String(v['action']))) add(`action:${String(v['action'])}`);
@@ -1556,7 +1566,7 @@ function usesOfNode(n: WalkNode, out: CapUse[]): void {
         // p2-graveyard-2 (CR 614.1a, 400.7): a graveyard permission's "If a spell cast this way would be put into your graveyard, exile it instead" (actions/cast.ts records it)
         if (k === 'graveyardInstead' && zone) { add('feature:permit.cast.zone.graveyardInstead'); continue; }
         if (k === 'single') { add(ofObject && rec(rec(n.parent?.value)['duration'])['d'] === 'endOfTurn' ? `feature:permit.${String(v['action'])}.single` : `feature:permit.${String(v['action'])}.single.other`); continue; }
-        const own = (k === 'anyManaType' || k === 'while' || k === 'graveyardInstead' || k === 'asAdventure') && !ofObject ? `${k}.other` : k;
+        const own = (k === 'anyManaType' || k === 'anyManaColor' || k === 'while' || k === 'graveyardInstead' || k === 'asAdventure') && !ofObject ? `${k}.other` : k;
         add(`feature:permit.${String(v['action'])}.${own}`); // WP16 INTERFACE CHANGE (review fix)
       }
       // FAST5 T56: a flash permission with a price runs only as a fixed generic increase (statics/hooks.ts#genericIncrease, actions/cast.ts); any other price has no form
@@ -1649,6 +1659,7 @@ function usesOfNode(n: WalkNode, out: CapUse[]): void {
       break;
     case 'ManaSpentRider':
       add('feature:mana.spentRider'); // std-mana-1: applied as the spell's costs are paid (core/mana-riders.ts, effects/handlers/cards.ts#FEATURES)
+      if (v['entersWith'] !== undefined) add('feature:mana.spentRider.entersWith'); // pc-keywords-mana-2 (CR 614.1c): recorded on the spell as it is cast
       break;
     case 'ManaRestriction':
       add('feature:mana.restriction');

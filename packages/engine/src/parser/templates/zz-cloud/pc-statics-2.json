@@ -1,0 +1,157 @@
+[
+  {
+    "id": "sta.pcs2.enchanted.isArtifactCreature.basept.has.losesAllOther",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 205.1b"
+    ],
+    "pattern": "( enchanted | equipped ) creature is an insect artifact creature with base power and toughness {pt:BasePT} and has {a:Abilities} , and it loses all other abilities , card types , and creature types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Artifact",
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "set": [
+              "Insect"
+            ]
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true,
+          "add": "$a"
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchanted creature is an Insect artifact creature with base power and toughness 1/2 and has hexproof, and it loses all other abilities, card types, and creature types."
+      },
+      {
+        "text": "Enchanted creature is an Insect artifact creature with base power and toughness 0/3 and has defender, and it loses all other abilities, card types, and creature types."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature is a Frog artifact creature with base power and toughness 1/2 and has hexproof, and it loses all other abilities, card types, and creature types.",
+      "Enchanted creature is an Equipment artifact creature with base power and toughness 1/2 and has hexproof, and it loses all other abilities, card types, and creature types.",
+      "Enchanted creature is an Insect artifact creature with base power and toughness 1/2 and has hexproof.",
+      "Enchanted creature is an Insect artifact creature with base power and toughness 1/2 and has hexproof, and it loses all other abilities, card types, and creature types until end of turn."
+    ],
+    "consumes": [
+      "all",
+      "other"
+    ]
+  },
+  {
+    "id": "sta.pcs2.creatures.areEveryCreatureType.sameIsTrue",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 702.73a",
+      "CR 400.1",
+      "CR 108.3"
+    ],
+    "pattern": "creatures you control are every creature type . the same is true for creature spells you control and creature cards you own that aren't on the battlefield",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "zone": [
+                    "stack"
+                  ]
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "owner": "you",
+                  "isCard": true,
+                  "zone": [
+                    "hand",
+                    "graveyard",
+                    "library",
+                    "exile",
+                    "command",
+                    "stack"
+                  ]
+                }
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creatures you control are every creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.\n{4}: You gain 3 life."
+      },
+      {
+        "text": "{1}: Draw a card.\nCreatures you control are every creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control are every creature type. The same is true for creature spells you control.",
+      "Creatures you control are every creature type. The same is true for creature spells you control and creature cards you own in your graveyard.\n{4}: You gain 3 life.",
+      "Creatures you control are every land type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+    ],
+    "consumes": [
+      "every",
+      "same",
+      "aren't"
+    ]
+  }
+]

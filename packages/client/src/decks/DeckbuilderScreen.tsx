@@ -405,7 +405,8 @@ function Builder({
               </details>
             </div>
             <footer className="deck-list-foot">
-              {format.commander && (
+              {/* Not over a running game: the game's Menu leaves out Play (owner, 2026-10-25). */}
+              {format.commander && !nav.inGame && (
                 <button type="button" className="deck-play" disabled={opening} onClick={playDeck} title="Open New game with this deck for player 1">
                   Play this deck
                 </button>

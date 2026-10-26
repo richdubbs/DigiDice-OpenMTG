@@ -219,11 +219,12 @@ const mayHandler: StepHandler<Step<'may'>> = (cx, st) => {
   const what = st.span ?? action ?? 'the optional part of the effect';
   const yes = new Map<PlayerId, boolean>();
   for (const p of players) {
-    if (cannotStart(cx, st.do, p, plural)) {
+    if (st.villainous !== true && cannotStart(cx, st.do, p, plural)) {
       g.log(`${g.player(p).name} can't do it, so doesn't: ${what} (${source}).`, { rules: ['CR 608.2d'], level: 'info' });
       yes.set(p, false);
       continue;
     }
+    if (st.villainous === true) continue; // asked just before its options are carried out, one player at a time (below)
     const prompt = st.span ? `${source}: ${st.span} Do you?` : action ? `${source}: do you ${action}?` : `${source}: do you do the optional part of the effect?`;
     const ans = g.choose({ kind: 'yesNo', player: p, prompt, yesLabel: 'Yes', noLabel: 'No', rules: ['CR 608.2d', 'CR 603.5'] }).yes;
     g.log(`${g.player(p).name} ${ans ? 'chooses to' : 'chooses not to'}: ${what} (${source}).`, { rules: ['CR 608.2d'], level: 'action' });
@@ -236,10 +237,18 @@ const mayHandler: StepHandler<Step<'may'>> = (cx, st) => {
   let putIn: Map<string, number> | undefined; // trek-6 (CR 122.6, 608.2c): the counters the optional action put ("if you put two or more +1/+1 counters on creatures this way")
   for (const p of players) {
     if (plural) cx.iterating = p;
+    // pc-keywords-mana-3 (CR 701.55, ruling: the first player in turn order chooses and their option is carried out before the next player chooses; cite unverified): a
+    // villainous choice is a choice between two options, "Yes" the first, "No" the second; an option that can't be carried out may still be chosen
+    if (st.villainous === true) {
+      const text = st.span ?? notesOf(cx).text;
+      const pick = g.choose({ kind: 'yesNo', player: p, prompt: `${source}: ${g.player(p).name} faces a villainous choice. ${text} First option: Yes. Second option: No.`, yesLabel: 'First option', noLabel: 'Second option', rules: ['CR 701.55'] }).yes;
+      g.log(`${g.player(p).name} faces a villainous choice and chooses the ${pick ? 'first' : 'second'} option (${source}).`, { rules: ['CR 701.55'], level: 'action' });
+      yes.set(p, pick);
+    }
     const did = yes.get(p) === true;
     // std-rq (CR 608.2d, 122.6): the optional instructions of one other player are that player's ("that player may put a +1/+1 counter on ~": they put it)
     const performer = cx.performer;
-    if (did && !plural && p !== cx.controller) cx.performer = p;
+    if (did && !plural && p !== cx.controller && st.villainous !== true) cx.performer = p;
     const r = runSteps(cx, (did ? st.do : st.otherwise) ?? []);
     if (performer === undefined) delete cx.performer;
     else cx.performer = performer;

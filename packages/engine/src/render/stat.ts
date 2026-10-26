@@ -1113,6 +1113,11 @@ function enters(body: Extract<ReplacementDef['body'], { b: 'enters' }>, subject:
       if (!body.copy.optional || then !== undefined) throw new NoRenderer('copied counters after a copy that is not optional, or with steps after the choice');
       after = '. if you do, it enters with additional counters on it equal to the same number and kinds of counters the copied permanent has on it';
     }
+    // pc-tokens-2 (CR 614.12, 611.2; Cursed Mirror): "As ~ enters, you may have it become a copy of any creature on the battlefield until end of turn, except it has haste."
+    if (body.copy.duration !== undefined) {
+      if (!body.copy.optional || tapped !== '' || after !== '') throw new NoRenderer('a timed enters-as-a-copy that is not optional, tapped or followed by steps');
+      return `as ${subject} ${verb}, you may have it become a copy of ${of} ${K.dur(body.copy.duration, st)}${exc}`;
+    }
     return body.copy.optional ? `you may have ${subject} enter${tapped} as a copy of ${of}${exc}${after}` : `${subject} ${verb}${tapped} as a copy of ${of}${exc}`;
   }
   if (body.tappedUnlessPay) {
@@ -1201,8 +1206,19 @@ function additionalEach(body: Extract<ReplacementDef['body'], { b: 'enters' }>, 
   // of Hope): a count of what you control as the permanent enters, the permanent itself not yet among them (`{anyOf: [G], controller: 'you'}`, nothing else)
   if (only !== null && typeof only.count === 'object' && only.count.q === 'count' && only.count.of.ref === 'each' && 'filter' in only.count.of) {
     const f = only.count.of.filter;
-    if (Object.keys(f).filter((k) => (f as Record<string, unknown>)[k] !== undefined).sort().join() !== 'anyOf,controller' || f.controller !== 'you' || f.anyOf?.length !== 1) return null;
-    return `${K.np(subject, st, { det: 'each' })} enters with an additional ${only.kind} counter on it for each ${K.np(f.anyOf[0]!, st, { det: 'none', forEach: true })} you already control`;
+    // pc-counters-1: any other count of objects falls through to the computed-number wordings below
+    if (Object.keys(f).filter((k) => (f as Record<string, unknown>)[k] !== undefined).sort().join() === 'anyOf,controller' && f.controller === 'you' && f.anyOf?.length === 1) {
+      return `${K.np(subject, st, { det: 'each' })} enters with an additional ${only.kind} counter on it for each ${K.np(f.anyOf[0]!, st, { det: 'none', forEach: true })} you already control`;
+    }
+  }
+  // pc-counters-1 (CR 614.1c, 614.12, 122.6, 107.3): "Each other creature you control enters with an additional X +1/+1 counters on it, where X is the number of +1/+1
+  // counters on ~" (Bloodspore Thrinax) and "... with a number of additional +1/+1 counters on it equal to ~'s toughness" (Arwen, Weaver of Hope): one kind, a computed
+  // number, on top of any other replacement effect's; the two wordings are the same JSON (the count is read as the object enters)
+  if (only !== null && typeof only.count === 'object' && only.count.q !== 'X') {
+    const subjectText = K.np(subject, st, { det: 'each' });
+    const asX = K.qty(only.count, cloneState(st));
+    const asEqual = K.qty(only.count, cloneState(st));
+    return alt(`${subjectText} enters with an additional X ${only.kind} counters on it, where X is ${asX}`, `${subjectText} enters with a number of additional ${only.kind} counters on it equal to ${asEqual}`);
   }
   if (body.counters.some((c) => typeof c.count !== 'number' || c.count < 1)) return null;
   const list = joinList(body.counters.map((c) => (c.count === 1 ? `an additional ${c.kind} counter` : `${numWord(c.count as number)} additional ${c.kind} counters`)));
@@ -1228,6 +1244,7 @@ function manaValueSplit(a: StaticEffect, b: StaticEffect, st: RenderState): stri
   const hi = part(b);
   if (!lo || !hi || lo.cmp.op !== '<=' || hi.cmp.op !== '>' || typeof lo.cmp.value !== 'number' || lo.cmp.value !== hi.cmp.value) return null;
   if (JSON.stringify(lo.f) !== JSON.stringify(hi.f)) return null;
+  if ([lo.body, hi.body].some((b) => b.counters?.some((c) => typeof c.count !== 'number'))) return null; // pc-counters-1: only fixed numbers are split by mana value
   const first = additionalEach(lo.body, lo.f, st);
   const second = additionalEach(hi.body, { types: ['Creature'] }, cloneState(st));
   if (first === null || second === null) return null;
@@ -1307,6 +1324,22 @@ function tokensPlusOne(e: ReplacementDef, duration: Duration | undefined, st: Re
   if (predefined === undefined || Object.keys(one.token as object).length !== 1) return null; // a predefined token only ("a Map token", CR 111.10)
   const tokens = K.np({ ...ev.token, token: true }, st, { det: 'none', plural: true, count: 'one or more' });
   return `if you would create ${tokens}, instead create those tokens plus an additional ${predefined} token`;
+}
+
+/**
+ * pc-tokens-2 (CR 614.1a, 614.5, 111.10; Academy Manufactor): "If you would create a Clue, Food, or Treasure token, instead create one of each.": a modify of the
+ * creation of one of those three predefined tokens whose `then` makes the three of the same number, each skipping the token being replaced (`exceptReplaced`). null otherwise.
+ */
+function oneOfEachToken(e: ReplacementDef, duration: Duration | undefined): string | null {
+  const ev = e.replaces;
+  const b = e.body;
+  if (ev.ev !== 'createToken' || b.b !== 'modify' || b.then === undefined || duration !== undefined || e.condition !== undefined || e.optional === true || e.shield !== undefined) return null;
+  if (b.destination !== undefined || b.amount !== undefined || b.count !== undefined || b.to !== undefined || ev.player !== 'you' || ev.byEffect !== undefined) return null;
+  const kinds = ['Clue', 'Food', 'Treasure'];
+  if (JSON.stringify(ev.token) !== JSON.stringify({ anyOf: kinds.map((k) => ({ subtypes: [k] })) })) return null;
+  const expect = kinds.map((k) => ({ op: 'createToken', who: { ref: 'you' }, count: { q: 'resultCount', step: b.then!.as }, token: { predefined: k }, exceptReplaced: true }));
+  if (JSON.stringify(b.then.do) !== JSON.stringify(expect)) return null;
+  return 'if you would create a clue, food, or treasure token, instead create one of each';
 }
 
 /** p2-replace-events-1: "a Food token" / "1 Food token" said "an additional Food token" (the token a replacement adds to the ones being created, CR 614.1a). */
@@ -1661,7 +1694,7 @@ function replace(e: ReplacementDef, st: RenderState, duration: Duration | undefi
   const raised = raisedDamage(e, duration, st);
   if (raised !== null) return raised;
   // Cloud r3-repl (CR 614.1a, 111.1): "If you would create one or more artifact tokens, instead create those tokens plus an additional Map token." (Worldwalker Helm)
-  const plusOne = tokensPlusOne(e, duration, st) ?? tokensPlusOnePassive(e, duration, st) ?? thatManyOtherTokens(e, duration, st);
+  const plusOne = tokensPlusOne(e, duration, st) ?? tokensPlusOnePassive(e, duration, st) ?? thatManyOtherTokens(e, duration, st) ?? oneOfEachToken(e, duration);
   if (plusOne !== null) return plusOne;
   // r4-repl (CR 614.1a, 121.2): "As long as you have one or fewer cards in hand, if you would draw one or more cards, you draw that many cards plus one instead."
   const moreDraws = drawManyPlus(e, duration, st) ?? youGetCounters(e, duration, st) ?? extraTurnSkipped(e, duration);
@@ -1884,7 +1917,7 @@ function genericReplace(e: ReplacementDef, st: RenderState, duration: Duration |
 
 /** The optional fields of a permission that its sentence has words for (design 3.3: any other that is set is refused, never dropped). */
 const PERMIT_FIELDS: Record<Extract<StaticEffect, { s: 'permit' }>['action'], string[]> = {
-  cast: ['of', 'from', 'asThough', 'fromTop', 'oncePerTurn', 'anyManaType', 'while', 'asAdventure'], play: ['of', 'from', 'fromTop', 'anyManaType', 'while'], playLand: ['count'], activate: ['of', 'asThough'], spendMana: ['asThough', 'of'] /* CLOUD std-fdn */, haveFlash: ['of', 'asThough', 'costChange'],
+  cast: ['of', 'from', 'asThough', 'fromTop', 'oncePerTurn', 'anyManaType', 'anyManaColor', 'while', 'asAdventure'], play: ['of', 'from', 'fromTop', 'anyManaType', 'anyManaColor', 'while'], playLand: ['count'], activate: ['of', 'asThough'], spendMana: ['asThough', 'of'] /* CLOUD std-fdn */, haveFlash: ['of', 'asThough', 'costChange'],
   attackAsThoughNoDefender: ['of'] /* r3-static */, blockAsThough: ['asThough', 'attacker'] /* p2-attack-block-1 */, lookAt: ['of'] /* FAST5X E25 */, revealTop: [], assignAsUnblocked: [],
   activateLoyaltyAsInstant: ['of'], // r4-mech (CR 606.3)
   plot: ['of', 'fromTop'], // std-freecast-5 (CR 702.170f): said by permit() itself, before this table is read
@@ -2018,12 +2051,13 @@ function isSpellFilter(f: ObjectFilter): boolean {
  * std-rs (family cast-this-way-any-type): also the rider sentence "If you cast a spell this way, you may spend mana as though it were mana of any type to cast it."
  * (rider rid.stdrs.castThisWay.spendAnyType). `plural`: the permission names several cards (undefined: either).
  */
-export function anyTypeRider(base: string, plural?: boolean): string {
+export function anyTypeRider(base: string, plural?: boolean, color = false): string {
   const them = plural === undefined ? alt('it', 'that spell', 'them', 'those spells') : plural ? alt('them', 'those spells') : alt('it', 'that spell');
   // std-exile-play-1-1 (family cast-this-way-any-type): or the sentence "Mana of any type can be spent to cast spells this way." (rider rid.stdexile1.castThisWay.anyManaType)
   // std-exile-play-1-1 (family any-type-rider-and): Oracle also joins the rider without the comma, "... until end of turn and mana of any type can be spent to cast that spell"
-  return alt(`${base}${alt(', and', ' and')} mana of any type can be spent to cast ${them}`, `${base}. if you cast a spell this way, you may spend mana as though it were mana of any type to cast it`,
-    `${base}. mana of any type can be spent to cast ${alt('spells', 'a spell')} this way`);
+  // pc-exile-play-1 (CR 609.4b, 107.4c): or, for a permission with `anyManaColor`, "..., and you may spend mana as though it were mana of any color to cast that spell"
+  return alt(`${base}${alt(', and', ' and')} ${color ? 'you may spend mana as though it were mana of any color to cast' : 'mana of any type can be spent to cast'} ${them}`,
+    ...(color ? [] : [`${base}. if you cast a spell this way, you may spend mana as though it were mana of any type to cast it`, `${base}. mana of any type can be spent to cast ${alt('spells', 'a spell')} this way`]));
 }
 
 /**
@@ -2032,11 +2066,12 @@ export function anyTypeRider(base: string, plural?: boolean): string {
  */
 function permitRiders(e: Extract<StaticEffect, { s: 'permit' }>, st: RenderState, d: Duration | undefined): string {
   if (e.action !== 'play' && e.action !== 'cast') throw new NoRenderer(`permit ${e.action} with a rider`);
-  const { anyManaType, while: cond, graveyardInstead: gi, ...bare } = e;
+  const { anyManaType, anyManaColor, while: cond, graveyardInstead: gi, ...bare } = e;
+  if (anyManaType !== undefined && anyManaColor !== undefined) throw new NoRenderer('a permission with both riders for how its spells are paid');
   const plain = permit(bare, st, isLimited(d));
   const during = duringTurnCounter(cond, d, st); // r5-dig
   const base = during !== null ? `${during}, ${plain}` : lasting(cond === undefined ? plain : `${plain} if ${K.cond(cond, st)}`, d, st);
-  const any = anyManaType === undefined ? base : anyTypeRider(base);
+  const any = anyManaType !== undefined ? anyTypeRider(base) : anyManaColor !== undefined ? anyTypeRider(base, undefined, true) : base;
   if (gi === undefined) return any;
   // r5-repl (CR 614.1a): "... If that spell would be put into a graveyard, exile it instead." (the words of the cast step's rider, render/steps-zones.ts)
   if (e.action !== 'cast') throw new NoRenderer('a play permission with a graveyard rider');
@@ -2350,7 +2385,7 @@ function permit(e: Extract<StaticEffect, { s: 'permit' }>, st: RenderState, limi
   if (e.action === 'cast' && e.costChange !== undefined && e.from === undefined && e.fromTop === undefined) return alternativePermit(e, st);
   // C10: from the graveyard (GY1's "you may play lands from your graveyard" included)
   if (e.from === 'graveyard' && (e.action === 'cast' || e.action === 'play') && e.fromTop === undefined && e.of?.is === undefined) return graveyardPermit(e, st);
-  for (const k of ['of', 'from', 'asThough', 'count', 'costChange', 'grants', 'fromTop', 'oncePerTurn', 'anyManaType', 'while', 'asAdventure'] as const) {
+  for (const k of ['of', 'from', 'asThough', 'count', 'costChange', 'grants', 'fromTop', 'oncePerTurn', 'anyManaType', 'anyManaColor', 'while', 'asAdventure'] as const) {
     if (e[k] !== undefined && !PERMIT_FIELDS[e.action].includes(k)) throw new NoRenderer(`permit ${e.action} with ${k}`);
   }
   // std-rx27 (CR 601.3, 305.1): "you may play a card exiled with ~": one card of the cards the object's linked ability exiled (statics/play-permits.ts#namedSingleKey)
@@ -2362,7 +2397,7 @@ function permit(e: Extract<StaticEffect, { s: 'permit' }>, st: RenderState, limi
     return `you may play a card exiled with ${K.obj({ ref: 'self' }, st, 'object').text}`;
   }
   // FAST5X E29: the rider and the condition are said by `permitRiders` (staticEffect), around the duration; r5-repl: the graveyard rider too
-  if (e.anyManaType !== undefined || e.while !== undefined || e.graveyardInstead !== undefined) throw new NoRenderer('a permission with its rider, outside staticEffect');
+  if (e.anyManaType !== undefined || e.anyManaColor !== undefined || e.while !== undefined || e.graveyardInstead !== undefined) throw new NoRenderer('a permission with its rider, outside staticEffect');
   // FAST5X E14 (CR 401.5, 601.3): "from the top of your library"
   if (e.fromTop === true) {
     if (e.laterTurn !== undefined) throw new NoRenderer('a top-card permission after the current turn');
@@ -2421,7 +2456,9 @@ function permit(e: Extract<StaticEffect, { s: 'permit' }>, st: RenderState, limi
         return `${subj} ${may} cast ${named} from your graveyard as an Adventure`;
       }
       // std-rh (CR 601.3, 305.1; Laughing Jasper Flint): "you may cast spells from among those cards" is the permission to cast the group's cards that are spells
-      const amongGroup = thing !== null && e.of?.is?.ref === 'bound' && st.info.get(`b:${e.of.is.name}`)?.plural === true ? alt(thing, `spells from among ${named}`) : thing;
+      // pc-exile-play-1 (CR 406.1, 608.2c; Dream Pillager, Stolen Strategy): the group is also "those exiled cards" when an instruction of the ability exiled it
+      const amongGroup = thing !== null && e.of?.is?.ref === 'bound' && st.info.get(`b:${e.of.is.name}`)?.plural === true
+        ? alt(thing, `spells from among ${named}`, ...(st.info.get(`b:${e.of.is.name}`)?.zone === 'exile' ? ['spells from among those exiled cards'] : [])) : thing;
       return `${subj} ${may} cast ${amongGroup ?? of}${from}${e.asThough ? ` as though ${e.asThough}` : ''}`;
     }
     case 'play': {
@@ -2900,6 +2937,11 @@ export function damageUnpreventableText(duration: Duration | undefined, st: Rend
 export function staticEffects(effects: StaticEffect[], st: RenderState): string {
   // std-rx27 (CR 305.2, 601.3, 110.4a): "you may play a land and cast a permanent spell of each permanent type from your graveyard" (each once each turn)
   if (eachPermanentTypeFromGraveyard(effects)) return 'you may play a land and cast a permanent spell of each permanent type from your graveyard';
+  // pc-exile-play-1 (CR 601.3, 113.6b; Squee, the Immortal): "You may cast this card from your graveyard or from exile": the two permissions for the card itself, one for each zone
+  if (effects.length === 2 && effects.every((e) => e.s === 'permit' && e.action === 'cast' && JSON.stringify(e.who) === '{"ref":"you"}' && JSON.stringify(e.of) === '{"self":true}' && Object.keys(e).length === 5)
+    && (effects[0] as { from?: string }).from === 'graveyard' && (effects[1] as { from?: string }).from === 'exile') {
+    return `you may cast ${K.obj({ ref: 'self' }, st, 'object').text} from ${alt('your graveyard or from exile', 'exile or from your graveyard')}`; // either order of the two zones (family cast-self-graveyard-or-exile)
+  }
   // std-rx27 (CR 607.2a, 601.3, 601.3e, 702.8a, 609.4b, 118.9, 614.1c): the static linked cast permissions with riders (statics/play-permits.ts#isLinkedRiderPermit)
   const linked = linkedPermitsText(effects, st);
   if (linked !== null) return linked;
@@ -3732,7 +3774,7 @@ export function staticEffect(e: StaticEffect, st: RenderState, o: { duration?: D
         if (e.costChange.life !== 'manaValue' || e.costChange.kind !== 'set' || Object.keys(cc).some((k) => cc[k] !== undefined && k !== 'kind' && k !== 'life')
           || Object.keys(e.of).length !== 1 || o.duration === undefined) throw new NoRenderer('a life cost on a permission other than "pay life equal to its mana value" for named objects');
         const { costChange: _cc, ...bare } = e;
-        return `${staticEffect(bare, st, o)}. if you cast a spell this way, pay life equal to its mana value rather than ${alt('pay', 'paying')} its mana cost`;
+        return `${staticEffect(bare, st, o)}. if you cast a spell this way, pay life equal to ${alt('its', "that spell's")} mana value rather than ${alt('pay', 'paying')} its mana cost`; // pc-exile-play-4 (family pay-life-that-spells-mana-value)
       }
       // trek-7 (CR 601.2f, 601.3, 611.2a; Zero, Incorporeal Sensate): a resolved permission for ONE named object with the rider "A spell cast this way costs {2} more to
       // cast." after the permission and its duration (statics/play-permits.ts#namedPermitIncrease: a fixed increase of generic mana)
@@ -3752,7 +3794,7 @@ export function staticEffect(e: StaticEffect, st: RenderState, o: { duration?: D
       // with lesser mana value than it without paying their mana costs" (the cards of the group are picked as the effect begins, effects/handlers/lasting.ts)
       const yoursLesser = yoursAndLesserPermit(e, st, o.duration);
       if (yoursLesser !== null) return yoursLesser;
-      if (e.anyManaType !== undefined || e.while !== undefined || e.graveyardInstead !== undefined) return permitRiders(e, st, o.duration);
+      if (e.anyManaType !== undefined || e.anyManaColor !== undefined || e.while !== undefined || e.graveyardInstead !== undefined) return permitRiders(e, st, o.duration);
       if (e.single === true && e.from === 'graveyard') return oneGraveyardSpell(e, st, o.duration); // std-freecast-2
       const base = lasting(permit(e, st, isLimited(o.duration)), o.duration, st);
       // FAST2 T9: "~ can attack this turn as though it didn't have defender" (CR 609.4, 702.3b): the duration between the verb and "as though"

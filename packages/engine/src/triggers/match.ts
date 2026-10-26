@@ -154,6 +154,13 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
     // std-combat-3 (CR 603.10a): a quantity in the description of what left the battlefield ("with the greatest power among creatures that player controls") is read
     // on the battlefield as it was immediately before the event, with the event to name its player (triggers/lookback-board.ts); unknown: no match (fail closed)
     if (lookBack && from === 'battlefield' && p.subject !== undefined && readsQuantity(p.subject)) return lookBackMatches(cx, e, p.subject);
+    // pc-tokens-2 (CR 603.6a, 614.1c; Amulet of Vigor): "enters tapped" / "enters untapped" is how it ENTERED (the event's `tapped`), not how it is when the trigger is
+    // collected: a permanent put onto the battlefield untapped and tapped afterwards by the same effect did not enter tapped
+    if (p.to === 'battlefield' && p.subject?.tapped !== undefined && e.data['to'] === 'battlefield') {
+      const { tapped: want, ...rest } = p.subject;
+      if ((e.data['tapped'] === true) !== want) return false;
+      return roleMatches(cx, e, 'subject', rest, lookBack || fixedFrom);
+    }
     return roleMatches(cx, e, 'subject', p.subject, lookBack || fixedFrom);
   },
   /** std-copy-6 (CR 603.2, 603.3b): a triggered ability of the `subject` object triggered (triggers/collect.ts#metaEvents); `causedBy` attacking: that object attacking caused it. */
@@ -201,7 +208,14 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
     return roleMatches(cx, e, 'blocker', p.blocker, false) && roleMatches(cx, e, 'attacker', p.attacker, false);
   },
   /** std-rx35 (CR 509.1h): an attacker no blocker was declared for. */
-  attacksUnblocked: (p, e, cx) => roleMatches(cx, e, 'attacker', p.attacker, false),
+  attacksUnblocked: (p, e, cx) => {
+    // pc-combat-4 (CR 509.1h, 508.1b): attacking a player that matches (never a planeswalker or battle)
+    if (p.defender !== undefined) {
+      const d = e.data['defenderPlayer'];
+      if (typeof d !== 'string' || !pm(cx, p.defender, d)) return false;
+    }
+    return roleMatches(cx, e, 'attacker', p.attacker, false);
+  },
   /** CR 509.3c: without `by` it triggers once per attacker (the flagged first pair), with `by` once per blocker that satisfies it. */
   becomesBlocked: (p, e, cx) => {
     if (p.by === undefined && e.data['first'] !== true) return false;

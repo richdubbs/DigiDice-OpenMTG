@@ -1,0 +1,221 @@
+[
+  {
+    "id": "rid.pckm2.mana.whenSpent.scry",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 603.2",
+      "CR 701.22a"
+    ],
+    "pattern": "when that mana is spent to cast ( a | an ) {f:CastSpell} , scry {n:Qty}",
+    "build": {
+      "$patchPrevious": {
+        "whenSpent": {
+          "@new": {
+            "spells": "$f",
+            "do": [
+              {
+                "op": "scry",
+                "who": {
+                  "ref": "you"
+                },
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. When that mana is spent to cast a Dragon spell, scry 2."
+      },
+      {
+        "text": "{1}, {T}: Add {R}. When that mana is spent to cast an instant spell, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Draw a card. When that mana is spent to cast a Dragon spell, scry 2.",
+      "{T}: Add {G}. If that mana is spent to cast a Dragon spell, scry 2.",
+      "{T}: Add {G}. When that mana is spent to cast a Dragon spell, each opponent scries 2."
+    ]
+  },
+  {
+    "id": "eff.pckm2.mana.anyColor.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 605.1a"
+    ],
+    "pattern": "add one mana of any color for each {n:Qty}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyColor",
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, remove all fuel counters from ~. Add one mana of any color for each fuel counter removed this way."
+      },
+      {
+        "text": "{T}, Remove any number of fuel counters from ~: Add one mana of any color for each fuel counter removed this way."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, remove all fuel counters from ~. Add one mana of any one color for each fuel counter removed this way.",
+      "At the beginning of your upkeep, remove all fuel counters from ~. Add two mana of any color for each fuel counter removed this way.",
+      "At the beginning of your upkeep, remove all fuel counters from ~. Add one mana of any color for each fuel counter removed this way this turn."
+    ]
+  },
+  {
+    "id": "rid.pckm2.mana.spent.creature.entersWith",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 614.1c",
+      "CR 122.1"
+    ],
+    "pattern": "if this mana is spent to cast a creature spell , that creature enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": {
+            "types": [
+              "Creature"
+            ]
+          },
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "needs": [
+      "feature:mana.spentRider.entersWith"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any color. If this mana is spent to cast a creature spell, that creature enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "{1}, {T}: Add {G}. If this mana is spent to cast a creature spell, that creature enters with an additional shield counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. If this mana is spent to cast a creature spell, that creature enters with a +1/+1 counter on it.",
+      "{T}: Add {G}. If this mana is spent to cast an artifact spell, that creature enters with an additional +1/+1 counter on it.",
+      "{T}: Add {G}. If this mana is spent to cast a creature spell, that creature enters with two additional +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.pckm2.mana.anyColor.x",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 107.3",
+      "CR 605.1a"
+    ],
+    "pattern": "add X mana in any combination of colors",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyColor",
+        "count": {
+          "q": "X"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}, Remove X fuel counters from ~: Add X mana in any combination of colors."
+      },
+      {
+        "text": "{2}, {T}, Remove X fuel counters from ~: Add X mana in any combination of colors. Spend this mana only to cast Elf spells."
+      }
+    ],
+    "counterExamples": [
+      "{T}, Remove X fuel counters from ~: Add X mana of any one color.",
+      "{T}, Remove X fuel counters from ~: Add two mana in any combination of colors.",
+      "{T}, Remove X fuel counters from ~: Add X mana in any combination of colors this turn."
+    ]
+  },
+  {
+    "id": "eff.pckm2.mana.anyOf2.x",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 107.3",
+      "CR 605.1a"
+    ],
+    "pattern": "add X mana in any combination of {a:ManaSym} and/or {b:ManaSym}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyColor",
+        "from": [
+          "$a",
+          "$b"
+        ],
+        "count": {
+          "q": "X"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}, Remove X fuel counters from ~: Add X mana in any combination of {R} and/or {G}."
+      },
+      {
+        "text": "{T}, Remove X fuel counters from ~: Add X mana in any combination of {W} and/or {U}."
+      }
+    ],
+    "counterExamples": [
+      "{T}, Remove X fuel counters from ~: Add X mana in any combination of {R} or {G}.",
+      "{T}, Remove X fuel counters from ~: Add two mana in any combination of {R} and/or {G}.",
+      "{T}, Remove X fuel counters from ~: Add X mana in any combination of {R}, {G} and/or {W}."
+    ]
+  }
+]

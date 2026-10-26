@@ -220,6 +220,7 @@ export function countQuantityForms(q: Quantity): string[] {
     // lands, where X is the number of verse counters on ~": read before a sacrifice cost is paid, CR 601.2h), actions/announce-cond.ts#announceQty
     case 'counters': return q.on.ref === 'self' || q.on.ref === 'each' ? quantityAnnounceForms(q, 'spec') : ['feature:count.quantity'];
     case 'math': return q.op === '+' || q.op === '*' || q.op === '-' ? ['feature:announce.qty.math', ...q.args.flatMap(countQuantityForms)] : ['feature:count.quantity'];
+    case 'kickCount': return q.name === undefined ? ['feature:announce.qty.kickCount'] : ['feature:count.quantity']; // pc-zones-3 (CR 702.33d)
     case 'eventAmount': return ['feature:announce.qty.eventAmount']; // r3-choose (CR 603.3d): "up to that many target creatures" in a triggered ability
     case 'modesChosen': return ['feature:announce.qty.modesChosen']; // Standard round 3, r3-trig (CR 700.2, 603.3c): "choose up to X, where X is the number of times you chose a mode for that spell"
     default: return ['feature:count.quantity'];

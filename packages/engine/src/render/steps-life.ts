@@ -40,6 +40,10 @@ export function countersText(n: Quantity | 'all', kind: CounterKind | 'any', st:
   if (typeof n === 'object' && n.q === 'math' && n.op === '*' && n.args.length === 2 && typeof n.args[0] === 'number' && typeof n.args[1] === 'object' && n.args[1].q === 'X') {
     return alt(`a number of ${pluralize(noun)} equal to ${K.qty(n, st)}`, `${K.qty(n, st)} ${pluralize(noun)}`);
   }
+  // pc-counters-3 (CR 107.1a): "you get half X rad counters, rounded up" (Contaminated Drink): half of X, the rounding said after the noun
+  if (typeof n === 'object' && n.q === 'math' && (n.op === 'ceilDiv' || n.op === 'floorDiv') && n.args.length === 2 && n.args[1] === 2 && typeof n.args[0] === 'object' && n.args[0].q === 'X') {
+    return alt(`a number of ${pluralize(noun)} equal to ${K.qty(n, st)}`, `half X ${pluralize(noun)}, rounded ${n.op === 'ceilDiv' ? 'up' : 'down'}`);
+  }
   return `a number of ${pluralize(noun)} equal to ${K.qty(n, st)}`;
 }
 
@@ -349,13 +353,25 @@ export const CLAUSES_LIFE = {
   },
 };
 
+/**
+ * pc-counters-1 (CR 107.14, 122.1, 608.2h): a computed number of energy counters is "an amount of {E} equal to Q" as well as "Q {E}" (the amount of the event, "that many
+ * {E}", and X stay as they were: they have no "equal to" wording).
+ */
+function energyAmount(n: Quantity, st: RenderState): string {
+  const q = K.qty(n, st);
+  if (typeof n === 'object' && (n.q === 'eventAmount' || n.q === 'X' || n.q === 'var')) return `${q} {E}`;
+  // pc-counters-3 (CR 107.14, 122.1): "you get {E} for each creature you control" (Aetherwind Basker): the same count said per object
+  const per = countParts(n, cloneState(st));
+  return alt(`an amount of {E} equal to ${q}`, `${q} {E}`, ...(per ? [`{E} for each ${per.singular}`] : []));
+}
+
 /** The text of a putCounters step (STEPS.putCounters adds a target for each opponent's "for each opponent,"). */
 function putCountersClause(s: StepOf<'putCounters'>, st: RenderState): Clause {
     // FAST5 T76 (CR 608.2c; effects/handlers/counters.ts#recordActed): the creatures the counters went on are "them" / "those creatures" for the next sentence
     if (s.as !== undefined && s.on.ref === 'each' && 'filter' in s.on) bind(st, s.as, { nouns: K.nounsOf(s.on.filter), plural: true });
     if (isPlayerRef(s.on as ObjRef | PlayerRef, st)) {
       const who = s.on as PlayerRef;
-      if (s.kind === 'energy') return byPlayer(who, st, 'get', () => (typeof s.count === 'number' ? '{E}'.repeat(s.count) : `${K.qty(s.count, st)} {E}`));
+      if (s.kind === 'energy') return byPlayer(who, st, 'get', () => (typeof s.count === 'number' ? (s.count >= 5 ? alt('{E}'.repeat(s.count), `${numWord(s.count)} {E}`) : '{E}'.repeat(s.count)) : energyAmount(s.count, st)));
       return byPlayer(who, st, 'get', () => countersText(s.count, s.kind, st));
     }
     // std-rx26 (CR 608.2d): counters divided among objects chosen as the step resolves, "distribute three stun counters among any number of tapped creatures your

@@ -281,6 +281,12 @@ export interface KeywordAbilityDef extends AbilityBase {
    * (keywords/expand.ts puts it there; a keyword that stands for no activated ability refuses it). Capability `feature:keyword.costChange`.
    */
   costChange?: CostModDef['change'];
+  /**
+   * pc-statics-1 INTERFACE CHANGE (additive): "Equip {2}. This ability costs {2} less to activate if you have one or fewer cards in hand." (CR 601.2f, 602.2b,
+   * 702.6a): the condition of the keyword's `costChange`, the `costChangeIf` of the activated ability the keyword stands for (keywords/expand.ts). Only with
+   * `costChange`. Capability `feature:keyword.costChange.if`.
+   */
+  costChangeIf?: Condition;
 }
 
 /** Saga chapters "I, II -- ..." (CR 714). Expands to a triggered ability on lore counters (CR 714.2). */
@@ -805,7 +811,12 @@ export type PlayerRef =
    * history, rules/history.ts#countHistory with the player as its actor). Read where it is used: a static restriction names the players it applies to now (CR
    * 611.3a). Capability `ref:eachWho`.
    */
-  | { ref: 'eachWho'; who: 'opponent' | 'player'; did: EventPattern; scope: 'turn' };
+  /**
+   * pc-combat-1: `scope: 'attacking'` (CR 508.1, 303.4; Curse of Opulence ruling: a player is attacking another player if they control a creature that is attacking that player):
+   * not the history but the battlefield as the effect resolves: the players of `who` who control at least one creature attacking the player `did.defender` names (`did` is an
+   * `attacks` pattern with a player `defender`), in APNAP order. Steps only (effects/refs.ts); statics read it as nobody.
+   */
+  | { ref: 'eachWho'; who: 'opponent' | 'player'; did: EventPattern; scope: 'turn' | 'attacking' };
 
 /**
  * M12-1 (m12 design 4.3, review finding 6): the `PlayerRef` kinds that stand ONLY for players (no `ObjRef` has the same `ref`). Every reader that tells a
@@ -1106,6 +1117,12 @@ export interface ObjectFilter {
    */
   targetCount?: NumberCmp;
   castFrom?: ZoneName;
+  /**
+   * pc-exile-play-2 INTERFACE CHANGE (additive), CR 601.2i: a spell that was the first its controller cast this turn (`turn`), or the first they cast this turn from the
+   * zone it was cast from (`turnFromZone`; with `castFrom` "the first spell you cast from exile each turn"). Read from `StackInfo.castOrdinal`: a copy of a spell was never cast (CR 707.10, putCopyOnStack drops the ordinal), a copy of a card that is cast is (CR 707.12).
+   * Capability `filter:firstCast`.
+   */
+  firstCast?: 'turn' | 'turnFromZone';
   /**
    * FAST5X E23 INTERFACE CHANGE (additive): the object's mana cost contains {X} ("spells with {X} in their mana costs", CR 107.3, 202.1): read from its
    * characteristics (for a spell, the face being cast). False: no {X} in it.
@@ -1503,6 +1520,12 @@ export type Quantity =
    * a static ability's quantity with `of` is not read, `feature:q.commanderCasts.of.static`, never registered).
    */
   | { q: 'commanderCasts'; of?: PlayerRef }
+  /**
+   * pc-statics-2 INTERFACE CHANGE (additive), CR 903.4, 903.4f: the number of colors in the controller's commanders' color identity (both commanders' identities combined;
+   * "Pay life equal to the number of colors in your commanders' color identity", War Room). 0 for a colorless identity; not read (the ability is not offered) without a
+   * commander (War Room ruling 2020-11-10: with no commander it can't be activated) or when a commander's identity was not given. Capability `feature:q.commanderIdentitySize` (effects/eval.ts).
+   */
+  | { q: 'commanderIdentitySize' }
   /** MANUAL: the controller types the number. Allowed only inside steps (never in costs, targets, triggers or static conditions). */
   | { q: 'ask'; text: string };
 
@@ -1762,7 +1785,12 @@ export type EffectStep =
    * instructions that is its intervening "if" (CR 603.4): checked as the ability would trigger (triggers/delayed.ts#collectDelayed) and again as it resolves
    */
   | (StepBase & { op: 'if'; cond: Condition; then: EffectStep[]; else?: EffectStep[]; intervening?: true })
-  | (StepBase & { op: 'may'; who: PlayerRef; do: EffectStep[]; otherwise?: EffectStep[]; anyOne?: true }) // CR 608.2d; `as` records whether they did
+  /**
+   * pc-keywords-mana-3 INTERFACE CHANGE (additive), CR 701.55 (cite from memory, unverified): `villainous`, "[who] faces a villainous choice -- [do], or [otherwise]": `who` chooses
+   * one of the two lists of instructions and it is carried out; unlike an optional action neither is declined, and an option that can't be carried out may still be
+   * chosen. Needs `otherwise`. Capability `feature:may.villainous`.
+   */
+  | (StepBase & { op: 'may'; who: PlayerRef; do: EffectStep[]; otherwise?: EffectStep[]; anyOne?: true; villainous?: true }) // CR 608.2d; `as` records whether they did
   /*
    * std-rq INTERFACE CHANGE (additive), CR 608.2d, 101.4: `anyOne`, "any opponent may sacrifice a creature of their choice. If a player does, ...": the players of the
    * group `who` are asked one at a time in APNAP order, and once one of them does it the others are not asked (one player at most does it); `as` records whether
@@ -1880,6 +1908,11 @@ export type EffectStep =
    * different names (CR 201.2); the searcher takes them one at a time, each of a name not yet taken (capability `op:search.differentNames`).
    */
   /**
+   * pc-zones-2 INTERFACE CHANGE (additive): `shareLandType`, "search your library for up to two basic land cards that share a land type" (CR 701.23a, 205.3i): the cards found
+   * share a land type (a subtype of a land card); the searcher takes them one at a time, each sharing a land type with every card taken before (capability
+   * `op:search.shareLandType`).
+   */
+  /**
    * CLOUD std-dft INTERFACE CHANGE (additive): `alsoZones`, "search your library and/or graveyard", "your graveyard, hand, and/or library" (CR 701.23a): the searcher
    * chooses which of `zone` and `alsoZones` (zones of the same player) to search, one or more, and finds the cards among the cards of every zone searched; the
    * order is the printed one. A library the searcher can't search (CR 101.2) is not offered. Capability `op:search.alsoZones`.
@@ -1897,7 +1930,7 @@ export type EffectStep =
    * from either or both); a card found outside the game is brought into the game on top of its owner's library, where the found cards are, so the instructions after the
    * search find it there. Only with `zone: 'library'` and no other zones. Capability `op:search.alsoOutside`.
    */
-  | (StepBase & { op: 'search'; who: PlayerRef; zone: ZoneName; alsoZones?: ZoneName[]; allZones?: true; owner?: PlayerRef; filter: ObjectFilter; min?: Count; max: Count; reveal?: boolean; differentNames?: true; and?: ObjectFilter[]; alsoOutside?: true; as: Name })
+  | (StepBase & { op: 'search'; who: PlayerRef; zone: ZoneName; alsoZones?: ZoneName[]; allZones?: true; owner?: PlayerRef; filter: ObjectFilter; min?: Count; max: Count; reveal?: boolean; differentNames?: true; and?: ObjectFilter[]; alsoOutside?: true; shareLandType?: true; as: Name })
   /**
    * Cloud std-eoe INTERFACE CHANGE (additive): "exile cards from the top of your library until you exile a nonland card" (CR 406.1, 401.1, 608.2c): `who` exiles
    * the top card of their library, one card at a time and face up, until a card that matches `filter` is exiled or the library is empty. `as` names the card it
@@ -1955,6 +1988,14 @@ export type EffectStep =
    * they control is sacrificed. Capability `op:sacrificeChoice.keepEachType`.
    */
   /**
+   * pc-players-1 INTERFACE CHANGE (additive; CR 110.4, 205.2a, 608.2d-e, 701.21a): with `mode: 'keepEachType'`, `keepTypes` limits the types a permanent is kept for ("each player
+   * chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest": Cataclysmic Gearhulk; a
+   * permanent of several types may be chosen for any or all of them, so one choice may answer for two types), `keepFilter` is the description the kept ones are chosen
+   * among when it is not the description of the permanents that are sacrificed ("you choose from among the permanents that player controls an artifact, ... Then each
+   * player sacrifices all other nonland permanents they control": Tragic Arrogance, whose choice pool includes lands and whose sacrifice does not), and `chooser` is who
+   * chooses for each player of `who` (you, instead of each player for themselves). Capabilities `op:sacrificeChoice.keepTypes`, `.keepFilter`, `.chooser`.
+   */
+  /**
    * C6 INTERFACE CHANGE (additive): `cantAs` names the players of `who` who can't sacrifice as many permanents as the step asks ("Each opponent sacrifices a
    * creature of their choice. Each opponent who can't discards a card.": no such permanent they control, or none they can sacrifice; CR 101.3, 701.21a, 608.2e).
    * Not with `mode: 'all'` or `'keepEachType'` (no count to fall short of). Capability `op:sacrificeChoice.cantAs`.
@@ -1962,7 +2003,7 @@ export type EffectStep =
    * the ability's source, which emits the action `exploit` (effects/handlers/zones-remove.ts) while that source is still on the battlefield. Capability
    * `op:sacrificeChoice.exploit`.
    */
-  | (StepBase & { op: 'sacrificeChoice'; who: PlayerRef; filter: ObjectFilter; count: Quantity; mode?: 'choose' | 'all' | 'keepEachType'; cantAs?: Name; exploit?: true })
+  | (StepBase & { op: 'sacrificeChoice'; who: PlayerRef; filter: ObjectFilter; count: Quantity; mode?: 'choose' | 'all' | 'keepEachType'; cantAs?: Name; exploit?: true; keepTypes?: string[]; keepFilter?: ObjectFilter; chooser?: PlayerRef })
   /**
    * std-rx30 INTERFACE CHANGE (additive): `toIf`, "If a permanent spell is countered this way, exile it instead of putting it into its owner's graveyard." (Thranduil's
    * Decree; CR 701.6a, 614.15): `to` applies only to a countered spell that matches it as it is countered; any other goes to its owner's graveyard. Capability
@@ -1976,7 +2017,7 @@ export type EffectStep =
    * cmd1 INTERFACE CHANGE (additive): `attacking` may name the player the tokens attack (CR 508.4: "for each opponent, create a 1/1 white Soldier creature token that's
    * tapped and attacking that opponent"), as a token copy's does (`AttackingWhom`); `true` lets the controller choose. Capability `feature:createToken.attackingWhom`.
    */
-  | (StepBase & { op: 'createToken'; who: PlayerRef; token: TokenDef; count: Quantity; tapped?: boolean; attacking?: boolean | AttackingWhom; attachTo?: ObjRef; counters?: CounterSpec[]; link?: LinkId })
+  | (StepBase & { op: 'createToken'; who: PlayerRef; token: TokenDef; count: Quantity; exceptReplaced?: true; tapped?: boolean; attacking?: boolean | AttackingWhom; attachTo?: ObjRef; counters?: CounterSpec[]; link?: LinkId })
   /**
    * M6-12 INTERFACE CHANGE (additive): `noManaCost` on a token copy, "except it has no mana cost" (CR 707.9b: part of the token's copiable values; embalm
    * CR 702.128a, eternalize CR 702.129a), capability `op:copy.except` like the other exceptions.
@@ -2491,6 +2532,12 @@ export interface ManaSpentRider {
   gains?: KeywordAbilityDef;
   /** "that spell can't be countered" */
   cantBeCountered?: true;
+  /**
+   * pc-keywords-mana-2 INTERFACE CHANGE (additive), CR 614.1c, 106.6 (Biophagus: "If this mana is spent to cast a creature spell, that creature enters with an additional +1/+1
+   * counter on it"): counters the permanent the spell becomes enters with, recorded on the spell as it is cast (`StackInfo.permitEnters`, core/mana-riders.ts). Capability
+   * `feature:mana.spentRider.entersWith`.
+   */
+  entersWith?: CounterSpec[];
 }
 
 export type DelayedWhen =
@@ -2638,7 +2685,11 @@ export type EventPattern =
    * declared, once per declare blockers step, as the blockers of its defending player are declared (core/combat.ts `blockersDeclared.unblocked`). A creature put
    * onto the battlefield attacking after that is never one. Capability `ev:attacksUnblocked`.
    */
-  | { ev: 'attacksUnblocked'; attacker?: ObjectFilter }
+  /**
+   * pc-combat-4 INTERFACE CHANGE (additive; CR 509.1h, 508.1b, 603.2c): `defender`, the unblocked creatures attack a PLAYER that matches ("one or more creatures an opponent controls attack you
+   * and aren't blocked", Coveted Jewel): never a planeswalker or battle.
+   */
+  | { ev: 'attacksUnblocked'; attacker?: ObjectFilter; defender?: PlayerPred }
   /**
    * FAST5X E16 INTERFACE CHANGE (additive): `excess`, "is dealt excess damage" (CR 120.10): only damage dealt to a permanent part of which was excess damage
    * (`damageDealt.excess` > 0: beyond lethal damage, loyalty or defense, rules/damage.ts). Capability `feature:ev.damage.excess` (triggers/match.ts).
@@ -3177,6 +3228,12 @@ export type ReplacementBody =
        * `body:enters.copy.copiedCounters`.
        */
       copiedCounters?: true;
+      /**
+       * pc-tokens-2 (CR 614.12, 707.2, 611.2): "As ~ enters, you may have it become a copy of any creature on the battlefield until end of turn, except it has haste."
+       * (Cursed Mirror): the copy effect it enters with has this duration instead of lasting for good; it is itself again when the effect ends. Capability
+       * `body:enters.copy.duration`.
+       */
+      duration?: Duration;
     };
     attachTo?: ObjRef;
     faceDown?: boolean;
@@ -3338,6 +3395,13 @@ export interface PermissionDef {
    * (capability `feature:permit.<action>.anyManaType`).
    */
   anyManaType?: true;
+  /**
+   * pc-exile-play-1 INTERFACE CHANGE (additive), CR 609.4b, 107.4c: "..., and you may spend mana as though it were mana of any color to cast that spell": a spell cast
+   * with this permission may be paid for as though each mana were mana of any color (a {C} symbol still needs colorless mana; rules/sources.ts `SpendContext.anyType`
+   * 'color'). Honored on the permissions for named objects, as `anyManaType` is (statics/play-permits.ts#anyManaColorPermit; capability
+   * `feature:permit.<action>.anyManaColor`). Mana of any type (`anyManaType`) wins when both apply.
+   */
+  anyManaColor?: true;
   /**
    * FAST5X E29 INTERFACE CHANGE (additive): "... you may play it if you control a Kavu": the permission applies only while this condition holds, judged each time
    * it is read (CR 611.2b-like: the effect itself stays). Honored on the permissions for named objects of statics/play-permits.ts (capability

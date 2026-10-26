@@ -286,7 +286,10 @@ export function pluralPronounRefs(text: string, ctx: FaceContext, ix: LexiconInd
  */
 export function findSelfRefs(text: string, ctx: FaceContext, ix: LexiconIndex, quoteSpans: readonly QuoteSpan[], cardNames?: ReadonlySet<string>, opts: { pronouns?: boolean } = {}): SelfRef[] {
   const found: Candidate[] = [];
-  const named = (pos: number): boolean => /\bnamed\s+$/.test(text.slice(Math.max(0, pos - 12), pos));
+  // pc-tokens-2 (CR 201.2, 111.4): also inside a token's given name, "named Kobolds of Kher Keep" (Kher Keep): the card's name is a part of the run of capitalized
+  // words (and a lower-case "of" / "of the") after "named"
+  const named = (pos: number): boolean => /\bnamed\s+$/.test(text.slice(Math.max(0, pos - 12), pos))
+    || /\bnamed\s+(?:\p{Lu}[\p{L}'-]*\s+(?:of\s+(?:the\s+)?)?)+$/u.test(text.slice(Math.max(0, pos - 60), pos));
   const inQuote = (pos: number): boolean => insideAny(quoteSpans, pos);
   const names = cardNames ? nameIndex(cardNames) : undefined;
   const faceName = normalizeName(ctx.name);

@@ -79,10 +79,11 @@ describe('CR 111.10: the predefined token table', () => {
   }
 
   // std-ry3: Powerstone and Vibranium's "This mana can't be spent to cast a nonartifact spell." is ManaRestriction.notSpells (FAST5X E23, CR 106.6), so their
-  // mana abilities are data now; only Junk keeps a manual ability.
-  it('only Junk ("you may play that card this turn") keeps a manual ability in the data', () => {
+  // mana abilities are data now; pc-keywords-mana-1: and Junk's ("You may play that card this turn", a permit on the exiled card, sorcery timing) is data too, so
+  // no predefined token keeps a manual ability.
+  it('no predefined token keeps a manual ability in the data', () => {
     const withManual = PREDEFINED_TOKENS.filter((t) => t.faces.some((f) => (f.abilities as AbilityDef[]).some((a) => a.kind === 'manual'))).map((t) => t.name);
-    expect(withManual).toEqual(['Junk']);
+    expect(withManual).toEqual([]);
     // Whether a token is FULL is not pinned here: it is computed from the engine's capabilities (tokens/review.test.ts recomputes it, design 5.2).
     for (const name of withManual) {
       const def = tokenCardDef({ predefined: name });

@@ -30,7 +30,7 @@
  */
 import type { Game } from '../core/game';
 import type { EventContext, FaceDownInfo, LinkValue, ObjHandle } from '../types/state';
-import type { AbilityDef, CopyExcept, CounterSpec, EffectProgram, Name, EffectStep, EffectOp, ObjectFilter, ReplacementDef, TurnPhase } from '../types/ability';
+import type { AbilityDef, CopyExcept, CounterSpec, EffectProgram, Name, EffectStep, EffectOp, Duration, ObjectFilter, ReplacementDef, TurnPhase } from '../types/ability';
 import type { Performed } from './perform';
 import type { CardId, ObjectId, PlayerId } from '../types/ids';
 import type { GameObject, LastKnown, StackInfo, TargetChoice, ZoneKind } from '../types/state';
@@ -335,6 +335,8 @@ export interface DestinationFacts {
   /** CR 707.9: the exceptions of an "enters as a copy" effect (with `copyOf`); CR 707.9e additional effects separately (M6-2). */
   copyExcept?: CopyExcept[];
   copyAdditional?: { if?: ObjectFilter; counters: CounterSpec[] }[];
+  /** pc-tokens-2: how long the copy effect of `copyOf` lasts (CR 611.2); for good when absent ("enters as a copy"). */
+  copyDuration?: Duration;
   /** CR 722.3a: it enters prepared (M6-6). */
   prepared?: boolean;
   /**

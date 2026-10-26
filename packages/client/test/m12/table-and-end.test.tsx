@@ -64,6 +64,39 @@ describe('the end screen (m12 design D10)', () => {
     expect(screen.queryByRole('list', { name: 'Finishing order' })).toBeNull();
   });
 
+  it('asks "Rematch?" and, on Yes, shows each player\'s deck with Same decks and Change decks (owner, 2026-10-25)', () => {
+    const s = finished();
+    const rematch = vi.fn();
+    const change = vi.fn();
+    const setup = {
+      seats: [
+        { name: 'Alice', deckId: 'd1', by: 'person' as const },
+        { name: 'Bob', deckId: 'd2', by: 'computer' as const },
+      ],
+      deckNames: ['Elves', 'Goblins'],
+      format: 'casual',
+      start: { startingLife: 20, firstPlayer: 'random' as const },
+    };
+    render(<GameOver view={viewFor(s, 'p1')} result={s.result!} onRematch={rematch} onNewGame={() => {}} onHome={() => {}} setup={setup} onChangeDecks={change} />);
+    const ask = screen.getByRole('region', { name: 'Rematch' });
+    expect(ask.textContent).toContain('Rematch?');
+    fireEvent.click(within(ask).getByRole('button', { name: 'Yes' }));
+    const decks = within(screen.getByRole('list', { name: 'Decks for the rematch' })).getAllByRole('listitem').map((li) => li.textContent);
+    expect(decks).toEqual(['AliceElves', 'BobGoblins']);
+    fireEvent.click(screen.getByRole('button', { name: 'Change decks' }));
+    expect(change).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Same decks' }));
+    expect(rematch).toHaveBeenCalledOnce();
+  });
+
+  it('answering No to "Rematch?" puts the question away', () => {
+    const s = finished();
+    render(<GameOver view={viewFor(s, 'p1')} result={s.result!} onRematch={() => {}} onNewGame={() => {}} onHome={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'No' }));
+    expect(screen.queryByRole('region', { name: 'Rematch' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Rematch/ })).toBeNull();
+  });
+
   it('how a player lost, in a word or two (CR 704.5a-c, 704.6c, 104.3a)', () => {
     expect(lossCause('has 0 or less life')).toBe('Life');
     expect(lossCause('has been dealt 21 combat damage by the commander Isamaru')).toBe('Commander damage');

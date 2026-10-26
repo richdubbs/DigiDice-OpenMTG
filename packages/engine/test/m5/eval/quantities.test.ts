@@ -35,6 +35,7 @@ describe('capability table (design 5.2)', () => {
       'kickCount', 'preventedAmount', 'faceUpX', // M6-0 (m6 design 5)
       'lifeLostThisTurn', 'colorsSpent', // FAST4 T34
       'commanderCasts', // M11-0 (CR 903.8): exact in every game, 0 outside Commander
+      'commanderIdentitySize', // pc-statics-2 (CR 903.4): the colors of the commanders' identity, 0 without a commander
       'partySize', // FAST5 T38 (CR 700.8)
       'basePower', // std-rx29 (CR 208.1, 613.4)
       'manaSymbols', // Standard round 5, r5-trig (CR 107.4, 202.1)

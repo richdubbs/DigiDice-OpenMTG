@@ -578,6 +578,17 @@ export const CLAUSES_ZONES = {
       const withX = `${verb} ${movedThing(s.what, copy)} ${destPhrase(d, copy, plural, false, firstAlt(verb) === 'return')}, where X is ${K.qty(mv.value, copy)}`;
       text = alt(text, withX);
     }
+    // pc-players-1 (CR 107.3, 608.2h): the same for a group (Spectral Deluge: "Return each creature your opponents control with toughness X or less to its owner's hand,
+    // where X is the number of Islands you control"): a power, toughness or mana value the group's description computes, said X in the description (family move-where-x)
+    if (s.what.ref === 'each' && !s.until && d.zone !== 'exile') {
+      for (const key of ['manaValue', 'power', 'toughness'] as const) {
+        const cmp = s.what.filter[key];
+        if (cmp === undefined || typeof cmp.value !== 'object' || cmp.value.q === 'X' || (cmp.op !== '<=' && cmp.op !== '>=')) continue;
+        const copy = cloneState(before);
+        const withX = `${verb} ${movedThing({ ...s.what, filter: { ...s.what.filter, [key]: { op: cmp.op, value: { q: 'X' } } } }, copy)} ${destPhrase(d, copy, plural, false, firstAlt(verb) === 'return')}, where X is ${K.qty(cmp.value, copy)}`;
+        text = alt(text, withX);
+      }
+    }
     // FAST5 T43 (CR 401.4): "Put the rest on the bottom in a random order": the cards left of a group looked at are in the library already, so Oracle may leave "of your library" out
     if (s.what.ref === 'each' && restOfGroup(s.what.filter) !== null && d.zone === 'library' && d.position === 'bottom' && d.owner === undefined) {
       text = alt(text, `${verb} ${what} on the bottom${d.order === 'random' ? ' in a random order' : d.order === 'chosen' ? ' in any order' : ''}`);
@@ -652,6 +663,18 @@ export const CLAUSES_ZONES = {
     // FAST5 T66 (CR 110.4, 701.21a): "each opponent chooses a permanent they control of each permanent type and sacrifices the rest": one permanent of each type kept, among
     // every permanent the players control (no description of the permanents)
     if (s.mode === 'keepEachType') {
+      // pc-players-1 (CR 110.4, 205.2a, 701.21a): the four types of Cataclysmic Gearhulk and Tragic Arrogance (artifact, creature, enchantment, planeswalker), nonland permanents sacrificed
+      const FOUR = ['Artifact', 'Creature', 'Enchantment', 'Planeswalker'];
+      const nonland = JSON.stringify(s.filter) === JSON.stringify({ notTypes: ['Land'] });
+      const four = JSON.stringify(s.keepTypes) === JSON.stringify(FOUR) && s.count === 1 && nonland;
+      if (four && s.who.ref === 'each' && s.who.who === 'player' && s.chooser === undefined && s.keepFilter === undefined) {
+        return acting(playerKey(s.who) ?? 'x', 'choose an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents you control and sacrifice the rest',
+          'each player chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest');
+      }
+      if (four && s.who.ref === 'each' && s.who.who === 'player' && s.chooser?.ref === 'you' && s.keepFilter !== undefined && JSON.stringify(s.keepFilter) === '{}') {
+        return plain(`for each player, you choose from among the permanents that player controls an artifact, a creature, an enchantment, and a planeswalker. ${alt('then ', '')}each player sacrifices all other nonland permanents they control`, { standalone: true });
+      }
+      if (s.keepTypes !== undefined || s.keepFilter !== undefined || s.chooser !== undefined) throw new NoRenderer('a sacrifice that keeps permanents of some types other than the four types of Cataclysmic Gearhulk and Tragic Arrogance');
       const who = s.who;
       if (who.ref !== 'each' || (who.who !== 'opponent' && who.who !== 'player') || s.count !== 1 || Object.values(s.filter).some((v) => v !== undefined)) throw new NoRenderer('a sacrifice that keeps one permanent of each type other than for each opponent or each player');
       const subj = K.player(who, st, 'subject').text;

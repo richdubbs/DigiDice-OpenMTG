@@ -958,7 +958,9 @@ export const CLAUSES_LASTING = {
       const c = byPlayer(s.who, st, 'proliferate', 'twice');
       return { ...c, imp: alt(c.imp, 'proliferate, then proliferate again') };
     }
-    if (actor) return byPlayer(s.who, st, actor(n, arg).split(' ')[0]!, `${actor(n, arg).split(' ').slice(1).join(' ')}${times}`.trim());
+    // pc-zones-2 (CR 701.40a, 701.58a): another player manifests (or cloaks) the top card of THEIR library ("Its controller manifests the top card of their library")
+    const said = s.who.ref === 'you' || s.who.ref === 'each' ? actor?.(n, arg) : actor?.(n, arg).replace(' of your library', ' of their library'); // (a group stays "your library": the engine manifests for one player, so the gate refuses it)
+    if (actor && said !== undefined) return byPlayer(s.who, st, said.split(' ')[0]!, `${said.split(' ').slice(1).join(' ')}${times}`.trim());
     throw new NoRenderer(`action ${s.action}`);
   },
 };

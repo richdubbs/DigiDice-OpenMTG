@@ -59,7 +59,7 @@ function CurrentScreen({ route }: { route: Route }) {
     case 'replays':
       return <ReplaysScreen />;
     case 'newGame':
-      return <NewGameScreen {...(route.deckId !== undefined ? { deckId: route.deckId } : {})} />;
+      return <NewGameScreen {...(route.deckId !== undefined ? { deckId: route.deckId } : {})} {...(route.setup ? { setup: route.setup } : {})} />;
     case 'hostOnline':
       return <HostScreen />;
     case 'joinOnline':
@@ -74,6 +74,7 @@ function CurrentScreen({ route }: { route: Route }) {
           {...(route.online ? { online: route.online } : {})}
           {...(route.hosted ? { hosted: route.hosted } : {})}
           {...(route.sleeves ? { sleeves: route.sleeves } : {})}
+          {...(route.setup ? { setup: route.setup } : {})}
         />
       );
     case 'settings':

@@ -684,6 +684,31 @@ function revealedRestOf(step: Rec, unit: Unit, path: string): StepMention | null
 }
 
 /**
+ * pc-zones-1 (CR 608.2c, 701.20a; Genesis Storm): "all cards revealed this way that weren't put onto the battlefield" after "reveal cards from the top of your library until
+ * you reveal a nonland permanent card. You may put that card onto the battlefield": every card the reveal revealed that is still in the library, the card it stopped at
+ * included when it was not put (hole Rest, head "rest-not-put"). Only when the card it stopped at is moved onto the battlefield and nowhere else (any move of it to
+ * another place makes the set ambiguous: fail closed).
+ */
+function revealedNotPutOf(step: Rec, unit: Unit, path: string, units: readonly Unit[]): StepMention | null {
+  if (step['op'] !== 'revealUntil' || typeof step['as'] !== 'string' || typeof step['revealed'] !== 'string' || step['count'] !== undefined) return null;
+  const hit = step['as'];
+  const moves: Rec[] = [];
+  const walk = (v: unknown): void => {
+    if (Array.isArray(v)) v.forEach(walk);
+    else if (isRec(v)) {
+      if (v['op'] === 'move' && isRec(v['what']) && v['what']['ref'] === 'bound' && v['what']['name'] === hit) moves.push(v);
+      Object.values(v).forEach(walk);
+    }
+  };
+  units.forEach((x) => walk(x.steps));
+  if (moves.length !== 1 || moves[0]!['guard'] !== undefined || !isRec(moves[0]!['to']) || moves[0]!['to']['zone'] !== 'battlefield') return null;
+  return {
+    origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['rest-not-put'], headOnly: true, verbs: ['left'],
+    ref: { ref: 'each', filter: { is: { ref: 'bound', name: step['revealed'] }, zone: 'library' } },
+  };
+}
+
+/**
  * trek-7 (CR 406.1, 608.2c; The Borg Queen): "the rest" after "target opponent exiles cards from the top of their library until they exile a creature card": the cards that
  * step exiled other than the one it stopped at, still in exile ("Assimilate that card. They put the rest on the bottom in a random order."). One player only. The step's
  * names (`as` for the card it stopped at, `exiled` for every card) are given when a reference to this mention is bound (lower/anaphora.ts#bind: the step is not named
@@ -1055,6 +1080,8 @@ export function mentionsAt(d: Draft, seq: readonly Unit[], upTo: number, beforeS
         if (revealedRest) out.push(revealedRest);
         const exiledRest = exiledRestOf(step, u, path); // trek-7
         if (exiledRest) out.push(exiledRest);
+        const notPut = revealedNotPutOf(step, u, path, units); // pc-zones-1
+        if (notPut) out.push(notPut);
         continue;
       }
       const what = step['what'];
