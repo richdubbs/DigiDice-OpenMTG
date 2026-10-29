@@ -354,7 +354,8 @@ function eventParts(ev: EventPattern, st: RenderState, tense: Tense, o: EventOpt
       // std-mana-1 (CR 106.12): a mana ability with {T} in its cost (`tapped`, parser/holes/event.ts): "you tap an artifact token for mana" says that and nothing else
       // std-mana-1 (CR 106.12): "you tap a land for {C}" (`produced`, a land's mana ability: every one has {T})
       if (ev.produced !== undefined) {
-        if (ev.manaAbility !== true || !ev.source || ev.tapped !== undefined || ev.ability !== undefined || ev.activated !== undefined || tense !== 'present' || !landSource(ev.source)) throw new NoRenderer('a tap for a type of mana with another condition');
+        // edh-perms-1 (CR 106.12, 605.1b; Forsaken Monument): "you tap a permanent for {C}": a source that is not (only) a land says the {T} the activation had (`tapped`)
+        if (ev.manaAbility !== true || !ev.source || ev.ability !== undefined || ev.activated !== undefined || tense !== 'present' || (landSource(ev.source) ? ev.tapped !== undefined : ev.tapped !== true)) throw new NoRenderer('a tap for a type of mana with another condition');
         return { subject: p.text, predicate: `${personVerb('tap', 'tapped', tense, p.person)} ${src} for {${ev.produced}}`, plural: false };
       }
       if (ev.tapped === true) {
@@ -1077,6 +1078,13 @@ export function events(list: EventPattern[], st: RenderState, tense: Tense, o: E
       const g = /^(gains?) life$/.exec(preds[k]!);
       const l = /^(loses?) life$/.exec(preds[k + 1]!);
       if (g && l && list[i + k]?.ev === 'life' && list[i + k + 1]?.ev === 'life') preds.splice(k, 2, alt(`${preds[k]} or ${preds[k + 1]}`, `${g[1]} or ${l[1]} life`));
+    }
+    // edh-players-1 (CR 603.2, 111.1, 701.21a; parser/holes/event.ts; family create-or-sacrifice): "you create a token or sacrifice a token" is also printed "you create or
+    // sacrifice a token" (the noun phrase is the object of both verbs)
+    for (let k = 0; k + 1 < preds.length; k++) {
+      const c = /^(creates?) (.+)$/.exec(preds[k]!);
+      const x = /^(sacrifices?) (.+)$/.exec(preds[k + 1]!);
+      if (c && x && c[2] === x[2] && list[i + k]?.ev === 'createToken' && list[i + k + 1]?.ev === 'action') preds.splice(k, 2, alt(`${preds[k]} or ${preds[k + 1]}`, `${c[1]} or ${x[1]} ${c[2]}`));
     }
     // r3-fx (CR 201.5; family plural-name-events): a plural name takes plural verbs for several events of the object itself too, "Whenever Bebop & Rocksteady
     // attack or block" (as "enter" and "attack" alone, families plural-name-verb and plural-name-attacks); only bare present verbs of "~"

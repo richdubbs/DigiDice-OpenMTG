@@ -8,9 +8,8 @@
  * See STATUS.md. M6-6: 704.5s (Sagas, CR 714.4). MX4: 704.5t (dungeons) is core/dungeons.ts, dungeonSbas. FAST5X-4: 704.5aa (start your engines!, a player SBA) is core/sba.ts#speedSba.
  */
 import type { ObjectId } from '../types/ids';
-import type { AbilityDef } from '../types/ability';
-import type { GameObject, GameState, PendingTrigger } from '../types/state';
-import { abilitiesFromChars, abilityDefOnStack } from '../rules/abilities';
+import type { GameObject, GameState } from '../types/state';
+import { abilityDefOnStack, pendingTriggerDef } from '../rules/abilities';
 import { finalChapter } from '../statics/levels';
 import { keptPreparedCopy, preparedCopiesToMake } from './prepare';
 import { auraAttachedLegally, equipmentAttachedLegally, isAura, isEquipment, isFortification } from '../rules/attachment';
@@ -40,20 +39,26 @@ function pruneCombat(g: Game): void {
     if (!charsOfObject(g.s, o).types.includes('Creature')) return true;
     return o.controller !== controller;
   };
+  /**
+   * A planeswalker or battle that is no longer one, or no longer controlled / protected by the defending player, is removed from combat (CR 506.4); M12-2 (E18):
+   * CR 800.4e, a player who left is attacked by nothing.
+   */
+  const defenderGone = (a: (typeof combat.attackers)[number]): boolean => {
+    if (a.defender === null) return false;
+    const d = g.s.objects[a.defender];
+    if (d === undefined) return !g.s.players.some((p) => p.id === a.defender && !p.hasLost);
+    const dc = charsOfObject(g.s, d);
+    const walker = dc.types.includes('Planeswalker');
+    const battle = dc.types.includes('Battle');
+    const keeper = battle && d.protector !== undefined ? d.protector : d.controller;
+    return d.zone !== 'battlefield' || d.phasedOut || !(walker || battle) || keeper !== a.defendingPlayer;
+  };
+  // Review 2026-10-26 (performance): almost always nothing changes. That is found in one pure read (one check of the characteristics cache, `readingStable`,
+  // instead of one per creature in combat); only when something does is the combat pruned below, exactly as before (each removal seen by the next check).
+  if (readingStable(g.s, () => !combat.attackers.some((a) => stale(a.id, ap) || defenderGone(a)) && !combat.blockers.some((b) => stale(b.id, b.defendingPlayer)))) return;
   for (const a of [...combat.attackers]) {
     if (stale(a.id, ap)) removeFromCombat(g.s, a.id);
-    else if (a.defender !== null) {
-      // A planeswalker or battle that is no longer one, or no longer controlled / protected by the defending player, is removed from combat (CR 506.4);
-      // creatures that attacked it attack nothing (CR 506.4c).
-      const d = g.s.objects[a.defender];
-      if (d !== undefined) {
-        const dc = charsOfObject(g.s, d);
-        const walker = dc.types.includes('Planeswalker');
-        const battle = dc.types.includes('Battle');
-        const keeper = battle && d.protector !== undefined ? d.protector : d.controller;
-        if (d.zone !== 'battlefield' || d.phasedOut || !(walker || battle) || keeper !== a.defendingPlayer) a.defender = null;
-      } else if (!g.s.players.some((p) => p.id === a.defender && !p.hasLost)) a.defender = null; // M12-2 (E18): CR 800.4e, a player who left is attacked by nothing
-    }
+    else if (defenderGone(a)) a.defender = null; // creatures that attacked it attack nothing (CR 506.4c)
   }
   for (const b of [...combat.blockers]) {
     if (stale(b.id, b.defendingPlayer)) removeFromCombat(g.s, b.id);
@@ -90,17 +95,6 @@ function unattach(g: Game, o: GameObject, why: string, rules: string[]): void {
 /** True while the object is the source of an ability that has triggered but not yet left the stack (CR 704.5s, 704.5v). */
 function isSourceOfPendingAbility(g: Game, id: ObjectId): boolean {
   return g.s.pendingTriggers.some((t) => t.sourceId === id) || g.s.zones.stack.some((sid) => g.s.objects[sid]?.stack?.kind === 'triggered' && g.s.objects[sid]?.stack?.sourceId === id);
-}
-
-/** The ability behind a pending trigger: the source's ability with its key now (or last known), else the printed one (as triggers/stack.ts#pendingDef). */
-function pendingTriggerDef(s: GameState, t: PendingTrigger): AbilityDef | undefined {
-  if (t.inline) return t.inline;
-  const o = s.objects[t.sourceId];
-  const lk = s.lki[t.sourceId];
-  const chars = o ? charsOfObject(s, o) : lk ? lk.chars ?? charsOfObject(s, lk.object) : undefined;
-  const found = chars ? abilitiesFromChars(chars).find((a) => a.key === t.abilityRef.key)?.def : undefined;
-  if (found) return found;
-  return t.abilityRef.source === 'printed' ? s.defs[o?.defId ?? lk?.object.defId ?? '']?.faces[t.abilityRef.face]?.abilities[t.abilityRef.index] : undefined;
 }
 
 /** M6-6, CR 704.5s, 714.4: is this Saga the source of a CHAPTER ability that has triggered but not yet left the stack (waiting to be put on it, or on it)? */
@@ -143,18 +137,31 @@ function attachmentLosers(s: GameState, bf: readonly Item[], auraLosers: { it: I
   }
 }
 
-/** Returns true if any state-based action was performed. */
-export function performObjectSbas(g: Game): boolean {
-  pruneCombat(g);
-  const madeCopies = preparedCopiesToMake(g); // M6-6, CR 722.3c: a permanent that phased in prepared
-  const s = g.s;
-  const bf: Item[] = readingStable(s, () => s.zones.battlefield.map((id) => s.objects[id]!).filter(Boolean).map((o) => ({ o, c: charsOfObject(s, o) })));
-  let any = madeCopies;
-  const gone = new Set<ObjectId>();
-  const moved = (o: GameObject): boolean => gone.has(o.id);
+/** Everything one check finds (CR 704.3), worked out from the state as it is before any of it is performed. */
+interface Found {
+  ceasing: { o: GameObject; why: string; rule: string }[];
+  zeroToughness: Item[];
+  toDestroy: { it: Item; why: string; rule: string }[];
+  walkersAtZero: Item[];
+  battlesAtZero: Item[];
+  /** Legendary permanents one player controls with the same name, two or more (CR 704.5j): the player chooses which one stays as it is performed. */
+  legendGroups: Item[][];
+  worldLosers: Item[];
+  auraLosers: { it: Item; unattachFirst: boolean }[];
+  unattachs: { o: GameObject; why: string; rule: string }[];
+  roleLosers: Item[];
+  sagaLosers: Item[];
+  annihilate: Item[];
+  protectorFixes: { it: Item; protector: string | null; siege?: true; rule: string }[];
+}
 
-  // ---- Determine everything from the current state (CR 704.3: simultaneously) ----------------------------------------------------
-  const ceasing: { o: GameObject; why: string; rule: string }[] = [];
+/**
+ * Review 2026-10-26 F33: the checks of one pass (CR 704.3), which only read the state: run in one `readingStable` scope by `performObjectSbas`, so the
+ * characteristics cache of a layered state is checked once for all of them instead of once per characteristics call.
+ */
+function findObjectSbas(g: Game, bf: readonly Item[]): Found {
+  const s = g.s;
+  const ceasing: Found['ceasing'] = [];
   for (const id of Object.keys(s.objects)) {
     const o = s.objects[id]!;
     if (o.kind === 'token' && o.zone !== 'battlefield') ceasing.push({ o, why: 'token', rule: 'CR 704.5d' });
@@ -162,7 +169,7 @@ export function performObjectSbas(g: Game): boolean {
   }
 
   const zeroToughness: Item[] = [];
-  const toDestroy: { it: Item; why: string; rule: string }[] = [];
+  const toDestroy: Found['toDestroy'] = [];
   for (const it of bf) {
     if (!it.c.types.includes('Creature')) continue;
     const t = ptNumbers(it.c).toughness; // null: a "*" toughness the engine can't evaluate yet (milestone 6), which is never judged by its value
@@ -171,7 +178,7 @@ export function performObjectSbas(g: Game): boolean {
     if (t !== null && it.o.damage >= t) toDestroy.push({ it, why: 'lethal damage', rule: 'CR 704.5g' });
     else if (it.o.deathtouchDamaged) toDestroy.push({ it, why: 'damage from a source with deathtouch', rule: 'CR 704.5h' }); // any amount is lethal, whatever the toughness (CR 704.5h)
   }
-  const walkersAtZero = bf.filter(({ o, c }) => c.types.includes('Planeswalker') && (o.counters.loyalty ?? 0) <= 0 && !zeroLoyaltyKept(g.s, o.id)); // CR 704.5i (r4-mech: unless exempt)
+  const walkersAtZero = bf.filter(({ o, c }) => c.types.includes('Planeswalker') && (o.counters.loyalty ?? 0) <= 0 && !zeroLoyaltyKept(s, o.id)); // CR 704.5i (r4-mech: unless exempt)
   // CR 704.5v: a Siege waits while it is the source of an ability that has triggered but not yet left the stack; CR 704.5w: any other battle goes at once
   const battlesAtZero = bf.filter(({ o, c }) => c.types.includes('Battle') && (o.counters.defense ?? 0) <= 0 && (!c.subtypes.includes('Siege') || !isSourceOfPendingAbility(g, o.id)));
 
@@ -179,24 +186,11 @@ export function performObjectSbas(g: Game): boolean {
   const groups = new Map<string, Item[]>();
   for (const it of bf) {
     if (!it.c.supertypes.includes('Legendary')) continue;
-    if (legendRuleExempt(g.s, it.o.id)) continue; // r3-static: "The "legend rule" doesn't apply to ..." (CR 704.5j)
+    if (legendRuleExempt(s, it.o.id)) continue; // r3-static: "The "legend rule" doesn't apply to ..." (CR 704.5j)
     const key = `${it.o.controller}|${it.c.name}`;
     groups.set(key, [...(groups.get(key) ?? []), it]);
   }
-  const legendLosers: Item[] = [];
-  for (const group of groups.values()) {
-    if (group.length < 2) continue;
-    const keep = g.choose({
-      kind: 'chooseObjects',
-      player: group[0]!.o.controller,
-      prompt: `Legend rule: you control more than one legendary permanent named ${group[0]!.c.name}. Choose one to keep; the rest are put into their owners' graveyards.`,
-      options: group.map((x) => x.o.id),
-      min: 1,
-      max: 1,
-      rules: ['CR 704.5j'],
-    }).ids[0]!;
-    legendLosers.push(...group.filter((x) => x.o.id !== keep));
-  }
+  const legendGroups = [...groups.values()].filter((group) => group.length >= 2);
   const worlds = bf.filter(({ c }) => c.supertypes.includes('World'));
   const worldLosers: Item[] = [];
   if (worlds.length >= 2) {
@@ -207,9 +201,9 @@ export function performObjectSbas(g: Game): boolean {
   }
 
   // Attachments (CR 704.5m, 704.5n, 704.5p).
-  const auraLosers: { it: Item; unattachFirst: boolean }[] = [];
-  const unattachs: { o: GameObject; why: string; rule: string }[] = [];
-  readingStable(s, () => attachmentLosers(s, bf, auraLosers, unattachs)); // P1: pure checks of the state the loop does not change (one cache check)
+  const auraLosers: Found['auraLosers'] = [];
+  const unattachs: Found['unattachs'] = [];
+  attachmentLosers(s, bf, auraLosers, unattachs);
   // Roles (CR 704.5z): of several Roles one player controls on the same permanent, only the newest stays.
   const roleGroups = new Map<string, Item[]>();
   for (const it of bf) {
@@ -229,7 +223,7 @@ export function performObjectSbas(g: Game): boolean {
   // Counters (CR 704.5q).
   const annihilate = bf.filter(({ o }) => (o.counters['+1/+1'] ?? 0) > 0 && (o.counters['-1/-1'] ?? 0) > 0);
   // Battle protectors (CR 704.5x, 704.5y).
-  const protectorFixes: { it: Item; protector: string | null; siege?: true; rule: string }[] = [];
+  const protectorFixes: Found['protectorFixes'] = [];
   for (const it of bf) {
     if (!it.c.types.includes('Battle')) continue;
     const { o, c } = it;
@@ -242,11 +236,59 @@ export function performObjectSbas(g: Game): boolean {
     // M12-2 (m12 design E20, D13): a Siege's controller chooses among their opponents as it is performed (asked only with two or more, CR 310.12a)
     protectorFixes.push({ it, protector: siege ? (g.opponents(o.controller)[0]?.id ?? null) : o.controller, ...(siege ? { siege: true as const } : {}), rule: siegeSelfProtected ? 'CR 704.5y' : 'CR 704.5x' });
   }
+  return { ceasing, zeroToughness, toDestroy, walkersAtZero, battlesAtZero, legendGroups, worldLosers, auraLosers, unattachs, roleLosers, sagaLosers, annihilate, protectorFixes };
+}
+
+/**
+ * Review 2026-10-26 F33 (CR 704.3, 603.10a): the permanents this pass may move, whose last known information is taken together before any of them moves: every
+ * one an action of the pass puts into a graveyard, and what is attached to them (a replacement may move an Aura instead: umbra armor, CR 702.89c, cite unverified). Not the whole
+ * battlefield: a pass that moves nothing works out no snapshot.
+ */
+function leaversOf(f: Found, legendLosers: readonly Item[], bf: readonly Item[]): ObjectId[] {
+  const ids = new Set<ObjectId>();
+  for (const list of [f.zeroToughness, f.walkersAtZero, f.battlesAtZero, legendLosers, f.worldLosers, f.roleLosers, f.sagaLosers]) for (const it of list) ids.add(it.o.id);
+  for (const d of f.toDestroy) ids.add(d.it.o.id);
+  for (const a of f.auraLosers) ids.add(a.it.o.id);
+  for (const p of f.protectorFixes) if (p.protector === null) ids.add(p.it.o.id);
+  if (ids.size === 0) return [];
+  for (const it of bf) if (it.o.attachedTo !== undefined && ids.has(it.o.attachedTo)) ids.add(it.o.id);
+  return bf.filter((it) => ids.has(it.o.id)).map((it) => it.o.id); // battlefield order, as before
+}
+
+/** Returns true if any state-based action was performed. */
+export function performObjectSbas(g: Game): boolean {
+  pruneCombat(g);
+  const madeCopies = preparedCopiesToMake(g); // M6-6, CR 722.3c: a permanent that phased in prepared
+  const s = g.s;
+  // ---- Determine everything from the current state (CR 704.3: simultaneously) ----------------------------------------------------
+  // Review 2026-10-26 F33: in one `readingStable` scope (pure reads); only the legend rule's choice (a decision) is made outside it
+  const { bf, found } = readingStable(s, () => {
+    const items: Item[] = s.zones.battlefield.map((id) => s.objects[id]!).filter(Boolean).map((o) => ({ o, c: charsOfObject(s, o) }));
+    return { bf: items, found: findObjectSbas(g, items) };
+  });
+  const { ceasing, zeroToughness, toDestroy, walkersAtZero, battlesAtZero, worldLosers, auraLosers, unattachs, roleLosers, sagaLosers, annihilate, protectorFixes } = found;
+  let any = madeCopies;
+  const gone = new Set<ObjectId>();
+  const moved = (o: GameObject): boolean => gone.has(o.id);
+
+  const legendLosers: Item[] = [];
+  for (const group of found.legendGroups) {
+    const keep = g.choose({
+      kind: 'chooseObjects',
+      player: group[0]!.o.controller,
+      prompt: `Legend rule: you control more than one legendary permanent named ${group[0]!.c.name}. Choose one to keep; the rest are put into their owners' graveyards.`,
+      options: group.map((x) => x.o.id),
+      min: 1,
+      max: 1,
+      rules: ['CR 704.5j'],
+    }).ids[0]!;
+    legendLosers.push(...group.filter((x) => x.o.id !== keep));
+  }
 
   // ---- Perform -----------------------------------------------------------------------------------------------------------------
   // FAST5X E28 review (CR 704.3, 603.10a): the actions are performed at the same time, so every permanent that leaves is as it was when they were checked (the
-  // characteristics worked out above), whichever moves first
-  return leavingTogether(g, bf.map((it) => it.o.id), () => {
+  // characteristics worked out above), whichever moves first; review 2026-10-26 F33: only the permanents the pass may move (`leaversOf`)
+  return leavingTogether(g, leaversOf(found, legendLosers, bf), () => {
     for (const x of ceasing) {
       // M6-6, CR 722.3c: the copy of a prepare spell of a permanent that phased out is gone; a new one is made as it phases in prepared (core/prepare.ts)
       const p = x.o.preparedFor !== undefined ? s.objects[x.o.preparedFor] : undefined;

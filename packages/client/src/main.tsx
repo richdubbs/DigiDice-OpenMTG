@@ -28,7 +28,8 @@ installSoundUnlock(soundEngine());
 installUiSounds(document);
 // No hover text boxes anywhere (app/noHoverText.ts): they make the game feel like a website.
 installNoHoverText(document);
-// Every sound is synthesized (no files to load): the page renders them while it is idle, the most needed first, so none is made at the moment it plays.
+// Every sound is synthesized (no files to load): the most needed first, each read back from this browser's store or else rendered in a worker (audio/
+// renderer.ts), never on the page's thread at the moment it plays.
 soundEngine().prerender(prerenderOrder());
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

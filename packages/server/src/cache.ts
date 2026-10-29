@@ -39,10 +39,19 @@ export const storeError = (r: { status: 503; error: string; code: 'noCardData' }
  * tiebreaker so the order is total and stable.
  */
 export function compareCardNames(a: string, b: string): number {
-  const fa = fold(a);
-  const fb = fold(b);
+  return compareFolded(fold(a), a, fold(b), b);
+}
+
+function compareFolded(fa: string, a: string, fb: string, b: string): number {
   if (fa !== fb) return fa < fb ? -1 : 1;
   return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/** `cards` in compareCardNames order, each name folded once (not once per comparison: the index is about 34k cards). */
+export function sortByCardName<T extends { name: string }>(cards: readonly T[]): T[] {
+  const keyed = cards.map((card) => ({ key: fold(card.name), card }));
+  keyed.sort((x, y) => compareFolded(x.key, x.card.name, y.key, y.card.name));
+  return keyed.map((k) => k.card);
 }
 
 /** The back face of a meld pair, which Scryfall lists as a card of its own (layout "meld", its own all_parts entry is the meld_result). */
@@ -73,8 +82,7 @@ async function indexStamp(cacheDir: string): Promise<string | null> {
 /** Build a store over an opened database (tests use it with an in-memory database). Does not start the classification build. */
 export function storeFromDatabase(db: CardDatabase, compiledDir: string): CardStore {
   // CR 712.4b: a meld result is used only for the melded permanent, so it is no card to search for or put in a deck.
-  const cards = ([...db.cards()] as IndexedCard[]).filter((c) => !isMeldResult(c));
-  cards.sort((a, b) => compareCardNames(a.name, b.name));
+  const cards = sortByCardName(([...db.cards()] as IndexedCard[]).filter((c) => !isMeldResult(c)));
   let oracle: Map<string, IndexedCard> | undefined;
   const memo = new Map<string, unknown>();
   const store: CardStore = {

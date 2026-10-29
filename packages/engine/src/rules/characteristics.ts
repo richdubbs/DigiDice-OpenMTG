@@ -26,9 +26,10 @@ import { computeAll, intrinsicChars } from '../statics/layers';
 import { copyChars } from '../statics/mods';
 import { layerSourcesPresent } from '../statics/live';
 import { holdStill, installScopeVerifier, stableScopeFor } from '../statics/stable-scope';
-import { installLayeredAllProvider } from '../statics/rule-sources';
+import { installLayeredAllProvider, installLayeredReadsWidener } from '../statics/rule-sources';
+import { LAYER_READS_VERIFY, READ_COMBAT, READ_LIFE, READ_MANA_POOL, READ_STEP, READ_TAPPED, READ_TURN_STATS, trackingLayerReads } from '../statics/layer-reads';
 import { combineSplit, costForManaValue, fromFace } from './base-chars';
-import { matchesSnapshot, snapshotOf, type DataSnapshot } from '../util/data-snapshot';
+import { matchesSnapshot, snapshotOf, type DataSnapshot, type Omission } from '../util/data-snapshot';
 
 export { faceIndexOf } from './base-chars';
 export type { CharAbility } from '../statics/api';
@@ -82,10 +83,12 @@ const PERMANENT_TYPES: readonly CardType[] = ['Artifact', 'Battle', 'Creature', 
 // ---- the cache of a layered state ----------------------------------------------------------------------------------------------
 
 interface Layered {
-  /** What the layers read when `all` was computed (`layerInputs`), as a data snapshot (util/data-snapshot.ts). */
+  /** What the layers read when `all` was computed (`keyInputs` with `reads`), as a data snapshot (util/data-snapshot.ts). */
   snap: DataSnapshot;
   defs: GameState['defs'];
   all: Map<ObjectId, Chars>;
+  /** The volatile parts (statics/layer-reads.ts `READ_*`) the computation read, and so the key holds; a reader of the same map may add more (the widener below). */
+  reads: number;
 }
 const LAYERED = new WeakMap<GameState, Layered>();
 
@@ -104,6 +107,8 @@ export const CHARS_CACHE_STATS = { hits: 0, misses: 0 };
  * a data snapshot taken when the entry was computed (util/data-snapshot.ts) instead of serializing them with JSON.stringify and comparing two strings the size of
  * the state, which was a third of the time of a soak game; the answer is the same (the snapshot differs exactly when the JSON would).
  * A real counter (`GameState.revision`) replaces this when the mutators are wired (see the report of WP9).
+ * Review 2026-10-26 (performance): the cache key is `keyInputs`, these parts without the fields the layers never read and without the volatile ones the
+ * computation did not read (`NEVER_READ_BY_LAYERS`, `VOLATILE`); `layerInputs` itself is what a `readingStable` scope promises not to change.
  */
 function layerInputs(s: GameState): unknown[] {
   const parts: unknown[] = LAYER_WALK_ORDER.map((k) => s[k]);
@@ -154,6 +159,75 @@ function defsReadHistory(defs: GameState['defs']): boolean {
 }
 
 /**
+ * Review 2026-10-26 (performance): the fields inside the walked parts that the layer system never reads (statics/layers.ts#computeAll and what it calls, and the
+ * rule effects' collection that shares its entries, statics/rule-sources.ts#collectSources). They change during most turns (a land played, a main phase or a
+ * combat begun, damage marked), and each change made the next characteristics question recompute every object. A test pins the lists
+ * (test/perf/layer-reads.test.ts); a field that the layer code starts to read moves to `VOLATILE` (with a note at the read) or out of these lists.
+ */
+export const NEVER_READ_BY_LAYERS = {
+  turn: ['mains', 'combats'],
+  players: ['landsPlayedThisTurn', 'upkeepTurns', 'lastTurnStarted'],
+  objects: ['damage', 'deathtouchDamaged'],
+} as const;
+
+/**
+ * Review 2026-10-26 (performance): the fields the layer system reads only for some definitions or effects ("during your upkeep", "as long as it's tapped",
+ * "attacking creatures get +1/+0"). Each is in the key of an entry only if the computation that made it read the field (statics/layer-reads.ts: the read sites
+ * note it), so passing a step, tapping a land for mana or declaring attackers does not recompute a board whose effects never look at them. `combat` is a whole part.
+ */
+export const VOLATILE = {
+  turn: { step: READ_STEP },
+  players: { manaPool: READ_MANA_POOL, turnStats: READ_TURN_STATS, life: READ_LIFE },
+  objects: { tapped: READ_TAPPED },
+  combat: READ_COMBAT,
+} as const;
+
+/** The keys left out of a record of `part` for an entry that read `reads`, memoized per combination of bits. */
+const OMIT_MEMO: Record<'turn' | 'players' | 'objects', (readonly string[])[]> = { turn: [], players: [], objects: [] };
+function omittedKeys(part: 'turn' | 'players' | 'objects', reads: number): readonly string[] {
+  const memo = OMIT_MEMO[part];
+  let keys = memo[reads];
+  if (keys === undefined) {
+    const out: string[] = [...NEVER_READ_BY_LAYERS[part]];
+    for (const [k, bit] of Object.entries(VOLATILE[part])) if ((reads & bit) === 0) out.push(k);
+    memo[reads] = keys = out;
+  }
+  return keys;
+}
+
+/** A record without the keys in `keys` (same key order); anything that is not a record is returned as it is. */
+function without(v: unknown, keys: readonly string[]): unknown {
+  if (v === null || typeof v !== 'object' || Array.isArray(v)) return v;
+  const out: Record<string, unknown> = {};
+  const r = v as Record<string, unknown>;
+  for (const k in r) if (!keys.includes(k)) out[k] = r[k];
+  return out;
+}
+
+/**
+ * The cache key of an entry that read the volatile parts `reads`: `layerInputs` without the fields the layers never read and without the volatile ones the
+ * entry did not read. The objects are left as they are here; `objectsOmission` drops their fields during the walk (no copy of every object per check).
+ */
+function keyInputs(s: GameState, reads: number): unknown[] {
+  const parts: unknown[] = LAYER_WALK_ORDER.map((k) => {
+    switch (k) {
+      case 'turn': return without(s.turn, omittedKeys('turn', reads));
+      case 'players': { const keys = omittedKeys('players', reads); return Array.isArray(s.players) ? s.players.map((p) => without(p, keys)) : s.players; }
+      case 'combat': return (reads & VOLATILE.combat) !== 0 ? s.combat : null;
+      default: return s[k];
+    }
+  });
+  parts.push(historyKey(s));
+  return parts;
+}
+const OBJECTS_PART = (): number => LAYER_WALK_ORDER.indexOf('objects');
+const OMISSIONS: Omission[] = [];
+const objectsOmission = (reads: number): Omission => (OMISSIONS[reads] ??= { part: OBJECTS_PART(), keys: omittedKeys('objects', reads) });
+
+const keySnapshot = (s: GameState, reads: number): DataSnapshot => snapshotOf(keyInputs(s, reads), objectsOmission(reads));
+const keyMatches = (e: Layered, s: GameState): boolean => e.defs === s.defs && matchesSnapshot(e.snap, keyInputs(s, e.reads), objectsOmission(e.reads));
+
+/**
  * The parts of the state the layer system reads (see `layerInputs`), and the ones it does not. Every key of `GameState` is in exactly one list: a test
  * pins that, so a field added to the state forces a decision here instead of silently making the cache stale. When statics/match.ts learns to read more
  * (the history of the turn, for "if a creature died this turn"), the key moves to the first list.
@@ -185,21 +259,22 @@ const SCOPE_KEY = 'chars';
 function checkedAllChars(s: GameState): ReadonlyMap<ObjectId, Chars> {
   const hit = LAYERED.get(s);
   if (hit !== undefined) {
-    if (hit.defs === s.defs && matchesSnapshot(hit.snap, layerInputs(s))) {
+    if (keyMatches(hit, s)) {
       CHARS_CACHE_STATS.hits++;
-      return hit.all;
+      return verified(s, hit.all);
     }
   } else {
-    const same = RECENT.find((r) => r.defs === s.defs && matchesSnapshot(r.snap, layerInputs(s)));
+    const same = RECENT.find((r) => keyMatches(r, s));
     if (same !== undefined) {
       LAYERED.set(s, same);
       CHARS_CACHE_STATS.hits++;
-      return same.all;
+      return verified(s, same.all);
     }
   }
   CHARS_CACHE_STATS.misses++;
-  const all = computeAll(s); // pure: it does not change `s`, so the snapshot taken after it is what it read
-  const entry: Layered = { snap: snapshotOf(layerInputs(s)), defs: s.defs, all };
+  // pure: it does not change `s`, so the snapshot taken after it is what it read; the volatile parts it read join the key (statics/layer-reads.ts)
+  const { value: all, reads } = trackingLayerReads(() => computeAll(s));
+  const entry: Layered = { snap: keySnapshot(s, reads), defs: s.defs, all, reads };
   LAYERED.set(s, entry);
   RECENT.unshift(entry);
   if (RECENT.length > RECENT_SIZE) RECENT.pop();
@@ -226,6 +301,25 @@ const RECENT_SIZE = 4;
 
 // W3b: the rule hooks' view of a layered state reads this cache (one fingerprint and one computeAll per distinct state for both)
 installLayeredAllProvider((s) => allChars(s));
+// Review 2026-10-26: the rule effects kept with a map (statics/rule-sources.ts) read volatile parts too: they join the key of the entry of `s` that holds the map.
+// `s` was just checked against that entry (nothing changed it since), so the snapshot taken now is the one the entry would have had with those parts read.
+installLayeredReadsWidener((s, all, reads) => {
+  const e = LAYERED.get(s);
+  if (e === undefined || e.all !== all || (e.reads | reads) === e.reads) return;
+  e.reads |= reads;
+  e.snap = keySnapshot(s, e.reads);
+});
+
+/**
+ * Tests set `LAYER_READS_VERIFY.on` (statics/layer-reads.ts) to make every cache hit compute the characteristics again and compare (an EngineBug if they
+ * differ): the cached-versus-uncached check of the volatile parts left out of the key. Never set by the engine.
+ */
+function verified(s: GameState, all: Map<ObjectId, Chars>): Map<ObjectId, Chars> {
+  if (LAYER_READS_VERIFY.on && JSON.stringify([...computeAll(s)]) !== JSON.stringify([...all])) {
+    throw new EngineBug('characteristics cache: a cached answer differs from a fresh computation (a volatile layer input read without a note?)');
+  }
+  return all;
+}
 
 /**
  * Run `read`, which reads `s` and DOES NOT CHANGE IT, checking the cache of a layered `s` once instead of once per characteristics call (WP30: the per-call

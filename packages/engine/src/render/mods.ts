@@ -1217,7 +1217,13 @@ function continuousOne(e: ContinuousEffectDef, st: RenderState, duration: Durati
     // CLOUD C8 (family becomes-x-over-x, CR 107.3, 608.2h, 613.4b): the identity with one computed base power and toughness, "~ becomes an X/X Cat artifact creature until end of turn,
     // where X is the discarded card's mana value" (the number is read once, as the effect is created; render/mods.ts#Pieces.sizedX)
     const sx = p.sizedX;
-    if (sx !== undefined && p.forEach === undefined && p.rider === undefined && p.granted === undefined && p.preds.length === 1) text = alt(text, sentence([sx.text], [...p.where, `X is ${sx.q}`]));
+    // edh-perms-1 (same family; Destiny Spinner, Druid Class): abilities granted with it are said with "with" after the identity ("... becomes an X/X Elemental creature with trample
+    // and haste until end of turn, where X is the number of enchantments you control. It's still a land."), the rider (if any) a sentence of its own after
+    const sxGrant = sx !== undefined && p.granted !== undefined && p.preds.length === 2 && sx.index === 0 && p.granted.index === 1 ? `${sx.text} with ${p.granted.list}` : undefined;
+    const sxText = sx !== undefined && p.forEach === undefined
+      ? (p.preds.length === 1 && p.rider === undefined && p.granted === undefined ? sentence([sx.text], [...p.where, `X is ${sx.q}`]) : sxGrant !== undefined && p.where.length === 0 ? sentence([sxGrant], [`X is ${sx.q}`]) : undefined)
+      : undefined;
+    if (sxText !== undefined) text = alt(text, sxText);
     // r5-fxz (CR 205.1a, 613.1d-f): a static ability that makes its object a colorless artifact of subtypes it sets, with abilities it grants, and takes every other
     // ability away: "Enchanted permanent is a colorless Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all other card types and
     // abilities." (Sugar Coat: setting the card types is losing the others); the quoted ability ends without its period before "and"

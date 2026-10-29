@@ -237,7 +237,11 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         // CR 121.2: "the second card you draw each turn": the cards drawn this turn before this event, plus this one.
         // Only for the current turn's draws: `turnStats` counts this turn's, so the opening hands (turn 0) and an earlier turn's draws have no Nth.
         const nth = p && turnAt(g, at) === s.turn.number ? p.turnStats.cardsDrawn - drawsFrom(i, e.player) + 1 : undefined;
-        push('draw', { player: players(e.player) }, data({ nth }));
+        // edh-players-1 (CR 504.1, 121.2; Orcish Bowmasters): the first card the turn player draws in their own draw step (the one the turn-based action draws, where
+        // core/steps.ts#drawStepFrom marks the cards drawn before it): "whenever an opponent draws a card except the first one they draw in each of their draw steps"
+        // sees every other draw. Judged as the batch is normalized, while the step is still the draw step (the batch of an action is collected before the step ends)
+        const firstInDrawStep = p !== undefined && nth !== undefined && s.turn.step === 'draw' && s.turn.activePlayer === e.player && p.turnStats.drawStepFrom !== undefined && nth - 1 === p.turnStats.drawStepFrom;
+        push('draw', { player: players(e.player) }, data({ nth, firstInDrawStep }));
         break;
       }
       case 'turnedFaceUp':

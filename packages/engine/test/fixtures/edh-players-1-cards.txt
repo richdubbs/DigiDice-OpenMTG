@@ -1,0 +1,9 @@
+# edh-players-1 (Commander lane edh-players; test/cloud/edh-players-1, golden edh-players-1-review.json)
+# two additional lands each turn; draw up to N; delayed controller of a countered spell; token copy instead; draw except the first in the draw step; create or sacrifice a token; Nth draw/cast during their turn; first life loss during each of their turns
+Azusa, Lost but Seeking
+Arcane Denial
+Scute Swarm
+Orcish Bowmasters
+Mirkwood Bats
+The Council of Four
+Valgavoth, Harrower of Souls

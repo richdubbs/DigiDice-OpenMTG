@@ -114,6 +114,23 @@ export function notSelfReplacement(y: unknown, x: unknown, castChoice = false): 
     }
     return null;
   }
+  // edh-players-1 (CR 614.15, 111.2, 707.2; Scute Swarm): "Create a 1/1 green Insect creature token. If you control six or more lands, create a token that's a copy of this
+  // creature instead.": the same player creates the same number of tokens, a copy of an object instead of a described token. Both are one instruction that creates
+  // tokens; neither has a target (CR 601.2c), and the copy has no exception, tapped or attacking rider that the described token would not have
+  if (!castChoice && op === 'createToken' && x['op'] === 'copy' && x['result'] === 'token') {
+    if (hasTarget(y) || hasTarget(x)) return 'a token copy of a target instead of a token (a target needs a condition at announcement)';
+    for (const k of Object.keys(x)) {
+      if (k === 'op' || k === 'what' || k === 'result' || k === 'sentence' || k === 'who' || k === 'count') continue;
+      if (x[k] !== undefined) return `the token copy has a ${k} that the token it replaces does not`;
+    }
+    for (const k of Object.keys(y)) {
+      if (k === 'op' || k === 'token' || k === 'who' || k === 'count' || k === 'sentence') continue;
+      if (y[k] !== undefined) return `the token it replaces has a ${k} that its token copy does not`;
+    }
+    if (canon(y['who']) !== canon(x['who'])) return 'X changes who creates the tokens';
+    if (canon(y['count'] ?? 1) !== canon(x['count'] ?? 1)) return 'X changes how many tokens are created, not only what they are';
+    return null;
+  }
   if (typeof op !== 'string' || NOT_ONE_INSTRUCTION.has(op)) return `the replaced instruction is a ${String(op)} step, not one instruction`;
   // FAST5 batch 5 merge (CR 614.15: "part or all" of the effect; CR 613.1): "Until end of turn, target artifact or creature becomes an artifact creature with
   // base power and toughness 4/3. If evidence was collected, it has base power and toughness 1/1 until end of turn instead." (Behind the Mask): a continuous

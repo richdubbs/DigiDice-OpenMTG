@@ -16,23 +16,23 @@
  * the next one, or the next action's write, still removes every row past the log. A row left behind the log would be read back as part of it.
  *
  * The recorder holds the whole game (the config with its seed, and the log), as the LocalConnection does: it is never handed to the screen. What the
- * screen gets is its `LiveReplay` (live.ts). RPL-4: a bug report the player asks for takes the game so far through `LiveReplay.soFar` (replays
- * design 11), into the report code's closure, never into the screen's props or state.
+ * screen gets is its `LiveReplay` (live.ts). Review 2026-10-26 F1: it reads the game through a `RecordSource` (recordSource.ts): a LocalConnection on
+ * this page, or a game in the game worker (connection/WorkerConnection.ts), which sends the checkpoints and the last state's facts it works out, never a
+ * state. RPL-4: a bug report the player asks for takes the game so far through `LiveReplay.soFar` (replays design 11), into the report code's
+ * closure, never into the screen's props or state.
  */
-import {
-  checkpointAfter, currentEngine, replayAction, startReplay, type Action, type GameState, type PlayerId, type ReplayCheckpoint, type ReplayFile,
-  type ReplayPlayer,
-} from '@openmtg/engine';
+import { currentEngine, type Action, type GameState, type PlayerId, type ReplayCheckpoint, type ReplayFile, type ReplayPlayer } from '@openmtg/engine';
 import type { LocalConnection, LogObserver } from '../connection/LocalConnection';
 import type { DbOp } from './db';
 import type { ReplayEnv } from './env';
-import { asksAgreement, endingOf, gameReplayFile, newReplayId, peopleOf, revealOf, type RecordedGameInfo } from './file';
+import { asksAgreement, gameReplayFile, newReplayId, peopleOf, revealOf, type RecordedGameInfo } from './file';
 import {
   RECORD_VERSION, actionOp, headOp, readInProgress, removeOps, truncateOps, type InProgressHead, type InProgressRecord,
 } from './inProgress';
 import type { LibraryEntry } from './library';
 import type { LiveReplay, LiveReplayState } from './live';
 import { stillPlayed } from './liveness';
+import { recordSourceOf, recordStepOf, type RecordEnd, type RecordSource, type RecordedStep } from './recordSource';
 
 /** The records this page is recording now (never swept as abandoned, whatever the liveness says). */
 const recording = new Set<string>();
@@ -40,9 +40,10 @@ const recording = new Set<string>();
 const iso = (ms: number): string => new Date(ms).toISOString();
 
 /** The facts of a game on `conn`: its seats (people at this screen, computers away from it), its mode and its saver (design 4). */
-export function recordedGameInfo(conn: LocalConnection, format: string, id: string, startMs: number, env: ReplayEnv): RecordedGameInfo {
-  const seated = new Set(conn.seated());
-  const players: ReplayPlayer[] = conn.session.state.players.map((p) => ({ id: p.id, name: p.name, kind: seated.has(p.id) ? 'person' : 'computer' }));
+export function recordedGameInfo(conn: LocalConnection | RecordSource, format: string, id: string, startMs: number, env: ReplayEnv): RecordedGameInfo {
+  const src = recordSourceOf(conn);
+  const seated = new Set(src.seated());
+  const players: ReplayPlayer[] = src.players.map((p) => ({ id: p.id, name: p.name, kind: seated.has(p.id) ? 'person' : 'computer' }));
   const people = peopleOf(players);
   return {
     id,
@@ -54,7 +55,7 @@ export function recordedGameInfo(conn: LocalConnection, format: string, id: stri
     format,
     players,
     savedBy: people.length === 1 ? people[0]!.id : null,
-    config: conn.session.config,
+    config: src.config,
   };
 }
 
@@ -80,7 +81,7 @@ export class GameRecorder implements LogObserver {
   private readonly release: () => void;
 
   private constructor(
-    private readonly conn: LocalConnection,
+    private readonly src: RecordSource,
     head: InProgressHead,
     private readonly env: ReplayEnv,
     log: { actions: readonly Action[]; times: readonly number[]; checkpoints: readonly ReplayCheckpoint[]; stored: number } | null,
@@ -114,16 +115,17 @@ export class GameRecorder implements LogObserver {
     };
     recording.add(this.id);
     this.release = env.liveness.hold(this.id);
-    this.unobserve = conn.observeLog(this);
+    this.unobserve = src.observe({ step: (s) => this.onStep(s), undone: (n) => this.undone(n) });
   }
 
   /** Start recording the game on `conn` (a fresh game; actions it already has are recorded as made at its start). */
-  static start(conn: LocalConnection, opts: { format: string; id?: string }, env: ReplayEnv): GameRecorder {
+  static start(conn: LocalConnection | RecordSource, opts: { format: string; id?: string }, env: ReplayEnv): GameRecorder {
+    const src = recordSourceOf(conn);
     const startMs = env.now();
-    const info = recordedGameInfo(conn, opts.format, opts.id ?? newReplayId(), startMs, env);
+    const info = recordedGameInfo(src, opts.format, opts.id ?? newReplayId(), startMs, env);
     const agreed = revealOf(info.players, []).agreed;
     const head: InProgressHead = { ...info, key: info.id, type: 'head', version: RECORD_VERSION, startMs, agreed: [...agreed] };
-    const r = new GameRecorder(conn, head, env, null);
+    const r = new GameRecorder(src, head, env, null);
     r.persist([headOp(head)]);
     r.catchUp(0);
     return r;
@@ -134,9 +136,10 @@ export class GameRecorder implements LogObserver {
    * its id, its start and its times; actions the restored game has beyond the record are appended, and a record longer than the game (or one that
    * differs from it) is cut back to what the two have in common.
    */
-  static resume(conn: LocalConnection, record: InProgressRecord, env: ReplayEnv): GameRecorder {
+  static resume(conn: LocalConnection | RecordSource, record: InProgressRecord, env: ReplayEnv): GameRecorder {
+    const src = recordSourceOf(conn);
     const recorded = record.log.actions;
-    const actual = conn.session.actions;
+    const actual = src.actions();
     let common = 0;
     while (common < recorded.length && common < actual.length && JSON.stringify(recorded[common]) === JSON.stringify(actual[common])) common++;
     const log = {
@@ -145,25 +148,16 @@ export class GameRecorder implements LogObserver {
       checkpoints: record.log.checkpoints.filter((c) => c.action < common),
       stored: record.stored,
     };
-    const r = new GameRecorder(conn, record.head, env, log);
+    const r = new GameRecorder(src, record.head, env, log);
     if (record.stored > common) r.persist(truncateOps(r.id, record.stored, common));
     r.catchUp(common);
     return r;
   }
 
-  /** Record the actions of the game's log from `from` on that the record does not have (run once from the config for their states). */
+  /** Record the actions of the game's log from `from` on that the record does not have (their steps from the source, recordSource.ts). */
   private catchUp(from: number): void {
-    const log = this.conn.session.actions;
-    if (log.length <= from) return;
-    const start = startReplay(this.conn.session.config);
-    if (!start.ok) return;
-    let state = start.state;
-    for (let i = 0; i < log.length; i++) {
-      const r = replayAction(state, log[i]!, i);
-      if (!r.ok) return;
-      if (i >= from) this.record(log[i]!, i, state, r.state);
-      state = r.state;
-    }
+    if (this.src.actions().length <= from) return;
+    for (const s of this.src.steps(from)) this.record(s.action, s.index, s.checkpoint);
   }
 
   private changed(next: Partial<LiveReplayState>): void {
@@ -182,9 +176,8 @@ export class GameRecorder implements LogObserver {
       });
   }
 
-  private record(action: Action, index: number, before: GameState, after: GameState): void {
+  private record(action: Action, index: number, checkpoint: ReplayCheckpoint | null): void {
     const t = Math.max(0, this.env.now() - this.head.startMs, this.times[this.times.length - 1] ?? 0);
-    const checkpoint = checkpointAfter(index, before.turn.number, after, false);
     this.actions.push(action);
     this.times.push(t);
     if (checkpoint) this.checkpoints.push(checkpoint);
@@ -193,17 +186,29 @@ export class GameRecorder implements LogObserver {
     this.stored = Math.max(this.stored, index + 1);
   }
 
-  /** LogObserver: an action was applied. */
+  /** LogObserver: an action was applied (a LocalConnection's own call, or a test's). */
   applied(action: Action, index: number, before: GameState, after: GameState): void {
+    this.onStep(recordStepOf(action, index, before, after));
+  }
+
+  /** An action was applied, with the checkpoint the rule takes after it (recordSource.ts). */
+  private onStep(step: RecordedStep): void {
     if (this.saving) return;
+    const { action, index } = step;
     // The log and the record go together; should they ever part, the record follows the log.
     if (index < this.actions.length) this.undone(index);
     if (index > this.actions.length) {
       this.catchUp(this.actions.length);
       return;
     }
-    this.record(action, index, before, after);
-    if (after.result) void this.finish();
+    this.record(action, index, step.checkpoint);
+    if (step.over) void this.finish();
+  }
+
+  /** The facts of the game's state when they belong to exactly the recorded log (the record and the log never part, but nothing is assumed). */
+  private endNow(): RecordEnd | null {
+    const end = this.src.end();
+    return end && end.length === this.actions.length ? end : null;
   }
 
   /** LogObserver: undo took actions back (design D8: they are not part of the game). */
@@ -225,7 +230,7 @@ export class GameRecorder implements LogObserver {
     this.unobserve();
     // The state the record ends with, taken now: an action applied after this (a computer's move while the screen closes) is not in the record.
     // Only a state of exactly the recorded log says how it ended (the record and the log never part, but nothing is assumed).
-    const state = this.conn.session.actions.length === this.actions.length ? this.conn.session.state : null;
+    const state = this.endNow();
     const endedAt = this.env.now();
     this.changed({ phase: 'saving' });
     this.saving = this.save(state, endedAt).then(
@@ -242,7 +247,7 @@ export class GameRecorder implements LogObserver {
     return this.saving;
   }
 
-  private async save(state: GameState | null, endedAt: number): Promise<LibraryEntry | null> {
+  private async save(state: RecordEnd | null, endedAt: number): Promise<LibraryEntry | null> {
     await this.writes;
     const { library } = this.env;
     if (this.actions.length === 0) {
@@ -251,12 +256,12 @@ export class GameRecorder implements LogObserver {
       return null;
     }
     const last = this.actions.length - 1;
-    if (state && !this.checkpoints.some((c) => c.action === last)) this.checkpoints.push(checkpointAfter(last, state.turn.number, state, true)!);
+    if (state?.checkpoint && !this.checkpoints.some((c) => c.action === last)) this.checkpoints.push(state.checkpoint);
     const file = gameReplayFile({
       info: this.head,
       log: { actions: this.actions, times: this.times, checkpoints: this.checkpoints },
-      ending: state ? endingOf(state) : null,
-      ...(state ? { turns: state.turn.number } : {}),
+      ending: state ? state.ending : null,
+      ...(state ? { turns: state.turns } : {}),
       endedAt: iso(endedAt),
       agreed: this.agreed,
     });
@@ -300,15 +305,15 @@ export class GameRecorder implements LogObserver {
    * when the record and the log agree (as in `finish`, nothing is assumed): it gives the last action's checkpoint, the turn and how the game ended.
    */
   private soFar(): ReplayFile {
-    const state = this.conn.session.actions.length === this.actions.length ? this.conn.session.state : null;
+    const state = this.endNow();
     const last = this.actions.length - 1;
     const checkpoints = [...this.checkpoints];
-    if (state && last >= 0 && !checkpoints.some((c) => c.action === last)) checkpoints.push(checkpointAfter(last, state.turn.number, state, true)!);
+    if (state?.checkpoint && last >= 0 && !checkpoints.some((c) => c.action === last)) checkpoints.push(state.checkpoint);
     return gameReplayFile({
       info: this.head,
       log: { actions: this.actions, times: this.times, checkpoints },
-      ending: state ? endingOf(state) : null,
-      ...(state ? { turns: state.turn.number } : {}),
+      ending: state ? state.ending : null,
+      ...(state ? { turns: state.turns } : {}),
       endedAt: iso(this.env.now()),
       agreed: this.agreed,
     });

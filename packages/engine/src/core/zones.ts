@@ -3,11 +3,11 @@
  * last known information about the old one (CR 608.2h, 603.10).
  */
 import { clone } from '../util/clone';
-import { HIDDEN_ZONES, type GameObject, type LastKnown, type LinkValue, type ObjHandle, type ZoneKind } from '../types/state';
+import { HIDDEN_ZONES, type GameObject, type GameState, type LastKnown, type LinkValue, type ObjHandle, type ZoneKind } from '../types/state';
 import type { DefId, ObjectId, PlayerId } from '../types/ids';
 import { EngineBug, type Game } from './game';
 import { shuffleInPlace } from '../rng';
-import { charsOfObject, isPermanentCard } from '../rules/characteristics';
+import { charsOfObject, isPermanentCard, readingStable, type Chars } from '../rules/characteristics';
 import { MENTIONS_ENTERS_WITH_COUNTERS } from '../cards/enters-with';
 import { attackerState, isAttacking, isBlocking, removeFromCombat } from '../rules/combat-state';
 import { cantDo } from '../rules/cant';
@@ -185,33 +185,45 @@ function enterWithPrintedCounters(g: Game, o: GameObject, put?: PutEnteringCount
  * FAST5X E28 review (CR 603.10a, 608.2h): `fn` moves the objects `ids` (some or all of them) in one event, one after another; the last known information of each
  * is its characteristics just before the first of them moved (a creature that has persist because of a permanent that leaves with it still had persist, Isilu,
  * Carrier of Twilight under a "destroy all creatures"). Pass the characteristics already worked out (`known`) to skip recomputing them. Nests: an inner call keeps
- * the snapshots of the outer one.
+ * the snapshots of the outer one. Review 2026-10-26 F33: the snapshots are pure reads of the state as it is, taken in one `readingStable` scope (one check of the
+ * characteristics cache, not one per object), and what is attached to each permanent is read from one index of the battlefield (`attachmentIndex`).
  */
 export function leavingTogether<T>(g: Game, ids: readonly ObjectId[], fn: () => T, known?: ReadonlyMap<ObjectId, LastKnown['chars']>): T {
   const outer = g.leaving;
-  const snap = new Map(outer ?? []);
-  for (const id of ids) {
-    const o = g.s.objects[id];
-    if (!o || o.kind === 'ability' || snap.has(id)) continue;
-    snap.set(id, known?.get(id) ?? charsOfObject(g.s, o));
-  }
-  g.leaving = snap;
-  // Cloud C3 (CR 603.10a): who goads each of them through a static goad, before any of them moves (the Aura or the goading creature may leave with them)
   const outerGoaded = g.leavingGoaded;
-  if (staticGoadPresent(g.s)) {
-    const goaded = new Map(outerGoaded ?? []);
-    for (const id of ids) if (!goaded.has(id) && g.s.objects[id]?.zone === 'battlefield') goaded.set(id, staticGoadersOf(g.s, id));
-    g.leavingGoaded = goaded;
-  }
-  // r5-fxb (CR 603.10a): what is attached to each of them, before any of them (or an Aura or Equipment on it) moves
   const outerAttached = g.leavingAttached;
-  const attached = new Map(outerAttached ?? []);
-  for (const id of ids) if (!attached.has(id) && g.s.objects[id]?.zone === 'battlefield') attached.set(id, attachedState(g, id));
-  g.leavingAttached = attached;
-  // std-combat-3 (CR 603.10a): the battlefield before any of them moves (an outer call's snapshot is earlier still)
   const outerBoard = g.leavingBoard;
-  g.leavingBoard = outerBoard ?? [...g.s.zones.battlefield];
+  const s = g.s;
+  const snap = new Map(outer ?? []);
   try {
+    readingStable(s, () => {
+      for (const id of ids) {
+        const o = s.objects[id];
+        if (!o || o.kind === 'ability' || snap.has(id)) continue;
+        snap.set(id, known?.get(id) ?? charsOfObject(s, o));
+      }
+      // Cloud C3 (CR 603.10a): who goads each of them through a static goad, before any of them moves (the Aura or the goading creature may leave with them)
+      if (staticGoadPresent(s)) {
+        const goaded = new Map(outerGoaded ?? []);
+        for (const id of ids) if (!goaded.has(id) && s.objects[id]?.zone === 'battlefield') goaded.set(id, staticGoadersOf(s, id));
+        g.leavingGoaded = goaded;
+      }
+      // r5-fxb (CR 603.10a): what is attached to each of them, before any of them (or an Aura or Equipment on it) moves; review 2026-10-26 F18: only in a game
+      // one of whose definitions can ask (`attachedLookbackPresent`)
+      if (attachedLookbackPresent(s)) {
+        const attached = new Map(outerAttached ?? []);
+        let index: ReadonlyMap<ObjectId, readonly ObjectId[]> | undefined;
+        for (const id of ids) {
+          if (attached.has(id) || s.objects[id]?.zone !== 'battlefield') continue;
+          attached.set(id, attachedState(s, id, (index ??= attachmentIndex(s)), snap.get(id) ?? undefined));
+        }
+        g.leavingAttached = attached;
+      }
+    });
+    g.leaving = snap;
+    // std-combat-3 (CR 603.10a): the battlefield before any of them moves (an outer call's snapshot is earlier still); review 2026-10-26 F18: one frozen array that
+    // the last known information of every object of the event shares (moveObject), not a copy each
+    g.leavingBoard = outerBoard ?? Object.freeze([...s.zones.battlefield]);
     return fn();
   } finally {
     g.leaving = outer;
@@ -222,20 +234,60 @@ export function leavingTogether<T>(g: Game, ids: readonly ObjectId[], fn: () => 
 }
 
 /**
+ * Review 2026-10-26 F18 (CR 603.10a, 700.9, 301.5): can anything in this game ask what was attached to a permanent as it left (`LastKnown.attached`): a filter
+ * `equipped`, `modified` or `wasAttachedTo` anywhere in a definition (its own abilities, an ability it grants, a token it creates)? Every reader of an object's
+ * equipped or modified state comes from a definition (rules/filter.ts, statics/match.ts), so in a game without one the last known information skips it.
+ * Memoized per definition and per `defs` map and its size, as statics/rule-sources.ts#staticGoadPresent (definitions are only added: a "yes" stays true).
+ */
+const DEF_ASKS_ATTACHED = new WeakMap<object, boolean>();
+const DEFS_ASK_ATTACHED = new WeakMap<GameState['defs'], { v: boolean; n: number }>();
+export function attachedLookbackPresent(s: GameState): boolean {
+  const defs = s.defs;
+  const hit = DEFS_ASK_ATTACHED.get(defs);
+  if (hit?.v) return true;
+  let n = 0;
+  for (const _k in defs) n++;
+  if (hit && hit.n === n) return false;
+  let v = false;
+  for (const k in defs) {
+    const d = defs[k]!;
+    let r = DEF_ASKS_ATTACHED.get(d);
+    if (r === undefined) {
+      const j = JSON.stringify(d);
+      DEF_ASKS_ATTACHED.set(d, (r = j.includes('"equipped":') || j.includes('"modified":') || j.includes('"wasAttachedTo":')));
+    }
+    if (r) { v = true; break; }
+  }
+  DEFS_ASK_ATTACHED.set(defs, { v, n });
+  return v;
+}
+
+/** Review 2026-10-26 F33: the permanents attached to each permanent (in battlefield order; a phased-out attachment is none), from one pass over the battlefield. */
+function attachmentIndex(s: GameState): Map<ObjectId, ObjectId[]> {
+  const out = new Map<ObjectId, ObjectId[]>();
+  for (const aid of s.zones.battlefield) {
+    const a = s.objects[aid];
+    if (a === undefined || a.attachedTo === undefined || a.phasedOut) continue;
+    const list = out.get(a.attachedTo);
+    if (list) list.push(aid);
+    else out.set(a.attachedTo, [aid]);
+  }
+  return out;
+}
+
+/**
  * r5-fxb (CR 700.9, 301.5, 303.4): is the permanent equipped (an Equipment attached), and modified (a counter on it, an Equipment attached, or an Aura its
  * controller controls attached), now? As rules/filter.ts#isEquipped / isModified read a permanent on the battlefield (a phased-out attachment is none).
+ * `index` is `attachmentIndex(s)`, `chars` the permanent's characteristics when they are already worked out.
  */
-function attachedState(g: Game, id: ObjectId): { equipped: boolean; modified: boolean; ids?: ObjectId[] } {
-  const o = g.s.objects[id]!;
-  const controller = charsOfObject(g.s, o).controller;
+function attachedState(s: GameState, id: ObjectId, index: ReadonlyMap<ObjectId, readonly ObjectId[]> = attachmentIndex(s), chars?: Chars): { equipped: boolean; modified: boolean; ids?: ObjectId[] } {
+  const o = s.objects[id]!;
+  const controller = (chars ?? charsOfObject(s, o)).controller;
   let equipped = false;
   let aura = false;
-  const ids: ObjectId[] = [];
-  for (const aid of g.s.zones.battlefield) {
-    const a = g.s.objects[aid];
-    if (a === undefined || a.attachedTo !== id || a.phasedOut) continue;
-    ids.push(aid);
-    const c = charsOfObject(g.s, a);
+  const ids = [...(index.get(id) ?? [])];
+  for (const aid of ids) {
+    const c = charsOfObject(s, s.objects[aid]!);
     if (c.subtypes.includes('Equipment')) equipped = true;
     if (c.subtypes.includes('Aura') && c.controller === controller) aura = true;
   }
@@ -276,12 +328,15 @@ export function moveObject(g: Game, id: ObjectId, to: ZoneKind, opts: MoveOption
     if (goadedBy.length > 0) g.s.lki[id]!.goadedBy = [...goadedBy];
   }
   // r5-fxb (CR 603.10a, 700.9): what was attached to it as it left ("whenever a modified creature you control leaves the battlefield")
+  // Review 2026-10-26 F18: only in a game that can ask (`attachedLookbackPresent`)
   if (from === 'battlefield' && old.kind !== 'ability') {
-    g.s.lki[id]!.attached = g.leavingAttached?.get(id) ?? attachedState(g, id);
+    const attached = g.leavingAttached?.get(id) ?? (attachedLookbackPresent(g.s) ? attachedState(g.s, id) : undefined);
+    if (attached !== undefined) g.s.lki[id]!.attached = attached;
     g.leavingAttached?.delete(id);
   }
-  // std-combat-3 (CR 603.10a): the battlefield as it was immediately before it left (with the others of its event still on it)
-  if (from === 'battlefield' && old.kind !== 'ability') g.s.lki[id]!.board = [...(g.leavingBoard ?? g.s.zones.battlefield)];
+  // std-combat-3 (CR 603.10a): the battlefield as it was immediately before it left (with the others of its event still on it); review 2026-10-26 F18: the frozen
+  // snapshot of its event is shared by every object of it (written once, never edited, like every last known information)
+  if (from === 'battlefield' && old.kind !== 'ability') g.s.lki[id]!.board = g.leavingBoard ?? Object.freeze([...g.s.zones.battlefield]);
   // FAST4 T34 (CR 506.4, 608.2h): whether it was attacking or blocking as it left, which removing it from combat erases
   if (from === 'battlefield' && (isAttacking(g.s, id) || isBlocking(g.s, id))) {
     // FAST5X E7 (CR 702.190b, 508.5): and what it was attacking, which sneak's "the same player, planeswalker, or battle" reads after it was returned

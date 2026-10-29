@@ -886,6 +886,7 @@
 }
 
 .panel-top .avatar-disc {
+  --disc-d: calc(var(--disc) * 0.86);
   width: calc(var(--disc) * 0.86);
   height: calc(var(--disc) * 0.86);
 }
@@ -900,6 +901,8 @@
 }
 
 .avatar-disc {
+  /* its diameter, for what is drawn the disc's size (the deciding player's light, arena.css) */
+  --disc-d: var(--disc);
   position: relative;
   display: grid;
   place-items: center;
@@ -1101,6 +1104,8 @@
 
 /* M11-2: combat damage from a commander, "N / 21" (CR 903.10a), brighter from 15 on. */
 .player-stats .stat-commander-damage {
+  /* the animator lays a glowing copy of the line over it when it changes */
+  position: relative;
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
@@ -1562,11 +1567,15 @@
   padding-top: 2px;
 }
 
-/* Another player's hand: overlapping card backs (our own art, never a card face). */
+/*
+ * Another player's hand: overlapping card backs (our own art, never a card face). Each casts a box shadow the shape of the back (a drop-shadow filter on
+ * every back was a filter pass per card, again whenever the fan moved).
+ */
 .hand-back {
   margin-right: calc(var(--back-w) * -0.42);
   transform-origin: 50% -80%;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.6));
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
 }
 
 /* A card of that hand the viewer has seen (Hand.tsx): face up in the fan, lifted a little so it reads as known. */
@@ -2211,6 +2220,8 @@
 
 /* An ability on the stack: a card-like tile of our own (no picture). */
 .ability-tile {
+  /* the animator's glow (an .fx-glow) is laid out on the tile */
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;

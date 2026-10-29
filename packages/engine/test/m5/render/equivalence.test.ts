@@ -5380,6 +5380,22 @@ Object.assign(EXAMPLES, {
   },
 } satisfies Record<string, Example>);
 
+// edh-players-1 (render/evt.ts, render/abil.ts; the second ported from the stopped p2-trigger-events-2): a token created or sacrificed; the Nth draw of a player during their turn
+Object.assign(EXAMPLES, {
+  'create-or-sacrifice': {
+    def: trig([{ ev: 'createToken', player: 'you', token: { token: true } }, { ev: 'action', verb: 'sacrifice', actor: 'you', object: { token: true } }], [draw()]),
+    ctx: creature,
+    readings: ['Whenever you create or sacrifice a token, draw a card.', 'Whenever you create a token or sacrifice a token, draw a card.'],
+    near: ['Whenever you sacrifice or create a token, draw a card.', 'Whenever you create or sacrifice a creature, draw a card.'],
+  },
+  'nth-during-their-turn': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'draw', player: 'any', nth: 2 }], while: { cond: 'turnOf', whose: { ref: 'event', role: 'player' } } }, effect: { targets: [], steps: [draw()] } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['Whenever a player draws their second card during their turn, draw a card.'],
+    near: ['Whenever a player draws their third card during their turn, draw a card.', 'Whenever a player draws their second card during your turn, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
 describe('design 6.8 (G6), D14: the equivalence table is documented and every family is exercised', () => {
   it('every family of the table has an example here, and every example a family', () => {
     expect(EQUIVALENCE_FAMILIES.map((f) => f.id).sort()).toEqual(Object.keys(EXAMPLES).sort());
@@ -5475,6 +5491,33 @@ Object.assign(EXAMPLES, {
     near: ['You may draw a card. If you do, discard a card.', 'You may draw a card. Then discard two cards.'],
   },
 });
+
+// edh-cast-1 (Commander lane edh-cast): cost reductions by power, color pair and subtype list; "this turn" after "you cast"; mana value after "you cast" for a grant
+Object.assign(EXAMPLES, {
+  'spells-you-cast-with-power': {
+    def: statics([{ s: 'costMod', applies: { spells: { types: ['Creature'], stackKind: 'spell', zone: 'stack', power: { op: '>=', value: 4 } }, caster: 'you' }, change: { kind: 'reduce', mana: [{ kind: 'generic', amount: 2 }], floor: 'zero' } } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['Creature spells you cast with power 4 or greater cost {2} less to cast.', 'Creature spells with power 4 or greater you cast cost {2} less to cast.'],
+    near: ['Creature spells you cast with power 4 or less cost {2} less to cast.', 'Creature spells you cast with power 5 or greater cost {2} less to cast.', 'Creature spells your opponents cast with power 4 or greater cost {2} less to cast.'],
+  },
+  'each-spell-that-is': {
+    def: statics([{ s: 'costMod', applies: { spells: { colors: ['R', 'G'], stackKind: 'spell', zone: 'stack' }, caster: 'you' }, change: { kind: 'reduce', mana: [{ kind: 'generic', amount: 1 }], floor: 'zero' } } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ["Each spell you cast that's red or green costs {1} less to cast.", 'Red or green spells you cast cost {1} less to cast.'],
+    near: ["Each spell you cast that's red and green costs {1} less to cast.", "Each spell you cast that's red or blue costs {1} less to cast.", "Each spell your opponents cast that's red or green costs {1} less to cast."],
+  },
+  'spells-cast-this-turn-cant-be-countered': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'restrict', subject: { ref: 'each', filter: { anyOf: [{ types: ['Creature'], stackKind: 'spell', zone: 'stack' }], controller: 'you', not: { stackKind: 'copy', zone: 'stack' }, zone: 'stack' } }, mode: 'cant', action: 'beCountered' }] } as unknown as EffectStep]),
+    readings: ["Creature spells you cast this turn can't be countered.", "Creature spells you cast can't be countered until end of turn."],
+    near: ["Creature spells you cast can't be countered.", "Creature spells your opponents cast this turn can't be countered.", "Artifact spells you cast this turn can't be countered."],
+  },
+  'spells-you-cast-with-mana-value': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { anyOf: [{ manaValue: { op: '>=', value: 6 }, stackKind: 'spell', zone: 'stack' }], controller: 'you', not: { stackKind: 'copy', zone: 'stack' }, zone: 'stack' } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'cascade', text: 'cascade' }] }] } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['Spells you cast with mana value 6 or greater have cascade.'],
+    near: ['Spells you cast with mana value 6 or less have cascade.', 'Spells you cast with mana value 7 or greater have cascade.', 'Spells your opponents cast with mana value 6 or greater have cascade.'],
+  },
+} satisfies Record<string, Example>);
 
 describe('design 6.8 (G6): the number of alternative groups per file is the number the table was reviewed for', () => {
   it('matches the sources of render/', () => {
@@ -7951,5 +7994,84 @@ Object.assign(EXAMPLES, {
     ]),
     readings: ['Cast any number of cards exiled with Test Card without paying their mana costs.', 'Cast any number of cards exiled with it without paying their mana costs.'],
     near: ['Cast any number of cards exiled with Test Card.', 'Cast a card exiled with Test Card without paying its mana cost.', 'Cast any number of cards exiled with an opponent without paying their mana costs.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-mana-keywords-1 (Commander lane edh-mana-keywords; CR 106.5, 607.2a; cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'exiled-cards-colors-singular': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, isMana: true, effect: { targets: [], steps: [{ op: 'addMana', who: { ref: 'you' }, dynamic: { kind: 'colorsOf', of: { ref: 'linked', link: 'exiled' }, count: 1 } } as EffectStep] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ["{T}: Add one mana of any of the exiled cards' colors.", "{T}: Add one mana of any of the exiled card's colors."],
+    near: ["{T}: Add one mana of any of the exiled cards' types.", "{T}: Add two mana of any of the exiled card's colors.", "{T}: Add one mana of any color among the exiled card."],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'trigger-mod-shared-controller': {
+    def: { kind: 'static', text: '', effects: [{ s: 'triggerMod', abilitiesOf: { anyOf: [{ subtypes: ['Goblin'], controller: 'you' }, { subtypes: ['Elf'], controller: 'you', other: true }] }, additional: 1 }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['If a triggered ability of a Goblin you control or another Elf you control triggers, that ability triggers an additional time.', 'If a triggered ability of a Goblin or another Elf you control triggers, that ability triggers an additional time.'],
+    near: ['If a triggered ability of a Goblin or another Elf triggers, that ability triggers an additional time.', 'If a triggered ability of a Goblin or another Elf an opponent controls triggers, that ability triggers an additional time.', 'If a triggered ability of a Goblin or an Elf you control triggers, that ability triggers an additional time.'],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'mana-any-combination-where-x': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, isMana: true, effect: { targets: [], steps: [{ op: 'addMana', who: { ref: 'you' }, dynamic: { kind: 'anyColor', count: { q: 'count', of: { ref: 'each', filter: { subtypes: ['Wall'], controller: 'you' } } }, from: ['R', 'G'] } }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{T}: Add X mana in any combination of {R} and/or {G}, where X is the number of Walls you control.', '{T}: Add {R} or {G} for each Wall you control.'],
+    near: ['{T}: Add X mana in any combination of colors, where X is the number of Walls you control.', '{T}: Add X mana in any combination of {R} and/or {W}, where X is the number of Walls you control.'],
+  },
+} satisfies Record<string, Example>);
+// p2-zone-moves-2 (Phase 2 lane p2-zone-moves; CR 608.2c, 701.20a): the revealed cards other than the one a reveal until stopped at
+Object.assign(EXAMPLES, {
+  'rest-all-other-revealed': {
+    def: spell([
+      { op: 'revealUntil', who: you, filter: { types: ['Artifact'] }, as: 'hit', revealed: 'revealed' } as EffectStep,
+      { op: 'move', what: bound('hit'), to: { zone: 'hand' } } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: bound('revealed'), not: { is: bound('hit') }, zone: 'library' } }, to: { zone: 'graveyard' } } as EffectStep,
+    ]),
+    readings: [
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest into your graveyard.',
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and all other cards revealed this way into your graveyard.',
+    ],
+    near: ['Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and all other cards revealed this way into your hand.'],
+  },
+});
+// edh-zones-1 (Commander effort, lane edh-zones; CR 608.2c, 109.5, 110.2a; cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'and-you-plain-clause': {
+    def: spell([
+      { op: 'discard', who: t('p'), count: 1 } as EffectStep,
+      { op: 'untap', what: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } } as EffectStep,
+    ], [playerTarget('p')]),
+    readings: [
+      'Target player discards a card. Untap all lands you control.',
+      'Target player discards a card and you untap all lands you control.',
+    ],
+    near: ['Target player discards a card and you untap all creatures you control.', 'Target player discards a card and that player untaps all lands you control.'],
+  },
+  'player-puts-onto-battlefield': {
+    def: spell([
+      { op: 'reveal', who: t('p'), what: { ref: 'topCards', player: t('p'), count: 1 }, as: 'revealed' } as EffectStep,
+      { op: 'if', cond: { cond: 'matches', object: bound('revealed'), filter: { types: ['Land'], isCard: true } }, then: [{ op: 'move', what: bound('revealed'), to: { zone: 'battlefield', controller: t('p') } }] } as EffectStep,
+    ], [playerTarget('p')]),
+    readings: [
+      "Target player reveals the top card of their library. If it's a land card, they put it onto the battlefield.",
+      "Target player reveals the top card of their library. If it's a land card, that player puts it onto the battlefield.",
+    ],
+    near: [
+      "Target player reveals the top card of their library. If it's a land card, they put it onto the battlefield tapped.",
+      "Target player reveals the top card of their library. If it's a land card, you put it onto the battlefield.",
+    ],
+  },
+} satisfies Record<string, Example>);
+// edh-zones-1 (port of p2-exile-play-2; CR 202.3, 608.2c, 101.4): an exile until a total said with "that player"
+Object.assign(EXAMPLES, {
+  'exiled-until-total-that-player': {
+    def: spell([{ op: 'exileUntil', who: { ref: 'each', who: 'opponent' }, filter: {}, total: { stat: 'manaValue', atLeast: 5 } }] as unknown as EffectStep[]),
+    readings: ['Each opponent exiles cards from the top of their library until they have exiled cards with total mana value 5 or greater this way.',
+      'Each opponent exiles cards from the top of their library until that player has exiled cards with total mana value 5 or greater.'],
+    near: ['Each opponent exiles cards from the top of their library until that player has exiled cards with total mana value 6 or greater.',
+      'Each opponent exiles cards from the top of their library until that player has exiled a nonland card.'],
   },
 } satisfies Record<string, Example>);

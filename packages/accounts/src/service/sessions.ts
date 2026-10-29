@@ -4,12 +4,11 @@
  *
  * - A session is issued with a fresh token (32 random bytes, only its SHA-256 stored), rotation 0, expiresAt = now + sessionMaxMs. A 21st live
  *   session revokes the one used least recently (`lastUsedAt`, reason 'tooMany').
- * - A device proof is the one the attempt sent when it is valid for the account, else a new one; at most devicesMax per account, the least recently
- *   used dropped. INTERFACE GAP (reported): the store can neither list an account's device proofs nor delete one, so the cap counts the proofs its
- *   sessions name, and a dropped (or, after deviceFailures failures, deleted) proof is marked spent by setting its failures to deviceFailures: no
- *   attempt treats it as valid again, and retention purges it after deviceIdleMs. The cap reads at most DEVICE_SCAN proofs, those of the sessions
- *   used most recently, so its work does not grow with the session rows an account has gathered (revoked rows stay 7 days). INTERFACE GAP
- *   (reported): with no lookup of one session by id, ServiceGuard and the session list still read the account's session rows (sessionsOf).
+ * - A device proof is the one the attempt sent when it is valid for the account, else a new one; at most devicesMax valid per account, the least
+ *   recently used dropped. The cap reads the account's proofs in one call (AccountStore.devicesOf). A dropped (or, after deviceFailures failures,
+ *   deleted) proof is marked spent by setting its failures to deviceFailures rather than deleted (the store deletes proofs only all at once,
+ *   deleteDevices): no attempt treats it as valid again, and retention purges it after deviceIdleMs. ServiceGuard and revokeSession read one session
+ *   by its id (AccountStore.sessionById); only the sessions list and the session cap read all of the account's rows (sessionsOf).
  * - `resume` (a token from `hello`): the current token older than rotateAfterMs is rotated (rotateSession: previous = the hash that was current,
  *   rotatedAt = now, the counter + 1). The previous token within rotateGraceMs of the rotation re-rotates (rerotateInGrace: a fresh current token
  *   with the next counter, previous and rotatedAt unchanged, so the grace never grows); after the grace it is reuse: the session is revoked, the
@@ -62,7 +61,7 @@ export function newDeviceRow(account: AccountId, hash: string, now: Date): Devic
   return { hash, account, createdAt: iso(now), lastUsedAt: iso(now), failures: 0 };
 }
 
-/** Marks a device proof spent (see the header: the store has no single delete). */
+/** Marks a device proof spent (see the header: the store deletes proofs only all at once). */
 export async function spendDevice(core: Core, hash: string): Promise<void> {
   await core.store.updateDevice(hash, { failures: core.limits.deviceFailures }).catch(() => undefined);
 }
@@ -83,27 +82,12 @@ export async function capSessions(core: Core, account: AccountId, keep: string, 
   }
 }
 
-/**
- * Device proofs the cap reads at most: those named by the sessions used most recently. Each sign-in adds at most one proof and the cap then spends
- * every valid one beyond devicesMax among them, so a valid proof never falls out of this window before the cap has seen it ranked below devicesMax.
- */
-export const DEVICE_SCAN = ACCOUNT_LIMITS.devicesMax + ACCOUNT_LIMITS.sessionsMax;
-
-/** The cap of 10 device proofs (8.3), over the proofs the account's most recently used sessions name (the header's gap). */
+/** The cap of 10 valid device proofs (8.3): the least recently used beyond it, but the one just used (`keep`), are spent. */
 export async function capDevices(core: Core, account: AccountId, keep: string, now: Date): Promise<void> {
-  const rows = (await core.store.sessionsOf(account)).filter((r) => r.device !== null);
-  rows.sort((a, b) => Date.parse(b.lastUsedAt) - Date.parse(a.lastUsedAt) || Date.parse(b.createdAt) - Date.parse(a.createdAt));
-  const hashes: string[] = [];
-  for (const r of rows) {
-    if (hashes.length >= DEVICE_SCAN) break;
-    if (!hashes.includes(r.device!)) hashes.push(r.device!);
-  }
-  if (hashes.length <= ACCOUNT_LIMITS.devicesMax) return;
-  const valid: DeviceRow[] = [];
-  for (const h of hashes) {
-    const d = await core.store.device(h);
-    if (d !== null && d.account === account && d.failures < core.limits.deviceFailures && Date.parse(d.lastUsedAt) + core.timing.deviceIdleMs > now.getTime()) valid.push(d);
-  }
+  const t = now.getTime();
+  const valid = (await core.store.devicesOf(account)).filter(
+    (d) => d.failures < core.limits.deviceFailures && Date.parse(d.lastUsedAt) + core.timing.deviceIdleMs > t,
+  );
   const over = valid.length - ACCOUNT_LIMITS.devicesMax;
   if (over <= 0) return;
   valid.sort((a, b) => Date.parse(a.lastUsedAt) - Date.parse(b.lastUsedAt));
@@ -228,8 +212,8 @@ export async function revokeSession(core: Core, ctx: RequestContext, auth: Auth,
   const s = unwrap(await core.guard.session(ctx, auth, 'revokeSession'));
   if (typeof session !== 'string' || !SESSION_ID.test(session)) return fail('badMessage');
   const nowIso = iso(ctx.now);
-  const target = (await core.store.sessionsOf(auth.account)).find((r) => r.id === session);
-  if (target === undefined) return fail('notFound');
+  const target = await core.store.sessionById(session);
+  if (target === null || target.account !== auth.account) return fail('notFound');
   if (target.revokedAt !== null) return ok(undefined);
   try {
     await core.store.revokeSession(auth.account, session, 'revoked', nowIso);

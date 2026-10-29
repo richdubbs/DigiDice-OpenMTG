@@ -90,6 +90,18 @@ describe('animation planner (plan.ts)', () => {
     expect(step.life).toEqual([{ player: 'p2', delta: -2, byDamage: true }]);
   });
 
+  it('F9: the same change (events array, from, to) gets the same plan; other views or another events array are planned anew', () => {
+    const v = viewOf({ a: { defId: 'bears', zone: 'battlefield' } });
+    const w = viewOf({ a: { defId: 'bears', zone: 'battlefield' } });
+    const events: GameEvent[] = [{ type: 'damageDealt', source: 'a', target: 'p2', amount: 2, combat: true }];
+    const p = planBatch(events, v, v);
+    expect(planBatch(events, v, v)).toBe(p);
+    const q = planBatch(events, v, w);
+    expect(q).not.toBe(p);
+    expect(q).toEqual(p);
+    expect(planBatch([...events], v, w)).not.toBe(q);
+  });
+
   it('CR 120.3a: the engine reports the life lost to damage before the damage itself; it is still shown once, by the hit (no life-only step)', () => {
     const before = viewOf({ s: { defId: 'bolt', zone: 'stack', stack: { targets: [[{ kind: 'player', id: 'p2' }]] } } }, ['s']);
     const p = planBatch(

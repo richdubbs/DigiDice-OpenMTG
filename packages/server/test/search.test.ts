@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { CardDetailResponse, SearchResponse } from '../src/api';
-import { cardStore, closeCardStores, compareCardNames, coverageCounts } from '../src/cache';
+import { cardStore, closeCardStores, compareCardNames, coverageCounts, sortByCardName } from '../src/cache';
 import { versionDir } from '../src/compiled';
 import { cardDetail, searchCards } from '../src/search';
 import { colorTest, numberTest, relevance, terms, type SearchRow } from '../src/search-query';
@@ -148,6 +148,11 @@ describe('GET /api/cards/search', () => {
       'Okiba',
       'Zur the Enchanter',
     ]);
+  });
+
+  it('sorts cards in the same order with each name folded once (the store sort)', () => {
+    const names = ['Zur the Enchanter', 'Éowyn, Lady of Rohan', 'elvish mystic', 'Elvish Mystic', 'Óin the Brave', 'Okiba', '"Ach! Hans, Run!"'];
+    expect(sortByCardName(names.map((name) => ({ name }))).map((c) => c.name)).toEqual([...names].sort(compareCardNames));
   });
 
   it('filters by format legality from the index (legal or restricted; no data is left out)', async () => {

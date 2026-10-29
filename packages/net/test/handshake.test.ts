@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_LINK_OPTIONS } from '../src/link/channel';
 import type { Connection, Remote } from '../src/link/connection';
 import { requireStrongCode } from '../src/link/endpoint';
-import { GuestHandshake, HostHandshake, type HostLimits } from '../src/link/handshake';
+import { DEFAULT_HOST_LIMITS, GuestHandshake, HostHandshake, type HostLimits } from '../src/link/handshake';
 import { normalizeJoinCode } from '../src/wire/codes';
 import { newEphemeral } from '../src/wire/crypto';
 import { encodeInit, INIT_BYTES, PacketType, parsePacket } from '../src/wire/packet';
@@ -91,6 +91,25 @@ describe('handshake (in process)', () => {
     for (const b of toHost) h.host.datagram(b, addr(1));
     expect(h.received).toEqual([{ hello: 1 }]);
     expect(h.host.stats.handshakes).toBe(1);
+  });
+
+  it('a global INIT cap (never per address) bounds what a flood costs: past it INITs go unanswered, and a guest joins as soon as tokens return', () => {
+    expect(DEFAULT_HOST_LIMITS.initsTotal).toEqual({ rate: 2000, burst: 4000 }); // generous: far above real traffic
+    const h = makeHost({ initsTotal: { rate: 10, burst: 20 } });
+    const flood = () => encodeInit(randomBytes(8), randomBytes(32), newEphemeral().publicKey);
+    for (let i = 0; i < 100; i++) h.host.datagram(flood(), addr(i % 50)); // forged sources
+    expect(h.out).toHaveLength(20); // the burst, then nothing
+    expect(h.host.stats.rateLimited).toBe(80);
+    h.out.length = 0;
+    expect(join(h, addr(200))).toBeNull(); // during the flood: the guest's INIT is not answered (it repeats it)
+    h.clock.t += 200; // two tokens later
+    expect(join(h, addr(200), { hello: 1 })).not.toBeNull();
+    expect(h.received).toEqual([{ hello: 1 }]);
+    // Not per address: one source over the old limit is answered like any other while the global bucket has tokens.
+    h.clock.t += 2000;
+    h.out.length = 0;
+    for (let i = 0; i < 15; i++) h.host.datagram(flood(), addr(7));
+    expect(h.out).toHaveLength(15);
   });
 
   it('drops malformed datagrams and DATA for unknown connections without throwing (audit C4)', () => {

@@ -2,6 +2,8 @@
  * New game (docs/design/m8-client.md screen 5; docs/design/decks-and-formats.md "Quick play"): a saved deck and a name for each player, the format the
  * decks are checked against, starting options, and whether each other player is a person at this screen (hot-seat) or the computer (computer.ts); then the
  * cards are compiled by the local server, the config is built (config.ts) and the game opens through a LocalConnection (hot-seat) or a ComputerGame.
+ * Review 2026-10-26 F1: with Settings "Run the game in a background thread" on (the default) and Web Workers in the browser, the same game runs in the
+ * game worker instead (connection/WorkerConnection.ts), so the board never drops a frame; if the worker cannot start, the game runs on the page.
  *
  * M12-4b (docs/design/m12-multiplayer.md 5.3 item 1): two to four players ("Players: 2 / 3 / 4", and Remove on the third and fourth seat). The first seat
  * is always the person at this screen; every other seat is a person (hot-seat) or the computer, in any mix. With three or four players the game is a
@@ -40,11 +42,14 @@ import {
   ConfigBuildError, DEFAULT_FORMAT, DEFAULT_START, FORMATS, MAX_PLAYERS, MIN_PLAYERS, PLAYER_IDS, buildGameConfig, commanderVariantOf, companionOf, deckCardNames,
   deckNotes, formatProblem, mainCardNames, offeredFormat, playerName, startingLifeFor, unplayableReason, type StartOptions,
 } from './config';
-import { COMPUTER_NAME, ComputerGame, computerDelayMs } from './computer';
+import { COMPUTER_NAME, ComputerGame, computerDelayMs, withComputerStops } from './computer';
+import { WorkerConnection, bootstrapFrom, gameWorkerAvailable } from '../connection/WorkerConnection';
+import { TableConnection, tableChannelAvailable } from '../connection/TableConnection';
+import type { LocalGame } from '../replays/record';
 import { useHostedServer } from '../hosted/config';
 import { sealConnection, sealedFactory } from './sealed';
 import { recordLocalGame } from '../replays/record';
-import { defaultServices, localRematch, type GameDeck, type GameServices } from './services';
+import { defaultServices, type GameDeck, type GameServices } from './services';
 import { gameSfx } from './sound';
 import './game.css';
 
@@ -58,6 +63,9 @@ type Check =
   | { status: 'error'; message: string };
 
 const NONE: Check = { status: 'none' };
+
+/** F1: how long a new game waits for the game worker's first answer before it runs on the page instead (ms). */
+const WORKER_START_MS = 15_000;
 
 /** Who plays a seat: a person at this screen (hot-seat; the first seat always) or the computer. */
 export type SeatPlayer = 'person' | 'computer';
@@ -427,25 +435,73 @@ export function NewGameScreen({
       const playerSleeves: PlayerSleeves = Object.fromEntries(chosen.flatMap((d, i) => (d && sleeves.get(d.id) ? [[PLAYER_IDS[i]!, sleeves.get(d.id)!]] : [])));
       rememberNames(settings, seats.map((x, i) => ({ name: trimmed[i]!, by: x.by })));
       const gameSetup: GameSetup = { seats, deckNames: chosen.map((d) => d!.name), format, start };
-      if (computers > 0) {
-        const ids = (by: SeatPlayer): PlayerId[] => seats.flatMap((x, i) => (x.by === by ? [PLAYER_IDS[i]!] : []));
-        const humans = ids('person');
-        const machines = ids('computer');
-        const opts = () => ({ delayMs: computerDelayMs(settings.get().animationSpeed), seed: services.newSeed() });
-        // RPL-1 (replays design 7.1): every local game is recorded as it is played, a rematch too (replays/record.ts).
-        const vsComputer = (c: typeof config) => recordLocalGame(new ComputerGame(c, humans, machines, opts()), { format });
-        // FXH (audit m5, CR 400.2): the route and the game screen hold only the sealed connection, never the session behind it (sealed.ts).
-        nav.go({ screen: 'game', connection: sealConnection(vsComputer(config)), rematch: sealedFactory(() => vsComputer({ ...config, seed: services.newSeed() })), sleeves: playerSleeves, setup: gameSetup });
-      } else {
-        const rematch = localRematch(config, services.newSeed);
-        nav.go({
-          screen: 'game',
-          connection: sealConnection(recordLocalGame(new LocalConnection(config), { format })),
-          rematch: sealedFactory(() => recordLocalGame(rematch(), { format })),
-          sleeves: playerSleeves,
-          setup: gameSetup,
-        });
+      const ids = (by: SeatPlayer): PlayerId[] => seats.flatMap((x, i) => (x.by === by ? [PLAYER_IDS[i]!] : []));
+      const humans = ids('person');
+      const machines = ids('computer');
+      const opts = () => ({ delayMs: computerDelayMs(settings.get().animationSpeed), seed: services.newSeed() });
+      // The game on the page: a hot-seat LocalConnection, or a ComputerGame.
+      const onPage = (c: typeof config): LocalGame => (computers > 0 ? new ComputerGame(c, humans, machines, opts()) : new LocalConnection(c));
+      // F1: the same game in the game worker. A rematch's screen reads it at once, before the worker answers: its first snapshot is worked out here then.
+      const inWorker = (c: typeof config, now: boolean): WorkerConnection => {
+        const bootstrap = now
+          ? { bootstrap: bootstrapFrom(() => (computers > 0 ? new LocalConnection(withComputerStops(c, machines), { seats: humans }) : new LocalConnection(c))) }
+          : {};
+        return computers > 0 ? WorkerConnection.computer(c, humans, machines, opts(), bootstrap) : WorkerConnection.hotSeat(c, bootstrap);
+      };
+      // Godot plan phase 1 (development setting "Run the game in the server", default off): the same game in the local server, over its table
+      // channel (connection/TableConnection.ts). Not recorded for the replays. If the server cannot run it, the game runs as the settings say otherwise.
+      const bootstrapOf = (c: typeof config) =>
+        bootstrapFrom(() => (computers > 0 ? new LocalConnection(withComputerStops(c, machines), { seats: humans }) : new LocalConnection(c)));
+      const inServer = (c: typeof config, now: boolean): TableConnection => {
+        const bootstrap = now ? { bootstrap: bootstrapOf(c) } : {};
+        return computers > 0
+          ? TableConnection.computer(c, humans, machines, { speed: settings.get().animationSpeed, seed: services.newSeed() }, bootstrap)
+          : TableConnection.hotSeat(c, bootstrap);
+      };
+      if (settings.get().gameInServer && tableChannelAvailable()) {
+        const table = inServer(config, false);
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const started = await Promise.race([table.ready, new Promise<boolean>((r) => (timer = setTimeout(() => r(false), WORKER_START_MS)))]);
+        clearTimeout(timer);
+        if (controller.signal.aborted) {
+          table.close();
+          return;
+        }
+        if (started) {
+          const again = () => inServer({ ...config, seed: services.newSeed() }, true);
+          nav.go({ screen: 'game', connection: sealConnection(table), rematch: sealedFactory(again), sleeves: playerSleeves, setup: gameSetup });
+          return;
+        }
+        console.error('[NewGame] the local server could not run the game; playing in the browser');
+        table.close();
       }
+      let background = settings.get().gameInBackground && gameWorkerAvailable();
+      let first: LocalGame = background ? inWorker(config, false) : onPage(config);
+      if (first instanceof WorkerConnection) {
+        const worker = first;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const started = await Promise.race([worker.ready, new Promise<boolean>((r) => (timer = setTimeout(() => r(false), WORKER_START_MS)))]);
+        clearTimeout(timer);
+        if (controller.signal.aborted) {
+          worker.close();
+          return;
+        }
+        if (!started) {
+          // The worker could not start (an old browser, a blocked script): this game and its rematches run on the page.
+          console.error('[NewGame] the game worker did not start; playing on the page');
+          worker.close();
+          background = false;
+          first = onPage(config);
+        }
+      }
+      // RPL-1 (replays design 7.1): every local game is recorded as it is played, a rematch too (replays/record.ts).
+      const record = (game: LocalGame) => recordLocalGame(game, { format });
+      const again = () => {
+        const c = { ...config, seed: services.newSeed() };
+        return record(background ? inWorker(c, true) : onPage(c));
+      };
+      // FXH (audit m5, CR 400.2): the route and the game screen hold only the sealed connection, never the session behind it (sealed.ts).
+      nav.go({ screen: 'game', connection: sealConnection(record(first)), rematch: sealedFactory(again), sleeves: playerSleeves, setup: gameSetup });
     } catch (e) {
       if (controller.signal.aborted) return;
       setStarting(false);

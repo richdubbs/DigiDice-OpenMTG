@@ -154,7 +154,8 @@ const forEachOpponent = (_what: ObjRef, text: string, _st: RenderState): string 
 function tapClause(verb: 'tap' | 'untap', s: StepOf<'tap'> | StepOf<'untap'>, st: RenderState): Clause {
   const text = forEachOpponent(s.what, `${verb} ${K.obj(s.what, st, 'object').text}`, st);
   if (s.as !== undefined && s.what.ref === 'each') bind(st, s.as, infoOfRef(s.what, st));
-  return plain(text);
+  // edh-zones-1 (family and-you-plain-clause): an untap is also "and you untap ..." after another player's clause (Clause.andYou)
+  return plain(text, verb === 'untap' ? { andYou: text } : {});
 }
 
 /** What a move acts on. A whole zone of everyone ("all graveyards") has its own idiom. */
@@ -627,6 +628,14 @@ export const CLAUSES_ZONES = {
     if (s.as !== undefined && movedKind !== undefined && s.until === undefined) st.info.set(`r:${s.as}`, { ...(st.info.get(`r:${s.as}`) ?? movedInfo(movedKind, infoOfRef(s.what, st).nouns)), moved: movedKind });
     // std-rh (CR 608.2c; Genesis Wave): the sentence that puts the rest of a group looked at somewhere after "you may put ... from among them onto the battlefield" may
     // begin with "Then" ("then" only orders the instructions)
+    // edh-zones-1 (CR 110.2a, 608.2c; family player-puts-onto-battlefield): what another player puts onto the battlefield is theirs to control, so "they put it onto the
+    // battlefield" (Chaos Warp: "If it's a permanent card, they put it onto the battlefield") says the move whose controller is that player; the reading with the
+    // control said ("put it onto the battlefield under their control") stays. Only a plain object put onto the battlefield, nothing about how it enters
+    if (top === null && d.zone === 'battlefield' && typeof d.controller === 'object' && d.controller.ref !== 'you' && st.actor === null && s.until === undefined
+      && s.what.ref === 'bound' && Object.keys(d).length === 2) {
+      const by = byPlayer(d.controller, st, 'put', () => `${what} onto the battlefield`);
+      return plain(alt(text, by.sub));
+    }
     if (top === null) return plain(text, s.what.ref === 'each' && restOfGroup(s.what.filter) !== null ? { leadThen: true } : {});
     // FAST4 T26: "each opponent discards a card, loses 2 life, and exiles the top three cards of their library": the library's owner is the clause's actor
     // (both forms say the same, CR 406.1, 401.2)
@@ -860,7 +869,14 @@ export const CLAUSES_ZONES = {
   },
 
   // r4-fxb (CR 115.7): "change the target of target spell or ability with a single target"
-  changeTarget: (s: StepOf<'changeTarget'>, st: RenderState): Clause => byPlayer(s.who, st, 'change', () => `the target of ${K.obj(s.what, st, 'object').text}`),
+  changeTarget: (s: StepOf<'changeTarget'>, st: RenderState): Clause => {
+    // edh-cast-1 (CR 115.7; Spellskite, Hydroelectric Specimen): "change a target of target spell or ability to ~", "change the target of target ... spell with a single target to ~"
+    if (s.to !== undefined) {
+      const single = JSON.stringify(s.what).includes('"ref":"target"') && st.specs.get((s.what as { id?: string }).id ?? '')?.filter?.targetCount !== undefined;
+      return byPlayer(s.who, st, 'change', () => `${single ? 'the target' : 'a target'} of ${K.obj(s.what, st, 'object').text} to ${K.obj(s.to!, st, 'object').text}`);
+    }
+    return byPlayer(s.who, st, 'change', () => `the target of ${K.obj(s.what, st, 'object').text}`);
+  },
 
   copy: (s: StepOf<'copy'>, st: RenderState): Clause => {
     // r4-moved (CR 707.12; effects/handlers/tokens-copy.ts#copySpells copies spells on the stack only): a spell copy of a CARD in exile is not given the reading "the
@@ -1065,6 +1081,12 @@ export const CLAUSES_ZONES = {
       if (what.plural && s.free === true) throw new NoRenderer('several copies of cards cast without paying their mana costs');
       const free = s.free === true ? ' without paying its mana cost' : '';
       const c = byPlayer(s.who, st, 'copy', () => what.text);
+      // edh-cast-1 (CR 707.12, 608.2g, 607.2a; Isochron Scepter): the copy of the card the object's linked ability exiled is optional and so is its cast: "You may copy the
+      // exiled card. If you do, you may cast the copy without paying its mana cost."
+      if (s.what.ref === 'linked' && s.what.link === 'exiled' && !what.plural && s.free === true && s.select === undefined && s.guard === undefined && s.as === undefined) {
+        const said = `you may copy ${what.text}. if you do, you may cast the copy${free}`;
+        return { ...c, imp: said, sub: said };
+      }
       const tail = what.plural ? '. you may cast any number of the copies' : alt(`. you may cast the copy${free}`, `, then you may cast the copy${free}`);
       // trek-12 (CR 707.12; family create-a-copy-of-self): the copy of the card the ability is on, in exile, is "Create a copy of ~" as well as "Copy ~" (Q, Stacking the Deck)
       if (s.what.ref === 'self' && !what.plural && s.free !== true) {

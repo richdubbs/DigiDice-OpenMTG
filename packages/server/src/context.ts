@@ -28,6 +28,8 @@ export interface ServerContext {
   hostedUrl?: string | null;
   /** The Scryfall API client of set search (sets.ts); tests pass one over a fake fetch. Default: one shared client per card-data folder. */
   scryfall?: ScryfallClient;
+  /** The player's library (library/: decks, settings). Default: `library` next to the card cache, `%APPDATA%\OpenMTG\data\library` in the apps. */
+  libraryDir?: string;
 }
 
 /** The network and clock of POST /api/update; production uses the real ones (Scryfall's client with its rate limits, global fetch, the system clock). */

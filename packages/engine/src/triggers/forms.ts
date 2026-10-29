@@ -124,6 +124,7 @@ export const SUPPORTED: readonly string[] = [
   // p2-trigger-events-1: CR 701.17a, a card moved from a library to a graveyard with the cause 'mill' (the mill op and the mill cost) is the owner's action `mill`
   // (normalize.ts#CAUSE_VERBS), one for each card milled
   'ev.action.mill',
+  'ev.draw.exceptFirstInDrawStep', // edh-players-1 (CR 504.1): normalize.ts marks the first card drawn in the draw step, match.ts reads it
 ];
 
 const isQuantityCmp = (c: NumberCmp | undefined): boolean => c !== undefined && typeof c.value !== 'number';

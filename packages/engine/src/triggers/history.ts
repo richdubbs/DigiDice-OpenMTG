@@ -15,7 +15,7 @@
  */
 import type { EventPattern } from '../types/ability';
 import type { GameObject, GameState, HistoryEntry, SemEvent } from '../types/state';
-import { charsOfObject, type Chars } from '../rules/characteristics';
+import { charsOfObject, readingStable, type Chars } from '../rules/characteristics';
 import { currentCombatNumber, makeHistoryEntry, objectFacts, type Facts } from '../rules/history';
 import { deepFreeze } from '../util/clone';
 import { isCommander } from '../statics/commander';
@@ -208,7 +208,9 @@ export function historyEntry(s: GameState, e: SemEvent, combat: number, turn: nu
 export function recordHistory(s: GameState, batch: SemEvent[], turn: number = s.turn.number, batchStart?: number): void {
   for (const e of batch) {
     // The combat phase an event belongs to: the one in progress this turn (CR 500.8), none for what happened in an earlier turn.
-    const entry = historyEntry(s, e, turn === s.turn.number ? currentCombatNumber(s) : 0, turn);
+    // review 2026-10-26 (performance): an entry is a pure read of the state as it is (one check of the characteristics cache for all its roles, `readingStable`);
+    // each entry is read after the previous one was pushed, as before (a definition may read the history, rules/characteristics.ts#historyKey)
+    const entry = readingStable(s, () => historyEntry(s, e, turn === s.turn.number ? currentCombatNumber(s) : 0, turn));
     // Standard round 5, r5-trig (CR 603.2c): where the entries of this simultaneous batch begin (`HistoryEntry.batch`, rules/history.ts#firstTimeThisTurn)
     if (entry && batchStart !== undefined) entry.batch = batchStart;
     // Design 4.3 (WP30 amendment): entries are shared between states (util/clone.ts copies only the array), so one is frozen as it is written: editing it

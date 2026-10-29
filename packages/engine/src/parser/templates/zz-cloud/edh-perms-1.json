@@ -1,0 +1,375 @@
+[
+  {
+    "id": "rep.edhpm1.tokens.kind.plusAdditional",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1",
+      "CR 111.10"
+    ],
+    "pattern": "if you would create one or more {st:Subtypes} tokens , instead create those tokens plus an additional {t:TokenDesc}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you",
+        "token": {
+          "subtypes": "$st"
+        }
+      },
+      "body": {
+        "b": "modify",
+        "then": {
+          "as": "created",
+          "do": [
+            {
+              "op": "createToken",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1,
+              "token": "$t"
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If you would create one or more Food tokens, instead create those tokens plus an additional Food token."
+      },
+      {
+        "text": "If you would create one or more Clue tokens, instead create those tokens plus an additional Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "If you would create one or more Food tokens, instead create those tokens plus two additional Food tokens.",
+      "If an opponent would create one or more Food tokens, instead create those tokens plus an additional Food token.",
+      "If you would create one or more Food tokens, you may instead create those tokens plus an additional Food token."
+    ]
+  },
+  {
+    "id": "rep.edhpm1.tokens.plusThatMany.passive",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1"
+    ],
+    "pattern": "if one or more tokens would be created under your control , those tokens plus that many {t:TokenDesc} are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "body": {
+        "b": "modify",
+        "then": {
+          "as": "created",
+          "do": [
+            {
+              "op": "createToken",
+              "who": {
+                "ref": "you"
+              },
+              "count": {
+                "q": "eventAmount"
+              },
+              "token": "$t"
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more tokens would be created under your control, those tokens plus that many 1/1 white Soldier creature tokens are created instead."
+      },
+      {
+        "text": "If one or more tokens would be created under your control, those tokens plus that many Food tokens are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more tokens would be created under an opponent's control, those tokens plus that many Food tokens are created instead.",
+      "If one or more tokens would be created under your control, those tokens plus twice that many Food tokens are created instead.",
+      "If one or more tokens would be created under your control, those tokens plus that many Food tokens are created."
+    ]
+  },
+  {
+    "id": "rep.edhpm1.tokens.double.anyPlayer",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.1",
+      "CR 616.1g"
+    ],
+    "pattern": "if one or more tokens would be created , twice that many of those tokens are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "any"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "twice",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more tokens would be created, twice that many of those tokens are created instead. Creatures you control get +1/+1."
+      },
+      {
+        "text": "If one or more tokens would be created, twice that many of those tokens are created instead. Other Elves you control get +1/+1."
+      }
+    ],
+    "counterExamples": [
+      "If one or more tokens would be created, three times that many of those tokens are created instead. Creatures you control get +1/+1.",
+      "If one or more tokens would be created under an opponent's control, twice that many of those tokens are created instead. Creatures you control get +1/+1.",
+      "If one or more tokens would be created, twice that many of those tokens are created. Creatures you control get +1/+1."
+    ]
+  },
+  {
+    "id": "rep.edhpm1.tokens.creature.thatManyOther",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 111.1"
+    ],
+    "pattern": "if one or more creature tokens would be created under your control , that many {t:TokenDesc} are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you",
+        "token": {
+          "types": [
+            "Creature"
+          ]
+        }
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "eventAmount"
+            },
+            "token": "$t"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more creature tokens would be created under your control, that many 3/3 green Beast creature tokens are created instead."
+      },
+      {
+        "text": "If one or more creature tokens would be created under your control, that many 4/4 red Dragon creature tokens with flying are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more creature tokens would be created under your control, twice that many 3/3 green Beast creature tokens are created instead.",
+      "If one or more creature tokens would be created under an opponent's control, that many 3/3 green Beast creature tokens are created instead.",
+      "If one or more creature tokens would be created under your control, that many 3/3 green Beast creature tokens are created."
+    ]
+  },
+  {
+    "id": "eff.edhpm1.token.numberEqual.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} create[s] a number of {t:TokenDesc} equal to {n:Qty}",
+    "build": {
+      "op": "createToken",
+      "who": "$p",
+      "count": "$n",
+      "token": "$t"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "You create a number of 2/2 white Knight creature tokens equal to your devotion to white."
+      },
+      {
+        "text": "Each opponent creates a number of Treasure tokens equal to the number of Pirates you control."
+      }
+    ],
+    "counterExamples": [
+      "You create a number of 2/2 white Knight creature tokens.",
+      "You create a number of 2/2 white Knight creature tokens equal to your devotion to white plus target player's life total twice.",
+      "You create twice a number of 2/2 white Knight creature tokens equal to your devotion to white."
+    ]
+  },
+  {
+    "id": "rep.edhpm1.enters.tappedCopy",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b"
+    ],
+    "pattern": "you may have ~ enter tapped as a copy of any {f:Filter} on the battlefield",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "tapped": true
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "tapped"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter tapped as a copy of any artifact on the battlefield."
+      },
+      {
+        "text": "You may have ~ enter tapped as a copy of any Golem on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter tapped as a copy of any artifact in a graveyard.",
+      "You may have ~ enter tapped as a copy of target artifact.",
+      "~ enters tapped as a copy of any artifact on the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhpm1.attached.grant.addtype.unblockable",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 509.1b",
+      "CR 205.1b",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} , is ( a | an ) {st:Subtypes} in addition to its other types , and can't be blocked",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has ward {2}, is a Rogue in addition to its other types, and can't be blocked."
+      },
+      {
+        "text": "Enchanted creature has lifelink, is a Vampire in addition to its other types, and can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has ward {2}, is a Rogue in addition to its other types, and can't be blocked by Walls.",
+      "Equipped creature has ward {2}, is a Rogue, and can't be blocked.",
+      "Equipped creature has ward {2}, loses flying, is a Rogue in addition to its other types, and can't be blocked."
+    ]
+  }
+]

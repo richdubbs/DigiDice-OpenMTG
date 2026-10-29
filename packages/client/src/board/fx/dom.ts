@@ -47,11 +47,22 @@ function boxOf(el: Element, layoutEl: HTMLElement = el as HTMLElement): Box {
   return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: layoutEl.offsetWidth || r.width, h: layoutEl.offsetHeight || r.height };
 }
 
+/**
+ * The picture's own transform. A card back in another player's hand is fanned by its inline style; a card picture is turned only by its card's classes
+ * (board.css: `.is-tapped`, a mana source picked in a payment, `.hl-selected`), so only those cards have their computed style read: a board of 60
+ * permanents read every one of them at each measurement.
+ */
+function pictureTransform(el: HTMLElement, image: HTMLElement): string {
+  if (image.style.transform) return image.style.transform;
+  if (!el.matches('.is-tapped, .hl-selected')) return '';
+  const t = getComputedStyle(image).transform;
+  return t && t !== 'none' ? t : '';
+}
+
 function entryOf(el: HTMLElement, zone: string): CardEntry {
   const image = (el.matches('.board-card') ? el.querySelector<HTMLElement>(':scope > .board-card-image') : el) ?? el;
   const b = boxOf(image, image);
-  const transform = getComputedStyle(image).transform;
-  return { ...b, el, image, transform: transform && transform !== 'none' ? transform : '', scryfall: image.querySelector('img[data-source="scryfall"]') !== null, zone };
+  return { ...b, el, image, transform: pictureTransform(el, image), scryfall: image.querySelector('img[data-source="scryfall"]') !== null, zone };
 }
 
 /** Measure the board (`root`: the `.game-board`). Cards inside an open zone viewer or the fx layer are skipped. */
@@ -138,7 +149,15 @@ export function makeGhost(layer: HTMLElement, e: CardEntry, at: Box = e, reuse =
   wrap.style.top = `${at.y - lr.top - e.h / 2}px`;
   wrap.style.width = `${e.w}px`;
   wrap.style.height = `${e.h}px`;
+  // Its shadows and glows (glowLayer) lie in a box turned like the picture, behind it.
+  const under = document.createElement('div');
+  under.className = 'fx-ghost-under';
+  under.style.width = `${e.w}px`;
+  under.style.height = `${e.h}px`;
+  if (e.transform) under.style.transform = e.transform;
+  wrap.appendChild(under);
   const inner = reuse && !e.image.isConnected ? e.image : (e.image.cloneNode(true) as HTMLElement);
+  dropGlows(inner);
   inner.removeAttribute('id');
   inner.style.width = `${e.w}px`;
   inner.style.height = `${e.h}px`;
@@ -153,6 +172,47 @@ export function makeGhost(layer: HTMLElement, e: CardEntry, at: Box = e, reuse =
   wrap.appendChild(inner);
   layer.appendChild(wrap);
   return wrap;
+}
+
+/** The box a ghost's shadows and glows lie in (makeGhost), behind its picture. */
+export function ghostUnder(g: HTMLElement): HTMLElement {
+  return g.querySelector<HTMLElement>(':scope > .fx-ghost-under') ?? g;
+}
+
+/**
+ * Where a glow around an element on the board goes: a card's picture box (behind the picture: the card is a stacking context, arena.css), a ghost's
+ * box behind its picture, the pile's place for an ability tile on the table (the tile clips what is outside it), or the element itself (a disc, a tile).
+ */
+export function glowHost(el: HTMLElement): HTMLElement {
+  if (el.matches('.fx-ghost')) return ghostUnder(el);
+  if (el.matches('.board-card')) return el.querySelector<HTMLElement>(':scope > .board-card-image') ?? el;
+  if (el.matches('.ability-tile') && el.parentElement?.matches('.table-stack-item')) return el.parentElement;
+  return el;
+}
+
+/**
+ * A light or a shadow around `host`, painted once: a transparent box the size of the host with `shadow` as its box shadow (drawn only outside the box, so
+ * never on a picture), behind the host's content (arena.css `.fx-glow`), hidden until its opacity is animated. One per `key`; its shadow is set again
+ * when it changes.
+ */
+export function glowLayer(host: HTMLElement, key: string, shadow: string): HTMLElement {
+  let el = host.querySelector<HTMLElement>(`:scope > .fx-glow[data-glow="${key}"]`);
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'fx-glow';
+    el.dataset.glow = key;
+    host.appendChild(el);
+  }
+  if (el.dataset.shadow !== shadow) {
+    el.dataset.shadow = shadow;
+    el.style.boxShadow = shadow;
+  }
+  return el;
+}
+
+/** Take the glows out of a copy of a picture (one may have been lit on the card when it was copied). */
+export function dropGlows(el: HTMLElement): void {
+  for (const g of el.querySelectorAll(':scope > .fx-glow')) g.remove();
 }
 
 /** Pieces of a rectangle for a shatter: triangles fanned from an impact point (percent coordinates for clip-path). */
@@ -193,9 +253,10 @@ export function shardPolygons(impact: { x: number; y: number }, rings = 2, spoke
 
 /**
  * Big pieces of a rectangle for a card breaking apart: a jittered `cols` x `rows` grid (inner corners moved, border corners kept on the border), some
- * cells split along a diagonal, as clip-path polygons in percent, each with its middle (where it turns and where it flies from).
+ * cells split along a diagonal, as clip-path polygons in percent, each with its middle (where it turns and where it flies from). At most `max` pieces:
+ * a cell is split only while the pieces still fit (each piece is a copy of the whole card).
  */
-export function chunkPolygons(cols = 3, rows = 3, seed = 5): { clip: string; cx: number; cy: number }[] {
+export function chunkPolygons(cols = 3, rows = 3, seed = 5, max = Infinity): { clip: string; cx: number; cy: number }[] {
   let r = seed;
   const rnd = () => {
     r = (r * 9301 + 49297) % 233280;
@@ -225,7 +286,9 @@ export function chunkPolygons(cols = 3, rows = 3, seed = 5): { clip: string; cx:
       const b = pt[j]![i + 1]!;
       const c = pt[j + 1]![i + 1]!;
       const d = pt[j + 1]![i]!;
-      if (rnd() < 0.35) {
+      // The cells after this one still need a piece each.
+      const left = rows * cols - (j * cols + i) - 1;
+      if (rnd() < 0.35 && out.length + 2 + left <= max) {
         if (rnd() < 0.5) {
           poly([a, b, c]);
           poly([a, c, d]);

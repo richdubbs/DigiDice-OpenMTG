@@ -446,7 +446,11 @@ function putCountersClause(s: StepOf<'putCounters'>, st: RenderState): Clause {
     // your hand"), counted as the step runs (family counters-where-x-zone); Cloud std-woe (family counter-count): and a calculation, "put X +1/+1 counters on target
     // creature you control, where X is one plus the number of Foods you control" (a sum, lowered from "where X is", parser/lower/quantities.ts#substituteX)
     // p2-counters-move-2: and the X of "Remove all <kind> counters from ~", "put X +1/+1 counters on it, where X is the number of charge counters removed this way"
-    if (typeof s.count === 'object' && (s.count.q === 'cardsDrawnThisTurn' || s.count.q === 'lifeGainedThisTurn' || s.count.q === 'zoneSize' || s.count.q === 'math' || (s.count.q === 'X' && st.costAllCountersX !== undefined))) return plain(alt(main, `put X ${pluralize(noun)} on ${on}, where X is ${K.qty(s.count, st)}`, ...timesText));
+    // edh-perms-1 (CR 706.2, 107.3, 122.6): and the result of the die roll just made ("roll a d20. When you do, put X +1/+1 counters on each of up to two target creatures, where X is
+    // the result", Ancient Bronze Dragon), the counters going on each of several targets as FAST2 T8 says below
+    const dieTargets = typeof s.count === 'object' && s.count.q === 'dieResult' && s.on.ref === 'target' ? st.specs.get(s.on.id) : undefined;
+    const dieEach = dieTargets !== undefined && (dieTargets.max !== 1 || dieTargets.perOpponent === true || dieTargets.perPlayer === true) ? [`put X ${pluralize(noun)} on each of ${on}, where X is ${K.qty(s.count, st)}`] : [];
+    if (typeof s.count === 'object' && (s.count.q === 'cardsDrawnThisTurn' || s.count.q === 'lifeGainedThisTurn' || s.count.q === 'zoneSize' || s.count.q === 'math' || s.count.q === 'dieResult' || (s.count.q === 'X' && st.costAllCountersX !== undefined))) return plain(alt(main, `put X ${pluralize(noun)} on ${on}, where X is ${K.qty(s.count, st)}`, ...dieEach, ...timesText));
     // FAST4 T28 (CR 107.3, 608.2h): a statistic of an object ("where X is ~'s power", "where X is that spell's mana value") or another read value, with the
     // amount after the recipient ("put a number of +1/+1 counters on ~ equal to that creature's power")
     if (typeof s.count === 'object' && (s.count.q === 'stat' || s.count.q === 'counters' || s.count.q === 'distinct')) { // std-sos: or the names / colors among a group ("where X is the number of differently named lands you control")

@@ -5,7 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyAction, cloneState, compileCard, createToken, replay, type GameState } from '../../src/index';
 import { Game } from '../../src/core/game';
-import { clone } from '../../src/util/clone';
+import { clone, deepFreeze } from '../../src/util/clone';
 import { getTokens } from '../fixtures';
 import { startedGame } from '../helpers';
 import { answer, find, pass, scenario } from './helpers';
@@ -32,7 +32,7 @@ describe('state definitions are shared and never mutated', () => {
   });
 
   it('card definitions are frozen when a game is created: editing one in place throws', () => {
-    const s = startedGame(); // (the scenario helper deep-clones its state, which un-freezes the definitions, so use createGame's own state)
+    const s = startedGame(); // (createGame's own state; the scenario helper's clone shares the same frozen definitions since F17/F9)
     const def = s.defs['Test Bear']!;
     expect(Object.isFrozen(def) && Object.isFrozen(def.faces) && Object.isFrozen(def.faces[0]) && Object.isFrozen(def.faces[0]!.abilities)).toBe(true);
     expect(() => { (def.faces[0] as { name: string }).name = 'Other'; }).toThrow(TypeError);
@@ -123,5 +123,57 @@ describe('states stay immutable', () => {
       s = applyAction(s, a).state;
     }
     expect(JSON.stringify(replay(cfg, actions).state)).toBe(JSON.stringify(s));
+  });
+});
+
+describe('F17/F9 (owner decision 2026-10-26): clone shares what is frozen', () => {
+  it('a frozen tree is returned as it is: the same reference, at the root and inside a mutable tree', () => {
+    const frozen = deepFreeze({ name: 'Bear', faces: [{ types: ['Creature'], abilities: [{ kind: 'keyword', keyword: 'trample' }] }] });
+    expect(clone(frozen)).toBe(frozen);
+    expect(clone(frozen.faces)).toBe(frozen.faces);
+    const holder = { defs: { Bear: frozen }, list: [frozen, { n: 1 }] };
+    const c = clone(holder);
+    expect(c).not.toBe(holder);
+    expect(c.defs).not.toBe(holder.defs);
+    expect(c.defs.Bear).toBe(frozen);
+    expect(c.list[0]).toBe(frozen);
+    expect(c.list[1]).not.toBe(holder.list[1]);
+    expect(c).toEqual(holder);
+  });
+
+  it('a mutable tree is a deep copy: no object or array is shared, and editing the copy changes nothing in the original', () => {
+    const tree = { a: { b: [1, 2, { c: 'x' }] }, d: [[1], [2]], e: undefined as unknown, f: null };
+    const c = clone(tree);
+    expect(c).toEqual({ a: { b: [1, 2, { c: 'x' }] }, d: [[1], [2]], f: null }); // an undefined key is dropped, as before
+    expect('e' in c).toBe(false);
+    expect(c.a).not.toBe(tree.a);
+    expect(c.a.b).not.toBe(tree.a.b);
+    expect(c.a.b[2]).not.toBe(tree.a.b[2]);
+    expect(c.d[0]).not.toBe(tree.d[0]);
+    (c.a.b[2] as { c: string }).c = 'y';
+    c.d[0]!.push(9);
+    expect(tree).toEqual({ a: { b: [1, 2, { c: 'x' }] }, d: [[1], [2]], e: undefined, f: null });
+  });
+
+  it('a shallow-frozen object is shared too (so only deep-frozen objects may be frozen in a state: definitions, history entries)', () => {
+    const inner = { n: 1 };
+    const shallow = Object.freeze({ inner });
+    expect(clone(shallow)).toBe(shallow);
+  });
+
+  it('cloneState still copies what the engine edits and shares the definitions and history entries', () => {
+    const s = board();
+    const c = cloneState(s);
+    expect(c.defs).toBe(s.defs);
+    for (const id of Object.keys(s.objects)) {
+      expect(c.objects[id]).not.toBe(s.objects[id]);
+      expect(c.objects[id]!.counters).not.toBe(s.objects[id]!.counters);
+    }
+    expect(c.players[0]).not.toBe(s.players[0]);
+    expect(c.zones.battlefield).not.toBe(s.zones.battlefield);
+    expect(c.turn).not.toBe(s.turn);
+    expect(c.history).not.toBe(s.history);
+    for (let i = 0; i < s.history.length; i++) expect(c.history[i]).toBe(s.history[i]);
+    expect(JSON.stringify(c)).toBe(JSON.stringify(s));
   });
 });

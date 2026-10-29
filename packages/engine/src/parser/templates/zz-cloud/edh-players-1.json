@@ -1,0 +1,126 @@
+[
+  {
+    "id": "sta.edhp1.permit.extraLands.n",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.2",
+      "CR 305.2a"
+    ],
+    "pattern": "you may play {n:Qty} additional lands on each of your turns",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "playLand",
+      "count": "$n"
+    },
+    "consumes": [
+      "may",
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You may play four additional lands on each of your turns."
+      },
+      {
+        "text": "Flying\nYou may play three additional lands on each of your turns."
+      }
+    ],
+    "counterExamples": [
+      "You may play two additional lands this turn.",
+      "You may play two additional lands on each player's turn.",
+      "Players may play two additional lands on each of their turns."
+    ]
+  },
+  {
+    "id": "eff.edhp1.draw.mayUpTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 608.2d",
+      "CR 609.3"
+    ],
+    "pattern": "{p:Player} may draw up to {n:Qty} card[s]",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": "$n",
+      "upTo": true
+    },
+    "subject": "player",
+    "consumes": [
+      "may",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Target player may draw up to three cards."
+      },
+      {
+        "text": "Each player may draw up to two cards."
+      }
+    ],
+    "counterExamples": [
+      "Target player may draw three cards.",
+      "Target player draws up to three cards.",
+      "Target player may draw up to three lands."
+    ]
+  },
+  {
+    "id": "trg.edhp1.firstTime.eachOfTheirTurns",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 500.1"
+    ],
+    "pattern": "whenever {e:Event} for the first time during each of their turns",
+    "build": {
+      "on": "$e",
+      "first": "turn",
+      "while": {
+        "cond": "turnOf",
+        "whose": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "player",
+            "number": "plural",
+            "text": "their"
+          }
+        }
+      }
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.first",
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent gains life for the first time during each of their turns, draw a card."
+      },
+      {
+        "text": "Whenever a player loses life for the first time during each of their turns, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent gains life for the first time during each of your turns, draw a card.",
+      "Whenever an opponent gains life for the second time during each of their turns, draw a card.",
+      "Whenever an opponent gains life for the first time each turn, draw a card."
+    ]
+  }
+]

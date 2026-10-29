@@ -265,7 +265,7 @@ export class Tables {
       if (!p.ok) return err('badMessage', p.message);
       password = p.value;
     }
-    const deck = await this.prepare(m.deck, m.format);
+    const deck = await this.prepare(m.deck, m.format, who.session);
     if (!deck.ok) return deck.reply;
     // Checked again after the deck pool's await (another command may have changed things meanwhile), and the place is taken at once: nothing is
     // awaited between this check and the reservation.
@@ -413,7 +413,7 @@ export class Tables {
     s.reserved = who.session;
     let deck: Awaited<ReturnType<Tables['prepare']>>;
     try {
-      deck = await this.prepare(m.deck, table.format);
+      deck = await this.prepare(m.deck, table.format, who.session); // F32: paced per session in the deck pool (a listed table has no JoinGuard)
     } finally {
       if (s.reserved === who.session) s.reserved = null;
     }
@@ -1042,14 +1042,16 @@ export class Tables {
     }));
   }
 
-  private async prepare(deck: HostedDeck, format: string): Promise<{ ok: true; deck: PreparedDeck; hash: string } | { ok: false; reply: TableReply }> {
+  /** `session`: the session asking (F32: its deck checks are paced); none for the server's own (a restart's lobby decks). */
+  private async prepare(deck: HostedDeck, format: string, session?: string): Promise<{ ok: true; deck: PreparedDeck; hash: string } | { ok: false; reply: TableReply }> {
     let r: DeckResult;
     try {
-      r = await this.o.runtime.prepare(deck, format);
+      r = await this.o.runtime.prepare(deck, format, session);
     } catch {
       return { ok: false, reply: err('busy', 'The deck check failed; try again.') };
     }
     if (r.ok) return { ok: true, deck: r.deck, hash: preparedDeckHash(this.o.ledgerSecret, r.deck) };
+    if ('rateLimited' in r) return { ok: false, reply: err('rateLimited', 'You are checking decks too often; wait a moment.', { retryAfterMs: r.retryAfterMs }) };
     if ('busy' in r) return { ok: false, reply: err('busy', 'The server is busy checking decks; try again shortly.', { retryAfterMs: 2_000 }) };
     if ('timeout' in r) return { ok: false, reply: err('busy', 'The deck check took too long; try again.') };
     return { ok: false, reply: err('deckRejected', 'The deck is not legal for this table.', { details: r.errors.slice(0, 50) }) };

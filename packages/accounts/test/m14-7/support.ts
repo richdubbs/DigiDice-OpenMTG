@@ -1,22 +1,22 @@
 /**
- * Shared fixtures of the M14-7 tests (owner rule: in process, a fake clock, fixed inputs). The service of the M14-5 fixtures (the memory store, or a
- * file store under a temporary ACCOUNTS_DATA_DIR; the real name rules, credential tools and a fast hasher) with the real rights part, a fake email
- * part that records the notices it is asked to send, fake data holders whose answers are scripted, and a fake mailer: either one that only records
+ * Shared fixtures of the M14-7 tests (owner rule: in process, a fake clock, fixed inputs). The service of the M14-5 fixtures (the memory store, a
+ * temporary ACCOUNTS_DATA_DIR for the mail and export files; the real name rules, credential tools and a fast hasher) with the real rights part, a
+ * fake email part that records the notices it is asked to send, fake data holders whose answers are scripted, and a fake mailer: either one that only records
  * `forget`, or one that files each message under `mail/<account>/` as FileMailer does (M14-8's, not built on this branch), so the erasure's byte
  * search can find what it leaves.
  */
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join } from 'node:path';
 import {
-  createCredentialTools, createListNameFilter, createMemoryAccountStore, createNameRules, createRightsPart, FILE_STORE_FILES,
+  createCredentialTools, createListNameFilter, createMemoryAccountStore, createNameRules, createRightsPart,
   type AccountDataHolder, type AccountId, type AccountStore, type CreateEmailPart, type Mailer, type NoticeKind, type PartDeps, type PlayerRef,
   type RightsPart,
 } from '@openmtg/accounts';
 import { buildNoVerifier } from '../../src/abuse/work';
 import { buildPasswordHasher } from '../../src/crypto/hasher';
 import { buildAccountService } from '../../src/service/core';
-import { placeOf, placesInTables } from '../m14-4/contract';
-import { Clock, configOf, equal, FakeGuests, fastDerive, fixedRandom, spyHasher, type LogLine, type Setup } from '../m14-5/support';
+import { placesInTables } from '../m14-4/contract';
+import { Clock, configOf, dumpOf, equal, FakeGuests, fastDerive, fixedRandom, spyHasher, type LogLine, type Setup } from '../m14-5/support';
 
 export * from '../m14-5/support';
 
@@ -169,27 +169,14 @@ export function filesUnder(dir: string): string[] {
 }
 
 /**
- * The byte search of ACCOUNTS_DATA_DIR (as M14-4's file-store test does it): every place `needle` occurs in a file under `dir`. A hit in the file
- * store's snapshot or journal is placed under the table of the row it is in (placeOf); a hit in any other file is `file:<relative path>`.
+ * The byte search after an erasure (13.2): every place `needle` occurs in the memory store's rows (placed under their table by placesInTables) and
+ * in the files under `dir` (FileMailer's mail/, the export files), a hit in a file as `file:<relative path>`. The PostgreSQL store's rows are
+ * searched by test/m14-11's harness (placesIn).
  */
-export function placesInDir(dir: string, needle: string): string[] {
+export function placesInDir(dir: string, store: AccountStore, needle: string): string[] {
   const bytes = Buffer.from(needle, 'utf8');
-  const out: string[] = [];
-  for (const f of filesUnder(dir)) {
-    const buf = readFileSync(join(dir, f));
-    if (!buf.includes(bytes)) continue;
-    let found: string[] = [];
-    if (f === FILE_STORE_FILES.snapshot) {
-      found = placesInTables((JSON.parse(buf.toString('utf8')) as { tables: Record<string, [string, unknown][]> }).tables, needle);
-    } else if (f === FILE_STORE_FILES.journal) {
-      for (const line of buf.toString('utf8').split('\n').filter((l) => l !== '')) {
-        for (const m of (JSON.parse(line) as { m: { t: string; k: string; v: unknown }[] }).m) {
-          if (JSON.stringify(m).includes(needle)) found.push(m.v === null ? `journal-delete:${m.t}` : placeOf(m.t, m.v, needle));
-        }
-      }
-    }
-    out.push(...(found.length > 0 ? found : [`file:${relative(dir, join(dir, f))}`]));
-  }
+  const out = placesInTables(dumpOf(store), needle);
+  for (const f of filesUnder(dir)) if (readFileSync(join(dir, f)).includes(bytes)) out.push(`file:${f}`);
   return out;
 }
 

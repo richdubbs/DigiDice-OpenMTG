@@ -47,6 +47,8 @@ const START = 'start.json';
 const LOG = 'log.jsonl';
 const CONSENT = 'consent.json';
 const END = 'end.json';
+/** A record begun for a page without a library of its own (`begin`'s `library`): this server keeps it in its own library. */
+const LIBRARY = 'library.json';
 
 type Rec = Record<string, unknown>;
 const isRec = (x: unknown): x is Rec => typeof x === 'object' && x !== null && !Array.isArray(x);
@@ -119,15 +121,17 @@ export class OnlineReplayStore {
 
   /**
    * A game began: its folder, its owner (this launch), its start line and the players who agree so far (`agreed`: the choices made in the lobby), after
-   * removing the oldest records past `keep`.
+   * removing the oldest records past `keep`. `library`: the game is kept in this server's library (online/bridge.ts), so a record a server that is
+   * gone left is found at the next start (`leftForLibrary`).
    */
-  begin(start: OnlineRecordStart, agreed: readonly PlayerId[] = []): void {
+  begin(start: OnlineRecordStart, agreed: readonly PlayerId[] = [], library = false): void {
     const dir = this.folder(start.id);
     if (!dir) return;
     this.mine.set(start.id, { open: true, kept: false, changed: false });
     this.write('start', () => {
       mkdirSync(dir, { recursive: true });
       OnlineReplayStore.writeWhole(path.join(dir, OWNER), this.owner);
+      if (library) OnlineReplayStore.writeWhole(path.join(dir, LIBRARY), {});
       OnlineReplayStore.writeWhole(path.join(dir, START), start);
       OnlineReplayStore.writeWhole(path.join(dir, CONSENT), { agreed: [...agreed] });
       this.written.set(start.id, [...agreed]);
@@ -210,6 +214,11 @@ export class OnlineReplayStore {
     if (!isRec(o) || typeof o['launch'] !== 'string' || o['launch'] === this.owner.launch) return false;
     if (o['host'] !== this.owner.host) return true;
     return typeof o['pid'] === 'number' && this.alive(o['pid']);
+  }
+
+  /** The records begun for the library (`begin`'s `library`) that no server holds any more: a server that stopped or crashed with the game open left them. */
+  leftForLibrary(): string[] {
+    return this.ids().filter((id) => this.has(id, LIBRARY) && !this.mine.has(id) && !this.runningElsewhere(id));
   }
 
   /** The records kept, newest first (`running`: whether a record's game is still running on this server; another server's counts too). */

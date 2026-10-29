@@ -1,10 +1,7 @@
 /**
- * Storage behind one interface (D18). MemoryAccountStore (unit tests), FileAccountStore (development: the memory store plus an append-only
- * journal under ACCOUNTS_DATA_DIR, fsync per write, a torn last line cut at open, a compacted snapshot at open and after every erase and rekey,
- * a lock file against a second process; journal lines carry a monotonic seq and the snapshot its lastSeq, written in the crash-safe order of
- * milestone 15's file store (m15 13.3: snapshot.tmp, fsync, rename, fsync the directory, then the journal rewritten without the lines at or
- * below lastSeq; opening replays only later lines), so a crash never applies a write twice), and, at the sync, PostgresAccountStore (11.5).
- * One contract suite (test/m14-4/contract.ts) runs against each.
+ * Storage behind one interface (D18). MemoryAccountStore (unit tests) and PostgresAccountStore (11.5: production, and development, where it runs on
+ * PGlite in ACCOUNTS_DATA_DIR behind a lock file against a second process: src/store/pglite.ts; F26 replaced M14-4's journal-and-snapshot file
+ * store with it). One contract suite (test/m14-4/contract.ts) runs against both.
  *
  * Rules every implementation keeps:
  * - Timestamps are ISO-8601 UTC strings; durations are in milliseconds. A method that decides by time takes `now`; none reads a clock.
@@ -19,9 +16,9 @@
  * - Secrets are hashes only. Addresses are never stored (D15).
  * - Audit events are never updated by the service; they are removed only by purge (by AUDIT_CATEGORY, 10.3) and by erase (10.2), which in PostgreSQL
  *   both go through accounts.purge_audit (11.5).
- * - erase leaves no copy behind: the file store rewrites its snapshot and truncates its journal (fsync, then the old files deleted) before it returns.
+ * - erase leaves no row behind (PostgreSQL keeps the bytes of deleted rows in its files until it reuses the space, as any PostgreSQL database does).
  *
- * Design: docs/design/m14-accounts.md, sections 11.2 and 11.5 (M14-1). The stores themselves are M14-4's (memory, file) and M14-11's (PostgreSQL).
+ * Design: docs/design/m14-accounts.md, sections 11.2 and 11.5 (M14-1). The stores themselves are M14-4's (memory) and M14-11's (PostgreSQL).
  */
 import type {
   Account, AccountChange, AccountId, AccountSession, AuditEvent, AuditKind, ProviderId, RelationKind, ReportReason, ReportStatus, SanctionEnd,
@@ -29,9 +26,9 @@ import type {
 } from '../api';
 
 /**
- * INTERFACE CHANGE (review of M14-4): 'notCompacted', the file store's answer to an erase or a rekey that is committed (on disk, and what every
- * read sees) but whose snapshot rewrite failed (a full disk), so its old copies are still in the files: calling erase again is safe and finishes
- * it; the rekey's snapshot is tried again at the next write and at close. A failed snapshot after any other write fails nothing.
+ * INTERFACE CHANGE (review of M14-4): 'notCompacted', the old file store's answer to an erase or a rekey that was committed but whose snapshot rewrite
+ * failed: calling erase again finished it. No store answers it since F26 removed the file store ('corrupt' likewise); the rights part still
+ * handles it (src/rights/deletion.ts, OwedErasures). 'locked': the development store's directory is in use by another opener (src/store/lock.ts).
  */
 /**
  * INTERFACE CHANGE (M14-11): 'schema', the PostgreSQL store's answer at open to a database whose `accounts` schema is not the version this build needs
@@ -260,6 +257,8 @@ export interface AccountStore {
   revokeSession(account: AccountId, id: string, reason: AccountSession['revokeReason'], at: string): Promise<void>;
   revokeSessions(account: AccountId, reason: AccountSession['revokeReason'], at: string, except?: string): Promise<string[]>;
   sessionsOf(account: AccountId): Promise<AccountSessionRow[]>;
+  /** One session by its id (a primary-key read), revoked or not; null for an id with none. The guard checks the row's account against the Auth's. */
+  sessionById(id: string): Promise<AccountSessionRow | null>;
   // ---- guest claims (5.5)
   claimGuest(c: ClaimRow): Promise<void>;                                    // 'exists' when the session is claimed
   claimsOf(account: AccountId): Promise<ClaimRow[]>;
@@ -311,6 +310,8 @@ export interface AccountStore {
    * appeal in this order (the operator's pages, 9.6); none when that sanction has no appeal.
    */
   appeals(q: { open?: boolean; account?: AccountId; limit: number; after?: string }): Promise<AppealRow[]>;
+  /** The appeal of one sanction (a primary-key read: one appeal per sanction), answered or not; null when it has none. */
+  appeal(sanction: string): Promise<AppealRow | null>;
   answerAppeal(sanction: string, answer: 'upheld' | 'lifted', message: string, by: string, at: string): Promise<void>;
   // ---- the audit log and the change feed (8.5, 9.7)
   /**
@@ -336,8 +337,7 @@ export interface AccountStore {
    * 10.2 step 5: every row of the account (relations both ways, sanctions and appeals, the closed reports it filed and the closed reports about it,
    * its audit events but `deleted`, its operator events' account id, its changes but `deleted`); its id scrubbed from other reports' `related`;
    * targetName "Deleted player" on open reports about it; its held keys turned into holds for nobody; its current key held until nameHoldUntil; the
-   * tombstone written last; then, in the file store, the snapshot rewritten and the journal truncated before it returns. INTERFACE CHANGE (review
-   * of M14-4): every name it has had and its email address are replaced by "Deleted player" in the free text of every row that stays, whoever's
+   * tombstone written last. INTERFACE CHANGE (review of M14-4): every name it has had and its email address are replaced by "Deleted player" in the free text of every row that stays, whoever's
    * (reports' text and note, sanctions' message and note, appeals' text and answerMessage, names entries' note), and reports filed by or about one
    * of its claimed guest sessions are handled as its own (13.2's byte search: no name or email anywhere).
    */
@@ -354,11 +354,12 @@ const STORE_METHODS = [
   'credentials', 'credentialBySubject', 'putCredential', 'deleteCredential', 'replaceRecoveryCodes', 'recoveryCodes', 'spendRecoveryCode', 'putDevice',
   'device', 'devicesOf', 'updateDevice', 'deleteDevices',
   'putSession', 'sessionByTokenHash', 'rotateSession', 'rerotateInGrace', 'updateSession', 'revokeSession', 'revokeSessions', 'sessionsOf',
+  'sessionById',
   'claimGuest', 'claimsOf',
   'setRelation', 'deleteRelation', 'relationsOf', 'relationsAmong',
   'putEmailCode', 'liveEmailCodes', 'useEmailCode', 'deleteEmailCodes',
   'putReport', 'report', 'reports', 'closeReport', 'putSanction', 'sanction', 'sanctionsOf', 'runningSanctions', 'endSanction', 'sanctionsEndingBy',
-  'markSeen', 'putAppeal', 'appeals', 'answerAppeal',
+  'markSeen', 'putAppeal', 'appeals', 'appeal', 'answerAppeal',
   'appendAudit', 'audit', 'appendChange', 'changes', 'changesHead',
   'dueDeletions', 'erase', 'tombstone', 'purge', 'close',
 ] as const satisfies readonly (keyof AccountStore)[];
@@ -382,8 +383,8 @@ export interface AccountStoreLimits {
 /** The memory store (unit tests): `createMemoryAccountStore` of src/store/index.ts. */
 export type CreateMemoryAccountStore = (opts?: AccountStoreLimits) => AccountStore;
 /**
- * The file store under `dir` (ACCOUNTS_DATA_DIR, development): `openFileAccountStore` of src/store/index.ts. Opening takes the lock file (a second
- * process is refused, 'locked'), cuts a torn last journal line, and replays the journal after the snapshot's lastSeq.
+ * The development store under `dir` (ACCOUNTS_STORE=file, ACCOUNTS_DATA_DIR): `openFileAccountStore` of src/store/index.ts, the PostgreSQL store on
+ * PGlite in `<dir>/db` (src/store/pglite.ts). Opening takes the lock file (a second opener is refused, 'locked') and applies the migrations it lacks.
  */
 export type OpenFileAccountStore = (opts: { dir: string } & AccountStoreLimits) => Promise<AccountStore>;
 /**

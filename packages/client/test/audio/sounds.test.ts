@@ -3,13 +3,16 @@
  * reaches its loudness without clipping, starts and ends without a click, has no DC, renders fast enough to be made on demand in the browser, and
  * its variants differ.
  */
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { analyze } from '../../src/audio/analysis';
 import { missingRecipes, renderSound, SOUND_IDS, SOUND_META, variantCount, type SoundMeta } from '../../src/audio/catalog';
 
 const SR = 48000;
 
 describe('the sound catalog', () => {
+  // The file runs about a minute of synchronous renders: a turn of the event loop between tests lets the test runner's messages through (without it the
+  // runner's "onTaskUpdate" call can time out at 60 s and the run reports an unhandled error).
+  beforeEach(() => new Promise<void>((resolve) => setTimeout(resolve, 0)));
   it('every sound has a recipe', () => {
     expect(missingRecipes()).toEqual([]);
   });
@@ -42,7 +45,8 @@ describe('the sound catalog', () => {
       expect(ms, 'render time (ms)').toBeLessThan(400);
     });
 
-    it('renders the same every time', () => {
+    // The comparison of two long buffers (ambient.grid: 576,000 samples) takes about 4 s here, near the default 5 s limit: a longer limit.
+    it('renders the same every time', { timeout: 20_000 }, () => {
       expect(renderSound(id, SR, 0).l).toEqual(renderSound(id, SR, 0).l);
     });
 

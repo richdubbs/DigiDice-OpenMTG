@@ -13,8 +13,9 @@ import type { AccountRetention } from './store/api';
 
 export interface AccountsConfig {
   enabled: boolean;                                      // ACCOUNTS: on / off (off until the client screens exist)
-  store: { kind: 'memory' } | { kind: 'file'; dir: string } | { kind: 'postgres' };   // ACCOUNTS_STORE, ACCOUNTS_DATA_DIR
-  dataDir: string | null;                                // ACCOUNTS_DATA_DIR: the file store, mail/ and exports/; default <DATA_DIR>/accounts
+  // ACCOUNTS_STORE, ACCOUNTS_DATA_DIR. 'file': the development store, PostgreSQL on PGlite in the directory (src/store/pglite.ts)
+  store: { kind: 'memory' } | { kind: 'file'; dir: string } | { kind: 'postgres' };
+  dataDir: string | null;                                // ACCOUNTS_DATA_DIR: the file store (db/, lock), mail/ and exports/; default <DATA_DIR>/accounts
                                                          // when hosted's DATA_DIR is set (the ladder's file store is <DATA_DIR>/ladder, m15 13.3)
   minAge: number;                                        // MIN_AGE (13)
   passwordMin: number;                                   // PASSWORD_MIN (12), at least 8

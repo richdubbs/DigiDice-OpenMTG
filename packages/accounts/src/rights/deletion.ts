@@ -200,7 +200,7 @@ export interface ErasureCounts { erased: number; erasureRetries: number; erasure
 
 /**
  * What an erasure that is committed still owes, finished at the next ticks: the snapshot of an erase that answered 'notCompacted' (erase called again
- * with the same arguments; the file store also tries it at its next write and at its next open).
+ * with the same arguments). No store answers 'notCompacted' since F26 removed the file store; kept for a store that may again.
  */
 export type OwedErasures = Map<AccountId, { tombstone: TombstoneRow; hold: string }>;
 

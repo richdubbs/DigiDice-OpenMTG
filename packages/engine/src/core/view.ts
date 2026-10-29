@@ -3,7 +3,7 @@
  * hidden zones; face-down permanents are hidden from opponents (CR 708). A view never
  * contains the RNG state, the suspended base state, or definitions of unseen cards.
  */
-import { clone } from '../util/clone';
+import { clone, deepFreeze } from '../util/clone';
 import type { EventContext, GameObject, GameState, HistoryEntry, LastKnown, LogEntry } from '../types/state';
 import type { Decision } from '../types/decisions';
 import type { ObjectId, PlayerId } from '../types/ids';
@@ -12,6 +12,8 @@ import { nextUint32, seedRng } from '../rng';
 import { VIEW_PARTS } from './registries';
 import { faceDownVisibleTo, topCardRevealed, topCardVisibleTo } from '../statics/play-permits';
 import { controllerOfPlayer, playersControlledBy } from './player-control';
+import { readingStable } from '../rules/characteristics';
+import { viewCharsFor, type ViewChars } from './view-chars';
 
 export const HIDDEN_DEF = '__hidden__';
 
@@ -19,8 +21,30 @@ export const HIDDEN_DEF = '__hidden__';
  * RPL-0 (replays design 5.5): the version of the `GameView` shape. A replay's recording stores views, so a client reads one only if it understands its
  * view schema (an older one through an adapter). Bump it whenever `GameView` changes in a way an older client would misread (a field renamed, removed or
  * given another meaning); a new optional field that older clients may ignore needs no bump.
+ *
+ * Schemas:
+ *  1. The first (RPL-0).
+ *  2. Godot plan phase 2: `chars`, the characteristics summary of every object the viewer may see (core/view-chars.ts). Bumped although the field is
+ *     additive, so a front end that relies on it (the Godot table) can tell a view that has it from one that lacks it; a schema-1 view is a schema-2
+ *     view without `chars`, so its adapter is the view as it is (`adaptRecordedView`) and every reader of this engine reads both.
  */
-export const ENGINE_VIEW_SCHEMA = 1;
+export const ENGINE_VIEW_SCHEMA = 2;
+/** The oldest view schema this engine still reads (through `adaptRecordedView`). */
+export const OLDEST_READ_VIEW_SCHEMA = 1;
+
+/** Whether this engine reads the views of a recording made with view schema `schema` (an older one through `adaptRecordedView`). */
+export function readsViewSchema(schema: number): boolean {
+  return Number.isInteger(schema) && schema >= OLDEST_READ_VIEW_SCHEMA && schema <= ENGINE_VIEW_SCHEMA;
+}
+
+/**
+ * A recorded view of view schema `schema` as a view of this schema. 1 -> 2: the same view (schema 2 only adds the optional `chars`; a reader of a view
+ * without it works the characteristics out itself, as the browser board always has: board/model.ts `charsOf`).
+ */
+export function adaptRecordedView<V extends object>(view: V, schema: number): V {
+  if (!readsViewSchema(schema)) throw new Error(`View schema ${schema} cannot be read by this engine (it reads ${OLDEST_READ_VIEW_SCHEMA} to ${ENGINE_VIEW_SCHEMA}).`);
+  return view;
+}
 
 export interface GameView extends Omit<GameState, 'rng' | 'suspended' | 'seed'> {
   /** The player this view is for; null = spectator (sees only public information). */
@@ -29,6 +53,12 @@ export interface GameView extends Omit<GameState, 'rng' | 'suspended' | 'seed'> 
   midAction: boolean;
   /** RPL-0 (additive): present only in the open view of a replay (`openView`: every card shown, `viewer` null); `viewFor` never sets it. */
   open?: true;
+  /**
+   * View schema 2 (Godot plan phase 2): the characteristics after the layers of every object the viewer may see, by object id (core/view-chars.ts).
+   * `viewFor` always sets it; a blank card (`HIDDEN_DEF`) has no entry, a face-down object the viewer may not look at has the face-down characteristics.
+   * Absent from the open view of a replay and from the views of a schema-1 recording.
+   */
+  chars?: Record<ObjectId, ViewChars>;
 }
 
 export function canSee(state: GameState, o: GameObject, viewer: PlayerId | null): boolean {
@@ -173,12 +203,17 @@ function lkiVisibleAs(state: GameState, l: LastKnown, viewer: PlayerId | null): 
  * to its place in the library.
  */
 function shownLki(state: GameState, l: LastKnown, viewer: PlayerId | null): LastKnown {
-  if (l.newId === undefined) return l;
-  const now = state.objects[l.newId];
-  const next = state.lki[l.newId];
-  if (now ? canSee(state, now, viewer) : next !== undefined && lkiVisible(state, next, viewer)) return l;
+  if (linkShown(state, l, viewer)) return l;
   const { newId: _newId, ...rest } = l;
   return rest;
+}
+
+/** Whether `shownLki` keeps `l.newId`: there is none, or the viewer can see the object (or the last known information) it names. */
+function linkShown(state: GameState, l: LastKnown, viewer: PlayerId | null): boolean {
+  if (l.newId === undefined) return true;
+  const now = state.objects[l.newId];
+  const next = state.lki[l.newId];
+  return now ? canSee(state, now, viewer) : next !== undefined && lkiVisible(state, next, viewer);
 }
 
 /** An event context without the snapshots of objects the viewer may not see (`roles` hold only ids and zones: no identity). */
@@ -198,19 +233,14 @@ function redactEvent(state: GameState, ctx: EventContext, viewer: PlayerId | nul
  * its id in the hand, which the view hides (an id tells when the card was drawn): every id fact that names an object the view does not show by that id
  * (`idShown`) is blanked (''), and the entry keeps its visible subject and its other facts. The rules read the history of the game state, never a view's.
  */
-function redactHistory(state: GameState, entry: HistoryEntry, viewer: PlayerId | null): HistoryEntry {
-  if (entry.subject !== undefined) {
-    const o = state.objects[entry.subject];
-    const l = state.lki[entry.subject];
-    const visible = o ? canSee(state, o, viewer) : l ? lkiVisible(state, l, viewer) : false;
-    if (!visible) {
-      const { subject: _subject, ...rest } = entry;
-      return { ...rest, facts: {} };
-    }
+function redactHistory(r: Reader, entry: HistoryEntry): HistoryEntry {
+  if (entry.subject !== undefined && !subjectSeen(r, entry.subject)) {
+    const { subject: _subject, ...rest } = entry;
+    return { ...rest, facts: {} };
   }
   let facts: HistoryEntry['facts'] | null = null;
   for (const [k, v] of Object.entries(entry.facts)) {
-    if ((k === 'id' || k.endsWith('.id')) && typeof v === 'string' && v !== '' && !idShown(state, v, viewer)) (facts ??= { ...entry.facts })[k] = '';
+    if ((k === 'id' || k.endsWith('.id')) && typeof v === 'string' && v !== '' && !shownId(r, v)) (facts ??= { ...entry.facts })[k] = '';
   }
   return facts ? { ...entry, facts } : entry;
 }
@@ -225,6 +255,104 @@ function idShown(state: GameState, id: string, viewer: PlayerId | null): boolean
   if (o) return (o.zone !== 'hand' && o.zone !== 'library') || canSee(state, o, viewer);
   const l = Object.hasOwn(state.lki, id) ? state.lki[id] : undefined;
   return l !== undefined && lkiVisible(state, l, viewer);
+}
+
+/**
+ * What one `viewFor` call reads of the state about object ids, each answer computed once per call: `idShown` (`i` + id: is the id shown, blanked if not)
+ * and the visibility of a history entry's subject (`s` + id, `redactHistory`). `deps`, when set, records every answer read, so that a memoized part of a
+ * view (`ViewMemo`) knows exactly what of the state it depends on.
+ */
+interface Reader {
+  readonly state: GameState;
+  readonly viewer: PlayerId | null;
+  readonly answers: Map<string, boolean>;
+  deps: Map<string, boolean> | null;
+}
+
+function shownId(r: Reader, id: string): boolean {
+  const key = `i${id}`;
+  let v = r.answers.get(key);
+  if (v === undefined) r.answers.set(key, (v = idShown(r.state, id, r.viewer)));
+  r.deps?.set(key, v);
+  return v;
+}
+
+function subjectSeen(r: Reader, id: string): boolean {
+  const key = `s${id}`;
+  let v = r.answers.get(key);
+  if (v === undefined) {
+    const o = r.state.objects[id];
+    const l = r.state.lki[id];
+    r.answers.set(key, (v = o ? canSee(r.state, o, r.viewer) : l ? lkiVisible(r.state, l, r.viewer) : false));
+  }
+  r.deps?.set(key, v);
+  return v;
+}
+
+/** The answer `key` (a `Reader` key) has in the reader's state. */
+const answerOf = (r: Reader, key: string): boolean => (key[0] === 'i' ? shownId(r, key.slice(1)) : subjectSeen(r, key.slice(1)));
+
+/** `blankIds`' test: an object id the view does not show by that id. */
+const hiderOf = (r: Reader) => (s: string): boolean => OBJECT_ID.test(s) && !shownId(r, s);
+
+/**
+ * F17/F9 (2026-10-26): the redacted log, history and last known information of one viewer of one game, kept from one `viewFor` call to the next. Those
+ * three grow with the game (a long game's view spent most of its time redacting and blanking them again), but their entries are shared between the
+ * states of a game and never edited (log and history entries are append-only, history entries frozen, an LKI entry written once: docs/ARCHITECTURE.md
+ * "Engine principles"), so the redacted copy of an entry stays right as long as the answers it read (`deps`) are the same.
+ *
+ * A pure memo (docs/ARCHITECTURE.md, the decision model): keyed by everything it reads, that is the entries by identity (`logSrc`, `histSrc`, `lki[].src`;
+ * immutable), the viewer, and the answers about object ids by value (`deps`, checked against the new state on every call: any change and the memo of
+ * that viewer starts over). The memos of a game are found from its first log entry (shared by every state of the game; a WeakMap, so they go with the
+ * game), one per viewer. What it hands out is frozen: views share the redacted entries (each view gets its own arrays and records).
+ */
+interface ViewMemo {
+  logSrc: LogEntry[];
+  log: LogEntry[];
+  histSrc: HistoryEntry[];
+  history: HistoryEntry[];
+  /** Per LKI id: the entry it was made from, whether the link to the new object was shown (`linkShown`), and the shown entry. */
+  lki: Map<ObjectId, { src: LastKnown; linked: boolean; out: LastKnown }>;
+  deps: Map<string, boolean>;
+}
+
+const VIEW_MEMOS = new WeakMap<LogEntry, Map<string, ViewMemo>>();
+
+const emptyMemo = (): ViewMemo => ({ logSrc: [], log: [], histSrc: [], history: [], lki: new Map(), deps: new Map() });
+
+/** The memo of `viewer` for the game of `state`, emptied if an answer it read has changed since. */
+function viewMemo(r: Reader): ViewMemo {
+  const anchor = r.state.log[0];
+  if (anchor === undefined) return emptyMemo(); // nothing logged yet: nothing worth keeping
+  let perViewer = VIEW_MEMOS.get(anchor);
+  if (!perViewer) VIEW_MEMOS.set(anchor, (perViewer = new Map()));
+  const key = r.viewer ?? '';
+  const memo = perViewer.get(key);
+  if (memo) {
+    let same = true;
+    for (const [k, v] of memo.deps) if (answerOf(r, k) !== v) { same = false; break; }
+    if (same) return memo;
+  }
+  const fresh = emptyMemo();
+  perViewer.set(key, fresh);
+  return fresh;
+}
+
+/**
+ * The redacted entries of `now` (an append-only list of the state): the memo's entries for the longest prefix of `now` it was made from, and `redact` of
+ * every later entry (which the memo keeps).
+ */
+function extend<T>(src: T[], out: T[], now: readonly T[], redact: (e: T) => T): T[] {
+  let k = 0;
+  const n = Math.min(src.length, now.length);
+  while (k < n && src[k] === now[k]) k++;
+  src.length = k;
+  out.length = k;
+  for (let i = k; i < now.length; i++) {
+    src.push(now[i]!);
+    out.push(redact(now[i]!));
+  }
+  return out.slice();
 }
 
 function redactLog(entry: LogEntry, viewer: PlayerId | null): LogEntry {
@@ -354,6 +482,16 @@ export function viewFor(full: GameState, viewer: PlayerId | null): GameView {
   // then reversed (CR 733.1). Until it is settled the other players see the state it started from: the card is not yet on the
   // stack for them, so abandoning a cast reveals nothing (CR 400.2).
   const state = shownState(full, viewer);
+  // F17/F9: a view reads the state and never changes it, so the characteristics cache is checked once for the whole view (WP30), not once for every
+  // top-of-library question (`canSee`: statics/play-permits.ts#topCardRevealed, topCardVisibleTo)
+  return readingStable(state, () => viewOf(full, state, viewer));
+}
+
+function viewOf(full: GameState, state: GameState, viewer: PlayerId | null): GameView {
+  const reader: Reader = { state, viewer, answers: new Map(), deps: null };
+  const memo = viewMemo(reader);
+  reader.deps = memo.deps; // from here on every answer read is one the memo's entries may depend on
+  const hide = hiderOf(reader);
   const objects: GameState['objects'] = {};
   const usedDefs = new Set<string>();
   for (const [id, o] of Object.entries(state.objects)) {
@@ -373,10 +511,25 @@ export function viewFor(full: GameState, viewer: PlayerId | null): GameView {
       usedDefs.add(objects[id]!.defId); // M6-3: a face-down permanent's or spell's pseudo-definition (the hidden definition is in no game's defs)
     }
   }
+  // View schema 2 (Godot plan phase 2): the characteristics summary of every object the view does not show as a blank card (core/view-chars.ts), from
+  // the state the view is made of, inside this view's `readingStable` scope (the characteristics cache is checked once for all of them)
+  const chars = viewCharsFor(state, (id) => objects[id]!.defId !== HIDDEN_DEF);
   // Last known information about objects that left public zones stays visible (without a link to an object the viewer cannot see); hidden-zone LKI does not.
+  // F17/F9: each shown entry is made once per viewer (`ViewMemo`): redacted, deep-copied, blanked (`blankUnshownIds`) and frozen.
   const lki: GameState['lki'] = {};
   for (const [id, l] of Object.entries(state.lki)) {
-    if (lkiVisible(state, l, viewer)) { const shown = shownLki(state, l, viewer); lki[id] = shown.object.links === undefined ? shown : { ...shown, object: hideSecretLinks(clone(shown.object), viewer) }; usedDefs.add(l.object.defId); }
+    if (!lkiVisible(state, l, viewer)) continue;
+    usedDefs.add(l.object.defId);
+    const linked = linkShown(state, l, viewer);
+    const known = memo.lki.get(id);
+    if (known && known.src === l && known.linked === linked) {
+      lki[id] = known.out;
+      continue;
+    }
+    const shown = shownLki(state, l, viewer);
+    const out = deepFreeze(blankIds(clone(shown.object.links === undefined ? shown : { ...shown, object: hideSecretLinks(clone(shown.object), viewer) }), hide));
+    memo.lki.set(id, { src: l, linked, out });
+    lki[id] = out;
   }
   // M6-0 (m6 design 2.6): definitions a viewer needs although no visible object has them (the definitions copy snapshots refer to, CR 707.2; M6-2)
   for (const p of VIEW_PARTS) for (const id of p.usedDefs?.(state, viewer) ?? []) usedDefs.add(id);
@@ -384,9 +537,10 @@ export function viewFor(full: GameState, viewer: PlayerId | null): GameView {
   if (viewer !== null) for (const id of state.outside?.[viewer] ?? []) usedDefs.add(id);
   // CMP1 (CR 702.139a): every player's revealed companion is public, wherever it is (the card stays named in `PlayerState.companion`)
   for (const p of state.players) if (p.companion) usedDefs.add(p.companion.defId);
+  // F17/F9: a view's own map of the definitions it may carry; a definition is frozen (core/create.ts, Game.addDef) and shared, not copied (`clone`)
   const defs: GameState['defs'] = {};
-  for (const id of usedDefs) if (state.defs[id]) defs[id] = state.defs[id]!;
-  for (const [id, d] of Object.entries(state.defs)) if (d.isToken) defs[id] = d;
+  for (const id of usedDefs) if (state.defs[id]) defs[id] = clone(state.defs[id]!);
+  for (const [id, d] of Object.entries(state.defs)) if (d.isToken) defs[id] = clone(d);
 
   // The look-back snapshots inside the event of a triggered ability on the stack (stack objects are public, what they remember of hidden cards is not).
   for (const o of Object.values(objects)) if (o.stack?.event) o.stack.event = redactEvent(state, o.stack.event, viewer);
@@ -413,23 +567,31 @@ export function viewFor(full: GameState, viewer: PlayerId | null): GameView {
   const pending = redactDecision(state.pending, viewer);
   const view: GameView = {
     ...shown,
-    history: clone(history.map((e) => redactHistory(state, e, viewer))),
+    // F17/F9: only the entries added since this viewer's last view of the game are redacted, copied and blanked (`ViewMemo`)
+    history: extend(memo.histSrc, memo.history, history, (e) => deepFreeze(blankIds(clone(redactHistory(reader, e)), hide))),
     pendingTriggers: clone(pendingTriggers.map((t) => ({ ...t, context: redactEvent(state, t.context, viewer) }))),
     objects,
-    lki: clone(lki),
-    defs: clone(defs),
-    log: state.log.map((e) => redactLog(e, viewer)),
+    lki,
+    defs,
+    log: extend(memo.logSrc, memo.log, state.log, (e) => Object.freeze(blankIds(redactLog(e, viewer), hide))),
     pending: toAlias.size > 0 && pending && (pending.player === viewer || pending.decidedBy === viewer) ? swapIds(pending, toAlias) : pending,
     viewer,
     midAction: suspended !== null,
+    chars,
   };
-  return blankUnshownIds(state, view, viewer);
+  reader.deps = null; // the rest of the view is made anew on every call: what it reads is no part of the memo
+  return blankUnshownIds(view, hide);
 }
 
 /** An object id (`o<n>`, core/game.ts): the only strings `blankUnshownIds` looks at. */
 const OBJECT_ID = /^o\d+$/;
-/** The parts of a view `blankUnshownIds` leaves alone: the zone lists and object keys are the view's own (aliases, blank library cards), the viewer's own decision may name the cards it shows the viewer (a search), definitions name no object. */
-const UNSCANNED: ReadonlySet<string> = new Set(['objects', 'zones', 'pending', 'defs', 'viewer']);
+/**
+ * The parts of a view `blankUnshownIds` leaves alone: the zone lists and object keys are the view's own (aliases, blank library cards), the viewer's own
+ * decision may name the cards it shows the viewer (a search), definitions name no object. The log, the history and the last known information are
+ * blanked entry by entry as `viewFor` makes them (F17/F9, `ViewMemo`), with the same test. The characteristics summaries (`chars`) are keyed by objects the
+ * view shows by that id and hold no object id (names, types, ability readings and keys, a player id).
+ */
+const UNSCANNED: ReadonlySet<string> = new Set(['objects', 'zones', 'pending', 'defs', 'viewer', 'log', 'history', 'lki', 'chars']);
 
 /**
  * NETFIX2 re-review (CR 400.2, audit m4): the parts of the state a view copies keep the ids they hold, and some name a card the view shows by another id
@@ -439,14 +601,7 @@ const UNSCANNED: ReadonlySet<string> = new Set(['objects', 'zones', 'pending', '
  * object id that names an object the view does not show by that id (`idShown`: another player's hidden hand card, a library card, last known
  * information hidden from the viewer, an id that is neither an object nor last known information). Copy on write: nothing shared with the state changes.
  */
-function blankUnshownIds(state: GameState, view: GameView, viewer: PlayerId | null): GameView {
-  const memo = new Map<string, boolean>();
-  const hide = (s: string): boolean => {
-    if (!OBJECT_ID.test(s)) return false;
-    let h = memo.get(s);
-    if (h === undefined) memo.set(s, (h = !idShown(state, s, viewer)));
-    return h;
-  };
+function blankUnshownIds(view: GameView, hide: (s: string) => boolean): GameView {
   const out = view as unknown as Record<string, unknown>;
   for (const [k, v] of Object.entries(out)) if (!UNSCANNED.has(k)) out[k] = blankIds(v, hide);
   // The view's own object record (built by viewFor, never the game state's), so the WP31 state-write lint does not apply to it.

@@ -4,6 +4,9 @@
  *
  * No filter, blend or opacity here ever applies to a card picture: ghosts and shards are copies of a picture moved and scaled whole (opacity only on shards of
  * our own frames and uploaded pictures, never of a Scryfall image: the animator keeps those whole), glows are box shadows outside the picture.
+ *
+ * What moves forever (the idle light) or on every change (the fx layer) animates only transforms and opacity, which the browser applies to layers it
+ * painted once; a filter, a box shadow or a dash offset animated here was painted again on every frame.
  */
 
 /*
@@ -293,9 +296,27 @@
   will-change: transform;
 }
 
-/* The dashed ring runs around the emblem (its dashes move; the ellipse itself never turns, so it stays flat on the table). */
-.arena-ring-spin {
-  animation: ring-run 16s linear infinite;
+/*
+ * The dashed ring runs around the emblem. Its ellipses are drawn as circles here, and the whole ring turns while squashed flat onto the table (to the
+ * ellipse's own 86/214), so only a transform changes and the ring is never painted again; running its dashes' offset repainted both 540px ellipses on
+ * every frame, forever. The dash pattern is fitted to the circle (79 dashes), so the turning ring has no seam. A browser that cannot set an ellipse's
+ * radii from CSS shows the ring still.
+ */
+@supports (ry: 1px) {
+  .arena-ring-spin {
+    ry: 214px;
+    stroke-dasharray: 5.006 12.014;
+  }
+
+  .arena-emblem-ring {
+    overflow: visible;
+    animation: ring-turn 63.3s linear infinite;
+  }
+}
+
+/* LCARS with "Animated backgrounds" off stops the ring (theme/lcars.css stopped its dashes). */
+:root[data-ui='lcars'][data-motion='off'] .arena-emblem-ring {
+  animation: none;
 }
 
 .arena-beam {
@@ -350,9 +371,13 @@
   }
 }
 
-@keyframes ring-run {
+/* As fast along the ring as the dashes ran before (340 units in 16 s). */
+@keyframes ring-turn {
+  from {
+    transform: scaleY(0.4019) rotate(0deg);
+  }
   to {
-    stroke-dashoffset: -340;
+    transform: scaleY(0.4019) rotate(360deg);
   }
 }
 
@@ -362,7 +387,26 @@
   animation: disc-spin 14s linear infinite;
 }
 
-.player-panel.is-deciding .avatar-disc {
+/*
+ * The disc of the player who is deciding breathes light: a soft light over the disc and a halo in its colour, on a layer of its own whose opacity breathes
+ * (a brightness filter animated on the disc painted the whole disc again on every frame). It hangs on the badges under the disc (shown while deciding),
+ * sized and placed to cover the disc.
+ */
+.player-panel.is-deciding .disc-badges::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  z-index: -1;
+  width: var(--disc-d, var(--disc));
+  height: var(--disc-d, var(--disc));
+  translate: -50% 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05) 60%, transparent 71%);
+  box-shadow: 0 0 22px 2px var(--disc-glow);
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity;
   animation: disc-breathe 1.8s ease-in-out infinite;
 }
 
@@ -409,9 +453,21 @@
   animation: selectable-glow 1.2s ease-in-out infinite;
 }
 
-/* The prompt's main button breathes when it is the thing to press. */
-.board-prompt .button-primary:not(:disabled),
-.table-actions .button-primary:not(:disabled) {
+/*
+ * The prompt's main button breathes when it is the thing to press: a light over its face and a glow around it, whose opacity breathes (a brightness
+ * filter animated on the button painted it again on every frame). The Reality Fracture look draws its own light in the button's ::before.
+ */
+:root:not([data-ui='fracture']) .board-prompt .button-primary:not(:disabled)::before,
+:root:not([data-ui='fracture']) .table-actions .button-primary:not(:disabled)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 14px var(--btn-glow);
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity;
   animation: primary-breathe 2.6s ease-in-out infinite;
 }
 
@@ -434,10 +490,10 @@
 @keyframes disc-breathe {
   0%,
   100% {
-    filter: brightness(1);
+    opacity: 0;
   }
   50% {
-    filter: brightness(1.25);
+    opacity: 1;
   }
 }
 
@@ -494,27 +550,27 @@
 @keyframes primary-breathe {
   0%,
   100% {
-    filter: brightness(1);
+    opacity: 0;
   }
   50% {
-    filter: brightness(1.12);
+    opacity: 1;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .arena-floor-grid,
   .arena-streaks span,
-  .arena-ring-spin,
+  .arena-emblem-ring,
   .arena-beam,
   .player-panel.is-active .avatar-ring,
-  .player-panel.is-deciding .avatar-disc,
+  .player-panel.is-deciding .disc-badges::before,
   .avatar-disc.is-critical .stat-life,
   .player-panel.hl-selectable .avatar-disc,
   .stack-item.is-top,
   .board-card.hl-playable > .board-card-image::after,
   .board-card.hl-selectable > .board-card-image::after,
-  .board-prompt .button-primary:not(:disabled),
-  .table-actions .button-primary:not(:disabled) {
+  :root:not([data-ui='fracture']) .board-prompt .button-primary:not(:disabled)::before,
+  :root:not([data-ui='fracture']) .table-actions .button-primary:not(:disabled)::before {
     animation: none;
   }
 }
@@ -559,6 +615,56 @@
   border-radius: 6px;
 }
 
+/* The box behind a ghost's picture, turned like it, that holds its shadows and glows. */
+.fx-ghost-under {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/*
+ * A shadow or a glow (Animator, dom.ts glowLayer): a transparent box the size of what it lights, its box shadow drawn only outside it, behind it (its
+ * card, ghost, disc or shatter is a stacking context), painted once; only its opacity and scale are animated.
+ */
+.fx-glow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* An ability's tile of our own is no stacking context: its glow lies over it (clear inside, so nothing is drawn on the tile). */
+.ability-tile > .fx-glow {
+  z-index: auto;
+}
+
+/* A text's glow (a life total, a commander damage line): a copy of the text laid out like it, its letters clear, only their shadow showing. */
+.fx-text-glow {
+  position: absolute;
+  inset: 0;
+  display: inherit;
+  gap: inherit;
+  align-items: inherit;
+  justify-content: inherit;
+  margin: 0;
+  padding: inherit;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  pointer-events: none;
+  opacity: 0;
+  animation: none;
+}
+
+.fx-text-glow,
+.fx-text-glow * {
+  color: transparent !important;
+}
+
 /* The own-draw reveal's artist credit (Animator showDraw): under the held-up copy, never on it; its type size is set for the held scale. */
 .fx-ghost-credit {
   position: absolute;
@@ -573,6 +679,8 @@
 
 .fx-shatter {
   position: absolute;
+  /* its rim (an .fx-glow) stays behind its pieces */
+  isolation: isolate;
 }
 
 .fx-shard {

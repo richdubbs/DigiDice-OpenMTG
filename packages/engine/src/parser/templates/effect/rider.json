@@ -96,7 +96,8 @@
     "kind": "rider",
     "cr": ["CR 707.10c", "CR 115.7"],
     "pattern": "you may choose new targets for the copy",
-    "build": { "$patchPrevious": { "newTargets": { "@new": "may" }, "@into": true } },
+    "build": { "$patchPrevious": {
+      "@alsoStep": -2, "newTargets": { "@new": "may" }, "@into": true } },
     "attachTo": "copy",
     "consumes": ["may"],
     "examples": [

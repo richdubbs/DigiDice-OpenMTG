@@ -10,7 +10,8 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./server-kit": "./src/server-kit.ts"
+    "./server-kit": "./src/server-kit.ts",
+    "./fingerprint": "./src/protocol/fingerprint.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

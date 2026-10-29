@@ -1,5 +1,6 @@
 /** The reliability layer on a simulated wire with a fake clock (docs/design/online.md, "Transport": acks, retransmission, order, fragmentation). */
 import { describe, expect, it } from 'vitest';
+import { Channel, DEFAULT_LINK_OPTIONS, INITIAL_CWND, MIN_CWND, type LinkOptions } from '../src/link/channel';
 import { Flag, FRAGMENT_BYTES, encodePayload } from '../src/wire/frame';
 import { noise, SimNet, simPair } from './sim';
 
@@ -115,5 +116,67 @@ describe('reliable channel', () => {
     net2.run([p.a.channel, p.b.channel], () => p.b.dead !== null, 5000);
     expect(p.b.dead).toMatch(/too large/);
     expect(p.b.received).toEqual([]);
+  });
+});
+
+/**
+ * F29: a bottleneck with a small router queue (tail drop): each direction forwards one datagram per `serviceMs` and holds at most `queue` waiting;
+ * everything that arrives while the queue is full is dropped. Bursty loss: nothing is lost while the sender stays under the path's capacity.
+ */
+function bottleneckPair(net: SimNet, o: { serviceMs: number; queue: number; latencyMs: number }, options: Partial<LinkOptions> = {}) {
+  const opts: LinkOptions = { ...DEFAULT_LINK_OPTIONS, tickMs: 5, ...options };
+  const end = () => ({ received: [] as unknown[], dead: null as string | null, dropped: 0, channel: null as unknown as Channel });
+  const a = end();
+  const b = end();
+  const router = (to: () => ReturnType<typeof end>, from: ReturnType<typeof end>) => {
+    let busyUntil = 0;
+    return (p: Buffer) => {
+      const waiting = Math.max(0, busyUntil - net.now) / o.serviceMs;
+      if (waiting >= o.queue) {
+        from.dropped++;
+        return;
+      }
+      busyUntil = Math.max(net.now, busyUntil) + o.serviceMs;
+      net.schedule(() => to().channel.receive(p, net.now), busyUntil - net.now + o.latencyMs);
+    };
+  };
+  const toB = router(() => b, a);
+  const toA = router(() => a, b);
+  a.channel = new Channel({ transmit: toB, message: (m) => a.received.push(m), dead: (r) => (a.dead = r) }, opts, net.now);
+  b.channel = new Channel({ transmit: toA, message: (m) => b.received.push(m), dead: (r) => (b.dead = r) }, opts, net.now);
+  return { a, b };
+}
+
+describe('congestion control (F29)', () => {
+  it('a bottleneck with a small router queue: the link adapts its window and survives (a fixed window of 128 resent at once timed out)', () => {
+    const net = new SimNet();
+    // 200 datagrams a second, 6 queued at most, 40 ms each way: about 16 fragments fit the path, 128 never do.
+    const { a, b } = bottleneckPair(net, { serviceMs: 5, queue: 6, latencyMs: 40 });
+    const big = { payload: noise(400 * 1024) };
+    a.channel.send(big, net.now);
+    a.channel.send({ after: true }, net.now);
+    net.run([a.channel, b.channel], () => (b.received.length === 2 && a.channel.idle) || a.dead !== null || b.dead !== null, 120_000);
+    expect(a.dead ?? b.dead).toBeNull();
+    expect(b.received).toEqual([big, { after: true }]);
+    expect(a.dropped).toBeGreaterThan(0); // the queue did overflow: the window had to come down
+    expect(a.channel.congestionWindow).toBeLessThan(DEFAULT_LINK_OPTIONS.window);
+    // Retransmissions stay near what the queue dropped (no storm of whole windows resent every tick).
+    expect(a.channel.stats.retransmissions).toBeLessThanOrEqual(2 * a.dropped + 10);
+  });
+
+  it('the window starts small, grows while the path takes it and stays within its bounds', () => {
+    const net = new SimNet();
+    const { a, b } = simPair(net, {}, {}, 40);
+    expect(a.channel.congestionWindow).toBe(INITIAL_CWND);
+    a.channel.send({ text: noise(1_000_000) }, net.now);
+    net.run([a.channel, b.channel], () => b.received.length === 1 && a.channel.idle, 600_000);
+    expect(a.channel.congestionWindow).toBeGreaterThan(INITIAL_CWND);
+    expect(a.channel.congestionWindow).toBeLessThanOrEqual(DEFAULT_LINK_OPTIONS.window);
+    expect(a.channel.stats.retransmissions).toBe(0);
+    const net2 = new SimNet();
+    const p = simPair(net2, { blackhole: true }, { idleTimeout: 60_000 });
+    p.a.channel.send({ text: noise(100 * 1024) }, net2.now);
+    net2.run([p.a.channel, p.b.channel], () => false, 20_000);
+    expect(p.a.channel.congestionWindow).toBe(MIN_CWND);
   });
 });

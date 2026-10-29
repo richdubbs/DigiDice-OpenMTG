@@ -1,5 +1,6 @@
 /**
- * RPL-1 (replays design 3, 4, 5): completing a game replay after the game, run in a Web Worker (recording.worker.ts) so the page never waits for it.
+ * RPL-1 (replays design 3, 4, 5): completing a game replay after the game, run in a Web Worker (completeJob.ts, in the page's engine worker) so the
+ * page never waits for it.
  * The game is run again under this engine build from its config and log (the engine's `startReplay` and `replayAction`, which never throw), and:
  *  - its checkpoints are taken again and compared with the recorded ones (`firstDivergence`): a game that does not play the same here (another
  *    build, an engine bug) gets nothing, since a recording of a different game would be wrong (design 5: a replay never plays wrong);
@@ -25,9 +26,10 @@ import {
   type ReplayFile, type ReplayRecording,
 } from '@openmtg/engine';
 import { endingOf } from './file';
+import { KEY_FRAME_TURNS } from '@openmtg/play/replay/recording';
 
 /** A full view is kept at the start of every 5th turn (design 4: turns 1, 6, 11, ...), so a jump applies few patches. */
-export const KEY_FRAME_TURNS = 5;
+export { KEY_FRAME_TURNS };
 
 /** The perspective a game replay's fallback recording shows (design 6): the saver's seat, or the public view (null) when several people played. */
 export function defaultPerspective(file: Pick<ReplayFile, 'game'>): PlayerId | null {

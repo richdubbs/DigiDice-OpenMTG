@@ -147,6 +147,30 @@ export function SettingsScreen({ store = settingsStore() }: { store?: SettingsSt
         </div>
       </section>
 
+      <section className="hud-panel" aria-labelledby="settings-thread">
+        <h2 id="settings-thread">Smooth play</h2>
+        <label className="settings-check">
+          <input type="checkbox" checked={s.gameInBackground} onChange={(e) => store.update({ gameInBackground: e.target.checked })} />
+          <span>Run the game in a background thread</span>
+        </label>
+        <p className="settings-hint">
+          The rules and the computer&apos;s thinking run apart from the drawing, so the table never stutters. Turn it off only if games will not start. Takes
+          effect with the next game.
+        </p>
+        {import.meta.env.DEV && (
+          <>
+            <label className="settings-check">
+              <input type="checkbox" checked={s.gameInServer} onChange={(e) => store.update({ gameInServer: e.target.checked })} />
+              <span>Run the game in the server</span>
+            </label>
+            <p className="settings-hint">
+              Development only: hot-seat games and games against the computer run in the local OpenMTG server, the way the Godot table will play them. These
+              games are not kept for the replays. Takes effect with the next game.
+            </p>
+          </>
+        )}
+      </section>
+
       <section className="hud-panel" aria-labelledby="settings-table">
         <h2 id="settings-table">Table (three or four players)</h2>
         <p className="settings-hint">

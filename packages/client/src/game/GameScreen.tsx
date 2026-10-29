@@ -54,6 +54,7 @@ import type { GameConnection } from '../connection/GameConnection';
 import { useGameView, useHandoff, useLegalActions } from '../connection/useGame';
 import { devSlowMo } from '../board/fx/devSlowMo';
 import { planBatch } from '../board/fx/plan';
+import { attachComputerPacer } from './computerPacer';
 import { acceleratedBudgetMs } from '../board/fx/stackPace';
 import { unanimatedCues } from '../board/fx/sounds';
 import type { PlayerSleeves } from '../board/sleeves';
@@ -195,6 +196,8 @@ function GameTable({ connection: source, rematch, slots = DEFAULT_SLOTS, coverDe
         },
       }),
   );
+  // F8 (review 2026-10-26): a computer opponent acts only once the board has shown every change, then pauses like a person (game/computer.ts).
+  useEffect(() => attachComputerPacer(source, connection), [source, connection]);
   const stale = useSyncExternalStore(connection.subscribe, connection.stale);
   const view = useGameView(connection);
   // The pictures of the cards in play are read before the board draws them again in another zone (cards/prefetch.ts).

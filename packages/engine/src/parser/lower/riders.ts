@@ -385,7 +385,17 @@ export function lowerRiders(input: Draft): Draft {
       if (u.manual || !u.rider) return;
       const prev = seq.slice(0, i).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
       const back = stepBack(u.rider.patch); // M6-8: "@step" (file comment); -1 is the last step
-      const at = prev && !prev.manual && back !== null ? prev.steps.length + back : -1;
+      let at = prev && !prev.manual && back !== null ? prev.steps.length + back : -1;
+      // edh-cast-1 INTERFACE CHANGE (additive, opt-in): `"@alsoStep": -2` lets a rider whose `attachTo` op is not the previous sentence's last step reach the step before it, when that
+      // one is of the op: "Copy target instant or sorcery spell, then return it to its owner's hand. You may choose new targets for the copy." (the copy comes first, the return of
+      // the original after it, CR 608.2c, 707.10c). Only when the last step is not of the op; the rider's own checks (`@require`) still apply.
+      const also = u.rider.patch['@alsoStep'];
+      if (prev && !prev.manual && back === -1 && at >= 0 && typeof also === 'number' && Number.isInteger(also) && also < -1 && u.rider.attachTo !== undefined) {
+        const ops = u.rider.attachTo.split('|');
+        const cur = prev.steps[at];
+        const other = prev.steps[prev.steps.length + also];
+        if (cur !== undefined && !ops.includes(String(cur['op'])) && other !== undefined && ops.includes(String(other['op']))) at = prev.steps.length + also;
+      }
       let holder: Rec[] = prev?.steps ?? [];
       let hat = at;
       let last = at >= 0 ? prev!.steps[at] : undefined;
@@ -491,7 +501,7 @@ export function lowerRiders(input: Draft): Draft {
       }
       let merged: Rec;
       try {
-        const { '@step': _step, '@into': _into, '@require': require, ...patch } = byOp(oneOf(u.rider.patch, last), last);
+        const { '@step': _step, '@alsoStep': _also, '@into': _into, '@require': require, ...patch } = byOp(oneOf(u.rider.patch, last), last);
         checkRequired(last, require);
         // CLOUD C9: the whole previous sentence when the rider acts on its last top-level step itself (an "instead" fold may then replace all of it)
         const sentence = holder === prev!.steps && hat === prev!.steps.length - 1 ? prev!.steps : undefined;

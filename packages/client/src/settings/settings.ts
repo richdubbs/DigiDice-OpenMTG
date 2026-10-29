@@ -69,6 +69,18 @@ export interface Settings {
   railWidth: number | null;
   /** The share of the rail's two halves the bottom one (the prompt: attackers, blockers, choices) takes, RAIL_SHARE_MIN to RAIL_SHARE_MAX; null for half. */
   railPromptShare: number | null;
+  /**
+   * Review 2026-10-26 F1: "Run the game in a background thread" (on by default): a hot-seat game or a game against the computer runs its rules engine
+   * and the computer's thinking in a Web Worker (connection/WorkerConnection.ts), so the board never stutters. Off, or a browser without workers: on the
+   * page, as before. Read when a game starts.
+   */
+  gameInBackground: boolean;
+  /**
+   * Godot plan phase 1, a development setting (Settings shows it only on the development server): "Run the game in the server" (off by default): a
+   * hot-seat game or a game against the computer runs in the local OpenMTG server, over its table channel (connection/TableConnection.ts), as the Godot
+   * table will play it. Read when a game starts; if the server cannot run it, the game runs as `gameInBackground` says.
+   */
+  gameInServer: boolean;
 }
 
 export const RAIL_WIDTH_MIN = 220;
@@ -100,6 +112,8 @@ export const DEFAULT_SETTINGS: Settings = {
   cameraFollow: true,
   railWidth: null,
   railPromptShare: null,
+  gameInBackground: true,
+  gameInServer: false,
 };
 
 /** A stored number kept to [min, max], or null when it is not a finite number. */
@@ -160,6 +174,8 @@ export function sanitizeSettings(raw: unknown): Settings {
     cameraFollow: r.cameraFollow !== false,
     railWidth: cleanRange(r.railWidth, RAIL_WIDTH_MIN, RAIL_WIDTH_MAX),
     railPromptShare: cleanRange(r.railPromptShare, RAIL_SHARE_MIN, RAIL_SHARE_MAX),
+    gameInBackground: r.gameInBackground !== false,
+    gameInServer: r.gameInServer === true,
   };
 }
 

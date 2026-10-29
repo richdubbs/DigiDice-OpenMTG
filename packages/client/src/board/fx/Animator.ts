@@ -11,6 +11,11 @@
  * Card pictures are only ever moved, turned or scaled, never filtered or covered: glows are box shadows outside the picture, impacts on cards are drawn on
  * the canvas behind the cards, and a card drawn with a Scryfall image never shatters (its exits keep the whole picture, ARCHITECTURE.md "Card images").
  *
+ * Only transforms and opacity are animated, so the browser moves layers it already painted instead of painting again on every frame. A shadow or a glow
+ * is painted once on a layer of its own behind the picture (dom.ts glowLayer) and fades in and out; a ghost's shadow growing as it rises is its rest,
+ * lift and high shadows crossfading (animateGhost). Everything is measured in one pass before anything is written (a measurement after a write makes the
+ * browser lay the page out again at once): at the start of a change, and one frame after the new view is committed.
+ *
  * Sound (docs/design/sound.md): each beat makes its sound (sounds.ts names them), panned to where it happens and timed with the animation's own delays;
  * what the change did without a visual (taps, shuffles, a lock-on ...) sounds when the new view is shown. A sound problem never breaks or delays a change,
  * and nothing more sounds once a change is cut short.
@@ -24,7 +29,10 @@ import type { BoardAnimator } from '../../connection/PacedConnection';
 import type { StagedStack } from '../GameBoard';
 import { charsOf } from '../model';
 import { creditElement } from '../../cards/ArtistCredit';
-import { chunkPolygons, makeGhost, pictureArtist, picturePending, snapshotBoard, targetBox, type Box, type BoardSnapshot, type CardEntry } from './dom';
+import {
+  chunkPolygons, dropGlows, ghostUnder, glowHost, glowLayer, makeGhost, pictureArtist, picturePending, snapshotBoard, targetBox, type Box, type BoardSnapshot,
+  type CardEntry,
+} from './dom';
 import { planBatch, planIsEmpty, spellStyle, totalDamage, type Hit, type LifeChange, type Move, type Plan, type SpellStyle, type StepA } from './plan';
 import { recoilFor, shakeFor, shakeKeyframes, shakeLevel } from './shake';
 import { stackDepths, stackPace } from './stackPace';
@@ -55,6 +63,24 @@ const SHADOW_REST = '0 4px 8px rgba(0,0,0,0.55)';
 const SHADOW_LIFT = '0 26px 34px rgba(0,0,0,0.6), 0 0 22px rgba(255,255,255,0.18)';
 /** A card high off the table: a long, soft shadow far below it. */
 const SHADOW_HIGH = '0 46px 50px rgba(0,0,0,0.62), 0 0 26px rgba(255,255,255,0.22)';
+type Shadow = 'rest' | 'lift' | 'high';
+const SHADOWS: Readonly<Record<Shadow, string>> = { rest: SHADOW_REST, lift: SHADOW_LIFT, high: SHADOW_HIGH };
+
+/**
+ * One keyframe of a ghost (animateGhost): its transform (and opacity), which shadow lies under it, and how strongly each of its glows shows (0 to 1, by
+ * the glow's key). A shadow or glow a frame does not name is out at that frame.
+ */
+interface GhostFrame {
+  transform?: string;
+  opacity?: number;
+  offset?: number;
+  easing?: string;
+  shadow?: Shadow;
+  glow?: Readonly<Record<string, number>>;
+}
+
+/** How long the animator waits for the frame after the new view is committed before measuring it anyway (ms; a hidden page draws no frames). */
+const FRAME_LIMIT_MS = 100;
 
 /** Pixels a card must have moved to slide to its new place. */
 const MOVED_PX = 3;
@@ -120,6 +146,10 @@ export class Animator implements BoardAnimator {
    */
   private lr: DOMRect | null = null;
   private ar: DOMRect | null = null;
+  /** The frame play() waits for after the new view is committed (finish() cancels it). */
+  private frame = 0;
+  /** Glows lit on the board's own elements (pulse, impact) and how many of their animations are running: each leaves when its last one ends. */
+  private readonly lit = new Map<HTMLElement, number>();
 
   constructor(private readonly p: AnimatorParts) {}
 
@@ -230,6 +260,94 @@ export class Animator implements BoardAnimator {
     this.hidden.add(el);
   }
 
+  /**
+   * Animate a ghost: the frames' transforms (and opacity) on the ghost, and each of its shadows and glows (dom.ts glowLayer) fading in and out with them,
+   * at the same offsets, easings and timing. `glows` paints the glows these frames use (by key); the rest, rest/lift/high, are the shadows.
+   */
+  private animateGhost(g: HTMLElement, frames: readonly GhostFrame[], opts: KeyframeAnimationOptions, glows: Readonly<Record<string, string>> = {}): Promise<void> {
+    const under = ghostUnder(g);
+    for (const f of frames) if (f.shadow) glowLayer(under, f.shadow, SHADOWS[f.shadow]);
+    for (const [key, shadow] of Object.entries(glows)) glowLayer(under, key, shadow);
+    const jobs: Promise<void>[] = [];
+    for (const layer of under.querySelectorAll<HTMLElement>(':scope > .fx-glow')) {
+      const key = layer.dataset.glow!;
+      const fade = frames.map((f) => {
+        const k: Keyframe = { opacity: f.shadow === key ? 1 : (f.glow?.[key] ?? 0) };
+        if (f.offset !== undefined) k.offset = f.offset;
+        if (f.easing !== undefined) k.easing = f.easing;
+        return k;
+      });
+      jobs.push(this.animate(layer, fade, opts));
+    }
+    if (frames.some((f) => f.transform !== undefined || f.opacity !== undefined)) {
+      const own = frames.map((f) => {
+        const k: Keyframe = {};
+        if (f.transform !== undefined) k.transform = f.transform;
+        if (f.opacity !== undefined) k.opacity = f.opacity;
+        if (f.offset !== undefined) k.offset = f.offset;
+        if (f.easing !== undefined) k.easing = f.easing;
+        return k;
+      });
+      jobs.push(this.animate(g, own, opts));
+    }
+    return Promise.all(jobs).then(() => undefined);
+  }
+
+  /**
+   * A glow around an element on the board (a card, a disc, a ghost): `shadow` painted once on a layer behind it (dom.ts glowHost, glowLayer), only its
+   * opacity and size animated. The layer leaves the board when its last animation ends.
+   */
+  private glow(el: HTMLElement, key: string, shadow: string, frames: Keyframe[], opts: KeyframeAnimationOptions): Promise<void> {
+    const layer = glowLayer(glowHost(el), key, shadow);
+    this.lit.set(layer, (this.lit.get(layer) ?? 0) + 1);
+    return this.animate(layer, frames, opts).then(() => {
+      const n = (this.lit.get(layer) ?? 1) - 1;
+      if (n > 0) this.lit.set(layer, n);
+      else {
+        this.lit.delete(layer);
+        layer.remove();
+      }
+    });
+  }
+
+  /**
+   * A text's glow (a life total, a commander damage line): a copy of the text laid over it, its letters clear and only their shadow drawn (painted once),
+   * fading in and out while the text itself pops (a text shadow animated on the text was painted again on every frame).
+   */
+  private textGlow(el: HTMLElement, shadow: string, frames: Keyframe[], opts: KeyframeAnimationOptions): Promise<void> {
+    const copy = el.cloneNode(true) as HTMLElement;
+    for (const old of copy.querySelectorAll('.fx-text-glow')) old.remove();
+    for (const a of [...copy.attributes]) copy.removeAttribute(a.name);
+    copy.className = 'fx-text-glow';
+    copy.setAttribute('aria-hidden', 'true');
+    copy.style.textShadow = shadow;
+    el.appendChild(copy);
+    this.lit.set(copy, 1);
+    return this.animate(copy, frames, opts).then(() => {
+      this.lit.delete(copy);
+      copy.remove();
+    });
+  }
+
+  /** One frame (play: after the new view is committed), at most FRAME_LIMIT_MS; at once when the board is not on a visible page. finish() ends it. */
+  private nextFrame(): Promise<void> {
+    if (!this.p.root.isConnected || typeof requestAnimationFrame !== 'function' || document.visibilityState === 'hidden') return Promise.resolve();
+    return new Promise((resolve) => {
+      const done = () => {
+        if (this.frame) cancelAnimationFrame(this.frame);
+        this.frame = 0;
+        clearTimeout(t);
+        this.timers.delete(t);
+        this.wakers.delete(done);
+        resolve();
+      };
+      const t = setTimeout(done, FRAME_LIMIT_MS);
+      this.timers.add(t);
+      this.wakers.add(done);
+      this.frame = requestAnimationFrame(done);
+    });
+  }
+
   private ghost(e: CardEntry, at: Box = e, reuse = false): HTMLElement {
     const g = makeGhost(this.p.layer, e, at, reuse, this.layerRect());
     this.ghosts.add(g);
@@ -253,10 +371,14 @@ export class Animator implements BoardAnimator {
     this.anims.clear();
     for (const t of this.timers) clearTimeout(t);
     this.timers.clear();
+    if (this.frame) cancelAnimationFrame(this.frame);
+    this.frame = 0;
     for (const w of [...this.wakers]) w();
     this.wakers.clear();
     for (const el of [...this.hidden]) this.show(el);
     for (const g of [...this.ghosts]) this.drop(g);
+    for (const l of this.lit.keys()) l.remove();
+    this.lit.clear();
     if (this.staged.length > 0) void this.p.stage?.(null);
     this.staged = [];
     this.transient.clear();
@@ -280,7 +402,12 @@ export class Animator implements BoardAnimator {
     this.pace(from.zones.stack.length);
     this.lr = this.ar = null;
     this.soundGen = gen;
+    // One read pass before anything is written: the table, the fx layer, the canvases (fit only measures; vfx.ts sizes a canvas when it next draws) and
+    // the board.
     const span = this.arenaRect();
+    this.layerRect();
+    for (const v of [this.p.under, this.p.over]) v.fit();
+    const before = snapshotBoard(this.p.root);
     this.arenaSpan = { left: span.left, width: span.width };
     const plan = planBatch(batch.events, from, to);
     this.viewer = to.viewer;
@@ -288,8 +415,6 @@ export class Animator implements BoardAnimator {
     this.staged = [];
     this.stagedBacks = [];
     const live = () => this.gen === gen;
-    for (const v of [this.p.under, this.p.over]) v.fit();
-    const before = snapshotBoard(this.p.root);
     const early: HTMLElement[] = [];
     // M12-4a: the shared table's camera holds still while a change plays (its paths are measured once, m12 design 5.1).
     if (!planIsEmpty(plan)) this.p.root.dataset.fxPlaying = '';
@@ -314,8 +439,14 @@ export class Animator implements BoardAnimator {
     // A card that played its exit in place but is still on the table (a replacement kept it there) shows again.
     for (const el of early) if (el.isConnected) this.show(el);
     if (!live()) return;
+    // The new view is measured at the next frame, in one read pass before part B writes anything (its ghosts, hidden cards): the layout measured there is
+    // the one that frame lays out anyway, and the ghosts are in place before it is drawn, so no arriving card shows at its new place first.
+    await this.nextFrame();
+    if (!live()) return;
     for (const v of [this.p.under, this.p.over]) v.fit();
     const after = snapshotBoard(this.p.root);
+    this.layerRect();
+    this.arenaRect();
     this.pace(to.zones.stack.length);
     await this.partB(plan, batch.events, before, after, from, to);
     if (!live()) return;
@@ -370,14 +501,17 @@ export class Animator implements BoardAnimator {
     const dx = anchor.x - origin.x;
     const dy = anchor.y - origin.y;
     const s = Math.min(1.6, Math.max(0.8, anchor.w / Math.max(1, origin.w)));
+    const end = `translate(${dx}px, ${dy}px) scale(${s}) rotate(0deg)`;
     await this.within(
-      this.animate(g, [
-        { transform: 'translate(0,0) scale(1)', boxShadow: SHADOW_REST },
-        { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 60}px) scale(${s * 1.15}) rotate(-4deg)`, boxShadow: SHADOW_LIFT, offset: 0.55 },
-        { transform: `translate(${dx}px, ${dy}px) scale(${s}) rotate(0deg)`, boxShadow: SHADOW_LIFT },
+      this.animateGhost(g, [
+        { transform: 'translate(0,0) scale(1)', shadow: 'rest' },
+        { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 60}px) scale(${s * 1.15}) rotate(-4deg)`, shadow: 'lift', offset: 0.55 },
+        { transform: end, shadow: 'lift' },
       ], { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)', fill: 'forwards' }),
       1200,
     );
+    // Its place on the stack is its own style: what plays on it next (countered, sent to a pile) starts from there.
+    this.settle(g, end, { shadow: 'lift' });
     this.transient.set(step.stackId, { ghost: g, box: { x: anchor.x, y: anchor.y, w: origin.w * s, h: origin.h * s } });
     this.p.over.flare(center(anchor), anchor.w, step.style);
     await this.dwell(step.stackId, step.controller, before, plan);
@@ -448,15 +582,17 @@ export class Animator implements BoardAnimator {
     } else if (src) await this.sleep(180);
   }
 
-  /** Glow ring (box shadow, outside the picture) and a small pop on a card. */
+  /** Glow ring (a box shadow outside the picture, behind it: glow()) and a small pop on a card. */
   private pulse(el: HTMLElement, color: string, strength = 1): Promise<void> {
-    const image = el.matches('.board-card') ? (el.querySelector<HTMLElement>(':scope > .board-card-image') ?? el) : el;
-    void this.animate(image, [
-      { boxShadow: `0 0 0 0 ${color}` },
-      { boxShadow: `0 0 0 3px ${color}, 0 0 26px 6px ${color}`, offset: 0.35 },
-      { boxShadow: `0 0 0 0 transparent` },
+    // The ring grows out from behind the picture as it lights up.
+    void this.glow(el, 'pulse', `0 0 0 3px ${color}, 0 0 26px 6px ${color}`, [
+      { opacity: 0, transform: 'scale(0.96)' },
+      { opacity: 1, transform: 'scale(1)', offset: 0.35 },
+      { opacity: 0, transform: 'scale(1)' },
     ], { duration: 520, easing: 'ease-out' });
-    return this.animate(el, [{ transform: 'scale(1)' }, { transform: `scale(${1 + 0.09 * strength})`, offset: 0.35 }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.3,1.6,.5,1)' });
+    // A ghost pops where it stands (its own transform holds its place).
+    const at = el.matches('.fx-ghost') ? `${el.style.transform} ` : '';
+    return this.animate(el, [{ transform: `${at}scale(1)` }, { transform: `${at}scale(${1 + 0.09 * strength})`, offset: 0.35 }, { transform: `${at}scale(1)` }], { duration: 420, easing: 'cubic-bezier(.3,1.6,.5,1)' });
   }
 
   /** The resolving object's element on the stack (or the ghost of a spell that came and went). */
@@ -522,16 +658,17 @@ export class Animator implements BoardAnimator {
     const dx = to.x - e.x;
     const dy = to.y - e.y;
     const end = `translate(${dx}px, ${dy}px) scale(${s})`;
-    const endShadow = `${SHADOW_HIGH}, 0 0 0 2px ${glow}, 0 0 30px 8px ${glow}`;
+    // Its glow in its colours: brightest as it rises (spellPeak), then the steady one it keeps (spell).
+    const glows = { spell: `0 0 0 2px ${glow}, 0 0 30px 8px ${glow}`, spellPeak: `0 0 0 3px ${glow}, 0 0 46px 16px ${glow}` };
     await this.within(
-      this.animate(g, [
-        { transform: 'translate(0px, 0px) scale(1)', boxShadow: SHADOW_REST },
-        { transform: `translate(${dx}px, ${dy - 18}px) scale(${s * 1.08}) rotate(-2deg)`, boxShadow: `${SHADOW_HIGH}, 0 0 0 3px ${glow}, 0 0 46px 16px ${glow}`, offset: 0.65 },
-        { transform: end, boxShadow: endShadow },
-      ], { duration: 380, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' }),
+      this.animateGhost(g, [
+        { transform: 'translate(0px, 0px) scale(1)', shadow: 'rest' },
+        { transform: `translate(${dx}px, ${dy - 18}px) scale(${s * 1.08}) rotate(-2deg)`, shadow: 'high', glow: { spellPeak: 1 }, offset: 0.65 },
+        { transform: end, shadow: 'high', glow: { spell: 1 } },
+      ], { duration: 380, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' }, glows),
       900,
     );
-    this.settle(g, end, endShadow);
+    this.settle(g, end, { shadow: 'high', glow: { spell: 1 } });
     this.p.over.flare(to, w, style);
     const box = { x: to.x, y: to.y, w, h };
     this.transient.set(stackId, { ghost: g, box });
@@ -540,15 +677,26 @@ export class Animator implements BoardAnimator {
     return { box, el: g };
   }
 
-  /** Make the end of a finished animation the element's own style, so the next animation of it starts from there. */
-  private settle(el: HTMLElement, transform: string, shadow?: string): void {
+  /**
+   * Make the end of a finished animation the element's own style, so the next animation of it starts from there: its transform and, for a ghost, which of
+   * its shadows and glows show (`lit`, as in a GhostFrame).
+   */
+  private settle(el: HTMLElement, transform: string, lit?: GhostFrame): void {
     el.style.transform = transform;
-    if (shadow !== undefined) el.style.boxShadow = shadow;
-    for (const a of el.getAnimations?.() ?? []) {
-      try {
-        a.cancel();
-      } catch {
-        /* gone */
+    const layers = el.matches('.fx-ghost') ? [...ghostUnder(el).querySelectorAll<HTMLElement>(':scope > .fx-glow')] : [];
+    if (lit) {
+      for (const l of layers) {
+        const key = l.dataset.glow!;
+        l.style.opacity = String(lit.shadow === key ? 1 : (lit.glow?.[key] ?? 0));
+      }
+    }
+    for (const x of [el, ...layers]) {
+      for (const a of x.getAnimations?.() ?? []) {
+        try {
+          a.cancel();
+        } catch {
+          /* gone */
+        }
       }
     }
   }
@@ -570,14 +718,14 @@ export class Animator implements BoardAnimator {
   private async effects(hits: readonly Hit[], life: readonly LifeChange[], counters: readonly { target: string; counter: string; delta: number }[], style: SpellStyle, origin: Box | null, before: BoardSnapshot, spell: boolean, targets: readonly string[] = []): Promise<void> {
     const flights: Promise<void>[] = [];
     const swings: Hit[] = [];
-    // The spell flares in its colours as it lets its effect go (box shadow only: its ghost keeps its place).
+    // The spell flares in its colours as it lets its effect go (its glows only: its ghost keeps its place).
     if (this.launcher && hits.length + targets.length > 0) {
       const glow = styleGlow(style);
-      void this.animate(this.launcher, [
-        { boxShadow: `${SHADOW_HIGH}, 0 0 0 2px ${glow}, 0 0 30px 8px ${glow}` },
-        { boxShadow: `${SHADOW_HIGH}, 0 0 0 4px rgba(255,250,230,0.95), 0 0 70px 26px ${glow}`, offset: 0.25 },
-        { boxShadow: `${SHADOW_HIGH}, 0 0 0 2px ${glow}, 0 0 30px 8px ${glow}` },
-      ], { duration: 520, easing: 'ease-out' });
+      void this.animateGhost(this.launcher, [
+        { shadow: 'high', glow: { spell: 1 } },
+        { shadow: 'high', glow: { flare: 1 }, offset: 0.25 },
+        { shadow: 'high', glow: { spell: 1 } },
+      ], { duration: 520, easing: 'ease-out' }, { flare: `0 0 0 4px rgba(255,250,230,0.95), 0 0 70px 26px ${glow}` });
     }
     hits.forEach((h, i) => {
       const src = before.cards.get(h.source);
@@ -663,11 +811,11 @@ export class Animator implements BoardAnimator {
       { transform: `translate(${amp * 0.35}px, 0) rotate(0deg) scale(1)`, offset: 0.6 },
       { transform: 'translate(0,0) scale(1)' },
     ], { duration: card ? 300 : 380, easing: 'ease-out' });
-    const glowTarget = card ? card.image : disc!.el;
-    void this.animate(glowTarget, [
-      { boxShadow: '0 0 0 0 rgba(255,80,60,0)' },
-      { boxShadow: '0 0 0 3px rgba(255,90,60,0.95), 0 0 30px 8px rgba(255,70,40,0.75)', offset: 0.2 },
-      { boxShadow: '0 0 0 0 rgba(255,80,60,0)' },
+    // A red glow flashes around it (behind the picture: glow()).
+    void this.glow(card ? card.image : disc!.el, 'hit', '0 0 0 3px rgba(255,90,60,0.95), 0 0 30px 8px rgba(255,70,40,0.75)', [
+      { opacity: 0, transform: 'scale(0.96)' },
+      { opacity: 1, transform: 'scale(1)', offset: 0.2 },
+      { opacity: 0, transform: 'scale(1)' },
     ], { duration: 520, easing: 'ease-out' });
     this.floater(box, `-${h.amount}`, 'damage', h.amount, card !== undefined);
   }
@@ -725,12 +873,12 @@ export class Animator implements BoardAnimator {
     // Where the two meet: the target's edge facing the blow, so the burst spills out between them.
     const contact = { x: tgt.x - ux * ext(tgt, 0.85), y: tgt.y - uy * ext(tgt, 0.85) };
     void this.sleep(delay + dur * 0.5).then(() => onContact(contact));
-    await this.animate(g, [
-      { transform: 'translate(0px,0px) scale(1) rotate(0deg)', boxShadow: SHADOW_REST, offset: 0 },
-      { transform: `translate(${-ux * 22}px, ${-uy * 22 - 28}px) scale(${up}) rotate(${-side * 9}deg)`, boxShadow: SHADOW_HIGH, offset: 0.32, easing: 'cubic-bezier(.6,0,.9,.4)' },
-      { transform: `translate(${ux * reach}px, ${uy * reach}px) scale(${hit}) rotate(${side * 10}deg)`, boxShadow: SHADOW_LIFT, offset: 0.5 },
-      { transform: `translate(${ux * (reach - 10)}px, ${uy * (reach - 10)}px) scale(${hit - 0.03}) rotate(${side * 7}deg)`, boxShadow: SHADOW_LIFT, offset: 0.62, easing: 'cubic-bezier(.25,.8,.3,1)' },
-      { transform: 'translate(0px,0px) scale(1) rotate(0deg)', boxShadow: SHADOW_REST, offset: 1 },
+    await this.animateGhost(g, [
+      { transform: 'translate(0px,0px) scale(1) rotate(0deg)', shadow: 'rest', offset: 0 },
+      { transform: `translate(${-ux * 22}px, ${-uy * 22 - 28}px) scale(${up}) rotate(${-side * 9}deg)`, shadow: 'high', offset: 0.32, easing: 'cubic-bezier(.6,0,.9,.4)' },
+      { transform: `translate(${ux * reach}px, ${uy * reach}px) scale(${hit}) rotate(${side * 10}deg)`, shadow: 'lift', offset: 0.5 },
+      { transform: `translate(${ux * (reach - 10)}px, ${uy * (reach - 10)}px) scale(${hit - 0.03}) rotate(${side * 7}deg)`, shadow: 'lift', offset: 0.62, easing: 'cubic-bezier(.25,.8,.3,1)' },
+      { transform: 'translate(0px,0px) scale(1) rotate(0deg)', shadow: 'rest', offset: 1 },
     ], { duration: dur, delay, fill: 'both' });
     this.drop(g);
     this.show(src.image);
@@ -843,7 +991,9 @@ export class Animator implements BoardAnimator {
     const e = before.stack.get(stackId);
     this.sound('spell.countered', { x: (t?.box ?? e)?.x });
     if (t) {
-      await this.animate(t.ghost, [{ transform: getComputedStyle(t.ghost).transform }, { transform: `${getComputedStyle(t.ghost).transform} scale(0)` }], { duration: 300, fill: 'forwards' });
+      // Its place on the stack is its own style (castTransient, present settle it there).
+      const at = t.ghost.style.transform;
+      await this.animate(t.ghost, [{ transform: at || 'none' }, { transform: `${at} scale(0)`.trim() }], { duration: 300, fill: 'forwards' });
       this.drop(t.ghost);
       this.transient.delete(stackId);
       return;
@@ -897,6 +1047,9 @@ export class Animator implements BoardAnimator {
     let drawIndex = 0;
     // The viewer's own draws are each shown large on the way to the hand, unless the change draws a whole hand at once.
     const ownDraws = plan.b.moves.filter((m) => isOwnDraw(m, after) && !before.cards.has(m.newId!)).length;
+    // Where they are shown is measured here, still in play()'s read pass: the arrivals below add ghosts to the page, and a measurement after that would
+    // lay the page out again for every card.
+    const room = ownDraws > 0 && ownDraws <= MAX_SHOWN_DRAWS ? this.showcaseRoom() : null;
     let shown = 0;
     const lands = landsPlayed(events);
     for (const m of plan.b.moves) {
@@ -907,7 +1060,7 @@ export class Animator implements BoardAnimator {
       arriving.add(m.newId);
       if (origin) consumedOld.add(m.oldId);
       if (m.to === 'stack') castTarget = dest;
-      const spot = origin && ownDraws <= MAX_SHOWN_DRAWS && isOwnDraw(m, after) ? this.showcaseSpot(dest, shown) : null;
+      const spot = origin && room && isOwnDraw(m, after) ? this.showcaseSpot(room, dest, shown) : null;
       const delay = spot ? shown++ * SHOWN_DRAW_GAP_MS : m.to === 'hand' && m.from === 'library' ? drawIndex++ * 90 : 0;
       // A card flying to the table is heard as it lands (0.82 of its 620 ms flight); the other player's draws are softer.
       const heard = arrivalSound(m, to, lands);
@@ -927,9 +1080,10 @@ export class Animator implements BoardAnimator {
       jobs.push(this.within(this.p.over.manaOrb(center(src), center(dest), e.mana[0] ?? 'C'), 800));
     }
     // Departures: cards that are gone, playing their exit where they were.
-    for (const m of plan.b.moves) {
-      if (m.shownInA || consumedOld.has(m.oldId)) continue;
-      if (m.newId !== null && after.cards.has(m.newId) && !arriving.has(m.newId)) continue;
+    const departing = plan.b.moves.filter((m) => !m.shownInA && !consumedOld.has(m.oldId) && !(m.newId !== null && after.cards.has(m.newId) && !arriving.has(m.newId)));
+    // Three or more breaking at once (a board wipe) take the light exit (destroyCard).
+    const breaking = departing.filter((m) => m.kind === 'die' && !this.transient.has(m.oldId) && before.cards.get(m.oldId)?.el.isConnected === false).length;
+    for (const m of departing) {
       const old = before.cards.get(m.oldId);
       const t = this.transient.get(m.oldId);
       if (t) {
@@ -944,7 +1098,7 @@ export class Animator implements BoardAnimator {
       // The beats of the exits played here: a Scryfall picture breaks at 0.22 s (destroyCard), a vanishing token is gone at 0.36 s (flyGhostTo).
       const beat = m.kind === 'die' && old.scryfall ? 0.22 : c.id === 'card.exile' && m.token && m.kind !== 'exile' ? 0.36 : undefined;
       this.sound(c.id, { x: old.x, ...(c.gain !== undefined ? { gain: c.gain } : {}), ...(beat !== undefined ? { beat } : {}) });
-      jobs.push(this.depart(m, old, after));
+      jobs.push(this.depart(m, old, after, breaking >= 3));
     }
     // Tokens created straight onto the battlefield (CR 111.1): they materialize.
     for (const id of plan.b.tokens) {
@@ -995,9 +1149,13 @@ export class Animator implements BoardAnimator {
       const p0 = from.players.find((p) => p.id === p1.id);
       const disc = after.avatars.get(p1.id);
       if (!p0 || !disc || p0.life === p1.life) continue;
-      const life = disc.el.querySelector('.stat-life');
+      const life = disc.el.querySelector<HTMLElement>('.stat-life');
       const color = p1.life > p0.life ? 'rgba(140,255,170,1)' : 'rgba(255,90,90,1)';
-      if (life) void this.animate(life, [{ transform: 'scale(1)', textShadow: 'none' }, { transform: 'scale(1.45)', textShadow: `0 0 18px ${color}`, offset: 0.25 }, { transform: 'scale(1)', textShadow: 'none' }], { duration: 520, easing: 'cubic-bezier(.3,1.5,.5,1)' });
+      if (life) {
+        const pop = { duration: 520, easing: 'cubic-bezier(.3,1.5,.5,1)' };
+        void this.animate(life, [{ transform: 'scale(1)' }, { transform: 'scale(1.45)', offset: 0.25 }, { transform: 'scale(1)' }], pop);
+        void this.textGlow(life, `0 0 18px ${color}`, [{ opacity: 0 }, { opacity: 1, offset: 0.25 }, { opacity: 0 }], pop);
+      }
     }
     // M11-2 (CR 903.10a): combat damage from a commander: its line on the damaged player's disc pops with the new total (PlayerPanel.tsx).
     for (const e of events) {
@@ -1006,11 +1164,9 @@ export class Animator implements BoardAnimator {
         (el) => el.dataset.commanderDamage === e.commander && el.closest<HTMLElement>('[data-fx="avatar"]')?.dataset.playerId === e.player,
       );
       if (line) {
-        void this.animate(line, [
-          { transform: 'scale(1)', textShadow: 'none' },
-          { transform: 'scale(1.35)', textShadow: '0 0 14px rgba(255,120,60,1)', offset: 0.3 },
-          { transform: 'scale(1)', textShadow: 'none' },
-        ], { duration: 620, easing: 'cubic-bezier(.3,1.5,.5,1)' });
+        const pop = { duration: 620, easing: 'cubic-bezier(.3,1.5,.5,1)' };
+        void this.animate(line, [{ transform: 'scale(1)' }, { transform: 'scale(1.35)', offset: 0.3 }, { transform: 'scale(1)' }], pop);
+        void this.textGlow(line, '0 0 14px rgba(255,120,60,1)', [{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 0 }], pop);
       }
     }
     // A face turned or a card transformed in place (same object, CR 701.28, 702.37e).
@@ -1091,22 +1247,22 @@ export class Animator implements BoardAnimator {
     const dy = dest.y - origin.y;
     const toTable = m.to === 'battlefield';
     const lift = toTable ? -70 : m.to === 'stack' ? -50 : -24;
-    const frames: Keyframe[] = toTable
+    const frames: GhostFrame[] = toTable
       ? [
-          { transform: `translate(0,0) scale(${s0})`, boxShadow: SHADOW_REST },
-          { transform: `translate(${dx * 0.55}px, ${dy * 0.55 + lift}px) scale(1.32) rotate(${dx > 0 ? 6 : -6}deg)`, boxShadow: SHADOW_LIFT, offset: 0.55 },
-          { transform: `translate(${dx}px, ${dy}px) scale(1.12) rotate(0deg)`, boxShadow: SHADOW_LIFT, offset: 0.82, easing: 'cubic-bezier(.7,0,1,.6)' },
-          { transform: `translate(${dx}px, ${dy}px) scale(0.96)`, boxShadow: SHADOW_REST, offset: 0.9 },
-          { transform: `translate(${dx}px, ${dy}px) scale(1)`, boxShadow: SHADOW_REST },
+          { transform: `translate(0,0) scale(${s0})`, shadow: 'rest' },
+          { transform: `translate(${dx * 0.55}px, ${dy * 0.55 + lift}px) scale(1.32) rotate(${dx > 0 ? 6 : -6}deg)`, shadow: 'lift', offset: 0.55 },
+          { transform: `translate(${dx}px, ${dy}px) scale(1.12) rotate(0deg)`, shadow: 'lift', offset: 0.82, easing: 'cubic-bezier(.7,0,1,.6)' },
+          { transform: `translate(${dx}px, ${dy}px) scale(0.96)`, shadow: 'rest', offset: 0.9 },
+          { transform: `translate(${dx}px, ${dy}px) scale(1)`, shadow: 'rest' },
         ]
       : [
-          { transform: `translate(0,0) scale(${s0})`, boxShadow: SHADOW_REST },
-          { transform: `translate(${dx * 0.5}px, ${dy * 0.5 + lift}px) scale(${(s0 + 1) / 2 + 0.12})`, boxShadow: SHADOW_LIFT, offset: 0.5 },
-          { transform: `translate(${dx}px, ${dy}px) scale(1)`, boxShadow: SHADOW_REST },
+          { transform: `translate(0,0) scale(${s0})`, shadow: 'rest' },
+          { transform: `translate(${dx * 0.5}px, ${dy * 0.5 + lift}px) scale(${(s0 + 1) / 2 + 0.12})`, shadow: 'lift', offset: 0.5 },
+          { transform: `translate(${dx}px, ${dy}px) scale(1)`, shadow: 'rest' },
         ];
     const dur = toTable ? 620 : m.to === 'stack' ? 460 : 420;
     if (m.to === 'stack') this.p.over.castTrail(spellStyle([to], m.newId!), center(origin), center(dest), dur, lift);
-    await this.within(this.animate(g, frames, { duration: dur, delay, easing: toTable ? 'linear' : 'cubic-bezier(.3,.7,.3,1)', fill: 'both' }), dur * 2 + delay + 400);
+    await this.within(this.animateGhost(g, frames, { duration: dur, delay, easing: toTable ? 'linear' : 'cubic-bezier(.3,.7,.3,1)', fill: 'both' }), dur * 2 + delay + 400);
     this.drop(g);
     this.show(dest.image);
     if (toTable) {
@@ -1125,18 +1281,24 @@ export class Animator implements BoardAnimator {
    * above the action buttons, as large as the room above the hand allows (at least hand size, at most 1.8 times it). The `i`-th card of the change sits a
    * little to the left of and below the one before. Null when the board has no such place.
    */
-  private showcaseSpot(dest: CardEntry, i: number): { x: number; y: number; s: number } | null {
+  private showcaseSpot(r: { side: DOMRect; main: DOMRect; handTop: number }, dest: CardEntry, i: number): { x: number; y: number; s: number } | null {
+    if (dest.w <= 0 || dest.h <= 0) return null;
+    const b = r.side;
+    const m = r.main;
+    const room = r.handTop - b.top - 16;
+    const s = Math.max(1, Math.min(1.8, room / dest.h));
+    const w = dest.w * s;
+    return { x: Math.min(m.right - w / 2 - 16, m.right - m.width * 0.13) - i * 28, y: b.top + 8 + (dest.h * s) / 2 + i * 10, s };
+  }
+
+  /** The boxes showcaseSpot places the viewer's drawn cards by, measured once per change; null when the board has no such place. */
+  private showcaseRoom(): { side: DOMRect; main: DOMRect; handTop: number } | null {
     // M12-4a: on the shared table the viewer's half is marked out for it (its HUD strip is apart from the table).
     const side = this.p.root.querySelector('[data-fx="showcase"]') ?? this.p.root.querySelector('.side-bottom');
     const hand = this.p.root.querySelector('.hand-own');
     const main = this.p.root.querySelector('.board-main');
-    if (!side || !hand || !main || dest.w <= 0 || dest.h <= 0) return null;
-    const b = side.getBoundingClientRect();
-    const m = main.getBoundingClientRect();
-    const room = hand.getBoundingClientRect().top - b.top - 16;
-    const s = Math.max(1, Math.min(1.8, room / dest.h));
-    const w = dest.w * s;
-    return { x: Math.min(m.right - w / 2 - 16, m.right - m.width * 0.13) - i * 28, y: b.top + 8 + (dest.h * s) / 2 + i * 10, s };
+    if (!side || !hand || !main) return null;
+    return { side: side.getBoundingClientRect(), main: main.getBoundingClientRect(), handTop: hand.getBoundingClientRect().top };
   }
 
   /** A card the viewer draws: out of the library, up to `spot` to be read, then down into its place in the hand. */
@@ -1151,12 +1313,12 @@ export class Animator implements BoardAnimator {
     this.hide(dest.image);
     const s0 = Math.max(0.15, Math.min(2, origin.w / Math.max(1, dest.w)));
     const at = `translate(${spot.x - origin.x}px, ${spot.y - origin.y}px)`;
-    const frames: Keyframe[] = [
-      { transform: `translate(0,0) scale(${s0})`, boxShadow: SHADOW_REST, easing: 'cubic-bezier(.2,.7,.3,1)' },
-      { transform: `${at} scale(${spot.s * 1.04})`, boxShadow: SHADOW_HIGH, offset: 0.24, easing: 'ease-out' },
-      { transform: `${at} scale(${spot.s})`, boxShadow: SHADOW_HIGH, offset: 0.32 },
-      { transform: `${at} scale(${spot.s})`, boxShadow: SHADOW_HIGH, offset: 0.74, easing: 'cubic-bezier(.5,0,.3,1)' },
-      { transform: `translate(${dest.x - origin.x}px, ${dest.y - origin.y}px) scale(1)`, boxShadow: SHADOW_REST },
+    const frames: GhostFrame[] = [
+      { transform: `translate(0,0) scale(${s0})`, shadow: 'rest', easing: 'cubic-bezier(.2,.7,.3,1)' },
+      { transform: `${at} scale(${spot.s * 1.04})`, shadow: 'high', offset: 0.24, easing: 'ease-out' },
+      { transform: `${at} scale(${spot.s})`, shadow: 'high', offset: 0.32 },
+      { transform: `${at} scale(${spot.s})`, shadow: 'high', offset: 0.74, easing: 'cubic-bezier(.5,0,.3,1)' },
+      { transform: `translate(${dest.x - origin.x}px, ${dest.y - origin.y}px) scale(1)`, shadow: 'rest' },
     ];
     // A Scryfall picture's artist: the credit line under the copy (never on the picture) while it is held up to be read. It
     // scales with the copy, so its type is set to read like every other credit line at the held size.
@@ -1168,7 +1330,7 @@ export class Animator implements BoardAnimator {
       const shown: Keyframe[] = [{ opacity: 0 }, { opacity: 0, offset: 0.24 }, { opacity: 1, offset: 0.32 }, { opacity: 1, offset: 0.74 }, { opacity: 0, offset: 0.8 }, { opacity: 0 }];
       void this.animate(credit, shown, { duration: SHOWN_DRAW_MS, delay, fill: 'both' });
     }
-    await this.within(this.animate(g, frames, { duration: SHOWN_DRAW_MS, delay, fill: 'both' }), SHOWN_DRAW_MS * 2 + delay + 400);
+    await this.within(this.animateGhost(g, frames, { duration: SHOWN_DRAW_MS, delay, fill: 'both' }), SHOWN_DRAW_MS * 2 + delay + 400);
     this.drop(g);
     this.show(dest.image);
   }
@@ -1184,11 +1346,11 @@ export class Animator implements BoardAnimator {
     await this.animate(dest.el, [{ transform: 'scale(0.3)' }, { transform: 'scale(1.1)', offset: 0.65 }, { transform: 'scale(1)' }], { duration: 480, easing: 'cubic-bezier(.3,1.4,.5,1)' });
   }
 
-  /** A card that left: its exit, played on its own picture where it was. */
-  private async depart(m: Move, old: CardEntry, after: BoardSnapshot): Promise<void> {
+  /** A card that left: its exit, played on its own picture where it was (`crowd`: one of three or more breaking at once). */
+  private async depart(m: Move, old: CardEntry, after: BoardSnapshot, crowd: boolean): Promise<void> {
     switch (m.kind) {
       case 'die':
-        return this.destroyCard(old, old, true);
+        return this.destroyCard(old, old, true, crowd);
       case 'sacrifice':
         return this.consume(old);
       case 'exile':
@@ -1220,10 +1382,10 @@ export class Animator implements BoardAnimator {
     const s = Math.max(0.12, pile.w / Math.max(1, from.w));
     // The move comes first (screen pixels), then the ghost's own transform (a resolved spell's place at the edge of the table), then the shrink.
     await this.within(
-      this.animate(g, [
-        { transform: `translate(0px,0px) ${base} scale(1)`, boxShadow: SHADOW_REST },
-        { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 46}px) ${base} scale(${0.6 + s * 0.4}) rotate(${dx > 0 ? 10 : -10}deg)`, boxShadow: SHADOW_LIFT, offset: 0.45 },
-        { transform: `translate(${dx}px, ${dy}px) ${base} scale(${s}) rotate(0deg)`, boxShadow: SHADOW_REST },
+      this.animateGhost(g, [
+        { transform: `translate(0px,0px) ${base} scale(1)`, shadow: 'rest' },
+        { transform: `translate(${dx * 0.4}px, ${dy * 0.4 - 46}px) ${base} scale(${0.6 + s * 0.4}) rotate(${dx > 0 ? 10 : -10}deg)`, shadow: 'lift', offset: 0.45 },
+        { transform: `translate(${dx}px, ${dy}px) ${base} scale(${s}) rotate(0deg)`, shadow: 'rest' },
       ], { duration: 520, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }),
       1200,
     );
@@ -1232,9 +1394,11 @@ export class Animator implements BoardAnimator {
 
   /**
    * Destroyed (CR 701.8) or put into the graveyard from the battlefield: our own frames and uploaded pictures shatter into shards that fly apart; a Scryfall
-   * picture is never cut, so it is struck, tumbles and falls away whole into the dark.
+   * picture is never cut, so it is struck, tumbles and falls away whole into the dark. `crowd`: one of three or more breaking at once (a board wipe),
+   * which breaks more softly and, our own frames, falls away whole instead of in pieces (each piece is a copy of the whole card: ten cards in nine pieces
+   * each were some ten thousand elements).
    */
-  private async destroyCard(e: CardEntry, at: Box, reuse: boolean, quiet = false): Promise<void> {
+  private async destroyCard(e: CardEntry, at: Box, reuse: boolean, crowd = false): Promise<void> {
     const size = Math.max(at.w, at.h);
     if (e.scryfall) {
       // A Scryfall picture is never cut: it is struck up off the table, shudders in a white-hot rim, and tumbles away whole into the dark.
@@ -1244,31 +1408,34 @@ export class Animator implements BoardAnimator {
         (e.zone === 'stack' ? this.p.over : this.p.under).destroy(center(at), size * 1.4);
         this.shake(4);
       });
+      // The rim (painted once at its widest) shows a little less while it builds.
       await this.within(
-        this.animate(g, [
-          { transform: 'translate(0,0) rotate(0deg) scale(1)', boxShadow: SHADOW_REST },
-          { transform: 'translate(-5px, -14px) rotate(-4deg) scale(1.24)', boxShadow: `${SHADOW_HIGH}, 0 0 0 3px rgba(255,244,214,0.95), 0 0 34px 14px rgba(255,120,50,0.9)`, offset: 0.2 },
-          { transform: 'translate(5px, -12px) rotate(5deg) scale(1.22)', boxShadow: `${SHADOW_HIGH}, 0 0 0 3px rgba(255,244,214,0.95), 0 0 40px 18px rgba(255,120,50,0.9)`, offset: 0.32 },
-          { transform: 'translate(16px, 50px) rotate(34deg) scale(0.62)', boxShadow: SHADOW_REST, offset: 0.75 },
-          { transform: 'translate(22px, 90px) rotate(48deg) scale(0)', boxShadow: SHADOW_REST },
-        ], { duration: 900, easing: 'cubic-bezier(.45,0,.7,.2)', fill: 'forwards' }),
+        this.animateGhost(g, [
+          { transform: 'translate(0,0) rotate(0deg) scale(1)', shadow: 'rest' },
+          { transform: 'translate(-5px, -14px) rotate(-4deg) scale(1.24)', shadow: 'high', glow: { rim: 0.85 }, offset: 0.2 },
+          { transform: 'translate(5px, -12px) rotate(5deg) scale(1.22)', shadow: 'high', glow: { rim: 1 }, offset: 0.32 },
+          { transform: 'translate(16px, 50px) rotate(34deg) scale(0.62)', shadow: 'rest', offset: 0.75 },
+          { transform: 'translate(22px, 90px) rotate(48deg) scale(0)', shadow: 'rest' },
+        ], { duration: 900, easing: 'cubic-bezier(.45,0,.7,.2)', fill: 'forwards' }, { rim: '0 0 0 3px rgba(255,244,214,0.95), 0 0 40px 18px rgba(255,120,50,0.9)' }),
         1500,
       );
       this.drop(g);
       return;
     }
     // Our own frames and uploaded pictures break apart. 1. Struck: the card jumps up off the table, swells and shudders while a white-hot rim builds around
-    // it (box shadow, outside the picture). 2. Cracked: big pieces (copies of the picture, each clipped to one piece) part along the cracks. 3. They burst
-    // apart from the point of impact, spin, and fall away, over flame, smoke and embers where the card stood.
+    // it (a glow behind it, outside the picture). 2. Cracked: big pieces (copies of the picture, each clipped to one piece) part along the cracks. 3. They
+    // burst apart from the point of impact, spin, and fall away, over flame, smoke and embers where the card stood.
     const lr = this.layerRect();
     // The copy is made before the card is hidden; a copy of a hidden element would be hidden too.
     const source = reuse && !e.image.isConnected ? e.image : (e.image.cloneNode(true) as HTMLElement);
+    dropGlows(source);
     if (!reuse) this.hide(e.image);
     source.style.visibility = '';
     source.style.transform = '';
     source.style.transition = 'none';
     source.style.width = `${e.w}px`;
     source.style.height = `${e.h}px`;
+    source.classList.add('fx-shard');
     const holder = document.createElement('div');
     holder.className = 'fx-shatter';
     holder.style.left = `${at.x - lr.left - e.w / 2}px`;
@@ -1277,29 +1444,32 @@ export class Animator implements BoardAnimator {
     holder.style.height = `${e.h}px`;
     const base = e.transform;
     holder.style.transform = base;
+    // The whole card while it is struck; it becomes the last piece.
+    holder.appendChild(source);
+    const swell = 1.3;
+    const rim = crowd ? '0 0 0 2px rgba(255,248,226,0.95), 0 0 18px 6px rgba(255,124,48,0.85)' : '0 0 0 3px rgba(255,248,226,0.98), 0 0 38px 16px rgba(255,124,48,0.92)';
+    const struck = glowLayer(holder, 'rim', `0 24px 30px rgba(0,0,0,0.55), ${rim}`);
     this.p.layer.appendChild(holder);
     this.ghosts.add(holder);
-    const whole = source.cloneNode(true) as HTMLElement;
-    whole.classList.add('fx-shard');
-    holder.appendChild(whole);
-    const swell = 1.3;
-    const rim = quiet ? '0 0 0 2px rgba(255,248,226,0.95), 0 0 18px 6px rgba(255,124,48,0.85)' : '0 0 0 3px rgba(255,248,226,0.98), 0 0 38px 16px rgba(255,124,48,0.92)';
     const lifted = `translate(0px, -16px) ${base} scale(${swell})`;
+    const strike = { duration: 320, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'forwards' } as const;
+    void this.animate(struck, [{ opacity: 0 }, { opacity: 1, offset: 0.4 }, { opacity: 1, offset: 0.7 }, { opacity: 1 }], strike);
     await this.within(
       this.animate(holder, [
-        { transform: `translate(0px, 0px) ${base} scale(1)`, boxShadow: '0 0 0 0 rgba(255,200,150,0)' },
-        { transform: `translate(-4px, -13px) ${base} scale(${swell - 0.04}) rotate(-3.5deg)`, boxShadow: `0 24px 30px rgba(0,0,0,0.55), ${rim}`, offset: 0.4 },
-        { transform: `translate(4px, -16px) ${base} scale(${swell - 0.01}) rotate(3deg)`, boxShadow: `0 24px 30px rgba(0,0,0,0.55), ${rim}`, offset: 0.7 },
-        { transform: lifted, boxShadow: `0 24px 30px rgba(0,0,0,0.55), ${rim}` },
-      ], { duration: 320, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'forwards' }),
+        { transform: `translate(0px, 0px) ${base} scale(1)` },
+        { transform: `translate(-4px, -13px) ${base} scale(${swell - 0.04}) rotate(-3.5deg)`, offset: 0.4 },
+        { transform: `translate(4px, -16px) ${base} scale(${swell - 0.01}) rotate(3deg)`, offset: 0.7 },
+        { transform: lifted },
+      ], strike),
       800,
     );
-    this.settle(holder, lifted, 'none');
-    whole.remove();
-    // Directions on screen, turned into the holder's own frame (it is lifted, swollen, and turned when the card was tapped).
+    this.settle(holder, lifted);
+    struck.remove();
+    // Directions on screen, turned into the holder's own frame (it is lifted, swollen, and turned when the card was tapped): the matrix of the transform
+    // just set (read back from the page, it made the browser lay the page out again).
     let m: DOMMatrix | null = null;
     try {
-      m = typeof DOMMatrix === 'function' ? new DOMMatrix(getComputedStyle(holder).transform) : null;
+      m = typeof DOMMatrix === 'function' ? new DOMMatrix(lifted) : null;
     } catch {
       m = null;
     }
@@ -1310,40 +1480,56 @@ export class Animator implements BoardAnimator {
       const o = mx.transformPoint(new DOMPoint(0, 0));
       return { x: p.x - o.x, y: p.y - o.y };
     };
-    const impact = { x: 42 + Math.random() * 16, y: 38 + Math.random() * 20 };
-    const pieces = chunkPolygons(3, 3, Math.round(Math.random() * 1000) + 1);
     // A countered spell breaks in the stack, beside the table: its burst goes on the canvas that covers the rail too.
     (e.zone === 'stack' ? this.p.over : this.p.under).destroy(center(at), size * 1.35);
     // The instant it breaks: a white-hot flash and sparks, gone in a blink.
     this.p.over.breakFlash(center(at), size);
     this.shake(4);
-    const flights = pieces.map((piece, i) => {
-      const el = i === pieces.length - 1 ? source : (source.cloneNode(true) as HTMLElement);
-      el.classList.add('fx-shard');
-      el.style.clipPath = piece.clip;
-      el.style.transformOrigin = `${piece.cx}% ${piece.cy}%`;
-      holder.appendChild(el);
-      // Outward on screen from the point of impact, then gravity.
-      const out = linear(m, ((piece.cx - impact.x) / 100) * e.w, ((piece.cy - impact.y) / 100) * e.h);
-      const len = Math.hypot(out.x, out.y) || 1;
-      const ux = out.x / len;
-      const uy = out.y / len;
-      const dist = (0.9 + Math.random() * 0.9) * size;
-      const fall = (0.8 + Math.random() * 0.8) * size;
-      const crack = linear(inv, ux * 4, uy * 4);
-      const mid = linear(inv, ux * dist * 0.6, uy * dist * 0.6 - size * 0.3);
-      const low = linear(inv, ux * dist, uy * dist * 0.7 + fall);
-      const end = linear(inv, ux * dist * 1.08, uy * dist * 0.7 + fall * 1.35);
-      const spin = (Math.random() < 0.5 ? -1 : 1) * (160 + Math.random() * 380);
-      const dur = 950 + Math.random() * 320;
-      return this.animate(el, [
-        { transform: 'translate(0px,0px) rotate(0deg) scale(1)', opacity: 1, easing: 'ease-out' },
-        { transform: `translate(${crack.x}px, ${crack.y}px) rotate(${spin * 0.015}deg) scale(1)`, opacity: 1, offset: 0.1, easing: 'cubic-bezier(.15,.75,.4,1)' },
-        { transform: `translate(${mid.x}px, ${mid.y}px) rotate(${spin * 0.45}deg) scale(0.95)`, opacity: 1, offset: 0.38, easing: 'cubic-bezier(.45,0,.85,.55)' },
-        { transform: `translate(${low.x}px, ${low.y}px) rotate(${spin}deg) scale(0.8)`, opacity: 0.9, offset: 0.82 },
-        { transform: `translate(${end.x}px, ${end.y}px) rotate(${spin * 1.12}deg) scale(0.74)`, opacity: 0 },
-      ], { duration: dur, delay: 40, fill: 'forwards' });
-    });
+    let flights: Promise<void>[];
+    if (crowd) {
+      // In a crowd the card falls away whole, tumbling, shrinking and fading over the flames, as long as the pieces would.
+      const side = Math.random() < 0.5 ? -1 : 1;
+      const fall = linear(inv, side * size * 0.35, size * 1.3);
+      const mid = linear(inv, side * size * 0.12, size * 0.2);
+      flights = [
+        this.animate(source, [
+          { transform: 'translate(0px,0px) rotate(0deg) scale(1)', opacity: 1, easing: 'cubic-bezier(.45,0,.85,.55)' },
+          { transform: `translate(${mid.x}px, ${mid.y}px) rotate(${side * 14}deg) scale(0.9)`, opacity: 1, offset: 0.38 },
+          { transform: `translate(${fall.x}px, ${fall.y}px) rotate(${side * 40}deg) scale(0.55)`, opacity: 0 },
+        ], { duration: 1050, delay: 40, fill: 'forwards' }),
+      ];
+    } else {
+      const impact = { x: 42 + Math.random() * 16, y: 38 + Math.random() * 20 };
+      // Six big pieces at most: each is a copy of the whole card.
+      const pieces = chunkPolygons(2, 3, Math.round(Math.random() * 1000) + 1, 6);
+      flights = pieces.map((piece, i) => {
+        // The others are copied from the whole card before it becomes the last piece.
+        const el = i === pieces.length - 1 ? source : (source.cloneNode(true) as HTMLElement);
+        el.style.clipPath = piece.clip;
+        el.style.transformOrigin = `${piece.cx}% ${piece.cy}%`;
+        if (el !== source) holder.appendChild(el);
+        // Outward on screen from the point of impact, then gravity.
+        const out = linear(m, ((piece.cx - impact.x) / 100) * e.w, ((piece.cy - impact.y) / 100) * e.h);
+        const len = Math.hypot(out.x, out.y) || 1;
+        const ux = out.x / len;
+        const uy = out.y / len;
+        const dist = (0.9 + Math.random() * 0.9) * size;
+        const fall = (0.8 + Math.random() * 0.8) * size;
+        const crack = linear(inv, ux * 4, uy * 4);
+        const mid = linear(inv, ux * dist * 0.6, uy * dist * 0.6 - size * 0.3);
+        const low = linear(inv, ux * dist, uy * dist * 0.7 + fall);
+        const end = linear(inv, ux * dist * 1.08, uy * dist * 0.7 + fall * 1.35);
+        const spin = (Math.random() < 0.5 ? -1 : 1) * (160 + Math.random() * 380);
+        const dur = 950 + Math.random() * 320;
+        return this.animate(el, [
+          { transform: 'translate(0px,0px) rotate(0deg) scale(1)', opacity: 1, easing: 'ease-out' },
+          { transform: `translate(${crack.x}px, ${crack.y}px) rotate(${spin * 0.015}deg) scale(1)`, opacity: 1, offset: 0.1, easing: 'cubic-bezier(.15,.75,.4,1)' },
+          { transform: `translate(${mid.x}px, ${mid.y}px) rotate(${spin * 0.45}deg) scale(0.95)`, opacity: 1, offset: 0.38, easing: 'cubic-bezier(.45,0,.85,.55)' },
+          { transform: `translate(${low.x}px, ${low.y}px) rotate(${spin}deg) scale(0.8)`, opacity: 0.9, offset: 0.82 },
+          { transform: `translate(${end.x}px, ${end.y}px) rotate(${spin * 1.12}deg) scale(0.74)`, opacity: 0 },
+        ], { duration: dur, delay: 40, fill: 'forwards' });
+      });
+    }
     const done = Promise.all(flights).then(() => {
       holder.remove();
       this.ghosts.delete(holder);
@@ -1358,11 +1544,11 @@ export class Animator implements BoardAnimator {
     this.p.under.impact('shadow', center(e), 0.5);
     const base = g.style.transform || '';
     await this.within(
-      this.animate(g, [
-        { transform: `${base} translate(0,0) scale(1) rotate(0deg)`, boxShadow: '0 0 0 0 rgba(150,40,210,0)' },
-        { transform: `${base} translate(0,-8px) scale(1.06) rotate(-3deg)`, boxShadow: '0 0 0 2px rgba(200,120,255,0.9), 0 0 26px 8px rgba(120,20,180,0.8)', offset: 0.3 },
-        { transform: `${base} translate(0,18px) scale(0.35) rotate(25deg)`, boxShadow: '0 0 0 0 rgba(150,40,210,0)' },
-      ], { duration: 640, easing: 'cubic-bezier(.55,0,.8,.3)', fill: 'forwards' }),
+      this.animateGhost(g, [
+        { transform: `${base} translate(0,0) scale(1) rotate(0deg)` },
+        { transform: `${base} translate(0,-8px) scale(1.06) rotate(-3deg)`, glow: { consume: 1 }, offset: 0.3 },
+        { transform: `${base} translate(0,18px) scale(0.35) rotate(25deg)` },
+      ], { duration: 640, easing: 'cubic-bezier(.55,0,.8,.3)', fill: 'forwards' }, { consume: '0 0 0 2px rgba(200,120,255,0.9), 0 0 26px 8px rgba(120,20,180,0.8)' }),
       1300,
     );
     this.drop(g);
@@ -1380,11 +1566,11 @@ export class Animator implements BoardAnimator {
     this.p.under.banish(center(e), Math.max(e.w, e.h));
     const base = g.style.transform || '';
     await this.within(
-      this.animate(g, [
-        { transform: `${base} scale(1)`, boxShadow: '0 0 0 0 rgba(255,255,255,0)' },
-        { transform: `${base} scale(1.1)`, boxShadow: '0 0 0 4px rgba(235,240,255,0.95), 0 0 40px 14px rgba(200,220,255,0.85)', offset: 0.35 },
-        { transform: `${base} scale(0) rotate(0deg)`, boxShadow: '0 0 0 0 rgba(255,255,255,0)' },
-      ], { duration: 520, easing: 'cubic-bezier(.6,0,.8,.4)', fill: 'forwards' }),
+      this.animateGhost(g, [
+        { transform: `${base} scale(1)` },
+        { transform: `${base} scale(1.1)`, glow: { banish: 1 }, offset: 0.35 },
+        { transform: `${base} scale(0) rotate(0deg)` },
+      ], { duration: 520, easing: 'cubic-bezier(.6,0,.8,.4)', fill: 'forwards' }, { banish: '0 0 0 4px rgba(235,240,255,0.95), 0 0 40px 14px rgba(200,220,255,0.85)' }),
       1100,
     );
     this.drop(g);
@@ -1403,11 +1589,12 @@ export class Animator implements BoardAnimator {
     el.style.top = `${arena.top - lr.top + arena.height / 2}px`;
     this.p.layer.appendChild(el);
     this.ghosts.add(el);
+    // It opens wide and closes wider: its width, which letter spacing used to grow (laid out again on every frame), is now a horizontal scale.
     return this.animate(el, [
-      { transform: 'translate(-50%,-50%) scaleX(0.2) scaleY(0.6)', opacity: 0, letterSpacing: '0.6em' },
-      { transform: 'translate(-50%,-50%) scaleX(1.04) scaleY(1)', opacity: 1, letterSpacing: '0.22em', offset: 0.18 },
-      { transform: 'translate(-50%,-50%) scaleX(1) scaleY(1)', opacity: 1, letterSpacing: '0.2em', offset: 0.78 },
-      { transform: 'translate(-50%,-50%) scaleX(1.25) scaleY(0.4)', opacity: 0, letterSpacing: '0.5em' },
+      { transform: 'translate(-50%,-50%) scaleX(0.28) scaleY(0.6)', opacity: 0 },
+      { transform: 'translate(-50%,-50%) scaleX(1.06) scaleY(1)', opacity: 1, offset: 0.18 },
+      { transform: 'translate(-50%,-50%) scaleX(1) scaleY(1)', opacity: 1, offset: 0.78 },
+      { transform: 'translate(-50%,-50%) scaleX(1.65) scaleY(0.4)', opacity: 0 },
     ], { duration: tone === 'win' || tone === 'lose' ? 2200 : 760, easing: 'ease-out', fill: 'forwards' }).then(() => this.drop(el));
   }
 

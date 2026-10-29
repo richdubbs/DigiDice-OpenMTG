@@ -318,6 +318,11 @@ function joined(list: EffectStep[], st: RenderState, o: JoinOpts): string {
       out += alt(alt(' and ', ', then ', ', ', ', and ') + cur.pred, sep + text(cur));
       continue;
     }
+    // edh-zones-1 (family and-you-plain-clause): a plain instruction after another player's clause is the controller's, "Target player discards a card and you untap all lands you control"
+    if (loose && prev.actor !== null && prev.actor !== 'you' && cur.actor === null && cur.andYou !== undefined) {
+      out += alt(` and you ${cur.andYou}`, sep + text(cur));
+      continue;
+    }
     // another player doing the second thing, and it is "you": "Target player loses 1 life and you gain 1 life"
     if (loose && prev.actor !== null && prev.actor !== 'you' && cur.actor === 'you') {
       out += alt(' and ' + cur.sub, sep + text(cur));

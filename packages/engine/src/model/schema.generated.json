@@ -5933,6 +5933,10 @@
             "count": {
               "$ref": "#/definitions/Quantity"
             },
+            "upTo": {
+              "type": "boolean",
+              "const": true
+            },
             "as": {
               "$ref": "#/definitions/Name"
             },
@@ -6856,6 +6860,9 @@
               "$ref": "#/definitions/PlayerRef"
             },
             "what": {
+              "$ref": "#/definitions/ObjRef"
+            },
+            "to": {
               "$ref": "#/definitions/ObjRef"
             },
             "as": {
@@ -9741,6 +9748,10 @@
               "$ref": "#/definitions/ObjRef"
             },
             "colorsOnly": {
+              "type": "boolean",
+              "const": true
+            },
+            "oneType": {
               "type": "boolean",
               "const": true
             }

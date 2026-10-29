@@ -12,6 +12,7 @@ import { COMPILER_VERSION, stubCardDef, type CardDef } from '@openmtg/engine';
 import type { DefsFailure, DefsResponse } from './api';
 import { cardStore, storeError, type CardStore } from './cache';
 import { badRequest, type Handler } from './context';
+import { pacedSuggestions } from './resolve';
 
 /** Most names per request (a Commander deck plus sideboard and tokens is well below). */
 export const MAX_DEF_NAMES = 500;
@@ -33,13 +34,15 @@ async function ambiguity(store: CardStore, name: string): Promise<string | null>
 
 type Failure = Omit<DefsFailure, 'name'>;
 
+const unknownReason = (name: string, near: readonly string[]): string =>
+  `No card named "${name}" in the local index${near.length ? ` (did you mean ${near.join(', ')}?)` : ''}`;
+
 async function compileName(store: CardStore, name: string): Promise<CardDef | Failure> {
   const card = store.db.lookup(name);
   if (!card) {
     const ambiguous = await ambiguity(store, name);
     if (ambiguous) return { code: 'ambiguous', reason: ambiguous };
-    const near = store.db.suggest(name);
-    return { code: 'unknown', reason: `No card named "${name}" in the local index${near.length ? ` (did you mean ${near.join(', ')}?)` : ''}` };
+    return { code: 'unknown', reason: unknownReason(name, []) };
   }
   try {
     const def = await store.defs.get(card);
@@ -89,8 +92,12 @@ export const compileDefs: Handler<'POST /api/cards/defs'> = async (req, ctx) => 
       if (isFailure(r)) fail(name, r);
       else out.defs[name] = r;
     }
+    // A name sent in both lists failed as a name and got its confirmed stub: it is answered, not failed.
+    out.failed = out.failed.filter((f) => !Object.hasOwn(out.defs, f.name));
+    // Close names for the unknown ones: the slow part (a fuzzy scan of the index per name), paced and capped as for the deck screen (resolve.ts).
+    const unknown = out.failed.filter((f) => f.code === 'unknown');
+    const near = await pacedSuggestions(unknown.map((f) => f.name), (name) => store.db.suggest(name));
+    for (const f of unknown) f.reason = unknownReason(f.name, near.get(f.name) ?? []);
   });
-  // A name sent in both lists failed as a name and got its confirmed stub: it is answered, not failed.
-  out.failed = out.failed.filter((f) => !Object.hasOwn(out.defs, f.name));
   return { status: 200, body: out };
 };

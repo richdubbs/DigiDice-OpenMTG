@@ -22,7 +22,7 @@ import type { PendingTrigger } from '../types/state';
 import { collectManaTriggers } from './collect';
 import { mentionsManaActivation } from './forms';
 import { normalize } from './normalize';
-import { pendingDef } from './stack';
+import { pendingTriggerDef } from '../rules/abilities';
 
 /** Per card definition (immutable, compared by identity): does it mention the trigger event of a triggered mana ability anywhere? */
 const MENTIONS = new WeakMap<CardDef, boolean>();
@@ -61,7 +61,7 @@ export function triggeredManaAbilitiesFor(g: Game, at: number): ManaTrigger[] {
   for (const player of g.apnap()) {
     for (const t of found) {
       if (t.controller !== player) continue;
-      const def = pendingDef(g, t);
+      const def = pendingTriggerDef(g.s, t);
       if (def?.kind === 'triggered') out.push({ trigger: t, def });
       else g.log(`${t.sourceName}: the engine can't find the triggered mana ability that triggered; add the mana by hand if it should have.`, { rules: ['CR 605.4a'], level: 'warning' });
     }

@@ -371,6 +371,23 @@ describe('M13-6 decks: refused with the problems listed; nothing is created or t
     expect(await b.cmd({ t: 'join', table, deck: TEST_DECK })).toMatchObject({ ok: false, error: { code: 'busy', message: 'The deck check took too long; try again.' } });
     expect(a.last('table')!.table.seats[1]!.name).toBeNull();
   });
+
+  it('F32: create and join (a listed table without a password too) send the session with the deck check; a paced one answers rateLimited', async () => {
+    const t = makeGateway();
+    const a = await guest(t, 'Alice');
+    const b = await guest(t, 'Bob');
+    const { table } = await createTable(a);
+    const sessions = t.runtime.deckSessions;
+    t.runtime.prepare = async (_deck: unknown, _format?: string, session?: string): Promise<DeckResult> => {
+      sessions.push(session);
+      return { ok: false, errors: ['You are checking decks too often; wait a moment.'], warnings: [], rateLimited: true, retryAfterMs: 1_500 };
+    };
+    expect(await b.cmd({ t: 'join', table, deck: TEST_DECK })).toMatchObject({ ok: false, error: { code: 'rateLimited', retryAfterMs: 1_500 } });
+    expect(a.last('table')!.table.seats[1]!.name).toBeNull(); // the seat is not held
+    expect(sessions).toHaveLength(2);
+    expect(sessions.every((s) => typeof s === 'string' && s.length > 0)).toBe(true);
+    expect(sessions[0]).not.toBe(sessions[1]); // each its own session
+  });
 });
 
 describe('M13-6 caps: one table per session, two unstarted per address key, MAX_LOBBY and MAX_LISTED (review 5)', () => {

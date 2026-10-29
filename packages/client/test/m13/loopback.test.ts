@@ -100,11 +100,15 @@ describe('two clients play on the real hosted server over a loopback WebSocket',
     expect(alice.link.welcome()).toMatchObject({ resumed: false, server: { protocol: 1, engineBuild: 'build-test' } });
     expect(alice.sockets[0]!.extensions).toBe(''); // no compression (design D7)
     const session = alice.link.welcome()!.session;
+    const token = alice.link.welcome()!.token;
+    expect(token).toMatch(/^[0-9a-f]{64}$/);
     // Alice types another name after the page connected: hello again on a fresh socket, the same session (the server shows the name of its last hello).
     await alice.link.rename('Alicia');
     expect(alice.sockets).toHaveLength(2);
     expect(alice.link.welcome()).toMatchObject({ resumed: true, name: 'Alicia', session });
-    expect(alice.storage.session.token).toBe(alice.link.welcome()!.token);
+    // the resumed welcome does not echo the token back; the page keeps the one the first welcome gave it
+    expect(alice.link.welcome()).not.toHaveProperty('token');
+    expect(alice.storage.session.token).toBe(token);
 
     // A private table: Alice gets the code for the other seat, Bob sits down with it.
     const made = await alice.link.command({ t: 'create', format: 'casual', seats: 2, visibility: 'private', deck: deckOf(0) }, { timeoutMs: 60_000 });

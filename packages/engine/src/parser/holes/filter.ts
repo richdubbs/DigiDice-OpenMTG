@@ -529,6 +529,7 @@ const W_COLOR_SYMBOLS_IN_COST: readonly (readonly ['W' | 'U' | 'B' | 'R' | 'G', 
 ];
 const W_X_IN_MANA_COST = [P('{x} in its mana cost'), P('{x} in their mana costs'), P('{x} in their mana cost')];
 const W_NO_COUNTERS = P('no counters on it'); // FAST5 T59
+const W_A_BASIC_LAND_TYPE = P('a basic land type'); // edh-zones-1
 const W_THE_MOST = P('the greatest'); // FAST5X E15: "with the greatest power among ..."
 const W_POWER_GREATER_THAN_BASE = [P('power greater than its base power'), P('power greater than their base power')]; // std-rx11
 const W_CHOSEN_NAME = [P('the chosen name'), P('that name')]; // CLOUD std-misc
@@ -551,6 +552,10 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
   kwWalk(pos, []);
   // trek-9 (CR 301.5, 303.4): "with a Communicator attached to them"
   if (!negate) for (const a of attachedWithAt(ctx, pos)) out.push(a);
+  // edh-zones-1 (CR 205.3i, 305.6; Boseiju, Who Endures): "a land card with a basic land type" is a land that has Plains, Island, Swamp, Mountain or Forest among its
+  // land types (any of the five; a land that gained one counts, a nonbasic land such as a Gate does not). Only "with"; "without" has no reading (render/np.ts says it)
+  const basicType = negate ? -1 : phraseAt(ctx, pos, W_A_BASIC_LAND_TYPE);
+  if (basicType >= 0) out.push({ end: basicType, frag: { subtypes: ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest'] } });
   // FAST3 T18: "with the same name as that creature" (CR 201.2: objects share a name; a nameless face-down object shares none): the `sharesWith` of
   // "that shares a name with it", the object named by an Obj ("that creature", "target creature"); only "with", never "without"
   const same = negate ? -1 : phraseAt(ctx, pos, W_SAME_NAME_AS);
@@ -916,18 +921,23 @@ function relClause(ctx: HoleCtx, pos: number): Frag[] {
       for (const [ws, who] of [[P('an opponent'), 'opponent'], [P('a player'), 'player']] as const) { const e = phraseAt(ctx, p, ws); if (e >= 0) r.push({ end: e, frag: { targets: { ref: 'each', who } } }); }
       const a = ctx.toks[p]?.norm;
       if (a === 'a' || a === 'an') for (const n of npAlts(ctx, p + 1)) if (n.number === 'singular' && n.head !== 'spell' && n.head !== 'ability' && n.filter.zone === undefined) r.push({ end: n.end, frag: { targets: { ref: 'each', filter: n.filter } } });
+      // edh-cast-1 (CR 115.9b; Siren Stormtamer): "a spell or ability that targets you or a creature you control": you, the controller of the ability, as one of the two options
+      // (a bare "targets you" is read elsewhere; only an `or` pair uses this)
+      const you = phraseAt(ctx, p, P('you'));
+      if (you >= 0) r.push({ end: you, frag: { targets: { ref: 'you' } } });
       return r;
     };
+    const isYou = (x: { frag: ObjectFilter }): boolean => (x.frag.targets as { ref?: string }).ref === 'you';
     // std-rx28 (CR 115.9b; Storm, Windrider): "a spell that targets one or more creatures": one of its targets is such an object, as "a creature" (the plural names the
     // group the effect calls "those creatures", parser/lower/scope.ts#eventMentions)
     const more = phraseAt(ctx, tg, W_ONE_OR_MORE);
     if (more >= 0) for (const n of npAlts(ctx, more)) if (n.number === 'plural' && n.head !== 'spell' && n.head !== 'ability' && n.filter.zone === undefined) out.push({ end: n.end, frag: { targets: { ref: 'each', filter: n.filter } } });
     const firsts = one(tg);
     for (const x of firsts) {
-      const player = (x.frag.targets as { who?: string }).who !== undefined;
-      if (player) out.push(x);
+      const player = (x.frag.targets as { who?: string }).who !== undefined || isYou(x);
+      if (player && !isYou(x)) out.push(x);
       const or = phraseAt(ctx, x.end, P('or'));
-      if (or >= 0) for (const y of one(or)) if (player !== ((y.frag.targets as { who?: string }).who !== undefined)) out.push({ end: y.end, frag: { anyOf: [x.frag, y.frag] } });
+      if (or >= 0) for (const y of one(or)) if (player !== ((y.frag.targets as { who?: string }).who !== undefined || isYou(y))) out.push({ end: y.end, frag: { anyOf: [x.frag, y.frag] } });
       // std-rx28 (CR 115.9b; Ertha Jo, Frontier Mentor): "that targets a creature or player", the article of the player left out after an object
       const orPlayer = player ? -1 : phraseAt(ctx, x.end, W_OR_PLAYER);
       if (orPlayer >= 0) out.push({ end: orPlayer, frag: { anyOf: [x.frag, { targets: { ref: 'each', who: 'player' } }] } });

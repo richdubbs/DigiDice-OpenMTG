@@ -150,6 +150,12 @@ function produce(cx: ExecCtx, st: AddMana, p: PlayerId): ManaType[] | undefined 
       }
       const options = MANA_TYPES.filter((t) => types.has(t) && (d.colorsOnly !== true || t !== 'C'));
       if (options.length === 0) return []; // CR 106.7: no type can be defined, no mana
+      // edh-mana-keywords-1 (CR 106.1, 106.7): "add three mana of that type instead": one choice, every unit the same type
+      if (d.oneType === true) {
+        if (n === 0) return [];
+        const t = chooseType(g, p, options, `${n} mana of one type those permanents could produce`);
+        return Array.from({ length: n }, () => t);
+      }
       return Array.from({ length: n }, (_, i) => chooseType(g, p, options, `mana ${i + 1} of ${n}, a type those permanents could produce`));
     }
     case 'eventProduced': {
@@ -172,7 +178,7 @@ function produce(cx: ExecCtx, st: AddMana, p: PlayerId): ManaType[] | undefined 
  * FAST5 MX6 (`OP_FORMS`): "Until end of combat, you don't lose this mana as steps and phases end" (`keep: 'endOfCombat'`, firebending CR 702.189a): the units
  * carry the mark and core/steps.ts#endOfStepCleanup keeps them through the end of each combat step but the last (CR 500.5, 106.4).
  */
-export const OP_FORMS: readonly string[] = ['op:addMana.keepEndOfCombat', 'op:addMana.keepEndOfTurn' /* std-mkm: until end of turn (CR 514.2, 500.5) */, 'op:addMana.chosenOr' /* CMD3: "Add {W} or one mana of the chosen color" */];
+export const OP_FORMS: readonly string[] = ['op:addMana.couldProduce.oneType' /* edh-mana-keywords-1 */, 'op:addMana.keepEndOfCombat', 'op:addMana.keepEndOfTurn' /* std-mkm: until end of turn (CR 514.2, 500.5) */, 'op:addMana.chosenOr' /* CMD3: "Add {W} or one mana of the chosen color" */];
 
 /** CR 106.3-106.4: the player adds the mana to their mana pool. With a `ManaRestriction` it can be spent only as it says (CR 106.6, enforced by payment). */
 export function addManaHandler(cx: ExecCtx, st: AddMana): StepResult {

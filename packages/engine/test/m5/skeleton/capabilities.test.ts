@@ -113,7 +113,10 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       'op:moveCounters.distribute' /* p2-counters-move-4: "move any number of +1/+1 counters from ~ onto other creatures", divided, CR 122.5, 608.2d (effects/handlers/counters.ts#moveDistributed) */,
       'op:fight.pairs' /* p2-damage-2: "each of those tokens fights a different one of those creatures", CR 701.14a, 608.2d (effects/handlers/lifedamage.ts#OP_FORMS) */,
       'op:search.shareLandType' /* pc-zones-2: "basic land cards that share a land type", CR 205.3i (effects/handlers/cards-library.ts#OP_FORMS) */,
-      'op:flipCoin.called' /* p2-coinflip-3: "flip three coins. For each flip you win, ...", each flip called, CR 705.2 (effects/handlers/game.ts#OP_FORMS) */];
+      'op:flipCoin.called' /* p2-coinflip-3: "flip three coins. For each flip you win, ...", each flip called, CR 705.2 (effects/handlers/game.ts#OP_FORMS) */,
+      'op:addMana.couldProduce.oneType' /* edh-mana-keywords-1: "add three mana of that type instead", one type for every unit, CR 106.1, 106.7 (effects/handlers/cards-mana.ts#OP_FORMS) */,
+      'op:draw.upTo' /* edh-players-1: "its controller may draw up to two cards", the drawing player chooses how many, CR 121.1, 608.2d (cards-draw.ts#OP_FORMS) */,
+      'op:changeTarget.to' /* edh-cast-1: "change a target of target spell or ability to ~", CR 115.7 (effects/handlers/change-target.ts#OP_FORMS) */];
     expect((byPrefix.get('op') ?? []).sort(), 'op').toEqual([...ops.map((op) => `op:${op}`), ...forms].sort());
     for (const op of ops) expect(Object.hasOwn(OP_HANDLERS, op) && Object.hasOwn(RENDERERS, op), op).toBe(true); // design 5.2: a handler AND a renderer
     expect((byPrefix.get('dur') ?? []).sort(), 'dur').toEqual(['duringNextTurn' /* std-control-1: "during that turn" of the next turn, CR 611.2a */, 'endOfCombat', 'endOfNextTurn' /* FAST5X E29 */, 'endOfTurn', 'permanent', 'remainsExiled' /* FAST5X E29 */, 'throughNextUntap' /* MX5: core/durations.ts#expireAfterUntapStep */, 'until', 'untilExiledWith' /* r5-dig: core/durations.ts#endDurations */, 'untilNextStep', 'untilNextTurn', 'whileObject' /* std-rx32: statics/while-object.ts */, 'whileSource'].map((d) => `dur:${d}`)); // not asLongAs (WP15 review: not judged live)
@@ -482,6 +485,10 @@ describe('ENGINE_CAPABILITIES (design 5.2) built from empty tables', () => {
       'feature:keyword.costChange.if',
       // p2-trigger-events-1: "whenever a player mills a nonland card" (CR 701.17a; triggers/normalize.ts reports a milled card as its owner's action `mill`)
       'feature:ev.action.mill',
+      // edh-mana-keywords-1: "Exile this card from your hand: Add {G}." (rules/mana.ts#manaAbilityDenial, CR 113.6, 605.1a)
+      'feature:mana.activation.hand',
+      // edh-players-1: "whenever an opponent draws a card except the first one they draw in each of their draw steps" (CR 504.1; triggers/normalize.ts marks the first draw of the step, match.ts reads it)
+      'feature:ev.draw.exceptFirstInDrawStep',
     ].sort());
   });
 

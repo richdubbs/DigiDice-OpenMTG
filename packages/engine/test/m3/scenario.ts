@@ -139,7 +139,13 @@ export function findAll(s: GameState, name: string, zone: ZoneKind, owner?: Play
   return ids.filter((id) => s.objects[id]!.zone === zone && s.defs[s.objects[id]!.defId]!.name === name && (!owner || s.objects[id]!.owner === owner));
 }
 
-export const pass = (s: GameState): GameState => act(s, { type: 'pass', player: s.pending!.player });
+/**
+ * The player who holds priority passes. Once the game is over (`s.result`, and `advance` then clears `s.pending`), nobody can pass any more: the state is
+ * returned unchanged, so a helper that passes several times in a row (`passBoth`, a resolve loop) stops cleanly when one of its passes ends the game. Review
+ * 2026-10-26 F6: a triggered ability put on the stack starts a new round of passes, so the pass that resolves it (and may end the game) is no longer always the
+ * second one of a `passBoth`.
+ */
+export const pass = (s: GameState): GameState => (s.result || s.pending === null ? s : act(s, { type: 'pass', player: s.pending.player }));
 
 /** Both players pass in succession so the top of the stack resolves (or the step ends if the stack is empty). */
 export function passBoth(s: GameState): GameState {

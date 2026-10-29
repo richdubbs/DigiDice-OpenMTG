@@ -1015,6 +1015,7 @@
       "CR 118.7a",
       "CR 122.1"
     ],
+    "priority": -1,
     "pattern": "{f:Filter} and {g:Filter} you cast cost {m:ManaCost} less to cast for each {k:CounterKind} counter on ~",
     "build": {
       "kind": "static",

@@ -111,8 +111,9 @@ describe('M13-12 the lobby, a password table, quick match and the line for room,
   }, 60_000);
 
   function client(name: string) {
-    const link = new HostedLink({ server: 'ws://in-process', name, storage: new MemoryHostedStorage(), retryMs: 300, pingEveryMs: 0, socket: () => new InProcessSocket(transport) });
-    return { name, link, conn: null as HostedConnection | null, recorder: null as HostedRecorder | null, moves: 0, busy: false, problems: [] as string[] };
+    const storage = new MemoryHostedStorage();
+    const link = new HostedLink({ server: 'ws://in-process', name, storage, retryMs: 300, pingEveryMs: 0, socket: () => new InProcessSocket(transport) });
+    return { name, link, storage, conn: null as HostedConnection | null, recorder: null as HostedRecorder | null, moves: 0, busy: false, problems: [] as string[] };
   }
   type Client = ReturnType<typeof client>;
 
@@ -247,6 +248,7 @@ describe('M13-12 the lobby, a password table, quick match and the line for room,
     // nothing secret in the server's log: the password, the tokens
     const log = logger.lines.join('\n');
     expect(log).not.toContain(password);
-    for (const c of [alice, bob, carol, dave]) expect(log).not.toContain(c.link.welcome()!.token);
+    // (the token as the page keeps it: a resumed welcome does not carry it)
+    for (const c of [alice, bob, carol, dave]) expect(log).not.toContain(c.storage.session.token!);
   }, 300_000);
 });

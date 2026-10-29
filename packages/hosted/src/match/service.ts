@@ -227,7 +227,7 @@ export class MatchmakingService implements MatchService {
     const key: QueueKey = { format: m.format, size: m.size };
     const early = this.refusedEarly(who, key, this.now());
     if (early) return early;
-    const deck = await this.prepare(m.deck, m.format);
+    const deck = await this.prepare(m.deck, m.format, who.session);
     if (!deck.ok) return deck.reply;
     const opponents = await this.opponentsOf(who.session);
     // The awaits above let anything happen (a drain among it): `enter` checks again, in its own order.
@@ -769,14 +769,15 @@ export class MatchmakingService implements MatchService {
     return null;
   }
 
-  private async prepare(deck: HostedDeck, format: string): Promise<{ ok: true; deck: PreparedDeck; hash: string } | { ok: false; reply: TableReply }> {
+  private async prepare(deck: HostedDeck, format: string, session: string): Promise<{ ok: true; deck: PreparedDeck; hash: string } | { ok: false; reply: TableReply }> {
     let r: DeckResult;
     try {
-      r = await this.o.runtime.prepare(deck, format);
+      r = await this.o.runtime.prepare(deck, format, session); // F32: paced per session in the deck pool
     } catch {
       return { ok: false, reply: err('busy', 'The deck check failed; try again.') };
     }
     if (r.ok) return { ok: true, deck: r.deck, hash: preparedDeckHash(this.o.ledgerSecret, r.deck) };
+    if ('rateLimited' in r) return { ok: false, reply: err('rateLimited', 'You are checking decks too often; wait a moment.', { retryAfterMs: r.retryAfterMs }) };
     if ('busy' in r) return { ok: false, reply: err('busy', 'The server is busy checking decks; try again shortly.', { retryAfterMs: 2_000 }) };
     if ('timeout' in r) return { ok: false, reply: err('busy', 'The deck check took too long; try again.') };
     return { ok: false, reply: err('deckRejected', 'The deck is not legal for this queue.', { details: r.errors.slice(0, 50) }) };

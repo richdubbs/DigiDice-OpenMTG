@@ -186,7 +186,9 @@ describe('std-ru parser support', () => {
     const def = { kind: 'static', text: '', effects: [{ s: 'permit', who: { ref: 'you' }, action: 'play', from: 'graveyard', costChange: { kind: 'set', life: 'manaValue' } }] } as never;
     const caps = capabilitiesOfDef(def);
     expect(caps.some((c) => !ENGINE_CAPABILITIES.has(c)), caps.join(', ')).toBe(true);
-    expect(compileCard(card('Example Relic', 'Artifact', 'You may look at the top card of your library any time.\nYou may play lands and cast spells from the top of your library. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.')).automation.level).not.toBe('full');
+    // edh-cast-1: and the top card of a library with "play lands and cast spells" in one sentence (Bolas's Citadel) is read now (sta.edhc1.top.lands.cast.lifeCost; capability
+    // `feature:permit.cast.top.lifeCost`), no longer a pinned manual; the same life cost for a graveyard permission is still unregistered (above)
+    expect(compileCard(card('Example Relic', 'Artifact', 'You may look at the top card of your library any time.\nYou may play lands and cast spells from the top of your library. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.')).automation.level).toBe('full');
   });
 });
 

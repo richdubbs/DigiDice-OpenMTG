@@ -69,7 +69,9 @@ const describeEvent = (g: Game, e: Proposed): string => {
 /** CR 614.6: the original event never happens; the steps happen instead. */
 export function applyInstead(g: Game, e: Proposed, b: Extract<ReplacementBody, { b: 'instead' }>, c: Candidate): Proposed | null {
   g.log(`${c.sourceName}: ${describeEvent(g, e)}; something else happens instead.`, { rules: ['CR 614.1a', 'CR 614.6'], level: 'action' });
-  runNested(replacementCtx(g, e, c), b.do);
+  const cx = replacementCtx(g, e, c);
+  if (e.ev === 'createToken' && e.enter?.tapped === true) cx.insteadTapped = true;
+  runNested(cx, b.do);
   return null;
 }
 

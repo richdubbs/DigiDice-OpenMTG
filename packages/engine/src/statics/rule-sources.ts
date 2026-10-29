@@ -30,6 +30,7 @@ import { computeAll, intrinsicChars } from './layers';
 import { layerSourcesPresent, numOf } from './live';
 import { suspectedPresent } from './suspect';
 import { whileObjectHolds } from './while-object';
+import { LAYER_READS_VERIFY, noteLayerRead, READ_TAPPED, trackingLayerReads } from './layer-reads';
 import { evalCondition, filterMatches, isPlayerRef, objectsOf, playersOf, type EvalCx } from './match';
 
 /** The `StaticEffect` kinds this module collects. */
@@ -320,6 +321,15 @@ export function installLayeredAllProvider(f: (s: GameState) => ReadonlyMap<Objec
   layeredAllProvider = f;
 }
 
+/**
+ * Review 2026-10-26 (performance): rules/characteristics.ts's way to add volatile parts (statics/layer-reads.ts) to the key of the cache entry of `all` for the
+ * state `s`, which the reader just validated. Installed there with the provider above.
+ */
+let layeredReadsWidener: ((s: GameState, all: ReadonlyMap<ObjectId, Chars>, reads: number) => void) | null = null;
+export function installLayeredReadsWidener(f: (s: GameState, all: ReadonlyMap<ObjectId, Chars>, reads: number) => void): void {
+  layeredReadsWidener = f;
+}
+
 /** The characteristics of the objects of a state as the rule hooks read them (see `CharsView`). */
 export function charsViewOf(s: GameState): CharsView {
   return layerSourcesPresent(s) ? layeredEntry(s).view : new CharsView(s, null);
@@ -336,7 +346,15 @@ export function ruleContext(s: GameState): RuleContext | null {
     return { view, sources };
   }
   const entry = layeredEntry(s);
-  entry.sources ??= collectSources(s, entry.view, Object.keys(s.objects)); // a layered state: any object may have been granted an ability
+  if (entry.sources === undefined) {
+    // a layered state: any object may have been granted an ability. The sources are kept with the characteristics map (`layeredEntryChecked`: the same map
+    // means the same state), so the volatile parts they read (statics/layer-reads.ts) join the key of that map's cache entry
+    const { value, reads } = trackingLayerReads(() => collectSources(s, entry.view, Object.keys(s.objects)));
+    entry.sources = value;
+    if (reads !== 0) layeredReadsWidener?.(s, entry.all, reads);
+  } else if (LAYER_READS_VERIFY.on && JSON.stringify(collectSources(s, entry.view, Object.keys(s.objects))) !== JSON.stringify(entry.sources)) {
+    throw new Error('statics/rule-sources.ts: kept rule effects differ from a fresh collection (a volatile layer input read without a note?)');
+  }
   entry.view.ruleSources ??= entry.sources;
   return { view: entry.view, sources: entry.sources };
 }
@@ -420,7 +438,7 @@ function durationActive(s: GameState, view: CharsView, rec: ContinuousEffectRec)
     case 'onBattlefield': return o.zone === 'battlefield';
     case 'controlled': return (view.get(o.id)?.controller ?? o.controller) === rec.controller;
     case 'attached': return o.attachedTo !== undefined;
-    case 'tapped': return o.tapped;
+    case 'tapped': noteLayerRead(READ_TAPPED); return o.tapped;
   }
 }
 

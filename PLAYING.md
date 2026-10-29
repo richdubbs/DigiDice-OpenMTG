@@ -13,11 +13,9 @@ settings are kept in `%APPDATA%\OpenMTG`; uninstall from Windows **Settings**, *
 
 ## Start
 
-- **Windows:** double-click **Start OpenMTG.cmd**. The first start installs everything and downloads the card
-  data from Scryfall (a few minutes). The game opens in your browser at http://127.0.0.1:47600. Keep the
-  black window open while you play; close it to stop.
-- **Mac / Linux:** in a terminal in the OpenMTG folder run `npm ci`, then `npm run cards -- refresh` (first time
-  only), then `npm run play -- --open`.
+- **Installed (Windows):** open **OpenMTG** from the Start menu or the desktop shortcut.
+- **From the source:** in a terminal in the OpenMTG folder run `npm ci`, then `npm run cards -- refresh` (first time
+  only), then `npm run play -- --open`. The game opens in your browser at http://127.0.0.1:47600; stop it with Ctrl+C.
 
 ## Play each other online
 

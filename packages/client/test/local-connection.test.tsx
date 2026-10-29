@@ -4,6 +4,7 @@ import { compileCard, GameSession, HIDDEN_DEF, type Action, type GameView } from
 import { describe, expect, it, vi } from 'vitest';
 import { NavProvider } from '../src/app/nav';
 import { LocalConnection } from '../src/connection/LocalConnection';
+import { fallback } from '../src/game/computer';
 import { GameScreen } from '../src/game/GameScreen';
 import { smallConfig } from './helpers';
 
@@ -117,6 +118,31 @@ describe('LocalConnection (hot-seat)', () => {
     expect(conn.undo()).toBe(true);
     expect(JSON.stringify(conn.session.state)).toBe(before);
     expect(conn.view().zones.hand.p1).toContain(land);
+  });
+
+  it('F2: the session forgets the states below the undo floor (bounded memory) and undo still works above it', async () => {
+    const cfg = smallConfig('undo-floor', { options: { skipMulligans: true, startingPlayer: 'p1' } });
+    const conn = new LocalConnection({ ...cfg, players: [cfg.players[0]!, { name: 'Bob', deck: cfg.players[1]!.deck }] });
+    const floorOf = () => (conn as unknown as { floor: number }).floor;
+    const kept = () => (conn.session as unknown as { history: unknown[] }).history.length;
+    conn.acceptHandoff();
+    // Pass until a card is drawn (a library change: never taken back, CR 733.1), then on to Alice's next main phase.
+    while (conn.view().turn.number < 3 || conn.view().turn.step !== 'main1') {
+      if (conn.handoff()) conn.acceptHandoff();
+      const d = conn.view().pending!;
+      const r = await conn.act(fallback(d)!); // pass priority; the most cautious answer to anything else
+      expect(r.ok, r.ok ? '' : r.error.message).toBe(true);
+    }
+    if (conn.handoff()) conn.acceptHandoff();
+    expect(floorOf()).toBeGreaterThan(0);
+    expect(conn.session.floor).toBe(floorOf());
+    expect(kept()).toBe(conn.session.actions.length - floorOf() + 1);
+    const before = JSON.stringify(conn.session.state);
+    const land = conn.view().zones.hand.p1!.find((id) => conn.view().objects[id]!.defId === 'Forest');
+    expect((await conn.act({ type: 'playLand', player: 'p1', card: land! })).ok).toBe(true);
+    expect(conn.undo()).toBe(true);
+    expect(JSON.stringify(conn.session.state)).toBe(before);
+    expect(conn.session.undo(conn.session.actions.length - floorOf() + 1)).toBe(false);
   });
 
   it("never undoes the other player's action after a hand-off", async () => {

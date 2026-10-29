@@ -16,6 +16,7 @@
     "@openmtg/accounts": "*",
     "@openmtg/ai": "*",
     "@openmtg/engine": "*",
+    "@openmtg/play": "*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

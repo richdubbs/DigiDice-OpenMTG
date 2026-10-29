@@ -54,6 +54,19 @@ export interface Checkpoint {
   hash: string;
   /** The state as JSON without `defs` (the config holds them). Server only: never sent to anyone. */
   stateJson: string;
+  /**
+   * F31: the losses up to this checkpoint (out order, turn and the engine's citations: facts of the change's events, not of the state), so a recovery
+   * can start at the snapshot after a player has lost (a 3-4 player game goes on). Absent in a snapshot written before them.
+   */
+  losses?: SnapshotLoss[];
+}
+
+/** F31: one player's loss as a snapshot keeps it (`TableActor`'s out order, out turn and loss citations). */
+export interface SnapshotLoss {
+  player: string;
+  order: number;
+  turn: number;
+  rules: string[] | null;
 }
 
 /** Why a seat left the game by the table's own hand (design D11): the server applied its concession. Null: the engine (or the player's own concede). */

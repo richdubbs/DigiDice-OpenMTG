@@ -1,0 +1,5 @@
+# edh-zones-1 (Commander effort, lane edh-zones; test/cloud/edh-zones-1, golden edh-zones-1-review.json): a basic land type, the owner who shuffles and reveals, and you untap, until that player has exiled
+Boseiju, Who Endures
+Chaos Warp
+Sword of Feast and Famine
+Tasha's Hideous Laughter

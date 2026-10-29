@@ -6,6 +6,10 @@ import type { GameObject, GameState } from '../types/state';
 
 export function clone<T>(value: T): T {
   if (value === null || typeof value !== 'object') return value;
+  // F17/F9 (owner decision 2026-10-26): a frozen object is returned as it is, not copied. Every frozen object of a game state is deep-frozen and never
+  // edited (design 4.3, docs/ARCHITECTURE.md "Engine principles"): card definitions (`deepFreeze` in core/create.ts and Game.addDef) and history entries
+  // (triggers/history.ts), so sharing one is the same as copying it, without the cost (a view used to deep-copy every definition it carries).
+  if (Object.isFrozen(value)) return value;
   if (Array.isArray(value)) {
     // Arrays of ids and numbers (zones, answers) are by far the most common arrays: copy them without recursing.
     let flat = true;

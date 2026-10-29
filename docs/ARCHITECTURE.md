@@ -9,8 +9,9 @@ Read this before changing the engine. It records the design decisions every modu
 | `@openmtg/engine` | anywhere (pure TS) | nothing | Rules engine, ability model, keyword library, Oracle-text parser |
 | `@openmtg/cards` | Node | engine (types, compiler) | Scryfall client, bulk-data cache, name lookup, decklists, coverage report, LLM compile tool |
 | `@openmtg/ai` | anywhere (pure TS) | engine | Heuristic AI opponent: answers every decision from `viewFor(state, botPlayer)` and `legalActions` |
-| `@openmtg/client` | browser | engine, ai (server API types only from server) | React UI: decks, images, hot-seat play and play against the computer (the AI runs in the browser, on its own player's view) |
-| `@openmtg/server` | Node, on the player's machine (127.0.0.1 only) | engine, cards | Serves the built client and the local JSON API over the card cache (`/api/cards/...`, `/api/decks/...`, `/api/images/match`, `/api/update`: the Update button); docs/design/m8-client.md |
+| `@openmtg/play` | anywhere (pure TS, no React or DOM) | engine, ai | A local game without a screen: `GameConnection`, the hot-seat `LocalConnection`, the game against the computer (`ComputerGame`, `runComputer`), event redaction, the undo floor and `viewDelta` (whole view or patch). Shared by the client and the server's table channel (Godot plan phase 1) |
+| `@openmtg/client` | browser | engine, ai, play (server API types only from server) | React UI: decks, images, hot-seat play and play against the computer (the AI runs in the browser, on its own player's view) |
+| `@openmtg/server` | Node, on the player's machine (127.0.0.1 only) | engine, cards, net, play | Serves the built client and the local JSON API over the card cache (`/api/cards/...`, `/api/decks/...`, `/api/images/match`, `/api/update`: the Update button); docs/design/m8-client.md. The online socket, and the table channel (`/table`, `src/table/`): hot-seat and computer games run in the server for the Godot table or the page |
 | `@openmtg/net` | Node | engine | Online two-player play over UDP, host-authoritative (`GameHost`/`GameGuest`) |
 
 **Deviation from the two-package default:** card data lives in a third package, `@openmtg/cards`,
@@ -36,6 +37,8 @@ Vite and tsx all compile TypeScript on the fly. `npm test` runs every package's 
    deep-frozen when a game is created, and `Game.addDef` shallow-copies the map before adding a token definition),
    the append-only `log` (only the array is copied, entries are shared and never edited), `lki` (entries are written once, when an object
    leaves a zone) and `suspended`. So: never edit a `CardDef`, a log entry or an LKI entry; add tokens through `createToken` (or `g.addDef`).
+   F17/F9 (owner decision 2026-10-26): `clone` returns a frozen object as it is instead of copying it, so whatever is frozen in a state must be
+   deep-frozen (`deepFreeze`: the definitions, history entries) and never edited; a view shares them too.
 3. **One entry point.** All player input is an `Action` (`types/actions.ts`). Exactly one
    `Decision` is pending at any time (`state.pending`), including priority. UIs and bots look at
    `pending` and answer it.
@@ -76,7 +79,13 @@ Rules for engine code that follow from this:
   `defs` map and a snapshot of the relevant objects on the intrinsic path; indexed-versus-scanned test in
   `test/m6/replace/foreign.test.ts`). M6-8: `statics/text-change.ts` (a text change's rewrite of a frozen
   ability definition, keyed by the definition's identity, the change and the object's names; the word
-  patterns per word; cached-versus-uncached test in `test/m6/text/rewrite.test.ts`).
+  patterns per word; cached-versus-uncached test in `test/m6/text/rewrite.test.ts`). F17/F9: `core/view.ts` `VIEW_MEMOS` (the
+  redacted log, history and last known information of one viewer of one game, found from the game's first log entry in a WeakMap,
+  one per viewer: keyed by the entries' identity and by the answers about object ids they read, checked by value on every `viewFor`;
+  only the entries added since are redacted; what it hands out is frozen; cached-versus-uncached test in `test/perf/view-memo.test.ts`).
+  Godot plan phase 2: `core/view-chars.ts` `BY_DEF` / `BY_JSON` (a view's characteristics summary of one ability, its renderer reading:
+  keyed by the ability key, the object's names and types, and the definition, by identity when it is frozen, else by its JSON in a map
+  bounded to 4000 entries; the entries are frozen; cached-versus-uncached test in `test/godot/view-chars.test.ts`).
 - `g.choose` may be called anywhere (resolution, SBAs, turn-based actions, cost payment).
 - Do not catch `NeedDecision` except in `core/apply.ts`.
 
@@ -489,7 +498,8 @@ any trace of a face-down card.
 - Combat and state-based action tests (`test/m4/`) build a board with real fixture cards (`test/m3/scenario.ts`), then drive it with real actions and answers
   (`test/m4/helpers.ts`: `runCombat`, `toDeclareAttackers`, ...). The soak test (`test/m3/soak.test.ts`) plays random games including combat and checks, whenever a
   player has priority, that no state-based action is pending (no lethal damage, no unattached Aura, no duplicate legend, no token outside the battlefield) and that
-  the combat structure is consistent. Note that the scenario helper deep-clones its state, which un-freezes the card definitions (only `createGame` freezes them).
+  the combat structure is consistent. The scenario helper deep-clones its state with `util/clone.ts#clone`, which shares what is frozen (F17/F9): its card
+  definitions stay frozen, so a test that changes one replaces it in `defs` (copy-on-write); `structuredClone` un-freezes.
 - Vitest. Tests run offline from `packages/engine/test/fixtures/cards.json` (Oracle fields only for
   a named list of test cards; generated by the cards package from the local cache).
 - Scenario tests set up a board, perform actions, and assert results. Name tests after the rule they

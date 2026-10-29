@@ -1,5 +1,5 @@
 /**
- * RPL-1 (replays design 3, 7.1): after a game replay comes into the library, it is completed in a Web Worker (recording.worker.ts, fallback.ts): the
+ * RPL-1 (replays design 3, 7.1): after a game replay comes into the library, it is completed in a Web Worker (completeJob.ts, fallback.ts; the page's engine worker, connection/game.worker.ts): the
  * game is run again, and the fallback recording and the facts the record could not know are merged into the stored file. Jobs run one at a time.
  * Without Web Workers (an old browser, the tests' jsdom) the replay stays as it was saved: it still plays exactly under the same build.
  *
@@ -14,7 +14,8 @@
 import type { ReplayFile } from '@openmtg/engine';
 import { withCompleted, type CompletedGame } from './fallback';
 import type { ReplayLibrary } from './library';
-import type { CompleteReply, CompleteRequest } from './recording.worker';
+import type { CompleteReply, CompleteRequest } from './completeJob';
+import { startEngineWorker } from '../connection/engineWorker';
 
 /** Runs `completeGame` for a file somewhere (a worker), or answers null when it could not. */
 export type Completer = (file: ReplayFile, build: string | null) => Promise<CompletedGame | null>;
@@ -32,7 +33,7 @@ export function workerCompleter(): Completer | null {
     new Promise((resolve) => {
       let worker: Worker;
       try {
-        worker = new Worker(new URL('./recording.worker.ts', import.meta.url), { type: 'module', name: 'openmtg-replay-recording' });
+        worker = startEngineWorker('openmtg-replay-recording');
       } catch (e) {
         console.error('[Replays] the recording worker could not start', e);
         resolve(null);

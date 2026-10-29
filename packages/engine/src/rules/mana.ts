@@ -14,7 +14,7 @@ import { identityManaColors } from '../statics/commander';
 import { moveObject } from '../core/zones';
 import { EngineBug, IllegalAction, type Game } from '../core/game';
 import type { ActivatedInfo } from './abilities';
-import { findAbility } from './abilities';
+import { activationZones, findAbility } from './abilities';
 import { charsOfObject } from './characteristics';
 import { deny, type Denial } from './denial';
 import { cantDo, costUseDenial } from './cant';
@@ -242,9 +242,15 @@ export function activatingX(g: Game): number | undefined {
  * (not while it is being activated), and whether its whole cost can be paid now (CR 118.3, 605.3a: a mana cost, life, other permanents; `manaCostShape`).
  */
 export function manaAbilityDenial(s: GameState, player: PlayerId, source: GameObject, info: ActivatedInfo): Denial | null {
-  if (source.zone !== 'battlefield') return deny('Mana abilities of permanents can only be activated while the permanent is on the battlefield.', 'CR 113.6');
-  if (source.controller !== player) return deny('You can only activate abilities of permanents you control.', 'CR 602.2');
-  if (source.phasedOut) return deny('That permanent is phased out.', 'CR 702.26b');
+  // edh-mana-keywords-1 (CR 113.6, 605.1a, 602.2): "Exile this card from your hand: Add {G}." (the Spirit Guides) works in the hand only, for the card's owner, who
+  // holds it (a card in a hand has no controller); every other mana ability works on the battlefield, for its controller
+  if (source.zone === 'hand' && info.def.zone?.length === 1 && info.def.zone[0] === 'hand') {
+    if (source.owner !== player) return deny('You can only activate abilities of cards in your own hand.', 'CR 602.2');
+  } else {
+    if (source.zone !== 'battlefield' || !activationZones(info.def).includes('battlefield')) return deny('Mana abilities of permanents can only be activated while the permanent is on the battlefield.', 'CR 113.6');
+    if (source.controller !== player) return deny('You can only activate abilities of permanents you control.', 'CR 602.2');
+    if (source.phasedOut) return deny('That permanent is phased out.', 'CR 702.26b');
+  }
   const hook = hookpoints.canActivate(gameOf(s), source.id, info.key, player); // CR 602.5, 605.1a (rules/hookpoints.ts)
   if (hook) return hook;
   if (BEING_ACTIVATED.get(s)?.has(`${source.id}|${info.key}`)) return deny('That mana ability is being activated: it can\'t be activated again until it has resolved.', 'CR 605.3c');
@@ -468,6 +474,7 @@ export function activateManaAbility(g: Game, player: PlayerId, sourceId: string,
     produced.push(t);
   });
 
+  const fromHand = source.zone === 'hand'; // edh-mana-keywords-1: its cost moves it out of the hand
   const c = charsOfObject(g.s, source);
   const snow = c.supertypes.includes('Snow'); // CR 107.4h: mana produced by a snow source is snow mana
   const shape = manaCostShapeNow(g.s, player, source, mana); // std-rx28
@@ -526,7 +533,7 @@ export function activateManaAbility(g: Game, player: PlayerId, sourceId: string,
     }
     produced.push(...g.player(player).manaPool.slice(before).map((u) => u.type));
   }
-  g.log(`${g.player(player).name} ${sacrifice ? 'sacrifices' : 'taps'} ${name} for ${manaText(produced)}.`, { rules: ['CR 605.3b'], level: 'info' });
+  g.log(`${g.player(player).name} ${fromHand ? 'exiles' : sacrifice ? 'sacrifices' : 'taps'} ${name} for ${manaText(produced)}.`, { rules: ['CR 605.3b'], level: 'info' });
   if (!dynamic) {
     addManaByActivation(g, player, produced, source, snow, restrictionOf(mana), exhaust, keepOf(mana), riderOf(mana), mana.def.cost.tap === true, whenSpentOf(mana, player, source)); // only the id is used, which survives the sacrifice
     return produced;

@@ -227,6 +227,7 @@ export class GameRuntime implements Runtime {
         deadlineMs: this.tuning.deckDeadlineMs,
         queue: this.tuning.deckQueue,
         logger: this.logger,
+        now: this.now,
       });
     }
     await Promise.all([this.whenHostsReady(), this.deckPool?.ready()]);
@@ -467,9 +468,9 @@ export class GameRuntime implements Runtime {
   // -------------------------------------------------------------------------------------------------------------------------------------------------
   // Deck pool and signals
 
-  prepare(deck: DeckSubmission, format: string): Promise<DeckResult> {
+  prepare(deck: DeckSubmission, format: string, session?: string): Promise<DeckResult> {
     if (!this.deckPool) return Promise.resolve({ ok: false, errors: ['Deck checks are not available on this server now.'], warnings: [], busy: true });
-    return this.deckPool.prepare(deck, format);
+    return this.deckPool.prepare(deck, format, session);
   }
 
   read(now: number): CapacitySignals {

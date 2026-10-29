@@ -37,7 +37,9 @@ import {
   type OnlineReplayStatus, type OnlineStatus, type ServerMessage,
 } from './api';
 import { checkClientAction, parseClientMessage, parseGameAddress } from './messages';
+import { GuestRecording, type OnlineLibrary } from './guestRecording';
 import type { OnlineReplayStore } from './replays';
+import { gameCapture, type BugCapture } from '../table/bugs';
 
 /** How the bridge makes games: packages/net over UDP by default; tests pass in-memory ones (net's MemoryTransport). */
 export interface OnlineBackends {
@@ -57,7 +59,16 @@ export interface BridgeOptions {
   replays?: OnlineReplayStore | null;
   /** RPL-3: this server's app, which the guests' copies of a shared game record (packages/net HostOptions.replay.app). */
   app?: ReplayApp;
+  /**
+   * RPL-3: where the replays of online games go for a page without a library of its own (`library` on host or join: the Godot app): the host's record
+   * once the game is over (again after a later choice, and once settled, when the store lets it go), a guest's recording (online/guestRecording.ts).
+   */
+  library?: OnlineLibrary | null;
+  /** RPL-3: the folder of the guests' recordings for `library` (http.ts: `replays/online-guest`); null or absent: kept in memory only. */
+  guestRecordings?: string | null;
 }
+
+const NO_APP: ReplayApp = { version: '0.0.0', commit: null };
 
 /** One browser socket, as the bridge sees it. */
 export interface ClientPort {
@@ -90,6 +101,11 @@ export class OnlineBridge {
   private chatLog: OnlineChatLine[] = [];
   /** RPL-3: a guest: the game the host shared (gzip, base64), resent to a new socket. */
   private replayData: string | null = null;
+  /** RPL-3: a guest's recording for the library (`library` on join). */
+  private recording: GuestRecording | null = null;
+  /** RPL-3: the host's record goes to the library (`library` on host). */
+  private hostLibrary = false;
+  private hostSaving: Promise<void> = Promise.resolve();
   /** Bumped by every new game and every leave: events of an older game are ignored. */
   private generation = 0;
   private shut = false;
@@ -105,6 +121,29 @@ export class OnlineBridge {
   running(id: string): boolean {
     const g = this.game;
     return g?.role === 'host' && g.host.replayId === id && !g.host.isClosed && !g.host.state?.result;
+  }
+
+  /**
+   * RPL-4 for the table channel's "Report a bug" during an online game (the Godot app's dialog; table/api.ts ONLINE_TABLE): the moment the report is
+   * about. A guest's: its recording so far (what this player was shown; `library` on join). The host's: the game itself only once every player agreed
+   * to show their cards (its record holds every hand, CR 400.2), else the view on screen as a recording of one frame. Null before a view.
+   */
+  bugCapture(app: ReplayApp): BugCapture | null {
+    const shown = this.lastView;
+    if (!shown) return null;
+    const soFar = this.recording?.soFar() ?? null;
+    const frames = soFar?.recording?.frames.length ?? 0;
+    if (soFar && frames > 0) return { content: { replay: soFar, at: frames - 1, holds: 'recording' }, kind: 'recording', length: frames };
+    const g = this.game;
+    if (g?.role === 'host' && this.o.replays) {
+      const file = this.o.replays.file(g.host.replayId, this.o.app ?? NO_APP);
+      const actions = file && file !== 'running' && !('problem' in file) && file.reveal.policy === 'all' ? file.play?.actions.length ?? 0 : 0;
+      if (actions > 0 && file && file !== 'running' && !('problem' in file)) return { content: { replay: file, at: actions - 1, holds: 'game' }, kind: 'game', length: actions };
+    }
+    return gameCapture(null, {
+      view: shown.view, events: shown.events, changes: shown.seq, mode: this.status.role === 'host' ? 'onlineHost' : 'onlineGuest', format: this.status.format ?? '',
+      computers: [],
+    }, app);
   }
 
   /** RPL-3: the replay id of the game open here (hosted or joined, until it is left or closed), or null. */
@@ -270,6 +309,7 @@ export class OnlineBridge {
       return this.reply(m.id, errorOf('closed', 'The game was left while it was starting.'));
     }
     this.game = { role: 'host', host };
+    this.hostLibrary = m.library === true && !!this.o.library && !!this.o.replays;
     this.wireHost(host, gen);
     const replay = { id: host.replayId, agree: false, agreed: [], shared: false };
     if (host.seats > 2) {
@@ -322,10 +362,16 @@ export class OnlineBridge {
       return this.reply(m.id, errorOf('closed', 'The game was left while joining.'));
     }
     this.game = { role: 'guest', guest };
-    this.wireGuest(guest, gen);
-    const over = guest.view?.result;
     // RPL-3: the id this player's page keeps the game's replay under (the same for every page of this game).
     const replay = { id: newReplayId(), agree: false, shared: false };
+    if (m.library && this.o.library) {
+      this.recording = new GuestRecording({
+        dir: this.o.guestRecordings ?? null, id: replay.id, me: guest.player, format: guest.format, app: this.o.app ?? NO_APP, library: this.o.library,
+        saved: () => this.savedReplay(gen, replay.id),
+      });
+    }
+    this.wireGuest(guest, gen);
+    const over = guest.view?.result;
     if (guest.seats > 2) {
       // M12-5a: a 3-4 player game: the lobby until every seat is taken, then the table.
       this.setStatus(gen, {
@@ -370,16 +416,48 @@ export class OnlineBridge {
    */
   private async leave(reason: string, concede = false): Promise<void> {
     const g = this.game;
+    const recording = this.recording;
+    const hostLibrary = this.hostLibrary;
+    this.recording = null;
     this.reset({ role: 'none', phase: 'idle', warnings: [] });
     if (g?.role === 'host') {
       if (concede && concedeAsHost(g.host)) reason = `${reason} and conceded (CR 104.3a)`;
       // RPL-3: its record is complete (the concession's line included): kept no longer than its page needs it (online/replays.ts `settle`).
       this.o.replays?.settle(g.host.replayId);
       await g.host.close(reason);
+      if (hostLibrary) await this.keepHostRecord(g.host.replayId, -1, true);
     } else if (g?.role === 'guest') {
       if (concede && (await concedeAsGuest(g.guest))) reason = `${reason} and conceded (CR 104.3a)`;
+      // RPL-3: the view with the concession is the recording's last frame (its events came while the game was being left).
+      if (g.guest.view) recording?.shown(g.guest.seq, g.guest.view, []);
       await g.guest.close(reason);
     }
+    await recording?.close();
+  }
+
+  /**
+   * RPL-3 (`library` on host): the host's record as a replay in this server's library, once the game is over, again after a later choice, and once
+   * the game is settled (closed or shared, `settled`), when the store lets the record go. One at a time, in order; a failure is logged.
+   */
+  private keepHostRecord(id: string, gen: number, settled: boolean): Promise<void> {
+    const store = this.o.replays;
+    const library = this.o.library;
+    if (!store || !library) return Promise.resolve();
+    this.hostSaving = this.hostSaving.then(async () => {
+      const file = store.file(id, this.o.app ?? NO_APP);
+      if (file === null || file === 'running') return;
+      if ('problem' in file) throw new Error(file.problem);
+      await library.add(file);
+      if (settled) store.remove(id);
+      this.savedReplay(gen, id);
+    }).catch((e: unknown) => console.error(`[online] the game's replay could not be kept: ${e instanceof Error ? e.message : String(e)}`));
+    return this.hostSaving;
+  }
+
+  /** RPL-3: the replay `id` is in the library (the status says it). */
+  private savedReplay(gen: number, id: string): void {
+    const r = this.status.replay;
+    if (gen === this.generation && r?.id === id && !r.saved) this.patch(gen, { replay: { ...r, saved: true } });
   }
 
   // ---- game events
@@ -391,20 +469,26 @@ export class OnlineBridge {
    */
   private wireHostReplays(h: GameHost, gen: number): void {
     const store = this.o.replays;
+    const library = this.hostLibrary;
     if (store) {
-      h.on('recordStart', (start, agreed) => store.begin(start, agreed));
+      h.on('recordStart', (start, agreed) => store.begin(start, agreed, library));
       h.on('recordAction', (line) => store.append(h.replayId, line));
-      h.on('recordEnd', (end) => store.end(h.replayId, end));
+      h.on('recordEnd', (end) => {
+        store.end(h.replayId, end);
+        if (library) void this.keepHostRecord(h.replayId, gen, false);
+      });
     }
     h.on('replayConsent', (agreed) => {
       store?.consent(h.replayId, agreed);
       const r = this.status.replay;
       if (gen === this.generation && r) this.patch(gen, { replay: { ...r, agree: agreed.includes(h.player), agreed: [...agreed] } });
+      if (library && h.state?.result) void this.keepHostRecord(h.replayId, gen, false);
     });
     h.on('replayShared', (ok) => {
       store?.settle(h.replayId);
       const r = this.status.replay;
       if (gen === this.generation && r) this.patch(gen, { replay: { ...r, shared: ok, ...(ok ? {} : { tooLarge: true as const }) } });
+      if (library) void this.keepHostRecord(h.replayId, gen, true);
     });
   }
 
@@ -424,6 +508,7 @@ export class OnlineBridge {
     const r = this.status.replay;
     if (r) this.patch(gen, { replay: { ...settled(r), agree: true, shared: true } });
     this.send({ t: 'replayGame', data });
+    void this.recording?.sharedGame(data);
   }
 
   private wireHost(h: GameHost, gen: number): void {
@@ -564,6 +649,7 @@ export class OnlineBridge {
     g.on('closed', (reason) => {
       if (!live()) return;
       this.game = null;
+      this.closeRecording();
       this.patch(gen, { phase: 'closed', closedReason: reason });
       this.send({ t: 'notice', kind: 'opponentLeft', text: `The game is closed: ${reason}.`, player: g.opponent.id });
     });
@@ -608,6 +694,7 @@ export class OnlineBridge {
     g.on('closed', (reason) => {
       if (!live()) return;
       this.game = null;
+      this.closeRecording();
       this.patch(gen, { phase: 'closed', opponentConnected: false, closedReason: reason });
       // CL4: a host that left a running game conceded first (CR 104.3a); its view with the result came before the bye.
       const host = g.view?.players.find((p) => p.id === g.opponent.id);
@@ -620,6 +707,7 @@ export class OnlineBridge {
 
   private view(gen: number, view: GameView, events: GameEvent[], legal: LegalAction[], seq: number): void {
     if (gen !== this.generation) return;
+    this.recording?.shown(seq, view, events);
     this.lastView = { t: 'view', seq, view, events, legal };
     this.send(this.lastView);
   }
@@ -658,8 +746,17 @@ export class OnlineBridge {
     if (this.replayData !== null) this.send({ t: 'replayGame', data: this.replayData });
   }
 
+  /** RPL-3: a guest's game was closed: its recording goes to the library. */
+  private closeRecording(): void {
+    const r = this.recording;
+    this.recording = null;
+    void r?.close();
+  }
+
   /** A new game (or none): later events of the old one are ignored. Returns the new generation. */
   private reset(status: OnlineStatus): number {
+    this.closeRecording();
+    this.hostLibrary = false;
     this.generation++;
     this.game = null;
     this.lastView = null;
@@ -673,6 +770,8 @@ export class OnlineBridge {
   private setStatus(gen: number, status: OnlineStatus): void {
     if (gen !== this.generation) return;
     this.status = status;
+    // RPL-3: the choice the host has is the recording's.
+    if (this.recording && status.replay && !status.replay.shared) this.recording.setAgree(status.replay.agree);
     this.send({ t: 'status', status });
   }
 

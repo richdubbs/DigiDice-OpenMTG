@@ -432,6 +432,12 @@ import cloudTrek5 from './templates/zz-cloud/trek-5.json';
 import cloudTrek7 from './templates/zz-cloud/trek-7.json';
 import cloudTrek8 from './templates/zz-cloud/trek-8.json';
 import cloudTrek9 from './templates/zz-cloud/trek-9.json';
+import cloudEdhCast1 from './templates/zz-cloud/edh-cast-1.json';
+import cloudEdhMk1 from './templates/zz-cloud/edh-mana-keywords-1.json';
+import cloudEdhPm1 from './templates/zz-cloud/edh-perms-1.json';
+import cloudEdhPlayers1 from './templates/zz-cloud/edh-players-1.json';
+import cloudEdhZones1 from './templates/zz-cloud/edh-zones-1.json';
+import cloudP2ZoneMoves2 from './templates/zz-cloud/p2-zone-moves-2.json';
 
 /** The template files in path order (relative to parser/templates), with their templates. */
 export const TEMPLATE_FILES: readonly { file: string; templates: readonly Template[] }[] = Object.freeze(([
@@ -480,6 +486,11 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/cmd2.json', cloudCmd2], // cmd2 (commander batch): references to commanders in card text (CR 903.3d, 903.3e, 903.8, 113.6): cast triggers of the spell itself, commander casts
   ['zz-cloud/cmd3.json', cloudCmd3], // CMD3 (commander batch): the Commander-product backlog, white, blue and colorless identities: Thriving lands (a color other than, {W} or one mana of the chosen color), ...
   ['zz-cloud/cmd5.json', cloudCmd5], // cmd5: the Commander backlog with two or more colors (tuning half): sacrifice another permanent, ...
+  ['zz-cloud/edh-cast-1.json', cloudEdhCast1], // edh-cast-1 (Commander lane edh-cast; path order: 'edh-cast' sorts after 'cmd5', before 'edh-mana'): casting from the top of the library for life, cost reductions by color, subtype and power
+  ['zz-cloud/edh-mana-keywords-1.json', cloudEdhMk1], // edh-mana-keywords-1 (Commander lane edh-mana-keywords; path order: 'edh-' sorts after 'cmd5', before 'look3'): any color among, Equip legendary creature, the exiled card's colors, see the file
+  ['zz-cloud/edh-perms-1.json', cloudEdhPm1], // edh-perms-1 (Commander lane edh-perms; path order: 'edh-p' sorts after 'edh-m', before 'look3'): see the file
+  ['zz-cloud/edh-players-1.json', cloudEdhPlayers1], // edh-players-1 (Commander lane edh-players; path order: 'edh-' sorts after 'cmd', before 'look3'): "you may play two additional lands on each of your turns", "may draw up to N cards"
+  ['zz-cloud/edh-zones-1.json', cloudEdhZones1], // edh-zones-1 (Commander effort, lane edh-zones; path order: 'edh' sorts after 'cmd5', before 'look3'): library and graveyard moves, see the file
   ['zz-cloud/look3.json', cloudLook3], // LOOK3: "If you don't put the card onto the battlefield / into your hand, ..." after the card was looked at (CR 608.2c, 701.20e)
   ['zz-cloud/p2-attack-block-1.json', cloudP2AttackBlock1], // p2-attack-block-1 (lane p2-attack-block; path order: 'p2-' sorts after 'look3', before 'r3-'): attack and block restrictions (CR 506.5, 508.1c, 509.1b, 702.14)
   ['zz-cloud/p2-attack-block-2.json', cloudP2AttackBlock2], // p2-attack-block-2 (lane p2-attack-block; path order: 'p2-' sorts after 'look3', before 'r3-'): attack and block restrictions II (CR 509.1b, 609.4, 702.3b)
@@ -535,6 +546,7 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/p2-typechange-3.json', cloudP2Typechange3], // p2-typechange-3 (Phase 2 lane p2-typechange; path order: 'p2-' sorts after 'p2-replace-', before 'r3-'): see the file
   ['zz-cloud/p2-typechange-4.json', cloudP2Typechange4], // p2-typechange-4 (lane p2-typechange): all creature types with a pump, see the file
   ['zz-cloud/p2-zone-moves-1.json', cloudP2ZoneMoves1], // p2-zone-moves-1 (Phase 2 lane p2-zone-moves; path order: 'p2-zone-moves-1' sorts after 'look3', before 'r3-choose'): wheels, "then draws that many cards minus N", "the greatest number of cards a player discarded this way" (CR 701.9a, 121.1)
+  ['zz-cloud/p2-zone-moves-2.json', cloudP2ZoneMoves2], // p2-zone-moves-2 (Phase 2 lane p2-zone-moves; path order: 'p2-zone-moves-2' sorts after the other 'p2-' files, before 'r3-choose'): "put that card into your hand and the rest into your graveyard" after a reveal until (CR 701.20a, 608.2c)
   ['zz-cloud/pc-combat-1.json', cloudPcCombat1], // pc-combat-1 (Commander precon lane pc-combat; path order: 'pc-combat-1' sorts after 'p2-zone-moves-1', before 'r1'): combat triggers and riders, see the file's templates
   ['zz-cloud/pc-combat-2.json', cloudPcCombat2], // pc-combat-2 (precon lane pc-combat; path order: 'pc-combat-2' sorts before 'pc-exile-play-1'): put a card from hand onto the battlefield tapped and attacking
   ['zz-cloud/pc-combat-4.json', cloudPcCombat4], // pc-combat-4 (precon lane pc-combat; path order: 'pc-combat-4' sorts before 'pc-exile-play-1'): draw cards and gain control of this permanent, untap it

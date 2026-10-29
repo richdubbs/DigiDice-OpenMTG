@@ -18,7 +18,7 @@ import type { CardSize } from './cardRenderer';
 import { CompactFace } from './table/CompactFace';
 import { CardOverlay, hasOverlay, overlayOf } from './CardOverlay';
 import { MarkerStrip, automationMarkers, layoutMarkers, permanentMarkers, useNameOf, usePromptMark, useTargetMarkers } from './Markers';
-import { charsOf, combatRole, defOf, isHidden, isKnownFaceDown, isTokenCopy, objectName, permanentInfo, playerName, shownFace } from './model';
+import { attachmentsOf, charsOf, combatRole, defOf, isHidden, isKnownFaceDown, isTokenCopy, objectName, permanentInfo, playerName, shownFace } from './model';
 import { OwnerSleeve } from './sleeves';
 
 export interface CardSlotProps {
@@ -41,7 +41,7 @@ export function CardSlot(props: CardSlotProps) {
   const { view } = useBoard();
   const o = view.objects[props.id];
   if (!o) return null;
-  const attachments = o.zone === 'battlefield' ? view.zones.battlefield.filter((a) => view.objects[a]?.attachedTo === o.id) : [];
+  const attachments = o.zone === 'battlefield' ? attachmentsOf(view, o.id) : [];
   if (attachments.length === 0) return <OneCard {...props} />;
   const n = attachments.length;
   const role = combatRole(view, o.id);

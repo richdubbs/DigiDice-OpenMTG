@@ -15,7 +15,7 @@ import { decodeSnapshot, encodeSnapshot } from './runtime/snapshot';
 import type { BootData, GameWorkerData, GameWorkerReply, GameWorkerRequest, HeapReading, WireStep } from './runtime/api';
 import { TableActor } from './table/actor';
 import { checkpointOf } from './table/limits';
-import type { TableStep } from './table/types';
+import type { SnapshotLoss, TableStep } from './table/types';
 
 const port = parentPort;
 if (!port) throw new Error('worker.ts runs as a worker thread');
@@ -48,7 +48,7 @@ const logger: Logger = {
 function wire(step: TableStep, actor: TableActor): { step: WireStep; transfer: ArrayBuffer[] } {
   if (!step.checkpoint) return { step: { ...step, checkpoint: null }, transfer: [] };
   const known = new Set(Array.isArray(actor.config.defs) ? actor.config.defs.map((d) => d.id) : Object.keys(actor.config.defs));
-  const bytes = encodeSnapshot(step.checkpoint.stateJson, Object.values(actor.state.defs).filter((d) => !known.has(d.id)));
+  const bytes = encodeSnapshot(step.checkpoint.stateJson, Object.values(actor.state.defs).filter((d) => !known.has(d.id)), step.checkpoint.losses);
   return { step: { ...step, checkpoint: { seq: step.checkpoint.seq, hash: step.checkpoint.hash, gz: bytes } }, transfer: [bytes.buffer as ArrayBuffer] };
 }
 
@@ -58,29 +58,28 @@ function stepReply(id: number, game: string, actor: TableActor, step: TableStep)
 }
 
 /** The snapshot's state when it checks out (its text hashes to its hash, and the record at its seq carries the same hash); else null. */
-function snapshotState(m: Extract<GameWorkerRequest, { kind: 'recover' }>): { state: GameState; seq: number } | null {
+function snapshotState(m: Extract<GameWorkerRequest, { kind: 'recover' }>): { state: GameState; seq: number; losses?: SnapshotLoss[] } | null {
   const s = m.snapshot;
   if (!s || s.seq < 1 || s.seq > m.records.length) return null;
-  const { stateJson, defs } = decodeSnapshot(s.state);
+  const { stateJson, defs, losses } = decodeSnapshot(s.state);
   if (createHash('sha256').update(stateJson, 'utf8').digest('hex') !== s.hash) return null;
   const at = m.records[s.seq - 1];
   if (!at || at.seq !== s.seq || (at.check !== undefined && at.check !== s.hash)) return null;
   const rest = JSON.parse(stateJson) as Omit<GameState, 'defs'>;
   const all = { ...createGame(m.config).defs };
   for (const d of defs) if (!all[d.id]) all[d.id] = d;
-  return { state: { ...rest, defs: all } as GameState, seq: s.seq };
+  return { state: { ...rest, defs: all } as GameState, seq: s.seq, ...(losses ? { losses } : {}) };
 }
 
 function recover(m: Extract<GameWorkerRequest, { kind: 'recover' }>): void {
-  let from: { state: GameState; seq: number } | null = null;
+  let from: ReturnType<typeof snapshotState> = null;
   try {
     from = snapshotState(m);
   } catch {
     from = null; // a damaged snapshot: replay from the first record
   }
   const mismatches: number[] = [];
-  let started = from ? from.seq : 0;
-  const { actor, step } = TableActor.recover({
+  const { actor, step, fromSnapshot } = TableActor.recover({
     game: m.game, config: m.config, seating: m.seating, at: m.at, records: m.records, logger,
     ...(m.clock ? { clock: m.clock } : {}), ...(m.limits ? { limits: m.limits } : {}),
     ...(from ? { from } : {}),
@@ -89,8 +88,8 @@ function recover(m: Extract<GameWorkerRequest, { kind: 'recover' }>): void {
       post({ kind: 'progress', id: m.id, game: m.game, seq: rec.seq });
     },
   });
-  // The actor takes the snapshot only while nobody has lost by then; it says so by replaying from the first record.
-  if (from && from.state.players.some((p) => p.hasLost)) started = 0;
+  // The actor says whether it took the snapshot (F31: also after a loss, when the snapshot carries it; else it replays from the first record).
+  const started = fromSnapshot ?? 0;
   actors.set(m.game, actor);
   const w = wire(step, actor);
   post(

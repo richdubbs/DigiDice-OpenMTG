@@ -214,24 +214,34 @@ export class Vfx {
   private last = 0;
   private dpr = 1;
   private rect = { left: 0, top: 0, width: 0, height: 0 };
+  /** The canvas size fit() measured, set on the canvas when it next draws (null: it has it). */
+  private size: { w: number; h: number } | null = null;
+  /** The fireball's flame tongue (unit length, scaled when drawn) and the blast waves' bands by colour and inner radius: made once, not on every frame. */
+  private tongue: CanvasGradient | null = null;
+  private readonly bands = new Map<string, CanvasGradient>();
   /** Animation time scale: > 1 slower. */
   scale = 1;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  /**
+   * `maxDpr`: the most canvas pixels per CSS pixel. The canvas behind the cards draws only soft light (1 is enough); the one above them, sparks and
+   * bolts too (1.5). Each canvas covers the whole board, so this is most of what drawing a frame costs on a high-density screen.
+   */
+  constructor(
+    private readonly canvas: HTMLCanvasElement,
+    private readonly maxDpr = canvas.dataset['fx'] === 'under' ? 1 : 1.5,
+  ) {
     this.ctx = canvas.getContext('2d');
   }
 
-  /** Match the canvas to its box (call before a batch of effects). */
+  /**
+   * Measure the canvas's box (call before a batch of effects). It only reads the page, so the animator measures everything in one pass before it writes
+   * anything: the canvas is resized when it next draws (step), not here.
+   */
   fit(): void {
     const r = this.canvas.getBoundingClientRect();
     this.rect = { left: r.left, top: r.top, width: r.width, height: r.height };
-    this.dpr = Math.min(2, window.devicePixelRatio || 1);
-    const w = Math.max(1, Math.round(r.width * this.dpr));
-    const h = Math.max(1, Math.round(r.height * this.dpr));
-    if (this.canvas.width !== w || this.canvas.height !== h) {
-      this.canvas.width = w;
-      this.canvas.height = h;
-    }
+    this.dpr = Math.min(this.maxDpr, window.devicePixelRatio || 1);
+    this.size = { w: Math.max(1, Math.round(r.width * this.dpr)), h: Math.max(1, Math.round(r.height * this.dpr)) };
   }
 
   private local(p: Pt): Pt {
@@ -262,6 +272,13 @@ export class Vfx {
     if (!ctx) return false;
     const dt = Math.min(1000, now - this.last) / this.scale;
     this.last = now;
+    if (this.size) {
+      if (this.canvas.width !== this.size.w || this.canvas.height !== this.size.h) {
+        this.canvas.width = this.size.w;
+        this.canvas.height = this.size.h;
+      }
+      this.size = null;
+    }
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.effects = this.effects.filter((e) => e.update(dt));
@@ -425,7 +442,6 @@ export class Vfx {
   /** A blast wave: a soft band of light racing outward and fading (squashed onto the floor when `squash` < 1). */
   private shockwave(at: Pt, radius: number, color: Rgb, dur: number, squash = 1): void {
     let age = 0;
-    const [cr, cg, cb] = color;
     this.add({
       layer: 'over',
       update: (dt) => (age += dt) < dur,
@@ -434,22 +450,52 @@ export class Vfx {
         const e = 1 - Math.pow(1 - t, 2.4);
         const r = Math.max(4, radius * e);
         const w = Math.max(6, radius * 0.34 * (1 - t * 0.5));
+        const outer = r + w * 0.45;
         ctx.save();
         ctx.translate(at.x, at.y);
-        ctx.scale(1, squash);
-        const g = ctx.createRadialGradient(0, 0, Math.max(0, r - w), 0, 0, r + w * 0.45);
-        g.addColorStop(0, `rgba(${cr},${cg},${cb},0)`);
-        g.addColorStop(0.62, `rgba(${cr},${cg},${cb},${(0.6 * (1 - t)).toFixed(3)})`);
-        g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+        // Drawn on a unit circle scaled to the band's outer radius, its fading as the canvas's alpha: one gradient per colour and band width.
+        ctx.scale(outer, outer * squash);
+        ctx.globalAlpha = 1 - t;
         ctx.globalCompositeOperation = 'lighter';
-        ctx.fillStyle = g;
+        ctx.fillStyle = this.band(color, Math.max(0, r - w) / outer);
         ctx.beginPath();
-        ctx.arc(0, 0, r + w * 0.45, 0, Math.PI * 2);
+        ctx.arc(0, 0, 1, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
         ctx.globalCompositeOperation = 'source-over';
       },
     });
+  }
+
+  /** A blast wave's band (shockwave) on a unit circle, from `inner` (0 to 1) out: clear, lit at 0.62, clear. Kept by colour and inner radius (to 1/64). */
+  private band(color: Rgb, inner: number): CanvasGradient | string {
+    const ctx = this.ctx;
+    if (!ctx) return 'transparent';
+    const q = Math.round(Math.min(1, inner) * 64);
+    const [cr, cg, cb] = color;
+    const key = `${cr},${cg},${cb}:${q}`;
+    let g = this.bands.get(key);
+    if (!g) {
+      g = ctx.createRadialGradient(0, 0, q / 64, 0, 0, 1);
+      g.addColorStop(0, `rgba(${cr},${cg},${cb},0)`);
+      g.addColorStop(0.62, `rgba(${cr},${cg},${cb},0.6)`);
+      g.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+      this.bands.set(key, g);
+    }
+    return g;
+  }
+
+  /** The fireball's flame tongue, from its white-hot root (0) to its dark red tip (1). */
+  private flameTongue(ctx: CanvasRenderingContext2D): CanvasGradient {
+    if (!this.tongue) {
+      const g = ctx.createLinearGradient(0, 0, 1, 0);
+      g.addColorStop(0, 'rgba(255,244,210,0.85)');
+      g.addColorStop(0.28, 'rgba(255,176,64,0.7)');
+      g.addColorStop(0.65, 'rgba(232,72,22,0.42)');
+      g.addColorStop(1, 'rgba(120,20,8,0)');
+      this.tongue = g;
+    }
+    return this.tongue;
   }
 
   private ring(at: Pt, radius: number, color: Rgb, dur: number, width = 6, squash = 1): void {
@@ -581,18 +627,17 @@ export class Vfx {
               const len = (70 + k * 22) * big * (0.88 + Math.random() * 0.24);
               const wid = (24 - k * 6) * big;
               const sway = Math.sin(age * 0.03 + k * 2.1) * wid * 0.5;
-              const g = ctx.createLinearGradient(0, 0, len, 0);
-              g.addColorStop(0, 'rgba(255,244,210,0.85)');
-              g.addColorStop(0.28, 'rgba(255,176,64,0.7)');
-              g.addColorStop(0.65, 'rgba(232,72,22,0.42)');
-              g.addColorStop(1, 'rgba(120,20,8,0)');
-              ctx.fillStyle = g;
+              // Drawn one unit long and stretched to its length, so the one gradient fits every tongue.
+              ctx.save();
+              ctx.scale(len, 1);
+              ctx.fillStyle = this.flameTongue(ctx);
               ctx.beginPath();
               ctx.moveTo(0, -wid);
-              ctx.bezierCurveTo(len * 0.35, -wid * 1.15 + sway, len * 0.72, -wid * 0.35 + sway * 1.4, len, sway * 1.8);
-              ctx.bezierCurveTo(len * 0.72, wid * 0.35 + sway * 1.4, len * 0.35, wid * 1.15 + sway, 0, wid);
+              ctx.bezierCurveTo(0.35, -wid * 1.15 + sway, 0.72, -wid * 0.35 + sway * 1.4, 1, sway * 1.8);
+              ctx.bezierCurveTo(0.72, wid * 0.35 + sway * 1.4, 0.35, wid * 1.15 + sway, 0, wid);
               ctx.closePath();
               ctx.fill();
+              ctx.restore();
             }
             ctx.restore();
             // A roiling ball of flame: a heat halo, tongues of fire licking around a molten body, a white-hot heart.

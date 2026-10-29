@@ -147,6 +147,7 @@ describe('M14-5: failures', () => {
       throw new Error('disk on fire: secret detail');
     };
     store.sessionsOf = boom;
+    store.sessionById = boom;
     store.nameEntry = boom;
     store.sessionByTokenHash = boom;
     const answers: AccountResult<unknown>[] = [
@@ -275,8 +276,8 @@ describe('M14-5: the operator of a rekey (9.6, D16)', () => {
   });
 });
 
-describe('M14-5: on the file store', () => {
-  it('every row the core writes passes the file store\'s checks and survives a reopen', async () => {
+describe('M14-5: on the file store (PostgreSQL on PGlite in a directory: F26)', { timeout: 60_000 }, () => {
+  it('every row the core writes passes the store\'s checks and survives a reopen', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'openmtg-m14-5-'));
     try {
       const clock = new Clock();

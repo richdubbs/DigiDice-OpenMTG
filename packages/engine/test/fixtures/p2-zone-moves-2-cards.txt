@@ -1,0 +1,4 @@
+# p2-zone-moves-2 (Phase 2 lane p2-zone-moves; test/cloud/p2-zone-moves-2, golden cloud-p2-zone-moves-2-review.json): after a reveal until, that card into
+# your hand and the rest (all other cards revealed this way) into your graveyard or exiled
+Hermit Druid
+Demonic Consultation

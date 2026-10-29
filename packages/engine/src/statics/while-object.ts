@@ -6,6 +6,7 @@
 import type { Duration } from '../types/ability';
 import type { GameState } from '../types/state';
 import { wasCastKept } from './match';
+import { noteLayerRead, READ_TAPPED } from './layer-reads';
 
 /** Does a `whileObject` duration still hold? Over once the object left the battlefield (a new object, CR 400.7), phased out, untapped, lost the counters or is no longer attached to `to`; `kept`: once its caster lost control of the spell or the permanent it became. */
 export function whileObjectHolds(s: GameState, d: Extract<Duration, { d: 'whileObject' }>): boolean {
@@ -27,6 +28,7 @@ export function whileObjectHolds(s: GameState, d: Extract<Duration, { d: 'whileO
       if (to === undefined || to.ref !== 'fixed' || !('objects' in to)) return false;
       return to.objects.some((t) => { const x = s.objects[t.id]; return x !== undefined && x.zone === t.zone && x.zone === 'battlefield' && o.attachedTo === t.id; });
     }
-    return d.as === 'tapped' ? o.tapped : (o.counters[d.counter ?? ''] ?? 0) > 0;
+    if (d.as === 'tapped') { noteLayerRead(READ_TAPPED); return o.tapped; }
+    return (o.counters[d.counter ?? ''] ?? 0) > 0;
   });
 }

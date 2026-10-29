@@ -3,8 +3,8 @@
  * RPL-0 (replays design 5): the client's Vite config defines `__OPENMTG_ENGINE_BUILD__` as packages/net's fingerprint of the engine's sources, the value
  * the local server's handshake sends (`localVersions().build`), so a replay saved in the browser and the host server's replay of the same checkout agree.
  *
- * RPL-0 review: on the dev server the engine changes under the page (an edit hot-reloads the engine but not a define), so it defines no build there; a
- * build script that also bundles the server hands the build in (`OPENMTG_ENGINE_BUILD`), so page and server agree; the config also defines the app record
+ * RPL-0 review: on the dev server the engine changes under the page (an edit hot-reloads the engine but not a define), so it defines no build there; the
+ * installer build, which also bundles the server into the Electron main process, hands the build in (`OPENMTG_ENGINE_BUILD`), so page and server agree; the config also defines the app record
  * a replay carries (`__OPENMTG_APP__`).
  */
 import { readFileSync } from 'node:fs';
@@ -40,7 +40,7 @@ describe('RPL-0: the browser engine build', () => {
     expect(defineOf('serve')['__OPENMTG_ENGINE_BUILD__']).toBe('null');
   });
 
-  it('RPL-0 review: is the build a build script hands in (OPENMTG_ENGINE_BUILD), read as scripts/build-exe.mjs and build-installer.mjs read it', async () => {
+  it('RPL-0 review: is the build a build script hands in (OPENMTG_ENGINE_BUILD), read as scripts/build-installer.mjs reads it', async () => {
     const given = 'ab'.repeat(32);
     process.env['OPENMTG_ENGINE_BUILD'] = given;
     const loaded = await loadConfigFromFile(env('build'), configFile, undefined, 'silent');

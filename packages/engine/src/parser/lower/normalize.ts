@@ -82,7 +82,14 @@ function delayOnMoved(steps: unknown, moved: Set<string>): string | null {
     if (!isRec(st)) continue;
     if (st['op'] === 'delay') {
       let hit: string | null = null;
-      visit(st['do'], (n) => { const k = handleKey(n); if (k !== null && moved.has(k)) hit = k; });
+      // edh-players-1 (CR 608.2h, 603.7c): "its controller" / "its owner" of an object this resolution moved names a PLAYER, which the delayed trigger takes with the
+      // last known information of the object as it is created (effects/handlers/lasting-fix.ts#prepareDeferred fixes it), not an object it would find in another zone
+      // (Arcane Denial: "Counter target spell. Its controller may draw up to two cards at the beginning of the next turn's upkeep.")
+      visit(st['do'], (n) => {
+        if (n['ref'] === 'controllerOf' || n['ref'] === 'ownerOf') return false;
+        const k = handleKey(n);
+        if (k !== null && moved.has(k)) hit = k;
+      });
       if (hit !== null) return `a delayed trigger acts on ${hit === 'self' ? '~' : 'a target'} that this resolution already moved to another zone: it would find no object (CR 603.7c, 400.7)`;
       continue;
     }
@@ -138,6 +145,8 @@ function castsCopyOfUnexiled(steps: unknown, exiled: Set<string>): boolean {
     // trek-12 (CR 707.12, 113.6): a copy of the card the ability itself is on ("Create a copy of ~. You may cast the copy."): the lint of the finished ability (model/lint-nodes.ts,
     // case 'cast') allows it only in an activated ability that functions in exile alone
     if (isRec(what) && what['ref'] === 'self') return;
+    // edh-cast-1 (CR 607.2a, 707.12; Isochron Scepter): a copy of the card the object's linked ability exiled, which is still in exile (the handler copies it from there)
+    if (isRec(what) && what['ref'] === 'linked' && what['link'] === 'exiled') return;
     if (!isRec(what) || what['ref'] !== 'bound' || typeof what['name'] !== 'string' || !exiled.has(what['name'])) bad = true;
   });
   return bad;

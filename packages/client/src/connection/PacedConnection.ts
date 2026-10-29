@@ -183,7 +183,11 @@ export class PacedConnection implements GameConnection, BoardPacer {
     if (this.running?.token !== token || this.shown === s) return Promise.resolve();
     this.pendingCommit?.resolve();
     return new Promise<void>((resolve) => {
-      const timer = setTimeout(finish, this.commitTimeoutMs);
+      const timer = setTimeout(() => {
+        // The board did not report the new view in time (review 2026-10-26: logged, to see how often the screen goes on without it).
+        console.debug(`[PacedConnection] commit timed out after ${this.commitTimeoutMs} ms; going on without the board's report`);
+        finish();
+      }, this.commitTimeoutMs);
       function finish() {
         clearTimeout(timer);
         resolve();

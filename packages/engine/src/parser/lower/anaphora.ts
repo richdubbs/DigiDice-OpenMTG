@@ -560,6 +560,23 @@ function containersOf(steps: readonly Rec[], path: string): Rec[] {
 const startsIfYouDo = (u: Unit): boolean => (u.tokens[0]?.norm === 'if' || u.tokens[0]?.norm === 'when') && u.tokens[1]?.norm === 'you' && u.tokens[2]?.norm === 'do';
 
 /**
+ * edh-zones-1 (CR 608.2c, 110.2a; Chaos Warp): "If it's a permanent card, they put it onto the battlefield." / "..., that player puts it onto the battlefield.": the one "they"
+ * (or "that player") is the subject of "put", the player who puts the card (a player is no antecedent of "it"), so the sentence still refers back to one object. The player word
+ * stands once, directly before "put"/"puts", and there is no "them".
+ */
+function playerPutsIt(u: Unit, refs: ReadonlySet<string>): boolean {
+  if (refs.size !== 2 || !refs.has('it')) return false;
+  const w = u.tokens.map((t) => t.norm);
+  if (w.includes('them')) return false;
+  const once = (word: string[]): boolean => {
+    const at = w.findIndex((x, i) => word.every((y, k) => w[i + k] === y));
+    return at >= 0 && !w.some((x, i) => i > at && word.every((y, k) => w[i + k] === y));
+  };
+  if (refs.has('they')) return w.filter((x) => x === 'they').length === 1 && once(['they', 'put']);
+  return refs.has('that player') && once(['that', 'player', 'puts']);
+}
+
+/**
  * The distinct things a sentence refers back to, by its words: "it", "it's" and "itself" are one; "them" and "they" are one; each "that X" is its own; "its" and "their" read a
  * property and add none. `objectsOnly` (Cloud std-fin) leaves out the words that can name only a player ("that player's library"): no object pronoun can mean one.
  */
@@ -645,7 +662,8 @@ export function focusAt(seq: readonly Unit[], at: number, mentions: readonly Men
   // a sentence that refers back to more than one thing ("If that enchantment is an Aura, you may attach it to the token") is left to the unique-candidate rule
   // (std-exile-play-1-2, CR 608.2c: after a choice of exactly one object, "That player exiles it" refers back to one object; the player is no candidate of "it")
   const chose = last.step['op'] === 'chooseObjects' && last.step['min'] === 1 && last.step['max'] === 1;
-  if (sentenceReferences(u, chose).size > 1) return undefined;
+  const refs = sentenceReferences(u, chose);
+  if (refs.size > 1 && !playerPutsIt(u, refs)) return undefined;
   // the instruction must have happened: inside a condition or an option it did only if the condition held / the player chose it, and then only the sentences the
   // "If you do" folding puts into the same scope may name it ("You may exile ~. If you do, return it ..."; "If you do, create a token. It gains haste.")
   const boxes = containersOf(prev.steps, last.path);

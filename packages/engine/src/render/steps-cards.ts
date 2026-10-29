@@ -9,7 +9,7 @@ import { acting, plain, type Clause } from './clause';
 import { K } from './kernel';
 import { countParts } from './qty';
 import { markTriggerRoles, rangeWords } from './refs';
-import { bind, bindCant, byPlayer, countedNoun, countedNp, halfOfOwn, isComputed, markX, perForms, whereX, type StepOf } from './steps-util';
+import { bind, bindCant, byPlayer, countedNoun, countedNp, halfOfOwn, isComputed, markX, modal, perForms, whereX, type StepOf } from './steps-util';
 import { MILLED_KEY, cloneState, playerKey, type RenderState } from './state';
 import { alt, ALT_OPEN, conj, joinList, NoRenderer, numWord } from './text';
 
@@ -79,11 +79,19 @@ function manaDynamic(d: ManaProduction, st: RenderState): string {
     case 'anyColor': {
       // r3-cost (CR 106.1, 106.4): "{R} or {G} for each Raccoon you control": one of two types for each object counted
       if (d.from !== undefined) {
-        const per = countParts(d.count, st);
-        if (d.from.length !== 2 || !per) throw new NoRenderer('mana of a limited choice of types for each unit, other than "{A} or {B} for each ..."');
+        // edh-mana-keywords-1 (CR 106.1, 106.4, 107.3; family mana-any-combination-where-x): each unit one of two or three types: "Add three mana in any combination of {R} and/or
+        // {G}" (Orcish Lumberjack), "... of {U}, {B}, and/or {R}" (Relic of Sauron), and a counted amount said after the sentence, "Add X mana in any combination of {B} and/or {R},
+        // where X is the sacrificed creature's mana value" (Burnt Offering)
+        if (d.from.length !== 2 && d.from.length !== 3) throw new NoRenderer('mana of a limited choice of more than three types for each unit');
+        const pair = d.from.length === 2 ? `{${d.from[0]}} and/or {${d.from[1]}}` : `{${d.from[0]}}, {${d.from[1]}}, and/or {${d.from[2]}}`;
+        if (typeof d.count === 'number') return `${n(d.count)} mana in any combination of ${pair}`;
+        const per = d.from.length === 2 ? countParts(d.count, st) : null;
         // pc-keywords-mana-2 (CR 106.1, 107.3; Fungal Reaches): the X of the cost counted again as the amount, "Add X mana in any combination of {R} and/or {G}"
-        const eachWay = `{${d.from[0]}} or {${d.from[1]}} for each ${per.singular}`;
-        return typeof d.count === 'object' && (d.count.q === 'countersRemoved' || d.count.q === 'X') ? alt(eachWay, `X mana in any combination of {${d.from[0]}} and/or {${d.from[1]}}`) : eachWay;
+        const eachWay = per ? [`{${d.from[0]}} or {${d.from[1]}} for each ${per.singular}`] : [];
+        const costX = d.count.q === 'countersRemoved' || d.count.q === 'X' ? [`X mana in any combination of ${pair}`] : [];
+        const whereX = d.count.q === 'X' ? [] : [`X mana in any combination of ${pair}, where X is ${K.qty(d.count, st)}`];
+        const outs = [...eachWay, ...costX, ...whereX];
+        return outs.length === 1 ? outs[0]! : alt(...outs);
       }
       // pc-keywords-mana-2 (CR 106.1, 106.4; Coalition Relic): "one mana of any color for each charge counter removed this way": each counted unit of its own color
       const perUnit = typeof d.count === 'object' ? countParts(d.count, st) : null;
@@ -122,13 +130,17 @@ function manaDynamic(d: ManaProduction, st: RenderState): string {
     }
     // FAST5 T48 (CR 106.5, 607.2a): "one mana of any of the exiled cards' colors"
     case 'colorsOf': {
+      // edh-mana-keywords-1 (CR 105.2, 106.5): "one mana of any color among legendary creatures and planeswalkers you control" (Mox Amber): the colors of the objects described
+      if (d.of.ref === 'each' && typeof d.count === 'number' && d.count === 1) return `one mana of any color among ${K.np(d.of.filter, st, { det: 'none', plural: true })}`;
       if (d.of.ref !== 'linked' || d.of.link !== 'exiled') throw new NoRenderer('the colors of objects other than the cards a linked ability exiled');
-      return `${n(d.count)} mana of any of the exiled cards' colors`;
+      // edh-mana-keywords-1 (CR 607.2a): also said of the one card exiled, "the exiled card's colors" (Chrome Mox)
+      return alt(`${n(d.count)} mana of any of the exiled cards' colors`, `${n(d.count)} mana of any of the exiled card's colors`);
     }
     case 'eachColorAmong': throw new NoRenderer('a mana production that is the whole clause');
     // p2-mana-1 (CR 106.7): "one mana of any color that a land an opponent controls could produce"
     case 'couldProduce': {
       if (d.among.ref !== 'each' || !('filter' in d.among)) throw new NoRenderer('the mana objects other than a described group could produce');
+      if (d.oneType === true) throw new NoRenderer('mana of the one type chosen by an earlier instruction, outside "..., add N mana of that type instead"'); // edh-mana-keywords-1: render/steps-flow.ts#thatTypeInstead
       return `${n(d.count)} mana of any ${d.colorsOnly === true ? 'color' : 'type'} that ${K.np(d.among.filter, st, { det: 'a' })} could produce`;
     }
     case 'devotionColor': throw new NoRenderer('a devotion production that is the whole clause'); // p2-mana-2: said by the addMana step
@@ -306,6 +318,11 @@ export const CLAUSES_CARDS = {
     const drew = `drew:${playerKey(s.who) ?? 'x'}`;
     const again = st.mentioned.has(drew);
     st.mentioned.add(drew);
+    // edh-players-1 (CR 121.1, 608.2d; Arcane Denial): "Its controller may draw up to two cards": the player chooses how many, a number (two or more) at most
+    if (s.upTo === true) {
+      if (typeof s.count !== 'number' || !Number.isInteger(s.count) || s.count < 2 || s.as !== undefined) throw new NoRenderer('a draw of up to a count other than a fixed number of two or more');
+      return modal(s.who, st, `may draw up to ${numWord(s.count)} cards`);
+    }
     const c = byPlayer(s.who, st, 'draw', () => {
       // CMD2 (CR 903.8, 107.3): "target player draws X cards plus an additional card for each time they've cast a commander from the command zone this game"
       // (Commander's Insight): X and the casts of the player who draws (`of` is that player), never anyone else's
@@ -481,7 +498,8 @@ export const CLAUSES_CARDS = {
       if (s.who.ref === 'you') return byPlayer(s.who, st, 'exile', `cards from the top of your library until you exile ${total}`);
       // std-exile-play-2-1 (CR 101.4, 202.3, 608.2c): another player's, or each opponent's, each their own total ("Each opponent exiles cards from the top of their
       // library until they have exiled cards with total mana value 5 or greater this way", the handler's std-rs loop)
-      return byPlayer(s.who, st, 'exile', `cards from the top of their library until they have exiled ${total} this way`);
+      // edh-zones-1 (port of p2-exile-play-2; family exiled-until-total-that-player; Tasha's Hideous Laughter): "... until that player has exiled cards with total mana value 20 or greater"
+      return byPlayer(s.who, st, 'exile', alt(`cards from the top of their library until they have exiled ${total} this way`, `cards from the top of their library until that player has exiled ${total}`));
     }
     const what = K.np({ ...s.filter, zone: 'library' }, st, { det: 'a', noZone: true }); // (a card in a library: the noun is "card"; the DiscardDesc hole's filter has no zone)
     // std-exile-play-1-1 (CR 400.7, 608.2c; family exiled-card-until): the one card it stopped at is also "the exiled card", or with its description, "the exiled nonland

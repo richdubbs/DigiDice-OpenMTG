@@ -107,7 +107,9 @@ describe('design 15.1.8: milestone 3/4 games do not pay for rule hooks', () => {
     for (let i = 0; i < 5; i++) hookpoints.canCast(gameOf(s), card, 'p1', 0, {});
     expect(RULE_CONTEXT_STATS.built).toBe(built);
     expect(RULE_CONTEXT_STATS.cacheHits).toBeGreaterThanOrEqual(hits + 5);
-    s.objects[find(s, 'Island', 'battlefield')]!.tapped = true; // edited in place: the fingerprint changes
+    // edited in place: the fingerprint changes (review 2026-10-26: a counter, which the layers read; tapping the Island no longer counts, since nothing on this
+    // board reads whether a permanent is tapped: statics/layer-reads.ts)
+    s.objects[find(s, 'Thalia, Guardian of Thraben', 'battlefield')]!.counters['+1/+1'] = 1;
     hookpoints.canCast(gameOf(s), card, 'p1', 0, {});
     expect(RULE_CONTEXT_STATS.built).toBe(built + 1);
   });

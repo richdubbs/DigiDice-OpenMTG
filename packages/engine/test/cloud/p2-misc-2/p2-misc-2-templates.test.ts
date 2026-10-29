@@ -177,8 +177,14 @@ describe('p2-misc-2 engine and renderer (triggers/collect.ts#timesTriggered, ren
     expect(f.templatesUsed).not.toContain('sta.p2misc2.triggerMod.orAnother');
     expect(fullyAutomated(f)).toBe(true);
   });
-  it('fail closed: "a Druid or another Elf you control" (one "you control" for both descriptions) is not automated', () => {
-    expect(fullyAutomated(parsedWith(MECH[0]!, 'If a triggered ability of a Druid or another Elf you control triggers, that ability triggers an additional time.'))).toBe(false);
+  it('fail closed: "a red spell or another red permanent you control" (one "you control" for both descriptions) is not automated by this generic template', () => {
+    expect(fullyAutomated(parsedWith(MECH[0]!, 'If a triggered ability of a red spell or another red permanent you control triggers, that ability triggers an additional time.'))).toBe(false);
+  });
+  it('edh-mana-keywords-1: "a Druid or another Elf you control" (two creature types) is now read with one "you control" for both, by sta.edhmk1.triggerMod.sharedController', () => {
+    const f = parsedWith(MECH[0]!, 'If a triggered ability of a Druid or another Elf you control triggers, that ability triggers an additional time.');
+    expect(f.templatesUsed).toContain('sta.edhmk1.triggerMod.sharedController');
+    expect(fullyAutomated(f)).toBe(true);
+    expect(jsonKey(f.abilities)).toContain('"controller":"you","subtypes":["Druid"]');
   });
   it('the union keeps each description whole: "another" stays on the permanent and the spell keeps the stack', () => {
     const j = jsonKey(parsedWith(MECH[0]!, MECH[0]!.examples[0]!.text).abilities);

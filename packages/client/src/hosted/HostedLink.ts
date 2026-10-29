@@ -3,7 +3,7 @@
  * with the stored guest token, numbered commands with replies, the table, the ready check, the views and patches of a running game, the clocks, notices and
  * chat. It is a pure transport and a keeper of what the server last said: the screens (hosted/room, hosted/game) and `HostedConnection` read it.
  *
- * - **Sessions.** `hello { token?, name }`; the server answers `welcome` with the token (kept in the browser's storage, hosted/storage.ts) and, for a
+ * - **Sessions.** `hello { token?, name }`; the server answers `welcome` with a new session's token (kept in the browser's storage, hosted/storage.ts) and, for a
  *   session that has a seat, its table and seat. The token is sent only in `hello`, never in a URL.
  * - **Commands.** Every command but `hello` and `ping` takes the next number of a counter that is kept in storage across sockets and reloads (a table
  *   answers an older `act` id as `stale`), and resolves with its one `reply`. A socket that drops answers the commands waiting with `disconnected`: the
@@ -619,7 +619,8 @@ export class HostedLink {
     this.problem = null;
     this.byeText = null;
     this.welcomeMsg = m;
-    this.session = { ...this.session, token: m.token, name: m.name };
+    // A resumed welcome carries no token (the server does not echo this page's own token back): the page keeps the one it sent.
+    this.session = { ...this.session, token: m.token ?? this.session.token, name: m.name };
     // The server's view of this session decides which table it has; a socket that comes back to none has lost it.
     if (m.table === undefined || m.seat === undefined) {
       this.tableView = null;

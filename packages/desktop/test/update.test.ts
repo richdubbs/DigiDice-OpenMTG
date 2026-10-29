@@ -3,20 +3,35 @@ import { mkdtempSync, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { AppUpdater, CancellationToken } from 'electron-updater';
-import { describe, expect, it } from 'vitest';
-import { acceptPublishers, launchLog, progressLine, UPDATE_PUBLISHERS, updateAtLaunch, type LaunchUpdateOptions } from '../src/update';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  acceptPublishers,
+  BACKGROUND_NOTE,
+  launchLog,
+  progressLine,
+  requiredPublishers,
+  UPDATE_PUBLISHERS,
+  updateAtLaunch,
+  type LaunchUpdateOptions,
+} from '../src/update';
 
 /** The parts of electron-updater's AppUpdater that updateAtLaunch uses. */
 class FakeUpdater extends EventEmitter {
   autoDownload = true;
-  logger: { info(m: string): void } | null = { info: (m: string) => this.logged.push(m) };
+  autoInstallOnAppQuit = false;
+  logger: { info(m: string): void; warn(m: string): void } | null = { info: (m: string) => this.logged.push(m), warn: (m: string) => this.logged.push(`warn ${m}`) };
   logged: string[] = [];
   installs: Array<[boolean, boolean]> = [];
+  checks = 0;
   check: () => Promise<unknown> = async () => ({ isUpdateAvailable: false, updateInfo: { version: '0.2.0' } });
   download: (token: FakeToken) => Promise<string[]> = async () => ['installer.exe'];
   installFails = false;
+  /** electron-updater's Windows signature check and its lazy read of app-update.yml (a signed build names its publisher there). */
+  verifyUpdateCodeSignature: unknown = async () => null;
+  configOnDisk: { value: Promise<unknown> } | undefined = { value: Promise.resolve({ provider: 'github', publisherName: ['Example Signer'] }) };
 
   checkForUpdates() {
+    this.checks++;
     return this.check();
   }
   downloadUpdate(token: FakeToken) {
@@ -50,11 +65,16 @@ function run(updater: FakeUpdater, extra: Partial<LaunchUpdateOptions> = {}) {
     show: (message, detail) => shown.push(detail ? `${message} | ${detail}` : message),
     checkTimeoutMs: 50,
     stallTimeoutMs: 50,
+    downloadCapMs: 1_000,
     installPauseMs: 0,
     ...extra,
   });
   return { outcome, shown, tokens };
 }
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('updateAtLaunch', () => {
   it('starts as it is when the release on GitHub is not newer', async () => {
@@ -137,6 +157,85 @@ describe('updateAtLaunch', () => {
     u.check = async () => newer;
     u.installFails = true;
     expect(await run(u).outcome).toBe('skipped');
+  });
+
+  it('gives up on the check after 10 s by default', async () => {
+    vi.useFakeTimers();
+    const u = new FakeUpdater();
+    u.check = () => new Promise(() => undefined);
+    let outcome: string | undefined;
+    void run(u, { checkTimeoutMs: undefined }).outcome.then((o) => (outcome = o));
+    await vi.advanceTimersByTimeAsync(9_999);
+    expect(outcome).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(outcome).toBe('skipped');
+    expect(u.logged.join('\n')).toMatch(/no answer in 10 s/);
+  });
+
+  it('after 3 minutes, starts OpenMTG and leaves the download to finish in the background and install when OpenMTG closes', async () => {
+    vi.useFakeTimers();
+    const u = new FakeUpdater();
+    u.check = async () => newer;
+    let finish: (files: string[]) => void = () => undefined;
+    u.download = () => {
+      // progress every 10 s (never stalls), never done by itself
+      const ticker = setInterval(() => u.emit('download-progress', { percent: 1, transferred: 1, total: 100, bytesPerSecond: 1, delta: 1 }), 10_000);
+      return new Promise((resolve) => {
+        finish = (files) => {
+          clearInterval(ticker);
+          resolve(files);
+        };
+      });
+    };
+    const { outcome, shown, tokens } = run(u, { downloadCapMs: undefined, stallTimeoutMs: 60_000 });
+    let result: string | undefined;
+    void outcome.then((o) => (result = o));
+    await vi.advanceTimersByTimeAsync(3 * 60_000 - 1);
+    expect(result).toBeUndefined();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(result).toBe('background');
+    expect(tokens[0]?.cancelled).toBe(false); // the download goes on
+    expect(u.autoInstallOnAppQuit).toBe(true); // electron-updater installs it when OpenMTG closes
+    expect(u.installs).toEqual([]);
+    expect(shown.at(-1)).toBe(BACKGROUND_NOTE);
+    expect(BACKGROUND_NOTE).toBe('Update downloading, installs when you close OpenMTG');
+    expect(u.listenerCount('download-progress')).toBe(0);
+    // nothing cancels it later either (the stall watch has stopped)
+    await vi.advanceTimersByTimeAsync(5 * 60_000);
+    expect(tokens[0]?.cancelled).toBe(false);
+    finish(['installer.exe']);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(u.logged.join('\n')).toMatch(/finished in the background/);
+  });
+
+  it('installs nothing when app-update.yml names no publisher: such a copy would install an update without checking its signature', async () => {
+    for (const setup of [
+      (u: FakeUpdater) => (u.configOnDisk = { value: Promise.resolve({ provider: 'github' }) }), // an unsigned build
+      (u: FakeUpdater) => (u.configOnDisk = { value: Promise.resolve({ provider: 'github', publisherName: [] }) }),
+      (u: FakeUpdater) => (u.configOnDisk = { value: Promise.reject(Object.assign(new Error('no app-update.yml'), { code: 'ENOENT' })) }),
+      (u: FakeUpdater) => (u.configOnDisk = undefined), // an electron-updater that reads it some other way
+      (u: FakeUpdater) => (u.verifyUpdateCodeSignature = undefined), // an updater without the check
+    ]) {
+      const u = new FakeUpdater();
+      u.check = async () => newer;
+      setup(u);
+      u.configOnDisk?.value.catch(() => undefined);
+      expect(await run(u).outcome).toBe('skipped');
+      expect(u.checks).toBe(0);
+      expect(u.installs).toEqual([]);
+      expect(u.logged.join('\n')).toMatch(/^warn .*no publisher name/m);
+    }
+  });
+});
+
+describe('requiredPublishers', () => {
+  it('reads the publisher names of app-update.yml (one name or a list)', async () => {
+    const u = new FakeUpdater();
+    expect(await requiredPublishers(u)).toEqual(['Example Signer']);
+    u.configOnDisk = { value: Promise.resolve({ publisherName: 'DigiDice LLC' }) };
+    expect(await requiredPublishers(u)).toEqual(['DigiDice LLC']);
+    u.configOnDisk = { value: Promise.resolve({ publisherName: '  ' }) };
+    expect(await requiredPublishers(u)).toBeNull();
   });
 });
 

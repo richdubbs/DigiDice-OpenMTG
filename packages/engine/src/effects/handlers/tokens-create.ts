@@ -75,7 +75,7 @@ const createTokenStep: StepHandler<CreateToken> = (cx, st) => {
 
   // How each token enters (CR 111.4, 614.1c): tapped, with counters, attached to an object.
   const enter: DestinationFacts = {};
-  if (st.tapped) enter.tapped = true;
+  if (st.tapped || cx.insteadTapped === true) enter.tapped = true;
   const counters = (st.counters ?? []).map((c) => ({ kind: c.kind, count: wholeNumber(cx, c.count) ?? 0 })).filter((c) => c.count > 0);
   if (counters.length > 0) enter.counters = counters;
 
@@ -104,7 +104,10 @@ const createTokenStep: StepHandler<CreateToken> = (cx, st) => {
     const mark = g.events.length;
     const facts: DestinationFacts = { ...enter, ...(where !== null ? { attachTo: where } : {}) };
     const ok = propose(g, { ev: 'createToken', player: p, count: n, token: def.id, ...(Object.keys(facts).length > 0 ? { enter: facts } : {}) }); // CR 111.2: the creator owns and controls it
-    if (ok) created.push(...tokensCreatedSince(cx, mark));
+    // edh-perms-1 (CR 614.6, 111.1, 508.4): tokens a replacement made INSTEAD ("that many 4/4 Angel tokens are created instead", Divine Visitation) are the tokens this instruction
+    // created: "tapped and attacking" and the later "they gain haste" apply to them, as the Divine Visitation rulings say
+    const made = tokensCreatedSince(cx, mark);
+    if (ok || made.length > 0) created.push(...made);
   }
   // CR 508.4: "tapped and attacking"; cmd1: "... attacking that opponent" names the player they attack (zones-util.ts#enterAttacking)
   if (st.attacking) enterAttacking(cx, created.map((h) => h.id), st.attacking);

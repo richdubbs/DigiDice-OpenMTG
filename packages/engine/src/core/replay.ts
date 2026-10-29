@@ -26,12 +26,16 @@ export function replay(config: GameConfig, actions: readonly Action[]): ReplayRe
 }
 
 /**
- * A game in progress with history, for UIs and bots. Keeps every intermediate state so
- * undo is O(1); the action log alone is enough to rebuild everything.
+ * A game in progress with history, for UIs and bots. Keeps the intermediate states from its undo floor on, so undo is O(1); the action log alone is
+ * enough to rebuild everything. `setFloor` drops the states below a point undo will never go back past (bounded memory in a long game); the log is
+ * kept whole, so saving and replaying are unchanged.
  */
 export class GameSession {
   readonly config: GameConfig;
+  /** `history[i]` is the state after `base + i` actions of the log; the last one is the current state. */
   private readonly history: GameState[];
+  /** How many logged actions lie before the first kept state (the undo floor). */
+  private base = 0;
   private readonly log: Action[] = [];
   lastEvents: GameEvent[] = [];
 
@@ -48,6 +52,11 @@ export class GameSession {
     return this.log;
   }
 
+  /** Undo never goes below this many logged actions (0 until `setFloor` raises it). */
+  get floor(): number {
+    return this.base;
+  }
+
   apply(action: Action): { ok: true; events: GameEvent[] } | { ok: false; error: ActionError } {
     const r = applyAction(this.state, action);
     if (r.error) return { ok: false, error: r.error };
@@ -57,9 +66,20 @@ export class GameSession {
     return { ok: true, events: r.events };
   }
 
-  /** Undo the last `n` actions (rollback). Returns false if there is nothing to undo. */
+  /**
+   * Undo will never go below `index` logged actions: the states before that point are dropped (the log is kept). The floor only rises; it is capped at
+   * the log's length.
+   */
+  setFloor(index: number): void {
+    const target = Math.min(Math.max(0, Math.floor(index)), this.log.length);
+    if (target <= this.base) return;
+    this.history.splice(0, target - this.base);
+    this.base = target;
+  }
+
+  /** Undo the last `n` actions (rollback). Returns false if there is nothing to undo, or if it would go below the floor (`setFloor`). */
   undo(n = 1): boolean {
-    if (this.log.length < n || n < 1) return false;
+    if (n < 1 || this.log.length - n < this.base) return false;
     this.history.splice(this.history.length - n, n);
     this.log.splice(this.log.length - n, n);
     this.lastEvents = [];

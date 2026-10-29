@@ -17,8 +17,8 @@ const isInt = (x: unknown, min: number, max: number): x is number => Number.isIn
 
 const FIELDS: Record<ClientMessage['t'], readonly string[]> = {
   status: ['t', 'id'],
-  host: ['t', 'id', 'name', 'deck', 'format', 'port', 'seats'],
-  join: ['t', 'id', 'address', 'code', 'name', 'deck'],
+  host: ['t', 'id', 'name', 'deck', 'format', 'port', 'seats', 'library'],
+  join: ['t', 'id', 'address', 'code', 'name', 'deck', 'library'],
   act: ['t', 'id', 'action'],
   manual: ['t', 'id', 'proposal', 'accept', 'reason'],
   forfeit: ['t', 'id', 'player'],
@@ -47,6 +47,7 @@ export function parseClientMessage(text: string | Buffer): Parsed {
   const bad = (error: string): Parsed => ({ ok: false, id, error });
   const extra = Object.keys(x).find((k) => !FIELDS[t].includes(k));
   if (extra) return bad(`unknown field "${extra}"`);
+  if (x['library'] !== undefined && typeof x['library'] !== 'boolean') return bad('library must be true or false');
   const name = (v: unknown): string | null => (isStr(v, 200) ? cleanText(v).trim().slice(0, LIMITS.name) : null);
   switch (t) {
     case 'status':
@@ -69,7 +70,7 @@ export function parseClientMessage(text: string | Buffer): Parsed {
         ok: true,
         message: {
           t, id, name: n, deck: deckOf(x['deck']), ...(x['format'] !== undefined ? { format: x['format'] as string } : {}), ...(x['port'] !== undefined ? { port: x['port'] as number } : {}),
-          ...(x['seats'] !== undefined ? { seats: x['seats'] as 3 | 4 } : {}),
+          ...(x['seats'] !== undefined ? { seats: x['seats'] as 3 | 4 } : {}), ...(x['library'] === true ? { library: true as const } : {}),
         },
       };
     }
@@ -80,7 +81,10 @@ export function parseClientMessage(text: string | Buffer): Parsed {
       if (!isStr(x['code'], 64) || !normalizeJoinCode(x['code'])) return bad('That is not a valid join code (16 letters and digits, like 7KQ2-M9XD-4TRB-HC8P).');
       const deck = checkDeckSubmission(x['deck']);
       if (deck) return bad(deck);
-      return { ok: true, message: { t, id, name: n, address: x['address'].trim(), code: x['code'], deck: deckOf(x['deck']) } };
+      return {
+        ok: true,
+        message: { t, id, name: n, address: x['address'].trim(), code: x['code'], deck: deckOf(x['deck']), ...(x['library'] === true ? { library: true as const } : {}) },
+      };
     }
     case 'act': {
       const problem = checkAction(x['action']);

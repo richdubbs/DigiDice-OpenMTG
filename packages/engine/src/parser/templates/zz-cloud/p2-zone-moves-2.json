@@ -1,0 +1,93 @@
+[
+  {
+    "id": "eff.p2zm2.putThat.hand.rest.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Obj} into your hand and {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "consumes": [
+      "and"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "{2}, {T}: Reveal cards from the top of your library until you reveal a land card. Put that card into your hand and all other cards revealed this way into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest on the bottom of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal an artifact card. Put that card into your graveyard and the rest into your hand.",
+      "Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest into exile."
+    ]
+  },
+  {
+    "id": "eff.p2zm2.putThat.hand.exileRest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 406.1",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Obj} into your hand and exile {r:Rest}",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "and"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal an enchantment card. Put that card into your hand and exile all other cards revealed this way."
+      },
+      {
+        "text": "{3}, {T}: Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and exile the rest."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal an enchantment card. Put that card into your hand and exile it.",
+      "Reveal cards from the top of your library until you reveal an enchantment card. Put that card onto the battlefield and exile all other cards revealed this way.",
+      "Reveal cards from the top of your library until you reveal an enchantment card. Put that card into your hand and exile all other cards revealed this way face down."
+    ]
+  }
+]

@@ -41,6 +41,36 @@ describe('determinism, replay and undo', () => {
     expect(JSON.stringify(session.state)).toBe(before);
   });
 
+  it('setFloor drops the states below the floor: undo works above it, refuses below it, and the log is kept whole', () => {
+    const cfg = simpleConfig('floor-seed');
+    const session = new GameSession(cfg);
+    playSome(session, 10);
+    const atTen = JSON.stringify(session.state);
+    playSome(session, 6);
+    const atSixteen = JSON.stringify(session.state);
+    session.setFloor(10);
+    expect(session.floor).toBe(10);
+    expect((session as unknown as { history: unknown[] }).history).toHaveLength(7); // the states after 10..16 actions
+    session.setFloor(4); // the floor only rises
+    expect(session.floor).toBe(10);
+    expect(session.undo(7)).toBe(false);
+    expect(JSON.stringify(session.state)).toBe(atSixteen);
+    expect(session.undo(6)).toBe(true);
+    expect(JSON.stringify(session.state)).toBe(atTen);
+    expect(session.undo(1)).toBe(false);
+    playSome(session, 6);
+    expect(JSON.stringify(session.state)).toBe(atSixteen);
+    expect(session.actions).toHaveLength(16);
+    const { state, errors } = replay(cfg, session.actions);
+    expect(errors).toEqual([]);
+    expect(JSON.stringify(state)).toBe(atSixteen);
+    expect(JSON.stringify(GameSession.fromJSON(JSON.parse(JSON.stringify(session.toJSON()))).state)).toBe(atSixteen);
+    session.setFloor(999); // capped at the log's length: only the current state is kept
+    expect(session.floor).toBe(16);
+    expect(JSON.stringify(session.state)).toBe(atSixteen);
+    expect(session.undo(1)).toBe(false);
+  });
+
   it('states are never mutated by applyAction', () => {
     const session = new GameSession(simpleConfig('immut'));
     playSome(session, 3);

@@ -18,8 +18,7 @@ import type { AbilityDef, EffectProgram, EffectStep, ManualAbilityDef, ModeSpec,
 import { byHandAbilities, byHandDenial } from '../rules/by-hand';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { EventContext, ObjHandle, PendingTrigger, SemEvent, TargetChoice } from '../types/state';
-import { abilitiesFromChars } from '../rules/abilities';
-import { charsOfObject } from '../rules/characteristics';
+import { pendingTriggerDef } from '../rules/abilities';
 import { emitCrime } from '../rules/crime';
 import { programHasTargets } from '../rules/targets';
 import { resolutionX } from '../rules/filter-env';
@@ -101,29 +100,32 @@ export function syncHistory(g: Game): void {
   const from = recorded.get(g) ?? 0;
   if (from >= g.events.length) return;
   recorded.set(g, g.events.length);
-  for (const evs of splitBatches(g.events.slice(from))) {
+  // Review 2026-10-26 F14 (CR 603.2c): `from` may fall in the middle of a batch (a resolution that reads the history twice): the batch is cut and normalized from
+  // its true beginning, as `collectPendingTriggers` will cut it, so all its entries share one `HistoryEntry.batch` stamp (rules/history.ts#firstTimeThisTurn reads
+  // one event as one time); only the events not yet recorded are written, as the collection filters them
+  for (const evs of splitBatches(g.events.slice(batchStartOf(g, from)))) {
     const first = g.events.indexOf(evs[0]!);
-    record(g, normalize(g, evs, first), turnAt(g, first));
+    record(g, normalize(g, evs, first).filter((e) => e.seq >= from), turnAt(g, first));
   }
 }
 
-/** The ability definition behind a pending trigger: its inline ability, or the printed/granted/generated one of its source (last known information if it left). */
-export function pendingDef(g: Game, t: PendingTrigger): AbilityDef | undefined {
-  if (t.inline) return t.inline;
-  const o = g.s.objects[t.sourceId];
-  const lk = g.s.lki[t.sourceId];
-  const chars = o ? charsOfObject(g.s, o) : lk ? lk.chars ?? charsOfObject(g.s, lk.object) : undefined;
-  const found = chars ? abilitiesFromChars(chars).find((a) => a.key === t.abilityRef.key)?.def : undefined;
-  if (found) return found;
-  // It has triggered; losing the ability since does not take it back (CR 603.3): fall back to the printed one.
-  const printed = t.abilityRef.source === 'printed' ? g.s.defs[o?.defId ?? lk?.object.defId ?? '']?.faces[t.abilityRef.face]?.abilities[t.abilityRef.index] : undefined;
-  return printed;
+/**
+ * Review 2026-10-26 F14: the index in `g.events` where the batch holding the engine event `i` begins, as `collectPendingTriggers` will cut it (`splitBatches` of
+ * the events since the last collection): at a step or turn that began, just after a resolution, or at the first event not yet collected.
+ */
+function batchStartOf(g: Game, i: number): number {
+  const lo = collected.get(g) ?? 0;
+  for (let j = i; j > lo; j--) {
+    const e = g.events[j]!;
+    if (e.type === 'stepBegan' || e.type === 'turnBegan' || g.events[j - 1]!.type === 'resolved') return j;
+  }
+  return lo;
 }
 
 /** Two triggers with the same ability and the same event do the same thing in either order: there is nothing to decide (CR 603.3b). */
 function sameEffect(g: Game, a: PendingTrigger, b: PendingTrigger): boolean {
-  const da = pendingDef(g, a);
-  const db = pendingDef(g, b);
+  const da = pendingTriggerDef(g.s, a);
+  const db = pendingTriggerDef(g.s, b);
   return da !== undefined && db !== undefined && JSON.stringify(da) === JSON.stringify(db) && JSON.stringify([a.context.roles, a.context.amount]) === JSON.stringify([b.context.roles, b.context.amount]);
 }
 
@@ -134,7 +136,7 @@ function orderTriggers(g: Game, player: PlayerId, mine: PendingTrigger[]): Pendi
     kind: 'order',
     player,
     prompt: 'Order your triggered abilities. The first one is put on the stack first, the last one on top of it and resolves first.',
-    items: mine.map((t) => ({ id: t.id, label: `${t.sourceName}: ${pendingDef(g, t)?.text ?? 'triggered ability'}` })),
+    items: mine.map((t) => ({ id: t.id, label: `${t.sourceName}: ${pendingTriggerDef(g.s, t)?.text ?? 'triggered ability'}` })),
     rules: ['CR 603.3b'],
   });
   return ans.ids.map((id) => mine.find((t) => t.id === id)!);
@@ -215,7 +217,7 @@ const defIdOf = (g: Game, id: ObjectId): string => g.s.objects[id]?.defId ?? g.s
  * could not be made. Raises the player's decisions through `g.choose`.
  */
 export function putTriggerOnStack(g: Game, t: PendingTrigger): ObjectId | null {
-  const def = pendingDef(g, t);
+  const def = pendingTriggerDef(g.s, t);
   // A manual triggered ability whose effect was understood ("Trigger now", design 8.4) goes through the same announcement as an automatic one. MRE: one put on
   // the stack by hand without an effect the engine can announce (`triggerNow`) comes with its definition inline and no effect: it announces nothing and
   // resolves through the manualResolve decision (effects/run.ts#abilityPlan, CR 608.2).

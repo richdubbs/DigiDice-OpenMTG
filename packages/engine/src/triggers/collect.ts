@@ -364,13 +364,16 @@ function applyLimit(g: Game, cand: Candidate, key: string, limit: TriggeredAbili
  * collected; `historyStart` is where this batch's own entries begin), so an event that happened before the source was on the battlefield counts too.
  * `undefined` when the history cannot answer the question (rules/history.ts throws for facts it does not have): the caller then lets the player check.
  */
-function happenedEarlierThisTurn(g: Game, patterns: readonly EventPattern[], cand: Candidate, historyStart: number): boolean | undefined {
+function happenedEarlierThisTurn(g: Game, patterns: readonly EventPattern[], cand: Candidate, historyStart: number, ownTurnOnly = false): boolean | undefined {
   const env: FactsEnv = { you: cand.controller, sourceId: cand.id };
   const turn = g.s.turn.number;
   const h = g.s.history;
   try {
     for (let i = Math.min(historyStart, h.length) - 1; i >= 0; i--) {
       const e = h[i]!;
+      // edh-players-1, ported from the stopped p2-trigger-events-2 (CR 603.2, 500.1): "for the first time during each of their turns" counts only that player's own
+      // events of the turn (the active player's)
+      if (ownTurnOnly && e.actor !== g.s.turn.activePlayer) continue;
       if (e.turn === turn && patterns.some((p) => historyMatches(e, p, env))) return true;
     }
   } catch {
@@ -451,9 +454,14 @@ function collectWith(g: Game, all: readonly SemEvent[], mode: CollectMode, histo
       // FAST4 T27 (CR 603.2, 603.2c): "for the first time each turn": only the first occurrence of the turn, and none when one happened before this batch
       let firstUnknown = false;
       if (trig?.first === 'turn') {
-        const earlier = happenedEarlierThisTurn(g, patterns, cand, historyStart);
+        // edh-players-1 (ported from p2-trigger-events-2; CR 603.2, 500.1): "for the first time during each of their turns" (a `while` of the event player's turn)
+        const w = trig.while as { cond?: string; whose?: { ref?: string; role?: string }; step?: unknown } | undefined;
+        const ownTurnOnly = w?.cond === 'turnOf' && w.step === undefined && typeof w.whose === 'object' && w.whose?.ref === 'event' && w.whose.role === 'player';
+        const earlier = happenedEarlierThisTurn(g, patterns, cand, historyStart, ownTurnOnly);
         if (earlier === true) continue;
         firstUnknown = earlier === undefined;
+        // (with "during each of their turns", only the turn player's own occurrences of this batch can be its first: another player's is never counted)
+        if (ownTurnOnly) groups = groups.filter((gr) => gr.some((e) => { const r = e.roles['player']; return r !== undefined && 'players' in r && r.players.includes(g.s.turn.activePlayer); }));
         groups = groups.slice(0, 1);
       }
       for (const group of groups) {

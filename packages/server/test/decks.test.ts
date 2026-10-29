@@ -248,6 +248,22 @@ describe('POST /api/cards/defs', () => {
     }
   });
 
+  it(`scores close names for the first ${MAX_SUGGESTED_UNKNOWN} unknown names only, as the deck screen does`, async () => {
+    const opened = await cardStore(fx.ctx);
+    if (!opened.ok) throw new Error(opened.error);
+    const spy = vi.spyOn(opened.store.db, 'suggest');
+    try {
+      const names = Array.from({ length: MAX_SUGGESTED_UNKNOWN + 20 }, (_, i) => `Lightnig Bolt ${i}`);
+      const r = await defs({ names });
+      expect(r.failed.map((f) => f.name)).toEqual(names);
+      expect(r.failed.every((f) => f.code === 'unknown')).toBe(true);
+      expect(spy).toHaveBeenCalledTimes(MAX_SUGGESTED_UNKNOWN);
+      expect(r.failed.at(-1)!.reason).toBe(`No card named "${names.at(-1)}" in the local index`);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
   it('validates the body', async () => {
     for (const body of [null, {}, { names: 'Shock' }, { names: [3] }, { names: [''] }, { names: ['Shock'], stubs: [1] }, { names: Array.from({ length: 501 }, (_, i) => `n${i}`) }]) {
       expect((await compileDefs(req({ body }), fx.ctx)).status, JSON.stringify(body).slice(0, 60)).toBe(400);

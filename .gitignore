@@ -60,7 +60,7 @@ Thumbs.db
 # Code-signing settings for the Windows installer (scripts/build-installer.mjs)
 /scripts/signing.local.json
 
-# Windows executable build output (npm run exe)
+# Windows installer build output (npm run installer)
 /release/
 # the hosted server's file store when it runs from the repository root (npm run hosted; docs/ops/hosted.md)
 /data/

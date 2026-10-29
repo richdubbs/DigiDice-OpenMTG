@@ -1,11 +1,11 @@
 /**
- * `MemoryAccountStore` (M14-4; design 11.2): the account store in plain maps, for unit tests, and the core the file store journals (src/store/file.ts).
+ * `MemoryAccountStore` (M14-4; design 11.2): the account store in plain maps, for the unit tests (an order of magnitude faster than the PostgreSQL
+ * store on PGlite, which the contract suite also runs: F26 kept it for that).
  *
  * How a write works. Every write is a plan run against the committed tables through a `Tx`: the plan reads through the transaction (it sees its own
  * writes), checks everything it must refuse first, and records its changes as a list of row mutations (put a row, delete a row) without touching the
  * tables. Only a plan that returns without throwing is committed, by applying its mutations in one synchronous step, so a refused write changes
- * nothing and no reader ever sees half of one. The memory store applies at once; the file store writes the mutations to its journal first (write-ahead)
- * and applies them after the fsync, serializing its writes, so the two stores answer every call alike.
+ * nothing and no reader ever sees half of one.
  *
  * Rows in the tables are never changed in place (a plan builds a new row), every row is built by src/store/rules.ts from exactly the contract's fields,
  * and every answer is a deep copy: no caller can change stored state through an argument or a result.
@@ -87,134 +87,9 @@ export function applyMutations(tables: StoreTables, muts: readonly Mutation[]): 
   }
 }
 
-/** The tables as JSON-safe entries (the file store's snapshot, and the memory store's full dump). */
+/** The tables as JSON-safe entries (the memory store's full dump). */
 export function tablesToJson(tables: StoreTables): Record<TableName, [string, unknown][]> {
   return Object.fromEntries(TABLE_NAMES.map((t) => [t, [...(tables[t] as Map<string, unknown>).entries()]])) as Record<TableName, [string, unknown][]>;
-}
-
-/**
- * The tables back from tablesToJson's form, every row checked (checkedRow); throws on a shape that is not one, or a row no write would have
- * stored, so a damaged file is refused when it is read instead of failing a later call with a TypeError (review of M14-4).
- */
-export function tablesFromJson(json: unknown): StoreTables {
-  if (typeof json !== 'object' || json === null) throw new Error('the tables are not an object');
-  const src = json as Record<string, unknown>;
-  const out = emptyTables();
-  for (const t of TABLE_NAMES) {
-    const entries = src[t];
-    if (entries === undefined) continue;
-    if (!Array.isArray(entries)) throw new Error(`table ${t} is not a list`);
-    const map = out[t] as Map<string, unknown>;
-    for (const e of entries) {
-      if (!Array.isArray(e) || e.length !== 2 || typeof e[0] !== 'string') throw new Error(`table ${t} holds an entry that is not [key, row]`);
-      map.set(e[0], checkedRow(t, e[0], e[1]));
-    }
-  }
-  return out;
-}
-
-/**
- * A row read back from a file (the file store's snapshot and journal) as a write would have stored it: rebuilt by its src/store/rules.ts builder,
- * and stored under the key its fields give. Throws (AccountStoreError 'value', or an Error naming the table) on anything else.
- */
-export function checkedRow(t: TableName, k: string, v: unknown): unknown {
-  const keyIs = (want: string): void => {
-    if (k !== want) throw new Error(`table ${t}: a row is stored under a key that is not its own`);
-  };
-  const list = (): unknown[] => {
-    if (!Array.isArray(v)) throw new Error(`table ${t}: a row is not a list`);
-    return v;
-  };
-  const record = (): Record<string, unknown> => {
-    if (typeof v !== 'object' || v === null || Array.isArray(v)) throw new Error(`table ${t}: a row is not an object`);
-    return v as Record<string, unknown>;
-  };
-  switch (t) {
-    case 'meta':
-      if (k !== NAME_VERSION && k !== CHANGE_SEQ) throw new Error(`table meta: unknown key ${JSON.stringify(k)}`);
-      return int(`meta ${k}`, v);
-    case 'accounts': {
-      const r = accountRow(v);
-      keyIs(r.id);
-      return r;
-    }
-    case 'names': {
-      const r = nameEntryRow(v);
-      keyIs(nameKeyOf(r.key, r.keyVersion));
-      return r;
-    }
-    case 'history': {
-      const rows = list().map(historyRow);
-      for (const r of rows) keyIs(r.account);
-      return rows;
-    }
-    case 'credentials': {
-      const r = credentialRow(v);
-      keyIs(credentialKeyOf(r.provider, r.subject));
-      return r;
-    }
-    case 'recovery': {
-      const rows = list().map(recoveryRow);
-      for (const r of rows) keyIs(r.account);
-      return rows;
-    }
-    case 'devices': {
-      const r = deviceRow(v);
-      keyIs(r.hash);
-      return r;
-    }
-    case 'sessions': {
-      const r = sessionRow(v);
-      keyIs(r.id);
-      return r;
-    }
-    case 'claims': {
-      const r = claimRow(v);
-      keyIs(r.session);
-      return r;
-    }
-    case 'relations': {
-      const r = relationRow(v);
-      keyIs(relationKeyOf(r.account, r.other, r.kind));
-      return r;
-    }
-    case 'emailCodes': {
-      const r = emailCodeRow(v);
-      keyIs(r.id);
-      return r;
-    }
-    case 'reports': {
-      const r = reportRow(v);
-      keyIs(r.id);
-      return r;
-    }
-    case 'sanctions': {
-      const r = sanctionRow(v);
-      keyIs(r.id);
-      return r;
-    }
-    case 'appeals': {
-      const r = appealRow(v);
-      keyIs(r.sanction);
-      return r;
-    }
-    case 'audit': {
-      const r = auditRow(v);
-      keyIs(r.id);
-      return r;
-    }
-    case 'changes': {
-      const r = changeRow(v, int('change seq', record()['seq'], 1));
-      keyIs(String(r.seq));
-      return r;
-    }
-    case 'tombstones': {
-      const o = record();
-      const row = tombstoneRow(o['row']);
-      keyIs(row.account);
-      return { row, holdUntil: time('tombstone holdUntil', o['holdUntil']) } satisfies StoredTombstone;
-    }
-  }
 }
 
 /**
@@ -342,13 +217,12 @@ function keptEvent(tx: Tx, e: AuditEvent): AuditEvent | null {
 
 /** The memory store (design 11.2). `createMemoryAccountStore` in src/store/index.ts makes one. */
 export class MemoryAccountStore implements AccountStore {
-  protected readonly t: StoreTables;
-  protected closed = false;
+  private readonly t: StoreTables = emptyTables();
+  private closed = false;
   /** putEmailCode's cap (AccountStoreLimits; ACCOUNT_RATE_LIMITS.emailResetLiveCodes unless configured). */
   private readonly liveCodesMax: number;
 
-  constructor(tables: StoreTables = emptyTables(), limits: AccountStoreLimits = {}) {
-    this.t = tables;
+  constructor(limits: AccountStoreLimits = {}) {
     this.liveCodesMax = liveCodesLimit(limits);
   }
 
@@ -357,20 +231,18 @@ export class MemoryAccountStore implements AccountStore {
     return clone(tablesToJson(this.t));
   }
 
-  protected live(): void {
+  private live(): void {
     if (this.closed) throw err('closed', 'the account store is closed');
   }
-  protected async read<R>(f: (tx: Tx) => R): Promise<R> {
+  private async read<R>(f: (tx: Tx) => R): Promise<R> {
     this.live();
     return clone(f(new Tx(this.t)));
   }
   /**
-   * Runs a plan and commits it. The file store overrides this to serialize and journal. `op` names the method (the journal records it). The plan
-   * reads only `args`, copied here when the call is made (copyArgs), never the caller's objects: a caller that changes an argument before the
-   * write runs (the file store's runs later, in turn) changes nothing, in either store (review of M14-4).
+   * Runs a plan and commits it. The plan reads only `args`, copied here when the call is made (copyArgs), never the caller's objects: a caller that
+   * changes an argument after the call changes nothing, as with the PostgreSQL store (review of M14-4).
    */
-  protected async write<A extends unknown[], R>(op: string, args: [...A], plan: (tx: Tx, ...args: A) => R): Promise<R> {
-    void op;
+  private async write<A extends unknown[], R>(args: [...A], plan: (tx: Tx, ...args: A) => R): Promise<R> {
     const a = copyArgs(args);
     this.live();
     const tx = new Tx(this.t);
@@ -382,7 +254,7 @@ export class MemoryAccountStore implements AccountStore {
   // ---- accounts and names (6.5) ----
 
   createAccount(n: NewAccount, now: string): Promise<void> {
-    return this.write('createAccount', [n, now], (tx, n, now) => {
+    return this.write([n, now], (tx, n, now) => {
       const at = time('now', now);
       if (typeof n !== 'object' || n === null) throw err('value', 'the new account is not an object');
       const a = accountRow(n.account);
@@ -466,7 +338,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   updateAccount(id: AccountId, version: number, patch: AccountPatch): Promise<Account> {
-    return this.write('updateAccount', [id, version, patch], (tx, id, version, patch) => {
+    return this.write([id, version, patch], (tx, id, version, patch) => {
       const a = needAccount(tx, text('id', id));
       int('version', version);
       const p = patchObject('patch', patch, ACCOUNT_PATCH_KEYS);
@@ -478,7 +350,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   rename(id: AccountId, version: number, next: NameHistoryRow, opts: RenameOptions): Promise<Account> {
-    return this.write('rename', [id, version, next, opts], (tx, id, version, next, opts) => {
+    return this.write([id, version, next, opts], (tx, id, version, next, opts) => {
       const a = needAccount(tx, text('id', id));
       int('version', version);
       const h = historyRow(next);
@@ -520,7 +392,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   putNameEntry(e: NameEntry): Promise<void> {
-    return this.write('putNameEntry', [e], (tx, e) => {
+    return this.write([e], (tx, e) => {
       const row = nameEntryRow(e);
       // a hold for nobody (a forced rename's, M14-6) has an end; reserved and banned keys need none
       const hold = row.kind === 'held' && row.until !== null;
@@ -533,7 +405,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   deleteNameEntry(key: string, keyVersion: number): Promise<void> {
-    return this.write('deleteNameEntry', [key, keyVersion], (tx, key, keyVersion) => {
+    return this.write([key, keyVersion], (tx, key, keyVersion) => {
       const k = nameKeyOf(text('key', key), int('keyVersion', keyVersion));
       const e = tx.get('names', k);
       if (!e) throw err('notFound', 'no such name entry');
@@ -547,7 +419,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   redactName(id: AccountId, key: string): Promise<void> {
-    return this.write('redactName', [id, key], (tx, id, key) => {
+    return this.write([id, key], (tx, id, key) => {
       const a = needAccount(tx, text('id', id));
       text('key', key);
       const rows = tx.get('history', a.id) ?? [];
@@ -601,7 +473,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   rekey(from: number, to: number, keys: ReadonlyMap<string, string>): Promise<void> {
-    return this.write('rekey', [from, to, keys], (tx, from, to, keys) => {
+    return this.write([from, to, keys], (tx, from, to, keys) => {
       int('from', from);
       int('to', to);
       if (from === to) throw err('value', 'rekey needs two different versions');
@@ -646,7 +518,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   putCredential(c: CredentialRow, expectSecret?: string | null): Promise<void> {
-    return this.write('putCredential', [c, expectSecret], (tx, c, expectSecret) => {
+    return this.write([c, expectSecret], (tx, c, expectSecret) => {
       const row = credentialRow(c);
       const cas = expectSecret !== undefined;
       const expect = cas ? textOrNull('expectSecret', expectSecret) : null;
@@ -660,7 +532,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   deleteCredential(id: AccountId, provider: CredentialRow['provider'], subject: string): Promise<void> {
-    return this.write('deleteCredential', [id, provider, subject], (tx, id, provider, subject) => {
+    return this.write([id, provider, subject], (tx, id, provider, subject) => {
       const a = text('id', id);
       const k = credentialKeyOf(oneOf('provider', provider, PROVIDERS), text('subject', subject));
       const cur = tx.get('credentials', k);
@@ -673,7 +545,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   replaceRecoveryCodes(id: AccountId, rows: RecoveryCodeRow[]): Promise<void> {
-    return this.write('replaceRecoveryCodes', [id, rows], (tx, id, rows) => {
+    return this.write([id, rows], (tx, id, rows) => {
       const a = needAccount(tx, text('id', id));
       if (!Array.isArray(rows)) throw err('value', 'rows is not an array');
       const list = rows.map(recoveryRow).sort(byKeys((r) => r.slot));
@@ -691,7 +563,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   spendRecoveryCode(id: AccountId, slot: number, hash: string, at: string): Promise<boolean> {
-    return this.write('spendRecoveryCode', [id, slot, hash, at], (tx, id, slot, hash, at) => {
+    return this.write([id, slot, hash, at], (tx, id, slot, hash, at) => {
       const a = text('id', id);
       int('slot', slot);
       text('hash', hash);
@@ -705,7 +577,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   putDevice(d: DeviceRow): Promise<void> {
-    return this.write('putDevice', [d], (tx, d) => {
+    return this.write([d], (tx, d) => {
       const row = deviceRow(d);
       needAccount(tx, row.account);
       const cur = tx.get('devices', row.hash);
@@ -726,7 +598,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   updateDevice(hash: string, patch: Partial<Pick<DeviceRow, 'lastUsedAt' | 'failures'>>): Promise<void> {
-    return this.write('updateDevice', [hash, patch], (tx, hash, patch) => {
+    return this.write([hash, patch], (tx, hash, patch) => {
       const cur = tx.get('devices', text('hash', hash));
       const p = patchObject('patch', patch, ['lastUsedAt', 'failures']);
       if (!cur) throw err('notFound', 'no such device proof');
@@ -735,7 +607,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   deleteDevices(id: AccountId, except?: string): Promise<number> {
-    return this.write('deleteDevices', [id, except], (tx, id, except) => {
+    return this.write([id, except], (tx, id, except) => {
       const a = text('id', id);
       const keep = except === undefined ? null : text('except', except);
       let n = 0;
@@ -752,7 +624,7 @@ export class MemoryAccountStore implements AccountStore {
   // ---- sessions (5.2) ----
 
   putSession(s: AccountSessionRow): Promise<void> {
-    return this.write('putSession', [s], (tx, s) => {
+    return this.write([s], (tx, s) => {
       const row = sessionRow(s);
       needAccount(tx, row.account);
       const cur = tx.get('sessions', row.id);
@@ -776,7 +648,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   rotateSession(id: string, expectCurrent: string, nextHash: string, at: string): Promise<number | null> {
-    return this.write('rotateSession', [id, expectCurrent, nextHash, at], (tx, id, expectCurrent, nextHash, at) => {
+    return this.write([id, expectCurrent, nextHash, at], (tx, id, expectCurrent, nextHash, at) => {
       const cur = tx.get('sessions', text('id', id));
       const expect = text('expectCurrent', expectCurrent);
       const next = word('nextHash', nextHash);
@@ -790,7 +662,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   rerotateInGrace(id: string, expectPrevious: string, nextHash: string): Promise<number | null> {
-    return this.write('rerotateInGrace', [id, expectPrevious, nextHash], (tx, id, expectPrevious, nextHash) => {
+    return this.write([id, expectPrevious, nextHash], (tx, id, expectPrevious, nextHash) => {
       const cur = tx.get('sessions', text('id', id));
       const expect = text('expectPrevious', expectPrevious);
       const next = word('nextHash', nextHash);
@@ -803,7 +675,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   updateSession(id: string, patch: Partial<Pick<AccountSessionRow, 'lastUsedAt' | 'authAt' | 'proofFailures'>>): Promise<void> {
-    return this.write('updateSession', [id, patch], (tx, id, patch) => {
+    return this.write([id, patch], (tx, id, patch) => {
       const cur = tx.get('sessions', text('id', id));
       const p = patchObject('patch', patch, ['lastUsedAt', 'authAt', 'proofFailures']);
       if (!cur) throw err('notFound', 'no such session');
@@ -812,7 +684,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   revokeSession(account: AccountId, id: string, reason: AccountSessionRow['revokeReason'], at: string): Promise<void> {
-    return this.write('revokeSession', [account, id, reason, at], (tx, account, id, reason, at) => {
+    return this.write([account, id, reason, at], (tx, account, id, reason, at) => {
       const a = text('account', account);
       const cur = tx.get('sessions', text('id', id));
       const why = oneOf('reason', reason, REVOKE_REASONS);
@@ -823,7 +695,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   revokeSessions(account: AccountId, reason: AccountSessionRow['revokeReason'], at: string, except?: string): Promise<string[]> {
-    return this.write('revokeSessions', [account, reason, at, except], (tx, account, reason, at, except) => {
+    return this.write([account, reason, at, except], (tx, account, reason, at, except) => {
       const a = text('account', account);
       const why = oneOf('reason', reason, REVOKE_REASONS);
       const when = time('at', at);
@@ -845,10 +717,14 @@ export class MemoryAccountStore implements AccountStore {
     });
   }
 
+  sessionById(id: string): Promise<AccountSessionRow | null> {
+    return this.read((tx) => tx.get('sessions', text('id', id)) ?? null);
+  }
+
   // ---- guest claims (5.5) ----
 
   claimGuest(c: ClaimRow): Promise<void> {
-    return this.write('claimGuest', [c], (tx, c) => {
+    return this.write([c], (tx, c) => {
       const row = claimRow(c);
       needAccount(tx, row.account);
       if (tx.get('claims', row.session)) throw err('exists', 'the guest session is claimed');
@@ -866,7 +742,7 @@ export class MemoryAccountStore implements AccountStore {
   // ---- relations (9.1) ----
 
   setRelation(r: RelationRow): Promise<void> {
-    return this.write('setRelation', [r], (tx, r) => {
+    return this.write([r], (tx, r) => {
       const row = relationRow(r);
       needAccount(tx, row.account);
       // INTERFACE CHANGE (M14-15, review A2): an `other` with no account is dropped here, in the same transaction, not refused
@@ -876,7 +752,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   deleteRelation(account: AccountId, other: AccountId, kind: RelationRow['kind']): Promise<void> {
-    return this.write('deleteRelation', [account, other, kind], (tx, account, other, kind) => {
+    return this.write([account, other, kind], (tx, account, other, kind) => {
       tx.del('relations', relationKeyOf(text('account', account), text('other', other), oneOf('kind', kind, RELATION_KINDS)));
     });
   }
@@ -900,7 +776,7 @@ export class MemoryAccountStore implements AccountStore {
   // ---- email codes (3.4) ----
 
   putEmailCode(c: EmailCodeRow, now: string): Promise<void> {
-    return this.write('putEmailCode', [c, now], (tx, c, now) => {
+    return this.write([c, now], (tx, c, now) => {
       const row = emailCodeRow(c);
       const t = ms('now', now);
       needAccount(tx, row.account);
@@ -929,7 +805,7 @@ export class MemoryAccountStore implements AccountStore {
 
   /** True exactly once, and only before the code expires (at < expiresAt). */
   useEmailCode(id: string, at: string): Promise<boolean> {
-    return this.write('useEmailCode', [id, at], (tx, id, at) => {
+    return this.write([id, at], (tx, id, at) => {
       const cur = tx.get('emailCodes', text('id', id));
       const when = time('at', at);
       if (!cur || cur.usedAt !== null || tMs(cur.expiresAt) <= tMs(when)) return false;
@@ -939,7 +815,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   deleteEmailCodes(account: AccountId, purpose: EmailCodeRow['purpose']): Promise<void> {
-    return this.write('deleteEmailCodes', [account, purpose], (tx, account, purpose) => {
+    return this.write([account, purpose], (tx, account, purpose) => {
       const a = text('account', account);
       const p = oneOf('purpose', purpose, EMAIL_PURPOSES);
       for (const x of [...tx.rows('emailCodes')]) if (x.account === a && x.purpose === p) tx.del('emailCodes', x.id);
@@ -949,7 +825,7 @@ export class MemoryAccountStore implements AccountStore {
   // ---- moderation (9) ----
 
   putReport(r: ReportRow): Promise<void> {
-    return this.write('putReport', [r], (tx, r) => {
+    return this.write([r], (tx, r) => {
       const row = reportRow(r);
       if (tx.get('reports', row.id)) throw err('exists', 'the report id exists');
       // INTERFACE CHANGE (M14-15, review A2): a report about an account that has none is dropped here, in the same transaction
@@ -989,7 +865,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   closeReport(id: string, status: Exclude<ReportRow['status'], 'new'>, by: string, at: string, note: string | null): Promise<void> {
-    return this.write('closeReport', [id, status, by, at, note], (tx, id, status, by, at, note) => {
+    return this.write([id, status, by, at, note], (tx, id, status, by, at, note) => {
       const cur = tx.get('reports', text('id', id));
       const s = oneOf('status', status, ['actioned', 'dismissed'] as const);
       const who = word('by', by);
@@ -1002,7 +878,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   putSanction(s: SanctionRow): Promise<void> {
-    return this.write('putSanction', [s], (tx, s) => {
+    return this.write([s], (tx, s) => {
       const row = sanctionRow(s);
       needAccount(tx, row.account);
       if (tx.get('sanctions', row.id)) throw err('exists', 'the sanction id exists');
@@ -1037,7 +913,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   endSanction(id: string, at: string, reason: SanctionEnd, by: string): Promise<void> {
-    return this.write('endSanction', [id, at, reason, by], (tx, id, at, reason, by) => {
+    return this.write([id, at, reason, by], (tx, id, at, reason, by) => {
       const cur = tx.get('sanctions', text('id', id));
       const when = time('at', at);
       const why = oneOf('reason', reason, SANCTION_ENDS);
@@ -1060,7 +936,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   markSeen(account: AccountId, sanction: string, at: string): Promise<void> {
-    return this.write('markSeen', [account, sanction, at], (tx, account, sanction, at) => {
+    return this.write([account, sanction, at], (tx, account, sanction, at) => {
       const a = text('account', account);
       const cur = tx.get('sanctions', text('sanction', sanction));
       const when = time('at', at);
@@ -1070,7 +946,7 @@ export class MemoryAccountStore implements AccountStore {
   }
 
   putAppeal(a: AppealRow): Promise<void> {
-    return this.write('putAppeal', [a], (tx, a) => {
+    return this.write([a], (tx, a) => {
       const row = appealRow(a);
       const s = tx.get('sanctions', row.sanction);
       if (!s || s.account !== row.account) throw err('notFound', 'no such sanction of this account');
@@ -1097,8 +973,12 @@ export class MemoryAccountStore implements AccountStore {
     });
   }
 
+  appeal(sanction: string): Promise<AppealRow | null> {
+    return this.read((tx) => tx.get('appeals', text('sanction', sanction)) ?? null);
+  }
+
   answerAppeal(sanction: string, answer: 'upheld' | 'lifted', message: string, by: string, at: string): Promise<void> {
-    return this.write('answerAppeal', [sanction, answer, message, by, at], (tx, sanction, answer, message, by, at) => {
+    return this.write([sanction, answer, message, by, at], (tx, sanction, answer, message, by, at) => {
       const cur = tx.get('appeals', text('sanction', sanction));
       const ans = oneOf('answer', answer, ['upheld', 'lifted'] as const);
       const msg = text('message', message);
@@ -1117,7 +997,7 @@ export class MemoryAccountStore implements AccountStore {
    * them (keptEvent), so a request that was running at the erasure writes nothing of the account back.
    */
   appendAudit(events: readonly AuditEvent[]): Promise<void> {
-    return this.write('appendAudit', [events], (tx, events) => {
+    return this.write([events], (tx, events) => {
       if (!Array.isArray(events)) throw err('value', 'events is not an array');
       const rows = events.map(auditRow);
       const ids = new Set<string>();
@@ -1156,7 +1036,7 @@ export class MemoryAccountStore implements AccountStore {
 
   /** An erased account's change other than `deleted` is refused ('notFound') and nothing is appended. */
   appendChange(c: Omit<AccountChange, 'seq'>): Promise<number> {
-    return this.write('appendChange', [c], (tx, c) => {
+    return this.write([c], (tx, c) => {
       const seq = (tx.get('meta', CHANGE_SEQ) ?? 0) + 1;
       const row = changeRow(c, seq);
       if (row.kind !== 'deleted' && tx.get('tombstones', row.account)) throw err('notFound', 'the account is erased');
@@ -1210,7 +1090,7 @@ export class MemoryAccountStore implements AccountStore {
    * A `targetName` of a report about anyone else is that target's name and stays as it is.
    */
   erase(id: AccountId, tombstone: TombstoneRow, nameHoldUntil: string): Promise<void> {
-    return this.write('erase', [id, tombstone, nameHoldUntil], (tx, id, tombstone, nameHoldUntil) => {
+    return this.write([id, tombstone, nameHoldUntil], (tx, id, tombstone, nameHoldUntil) => {
       const x = text('id', id);
       const ts = tombstoneRow(tombstone);
       const hold = time('nameHoldUntil', nameHoldUntil);
@@ -1305,7 +1185,7 @@ export class MemoryAccountStore implements AccountStore {
    * deletions), not the store's.
    */
   purge(policy: AccountRetention, now: string): Promise<AccountPurgeReport> {
-    return this.write('purge', [policy, now], (tx, policy, now) => {
+    return this.write([policy, now], (tx, policy, now) => {
       if (typeof policy !== 'object' || policy === null) throw err('value', 'the policy is not an object');
       const t = ms('now', now);
       const p = (k: keyof AccountRetention) => int(`policy.${k}`, policy[k]);

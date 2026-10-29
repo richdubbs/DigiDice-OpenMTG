@@ -6,6 +6,10 @@ import type { EndpointKey, Method } from './api';
 import type { Handler } from './context';
 import { compileDefs } from './defs';
 import { matchImages } from './images';
+import { getLibraryDeck, getLibraryDecks, postLibraryDeckDelete, postLibraryDeckSave } from './library/decks';
+import { getLibraryImages, postLibraryImageAdd, postLibraryImageClear, postLibraryImageDelete } from './library/images';
+import { getLibraryReplays, postLibraryReplayDelete, postLibraryReplayImport, postLibraryReplayRetention, postLibraryReplayUpdate } from './library/replays';
+import { getLibrarySettings, postLibrarySettings } from './library/settings';
 import { resolveDeck } from './resolve';
 import { cardDetail, listSets, searchCards } from './search';
 import { getStatus } from './status';
@@ -25,6 +29,21 @@ export const ROUTES: { readonly [K in EndpointKey]: Handler<K> } = {
   'POST /api/images/match': matchImages,
   'GET /api/update': getUpdate,
   'POST /api/update': postUpdate,
+  'GET /api/library/decks': getLibraryDecks,
+  'GET /api/library/decks/:id': getLibraryDeck,
+  'POST /api/library/decks/save': postLibraryDeckSave,
+  'POST /api/library/decks/delete': postLibraryDeckDelete,
+  'GET /api/library/settings': getLibrarySettings,
+  'POST /api/library/settings': postLibrarySettings,
+  'GET /api/library/images': getLibraryImages,
+  'POST /api/library/images/add': postLibraryImageAdd,
+  'POST /api/library/images/delete': postLibraryImageDelete,
+  'POST /api/library/images/clear': postLibraryImageClear,
+  'GET /api/library/replays': getLibraryReplays,
+  'POST /api/library/replays/update': postLibraryReplayUpdate,
+  'POST /api/library/replays/delete': postLibraryReplayDelete,
+  'POST /api/library/replays/import': postLibraryReplayImport,
+  'POST /api/library/replays/retention': postLibraryReplayRetention,
 };
 
 interface CompiledRoute {

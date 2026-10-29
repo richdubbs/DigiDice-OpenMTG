@@ -137,7 +137,9 @@ describe('M13-6 hello: within 5 s, guest tokens, resume, expiry, replace', () =>
     const b = Browser.connect(t);
     const w = await b.hello('  Alice   the   Brave ');
     expect(w.resumed).toBe(false);
-    expect(HOSTED_TOKEN.test(w.token)).toBe(true);
+    // the welcome that mints a token carries it (only that one: a resume does not echo it back)
+    const token = w.token ?? '';
+    expect(HOSTED_TOKEN.test(token)).toBe(true);
     expect(w.name).toBe('Alice the Brave');
     expect(w.session).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}$/);
     expect(w.server.protocol).toBe(HOSTED_PROTOCOL);
@@ -145,12 +147,12 @@ describe('M13-6 hello: within 5 s, guest tokens, resume, expiry, replace', () =>
     expect(w.server.capacity).toBe('open');
     expect(w.server.formats.some((f) => f.id === 'casual' && f.seats.join() === '2')).toBe(true);
     expect(w.table).toBeUndefined();
-    const row = await t.store.sessionByTokenHash(sha256Hex(w.token));
-    expect(row).toMatchObject({ id: w.session, tokenHash: sha256Hex(w.token), name: 'Alice the Brave' });
-    expect(JSON.stringify(row)).not.toContain(w.token);
-    expect(await t.store.sessionByTokenHash(w.token)).toBeNull();
+    const row = await t.store.sessionByTokenHash(sha256Hex(token));
+    expect(row).toMatchObject({ id: w.session, tokenHash: sha256Hex(token), name: 'Alice the Brave' });
+    expect(JSON.stringify(row)).not.toContain(token);
+    expect(await t.store.sessionByTokenHash(token)).toBeNull();
     // Nothing the server logs holds the token.
-    expect(t.logger.lines.join('\n')).not.toContain(w.token);
+    expect(t.logger.lines.join('\n')).not.toContain(token);
   });
 
   it('a token resumes its session (same id, the name may change); a malformed token is refused before any lookup and gets a new session', async () => {
@@ -160,7 +162,10 @@ describe('M13-6 hello: within 5 s, guest tokens, resume, expiry, replace', () =>
     first.client.close();
     await settle(3);
     const again = await guest(t, 'Alicia', {}, token);
-    expect(again.last('welcome')).toMatchObject({ resumed: true, session: first.session, token, name: 'Alicia' });
+    expect(again.last('welcome')).toMatchObject({ resumed: true, session: first.session, name: 'Alicia' });
+    // a resume does not echo the token back: only the hello that mints a token sends it
+    expect(again.last('welcome')).not.toHaveProperty('token');
+    expect(again.token).toBe(token);
     expect((await t.store.sessionByTokenHash(sha256Hex(token)))?.name).toBe('Alicia');
 
     const lookups: string[] = [];

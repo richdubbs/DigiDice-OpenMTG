@@ -17,7 +17,7 @@
 import type { Game } from '../core/game';
 import type { ObjectId, PlayerId } from '../types/ids';
 import { removeFromCombat } from './combat-state';
-import { charsOfObject, hasKeyword } from './characteristics';
+import { charsOfObject, hasKeyword, readingStable } from './characteristics';
 import { phaseInDenied } from '../statics/hooks';
 
 /** The permanents attached to `host` (Auras, Equipment, Fortifications), in battlefield order. */
@@ -57,10 +57,11 @@ function phasedOutIndirectly(g: Game, id: ObjectId): boolean {
 export function phaseInForUntapStep(g: Game, active: PlayerId): ObjectId[] {
   // p2-misc-1 (CR 702.26a, 502.1; unverified): the phased-in permanents with phasing the active player controls phase out at the same time as the others phase
   // in, so a permanent that phases in now does not phase out again; chosen before anything changes
-  const phasers = g.s.zones.battlefield.filter((id) => {
+  // review 2026-10-26 (performance): a pure read of every permanent, one check of the characteristics cache (`readingStable`)
+  const phasers = readingStable(g.s, () => g.s.zones.battlefield.filter((id) => {
     const o = g.s.objects[id]!;
     return !o.phasedOut && o.controller === active && hasKeyword(charsOfObject(g.s, o), 'phasing');
-  });
+  }));
   const direct = g.s.zones.battlefield.filter((id) => {
     const o = g.s.objects[id]!;
     return o.phasedOut && o.controller === active && !phasedOutIndirectly(g, id);

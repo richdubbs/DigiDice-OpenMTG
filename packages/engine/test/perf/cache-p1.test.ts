@@ -163,7 +163,9 @@ describe('P1 rules/characteristics: the cache key is FINGERPRINTED, the list the
   });
 
   it('every walked key, replaced by an edited copy, makes the next read compute again', () => {
-    for (const k of LAYER_WALK_ORDER) {
+    // Review 2026-10-26: the combat is a volatile part (statics/layer-reads.ts), in the key only of an entry whose computation read it; nothing on this board
+    // reads it (test/perf/layer-reads.test.ts covers both cases)
+    for (const k of LAYER_WALK_ORDER.filter((x) => x !== 'combat')) {
       const s = layered();
       allChars(s);
       const misses = CHARS_CACHE_STATS.misses;

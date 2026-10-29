@@ -545,7 +545,8 @@ export class Gateway {
     const seat = this.tables.seatOf(session.id);
     const queue = this.tables.queueOf(session.id);
     this.send(conn, {
-      t: 'welcome', token, session: session.id, name: session.name, resumed,
+      // the token only when this hello minted it: a resume does not echo the client's own token back
+      t: 'welcome', ...(resumed ? {} : { token }), session: session.id, name: session.name, resumed,
       ...(seat && !seat.left ? { table: seat.table, seat: seat.seat } : {}), ...(queue ? { queue } : {}), server: this.serverInfo(),
     });
     this.metrics.set(METRICS.sessions, this.connectedSessions());

@@ -606,6 +606,10 @@ function playerPredicates(ctx: HoleCtx, pos: number): PPred[] {
   // FAST1 T4, CR 106.12, 605.1b: "a player taps a land for mana" (landTappedForMana)
   for (const w of [P('tap'), P('taps')]) {
     const e = phraseAt(ctx, pos, w);
+    // edh-perms-1 (port of the stopped p2-mana-3; CR 106.12, 603.2): "whenever you tap ~ for mana" (Forbidden Orchard): an activation of a mana ability of this permanent
+    // with {T} in its cost
+    const sm = e >= 0 && ctx.toks[e]?.kind === 'SELF' ? phraseAt(ctx, e + 1, P('for mana')) : -1;
+    if (sm >= 0) out.push({ end: sm, make: (pl) => ({ ev: 'activate', player: pl, source: { self: true }, manaAbility: true, tapped: true }) });
     const t = e >= 0 ? ctx.toks[e]?.norm : undefined;
     if (t !== 'a' && t !== 'an') continue;
     for (const n of npAlts(ctx, e + 1)) {
@@ -613,6 +617,10 @@ function playerPredicates(ctx: HoleCtx, pos: number): PPred[] {
       // std-mana-1 (CR 106.12): "you tap a land for {C}": the activation of a land's mana ability produced mana of that one type
       const fo = landTappedForMana(n.filter) ? phraseAt(ctx, n.end, P('for')) : -1;
       if (fo >= 0) for (const t of ctx.call('ManaSym', fo)) out.push({ end: t.end, make: (pl) => ({ ev: 'activate', player: pl, source: n.filter, manaAbility: true, produced: t.value as ManaType }) });
+      // edh-perms-1 (CR 106.12, 605.1b; Forsaken Monument): "you tap a permanent for {C}": a permanent that is not (only) a land may have mana abilities without {T}, so the
+      // pattern asks for the {T} the activation had (`tapped`), as "taps a permanent for mana" below
+      const fp = !landTappedForMana(n.filter) && n.filter.self !== true && n.filter.zone === undefined ? phraseAt(ctx, n.end, P('for')) : -1;
+      if (fp >= 0) for (const t of ctx.call('ManaSym', fp)) out.push({ end: t.end, make: (pl) => ({ ev: 'activate', player: pl, source: n.filter, manaAbility: true, tapped: true, produced: t.value as ManaType }) });
       const m = phraseAt(ctx, n.end, P('for mana'));
       if (m < 0) continue;
       if (landTappedForMana(n.filter)) out.push({ end: m, make: (pl) => ({ ev: 'activate', player: pl, source: n.filter, manaAbility: true }) });
@@ -629,6 +637,10 @@ function playerPredicates(ctx: HoleCtx, pos: number): PPred[] {
     const end = phraseAt(ctx, e + 1, P('spell each turn'));
     // "your" is the caster only when the caster is you; "their" only when it is another player
     if (end >= 0) out.push({ end, make: (pl) => ((pl === 'you') === own ? { ev: 'cast', player: pl, nth } : null) });
+    // edh-players-1, ported from the stopped p2-trigger-events-2 (CR 601.2i; The Council of Four): "a player casts their second spell during their turn": the turn is said
+    // after it ("during ..."), so the count is of that turn as with "each turn"; read only before "during" (the turn clause is the trigger's own, `while`)
+    const bare = phraseAt(ctx, e + 1, P('spell'));
+    if (bare >= 0 && ctx.toks[bare]?.norm === 'during') out.push({ end: bare, make: (pl) => ((pl === 'you') === own ? { ev: 'cast', player: pl, nth } : null) });
     // FAST5X E18 (CR 601.2i): "an opponent casts their first noncreature spell each turn": the Nth of that player's spells this turn that are such spells
     for (const n of npAlts(ctx, e + 1)) {
       if (n.number !== 'singular' || n.head !== 'spell' || n.filter.zone !== 'stack' || n.filter.chosen !== undefined) continue;
@@ -645,9 +657,21 @@ function playerPredicates(ctx: HoleCtx, pos: number): PPred[] {
     if (e < 0) continue;
     const c = anyPhraseAt(ctx, e, [P('a card'), P('a card each turn')]);
     if (c >= 0) out.push({ end: c, make: (pl) => ({ ev: 'draw', player: pl }) });
+    // edh-players-1 (CR 504.1, 121.2; Orcish Bowmasters): "an opponent draws a card except the first one they draw in each of their draw steps": every draw but the
+    // first card the turn player draws in their own draw step (the replacement form of the same words is r5-repl's); the pronoun is the drawing player's own
+    for (const [tail, own] of [[P('a card except the first one you draw in each of your draw steps'), true], [P('a card except the first one they draw in each of their draw steps'), false]] as const) {
+      const ex = phraseAt(ctx, e, tail);
+      if (ex >= 0) out.push({ end: ex, make: (pl) => ((pl === 'you') === own ? { ev: 'draw', player: pl, exceptFirstInDrawStep: true } : null) });
+    }
     const poss = phraseAt(ctx, e, P('your'));
     const ord = poss >= 0 ? ORDINALS[ctx.toks[poss]?.norm ?? ''] : undefined;
     if (ord !== undefined) { const ce = phraseAt(ctx, poss + 1, P('card each turn')); if (ce >= 0) out.push({ end: ce, make: (pl) => ({ ev: 'draw', player: pl, nth: ord }) }); }
+    // edh-players-1, ported from the stopped p2-trigger-events-2 (CR 121.2; The Council of Four): "a player draws their second card during their turn" (another player's own
+    // draws; read only before "during", which says the turn as "each turn" does)
+    const their = phraseAt(ctx, e, P('their'));
+    const ordT = their >= 0 ? ORDINALS[ctx.toks[their]?.norm ?? ''] : undefined;
+    const ct = ordT !== undefined ? phraseAt(ctx, their + 1, P('card')) : -1;
+    if (ordT !== undefined && ct >= 0 && ctx.toks[ct]?.norm === 'during') out.push({ end: ct, make: (pl) => (pl === 'you' ? null : { ev: 'draw', player: pl, nth: ordT }) });
   }
   // life
   for (const w of [P('gain life'), P('gains life')]) at(w, (pl) => ({ ev: 'life', change: 'gain', player: pl }));
@@ -991,7 +1015,9 @@ function voteEvents(ctx: HoleCtx, pos: number): Alt[] {
 function stateEvents(ctx: HoleCtx, pos: number): Alt[] {
   const out: Alt[] = [];
   // FAST5X E21 (CR 603.8): also "there are four or more page counters on ~" (parser/holes/cond.ts#thereAre)
-  const lead = anyPhraseAt(ctx, pos, [P('you control'), P("you don't control"), P('you have'), P('there are')]);
+  // edh-perms-1 (port of the stopped p2-trigger-events-2; CR 603.8; Dark Depths): also "~ has no ice counters on it", a condition of the object itself (the Cond hole reads it)
+  const selfHas = ctx.toks[pos]?.kind === 'SELF' && ctx.toks[pos + 1]?.norm === 'has';
+  const lead = selfHas ? pos + 2 : anyPhraseAt(ctx, pos, [P('you control'), P("you don't control"), P('you have'), P('there are')]);
   if (lead < 0) return out;
   for (const c of ctx.call('Cond', pos)) out.push({ end: c.end, value: [{ ev: 'state', cond: c.value as Condition } satisfies EventPattern], ...(c.flags ? { flags: c.flags } : {}) });
   return out;
@@ -1145,6 +1171,17 @@ export const event: HoleFn = (ctx, pos) => {
       const m = pr.make(s.player!);
       if (m !== null) out.push({ end: pr.end, value: [m], ...(pr.batch ? { flags: ['batch'] } : {}) });
       if (m !== null && pr.batch !== true) out.push(...playerOr(ctx, s.player!, pr.end, [m], saysFrom(ctx, s.end, pr.end), 0));
+    }
+    // edh-players-1 (CR 603.2, 111.1, 701.21a; Mirkwood Bats): "you create or sacrifice a token": the one noun phrase is the object of both verbs, each its own event
+    // (a token created, a token sacrificed); either triggers the ability. The two verbs in this order only (the renderer says the pair so, events() in render/evt.ts)
+    for (const w of [P('create or sacrifice'), P('creates or sacrifices')]) {
+      const e = phraseAt(ctx, s.end, w);
+      const a = e >= 0 ? ctx.toks[e]?.norm : undefined;
+      if (a !== 'a' && a !== 'an') continue;
+      for (const n of npAlts(ctx, e + 1)) {
+        if (n.number !== 'singular' || n.head !== 'token') continue;
+        out.push({ end: n.end, value: [{ ev: 'createToken', player: s.player!, token: n.filter }, { ev: 'action', verb: 'sacrifice', actor: s.player!, object: n.filter }] satisfies EventPattern[] });
+      }
     }
   }
   return dedupeEvents(out);

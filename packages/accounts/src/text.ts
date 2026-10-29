@@ -133,7 +133,7 @@ export function invisibleTextProblem(s: string): 'invisible' | null {
 
 // ---- m13 src/store/rules.ts: ids and text every store refuses (m13 design 8.1; review 2) -------------------------------------------------
 
-/** Ids are 1-64 characters of `[0-9A-Za-z_-]` (ULIDs and the like): the file store uses them as file names, so every store refuses others. */
+/** Ids are 1-64 characters of `[0-9A-Za-z_-]` (ULIDs and the like): the mail and export files use them in file names, so every store refuses others. */
 export const STORE_ID = /^[0-9A-Za-z_-]{1,64}$/;
 
 /** NUL, or an unpaired surrogate: text PostgreSQL would refuse (NUL) or silently change (a lone surrogate becomes U+FFFD); null when neither. */

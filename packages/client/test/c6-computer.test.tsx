@@ -9,7 +9,8 @@ import { HIDDEN_DEF, type Action, type Decision, type GameConfig, type GameView 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { LocalConnection } from '../src/connection/LocalConnection';
 import type { GameConnection } from '../src/connection/GameConnection';
-import { ComputerGame, computerDelayMs, fallback, fallbacks, runComputer, type Chooser } from '../src/game/computer';
+import { ComputerGame, attachComputerPacer, computerDelayMs, fallback, fallbacks, runComputer, type Chooser, type ComputerPacer } from '../src/game/computer';
+import { sealConnection } from '../src/game/sealed';
 import { hotSeatConfig, renderGameApp } from './game-fixtures';
 
 afterEach(() => {
@@ -95,6 +96,92 @@ describe('runComputer (C6)', () => {
     });
     await vi.advanceTimersByTimeAsync(5000);
     expect(seen.views).toBe(before); // stopped
+  });
+
+  /** A stand-in for the game screen's PacedConnection: busy until `idle()`. */
+  function fakePacer(busy = true) {
+    const listeners = new Set<() => void>();
+    const state = { busy };
+    const pacer: ComputerPacer = {
+      busy: () => state.busy,
+      subscribe: (l) => {
+        listeners.add(l);
+        return () => listeners.delete(l);
+      },
+    };
+    const set = (b: boolean) => {
+      state.busy = b;
+      for (const l of [...listeners]) l();
+    };
+    return { pacer, listeners, idle: () => set(false), busy: () => set(true) };
+  }
+
+  it('F8: does not act while the board is busy; after it goes idle, acts after the usual pause (not shortened by the stack)', async () => {
+    vi.useFakeTimers();
+    const conn = new LocalConnection(config('c6-pacer', { startingPlayer: 'p2' }), { seats: ['p1'] });
+    const seen = { views: 0 };
+    const board = fakePacer();
+    const stop = runComputer(conn.seat('p2'), { delayMs: 500, seed: 't', choose: checkedAi(seen), pacer: board.pacer });
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(seen.views).toBe(0); // the board is still showing the last change
+    board.idle();
+    await vi.advanceTimersByTimeAsync(499);
+    expect(seen.views).toBe(0); // then the person-like pause
+    await vi.advanceTimersByTimeAsync(1);
+    expect(seen.views).toBe(1);
+    stop();
+    expect(board.listeners.size).toBe(0);
+  });
+
+  it('F8: a board that gets busy during the pause is waited for again; one busy for too long is not waited for forever', async () => {
+    vi.useFakeTimers();
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    const conn = new LocalConnection(config('c6-pacer-stuck', { startingPlayer: 'p2' }), { seats: ['p1'] });
+    const seen = { views: 0 };
+    const board = fakePacer(false);
+    const stop = runComputer(conn.seat('p2'), { delayMs: 500, seed: 't', choose: checkedAi(seen), pacer: board.pacer, maxBoardWaitMs: 8000 });
+    await vi.advanceTimersByTimeAsync(300);
+    board.busy(); // a change started animating during the pause
+    await vi.advanceTimersByTimeAsync(7000);
+    expect(seen.views).toBe(0);
+    await vi.advanceTimersByTimeAsync(1200); // 8 s of waiting (from the end of the pause) then the pause again
+    expect(seen.views).toBe(0);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(seen.views).toBe(1); // acted although the board never went idle
+    expect(debug).toHaveBeenCalled();
+    stop();
+    debug.mockRestore();
+  });
+
+  it('F8: the game screen attaches its pace by the sealed connection; the computers wait for it, and stop waiting once it is detached', async () => {
+    vi.useFakeTimers();
+    const seen = { views: 0 };
+    const game = new ComputerGame(config('c6-attach', { startingPlayer: 'p2' }), 'p1', 'p2', { delayMs: 500, seed: 's', choose: checkedAi(seen) });
+    const off = game.subscribe(() => {});
+    const board = fakePacer();
+    const detach = attachComputerPacer(sealConnection(game), board.pacer);
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(seen.views).toBe(0);
+    board.idle();
+    await vi.advanceTimersByTimeAsync(500);
+    expect(seen.views).toBe(1);
+    board.busy();
+    const n = seen.views;
+    // The human answers until the computer has a decision again.
+    for (let i = 0; i < 20 && game.local.session.state.pending?.player === 'p1'; i++) {
+      await reactAct(async () => {
+        await game.act(human(game));
+      });
+    }
+    expect(game.local.session.state.pending?.player).toBe('p2');
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(seen.views).toBe(n); // its next decision waits for the board too
+    detach();
+    expect(board.listeners.size).toBe(0);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(seen.views).toBeGreaterThan(n); // no board: the delay alone
+    off();
+    expect(attachComputerPacer({}, board.pacer)).toBeTypeOf('function'); // not a game against the computer: nothing to attach
   });
 
   it('passes priority instead when the AI throws, and never acts for the human', async () => {

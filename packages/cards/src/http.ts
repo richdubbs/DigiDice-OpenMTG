@@ -10,7 +10,9 @@
  *    Retry-After above 120 s fails at once instead of retrying early. After a 429 this client doubles
  *    its spacing for the rest of its life, and after a failure it refuses new requests to that host
  *    until the requested wait has passed. Never loops;
- *  - *.scryfall.io (bulk files) has no rate limit but gets the same headers. OpenMTG never requests card images.
+ *  - *.scryfall.io (bulk files) has no rate limit but gets the same headers. OpenMTG never requests card images;
+ *  - a request with no answer in REQUEST_TIMEOUT_MS (30 s) fails with ScryfallTimeoutError, like a network error (no retry; the queue moves on).
+ *    JSON requests must be complete by then; a file download must have started (its body streams for as long as it takes).
  * fetch and the clock are injected so tests can mock them.
  */
 export const USER_AGENT = 'OpenMTG/0.1 (open-source non-commercial fan project)';
@@ -23,6 +25,8 @@ export const MIN_SPACING_SLOW_MS = 600;
 export const MIN_SPACING_MANIFEST_MS = 6000;
 export const RATE_LIMIT_WAIT_MS = 30_000;
 const MAX_RETRY_AFTER_MS = 120_000;
+/** How long a request may go without an answer (a JSON answer: complete; a download: its headers) before it fails like a network error. */
+export const REQUEST_TIMEOUT_MS = 30_000;
 const SLOW_PATHS = ['/cards/named', '/cards/collection', '/cards/search', '/cards/random'];
 
 export interface Clock {
@@ -57,11 +61,25 @@ export class ScryfallRateLimitError extends ScryfallHttpError {
   }
 }
 
+/**
+ * Scryfall did not answer in time. A network error, like fetch's own "fetch failed": not retried, and the message carries ETIMEDOUT so callers that
+ * tell an unreachable server from other failures (the server's update summary) count it as offline.
+ */
+export class ScryfallTimeoutError extends Error {
+  readonly code = 'ETIMEDOUT';
+  constructor(readonly url: string, timeoutMs: number) {
+    super(`Scryfall did not answer within ${timeoutMs / 1000} s (ETIMEDOUT): ${url}`);
+    this.name = 'ScryfallTimeoutError';
+  }
+}
+
 export interface ClientOptions {
   fetch?: typeof fetch;
   clock?: Clock;
   userAgent?: string;
   log?: (message: string) => void;
+  /** REQUEST_TIMEOUT_MS unless given (tests). */
+  timeoutMs?: number;
 }
 
 interface Bucket {
@@ -81,6 +99,26 @@ export function bucketsFor(url: URL): Bucket[] | null {
   return buckets;
 }
 
+/** A request's timeout: armed when the request is sent, disarmed once the part of the answer the caller waits for has arrived. */
+class Deadline {
+  private readonly controller = new AbortController();
+  private timer: ReturnType<typeof setTimeout> | undefined;
+  constructor(private readonly ms: number) {}
+  get signal(): AbortSignal {
+    return this.controller.signal;
+  }
+  get expired(): boolean {
+    return this.controller.signal.aborted;
+  }
+  arm(): void {
+    this.disarm();
+    this.timer = setTimeout(() => this.controller.abort(), this.ms);
+  }
+  disarm(): void {
+    clearTimeout(this.timer);
+  }
+}
+
 function isAllowedHost(host: string): boolean {
   return host === API_HOST || host === 'scryfall.io' || host.endsWith('.scryfall.io');
 }
@@ -91,6 +129,7 @@ export class ScryfallClient {
   private readonly fetchImpl: typeof fetch;
   private readonly clock: Clock;
   private readonly userAgent: string;
+  private readonly timeoutMs: number;
   /** Progress messages (429 waits). Replaceable, because several CardDatabases can share one client. */
   log: (message: string) => void;
   private tail: Promise<unknown> = Promise.resolve();
@@ -104,31 +143,39 @@ export class ScryfallClient {
     this.fetchImpl = options.fetch ?? ((input, init) => fetch(input, init));
     this.clock = options.clock ?? systemClock;
     this.userAgent = options.userAgent ?? USER_AGENT;
+    this.timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
     this.log = options.log ?? (() => {});
   }
 
   /** GET an API URL and parse the JSON body. Throws ScryfallHttpError for non-2xx answers. */
   async getJson<T>(url: string): Promise<T> {
-    const res = await this.execute(url, 'GET', ACCEPT_JSON);
-    return this.parseJson<T>(res, url);
+    return this.requestJson<T>(url, 'GET');
   }
 
   /** POST a JSON body and parse the JSON answer. */
   async postJson<T>(url: string, body: unknown): Promise<T> {
-    const res = await this.execute(url, 'POST', ACCEPT_JSON, JSON.stringify(body));
-    return this.parseJson<T>(res, url);
+    return this.requestJson<T>(url, 'POST', JSON.stringify(body));
   }
 
   /** GET a file (bulk data). The caller streams `res.body`. Throws for non-2xx answers. */
   async download(url: string, accept: string = ACCEPT_GZIP): Promise<Response> {
-    const res = await this.execute(url, 'GET', accept);
+    const res = await this.execute(url, 'GET', accept, undefined, new Deadline(this.timeoutMs));
     if (!res.ok) throw await this.errorFrom(res, url);
     return res;
   }
 
-  private async parseJson<T>(res: Response, url: string): Promise<T> {
-    if (!res.ok) throw await this.errorFrom(res, url);
-    return (await res.json()) as T;
+  /** A JSON request whose answer, body included, must arrive within the timeout. */
+  private async requestJson<T>(url: string, method: 'GET' | 'POST', body?: string): Promise<T> {
+    const deadline = new Deadline(this.timeoutMs);
+    const res = await this.execute(url, method, ACCEPT_JSON, body, deadline, true);
+    try {
+      if (!res.ok) throw await this.errorFrom(res, url);
+      return (await res.json()) as T;
+    } catch (e) {
+      throw deadline.expired ? new ScryfallTimeoutError(url, this.timeoutMs) : e;
+    } finally {
+      deadline.disarm();
+    }
   }
 
   private async errorFrom(res: Response, url: string): Promise<ScryfallHttpError> {
@@ -144,7 +191,11 @@ export class ScryfallClient {
     return new ScryfallHttpError(`Scryfall request failed: HTTP ${res.status} ${url}${details ? ` (${details})` : ''}`, res.status, url, code);
   }
 
-  private execute(rawUrl: string, method: 'GET' | 'POST', accept: string, body?: string): Promise<Response> {
+  /**
+   * `deadline` aborts the request when the timeout runs out. It is armed when the request is sent (after its turn in the queue, again for the retry after
+   * a 429) and disarmed when the answer's headers arrive, unless `untilBody`: then the caller disarms it once it has read the body.
+   */
+  private execute(rawUrl: string, method: 'GET' | 'POST', accept: string, body: string | undefined, deadline: Deadline, untilBody = false): Promise<Response> {
     let url: URL;
     try {
       url = new URL(rawUrl);
@@ -154,7 +205,7 @@ export class ScryfallClient {
     if (url.protocol !== 'https:') return Promise.reject(new Error(`Refusing non-HTTPS URL: ${rawUrl}`));
     if (!isAllowedHost(url.hostname)) return Promise.reject(new Error(`Refusing host ${url.hostname}: only api.scryfall.com and *.scryfall.io are allowed`));
     const buckets = bucketsFor(url);
-    const run = () => this.attempt(url, method, accept, body, buckets);
+    const run = () => this.attempt(url, method, accept, body, buckets, deadline, untilBody);
     if (!buckets) return run();
     // One queue for api.scryfall.com: requests are sent strictly one after another.
     const result = this.tail.then(run);
@@ -162,7 +213,7 @@ export class ScryfallClient {
     return result;
   }
 
-  private async attempt(url: URL, method: 'GET' | 'POST', accept: string, body: string | undefined, buckets: Bucket[] | null): Promise<Response> {
+  private async attempt(url: URL, method: 'GET' | 'POST', accept: string, body: string | undefined, buckets: Bucket[] | null, deadline: Deadline, untilBody: boolean): Promise<Response> {
     const headers: Record<string, string> = { 'User-Agent': this.userAgent, Accept: accept };
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     const blocked = this.blockedUntil.get(url.hostname);
@@ -180,10 +231,22 @@ export class ScryfallClient {
     for (let attempt = 0; ; attempt++) {
       if (buckets) await this.waitTurn(buckets);
       this.requestCount++;
-      const init: RequestInit = { method, headers };
+      const init: RequestInit = { method, headers, signal: deadline.signal };
       if (body !== undefined) init.body = body;
-      const res = await this.fetchImpl(url.toString(), init);
-      if (res.status !== 429) return res;
+      deadline.arm();
+      let res: Response;
+      try {
+        res = await this.fetchImpl(url.toString(), init);
+      } catch (e) {
+        deadline.disarm();
+        // a timeout is a network error: no retry, and the queue moves on to the next request (execute)
+        throw deadline.expired ? new ScryfallTimeoutError(url.toString(), this.timeoutMs) : e;
+      }
+      if (res.status !== 429) {
+        if (!untilBody) deadline.disarm();
+        return res;
+      }
+      deadline.disarm(); // the wait below is ours, not Scryfall's
       this.spacingFactor = 2; // "then slow down"
       const retryAfter = Number(res.headers.get('retry-after'));
       const retryAfterMs = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 0;

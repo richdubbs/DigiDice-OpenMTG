@@ -151,6 +151,8 @@ export interface ExecCtx {
    * read it instead of the stack object (design 8.6: never read the stack object after makeCtx): CR 701.27f compares it with the permanent's timestamp.
    */
   stackTimestamp?: number;
+  /** edh-perms-1 (CR 614.6, 603.2e): set while a replacement makes tokens INSTEAD of a creation that entered them tapped: the replacing tokens enter tapped too (not "becomes tapped"). */
+  insteadTapped?: true;
   controller: PlayerId;
   /** The effective program: chosen modes' programs concatenated in printed order (CR 700.2d), then the ability's own steps. */
   program: EffectProgram;

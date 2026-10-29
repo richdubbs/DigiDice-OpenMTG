@@ -6,10 +6,12 @@
  * its replay is saved then (replays/live.ts; Settings, About and the other screens the game's Menu opens keep it on the stack, so they do not). Soon after the page opens, the games
  * a closed tab or a crash left unfinished become abandoned replays (replays/record.ts), where the browser has IndexedDB to keep them in. A replay being
  * watched whose route leaves the back stack is disposed then: its clock, its background indexing and its check stop (replays/viewer/controllerOf.ts,
- * which brings no replay code into this chunk).
+ * which brings no replay code into this chunk). Review 2026-10-26 F1: then a game running in the game worker is stopped and its worker closed
+ * (connection/closeGame.ts, a leaf module).
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { sfx } from '../audio/sfx';
+import { closeGame } from '../connection/closeGame';
 import type { GameConnection } from '../connection/GameConnection';
 import type { PlayerSleeves } from '../board/sleeves';
 import type { HostedLink } from '../hosted/HostedLink';
@@ -81,6 +83,8 @@ function scheduleReplaySweep(): void {
   sweepScheduled = true;
   setTimeout(() => {
     void import('../replays/record').then((m) => m.sweepOnStart()).catch((e: unknown) => console.error('[Replays] start-up sweep', e));
+    // The library carried over to the local server's stores, for the Godot app that replaces the desktop app (desktop/carryOver.ts).
+    void import('../desktop/carryOver').then((m) => m.carryOverOnStart()).catch((e: unknown) => console.error('[OpenMTG] carrying the library over', e));
   }, 2000);
 }
 
@@ -101,6 +105,7 @@ export function NavProvider({ initial = { screen: 'home' }, children }: { initia
       if (still.has(c)) continue;
       leftGameScreen(c);
       replayControllerOf(c)?.dispose();
+      closeGame(c);
     }
   }, []);
   useEffect(scheduleReplaySweep, []);

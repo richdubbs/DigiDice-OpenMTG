@@ -233,7 +233,10 @@ function nativeManaGaps(v: Rec): string[] {
   const zone = v['zone'];
   const offField = Array.isArray(zone) && !(zone.length === 1 && zone[0] === 'battlefield');
   const attested = v['onlyIf'] !== undefined && JSON.stringify(v['onlyIf']).includes('"cond":"ask"'); // FAST5X E5
-  if (attested || offField) out.push('feature:mana.activation');
+  // edh-mana-keywords-1 (CR 113.6, 605.1a): a mana ability that works in the hand only ("Exile this card from your hand: Add {G}.") is run by rules/mana.ts#manaAbilityDenial
+  const handOnly = Array.isArray(zone) && zone.length === 1 && zone[0] === 'hand';
+  if (attested || (offField && !handOnly)) out.push('feature:mana.activation');
+  if (handOnly) out.push('feature:mana.activation.hand');
   const cost = rec(v['cost']);
   const mana = Array.isArray(cost['mana']) ? cost['mana'] : [];
   const other = Array.isArray(cost['other']) ? cost['other'] : [];
@@ -693,6 +696,7 @@ function spellCopyException(m: unknown): boolean {
 function stepForms(v: Rec): string[] {
   switch (v['op']) {
     case 'repeat': return v['again'] === true ? ['op:repeat.again'] : []; // std-cardcopy-1 (CR 608.2c): "repeat this process" with no count
+    case 'changeTarget': return v['to'] !== undefined ? ['op:changeTarget.to'] : []; // edh-cast-1 (CR 115.7): "change a target of target spell or ability to ~"
     // p2-coinflip-1 (CR 705.1-705.2): "flip a coin until you lose a flip"; p2-coinflip-3 (CR 705.2): flips called for "for each flip you win"
     case 'flipCoin': return [...(v['untilLose'] === true ? ['op:flipCoin.untilLose'] : []), ...(v['called'] === true ? ['op:flipCoin.called'] : [])];
     case 'changeFace':
@@ -791,7 +795,8 @@ function stepForms(v: Rec): string[] {
       ];
     // p2-zone-moves-1 (CR 121.2, 608.2e): "each player discards their hand, then draws that many cards": the count read for each drawing player
     case 'draw':
-      return rec(v['who'])['ref'] === 'each' && JSON.stringify(v['count'] ?? null).includes('"ref":"iterating"') ? ['op:draw.perPlayerCount'] : [];
+      return [...(rec(v['who'])['ref'] === 'each' && JSON.stringify(v['count'] ?? null).includes('"ref":"iterating"') ? ['op:draw.perPlayerCount'] : []),
+        ...(v['upTo'] === true ? ['op:draw.upTo'] : [])]; // edh-players-1 (CR 121.1, 608.2d)
     case 'discard':
       return [...(v['cantAs'] !== undefined ? ['op:discard.cantAs'] : []), // C6 (CR 101.3)
         ...(rec(v['who'])['ref'] === 'each' && JSON.stringify(v['count'] ?? null).includes('"ref":"iterating"') ? ['op:discard.perPlayerCount'] : [])]; // std-rx30 (CR 608.2e)
@@ -807,7 +812,7 @@ function stepForms(v: Rec): string[] {
     case 'addMana':
       // CMD3: "Add {W} or one mana of the chosen color" (effects/handlers/cards-mana.ts#OP_FORMS)
       // std-copy-3 (CR 106.6, 603.2): "When that mana is spent to cast ..." (rules/mana.ts, actions/cast.ts#manaSpentTriggers): fixed mana with no restriction only
-      return [...(v['keep'] !== undefined ? [`op:addMana.keep${String(v['keep'])[0]!.toUpperCase()}${String(v['keep']).slice(1)}`] : []), ...(rec(v['dynamic'])['or'] !== undefined ? ['op:addMana.chosenOr'] : []),
+      return [...(v['keep'] !== undefined ? [`op:addMana.keep${String(v['keep'])[0]!.toUpperCase()}${String(v['keep']).slice(1)}`] : []), ...(rec(v['dynamic'])['or'] !== undefined ? ['op:addMana.chosenOr'] : []), ...(rec(v['dynamic'])['oneType'] === true ? ['op:addMana.couldProduce.oneType'] : []), // edh-mana-keywords-1
         ...(v['whenSpent'] !== undefined ? [(v['units'] !== undefined || (v['dynamic'] as { kind?: string } | undefined)?.kind === 'commanderIdentity') && v['restriction'] === undefined ? 'feature:mana.whenSpent' : 'feature:mana.whenSpent.other'] : [])];
     // FAST4 T31 INTERFACE CHANGE (additive): "remove up to N counters" (effects/handlers/counters.ts#OP_FORMS)
     case 'removeCounters':

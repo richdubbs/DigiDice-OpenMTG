@@ -26,15 +26,17 @@
  * Browser code: engine functions and the client's replay modules only.
  */
 import {
-  RECORDING_MAX_PATCH_RUN, REPLAY_FORMAT, REPLAY_FORMAT_VERSION, REPLAY_LIMITS, cleanText, currentEngine, diffJson, readReplayFile, recordingFrameView,
-  type CardDef, type GameEvent, type GameResult, type GameView, type PlayerId, type RecordingFrame, type RecordingKeyView, type ReplayApp,
-  type ReplayEnd, type ReplayEngine, type ReplayFile, type ReplayPlayer,
+  cleanText, currentEngine, type CardDef, type GameEvent, type GameView, type PlayerId, type RecordingFrame, type RecordingKeyView, type ReplayApp,
+  type ReplayEngine, type ReplayFile,
 } from '@openmtg/engine';
+import {
+  addFrame, checkSharedGame as checkShared, keyless, onlineRecordingFile as recordingFile, playersOf, rebuildFrames, retimed, type RecordingSoFar,
+  type SharedGameCheck,
+} from '@openmtg/play/replay/recording';
 import { REPLAY_GAME_MAX_BYTES } from '@openmtg/server/online';
 import type { RemoteConnection } from '../connection/RemoteConnection';
 import type { DbOp, DbRow, ReplayDb } from '../replays/db';
 import type { ReplayEnv } from '../replays/env';
-import { KEY_FRAME_TURNS } from '../replays/fallback';
 import { defaultTitle, newReplayId } from '../replays/file';
 import type { LibraryEntry } from '../replays/library';
 import type { LiveReplay, LiveReplayState } from '../replays/live';
@@ -77,29 +79,6 @@ export const frameKey = (id: string, n: number): string => `${id}~${String(n).pa
 
 const iso = (ms: number): string => new Date(ms).toISOString();
 
-const keyless = (v: GameView): { key: RecordingKeyView; defs: Record<string, CardDef> } => {
-  const { defs, ...key } = v;
-  return { key, defs };
-};
-
-/** The seats of a view as a replay lists them: every online seat is a person. */
-function playersOf(view: Pick<GameView, 'players'>): ReplayPlayer[] {
-  return view.players.map((p) => ({ id: p.id, name: cleanText(p.name).trim().slice(0, 64) || p.id, kind: 'person' }));
-}
-
-/** How the game ended for this player, from the last view (CR 104; the rule of replays/file.ts `endingOf`, on a view). */
-function endingOfView(view: RecordingKeyView, me: PlayerId): { ended: ReplayEnd; result: GameResult | null } {
-  if (view.result) {
-    const out = view.players.filter((p) => p.hasLost);
-    const withOrder = out.filter((p) => p.left !== undefined);
-    const last = withOrder.length > 0 ? withOrder.reduce((a, b) => (b.left!.order > a.left!.order ? b : a)) : null;
-    const conceded = last ? last.conceded : out.some((p) => p.conceded);
-    return { ended: conceded ? 'conceded' : 'finished', result: { winner: view.result.winner, reason: view.result.reason } };
-  }
-  // Left before the end: conceded (a guest's Leave concedes, CR 104.3a), or simply gone (a lost link, a closed page).
-  return { ended: view.players.find((p) => p.id === me)?.conceded ? 'conceded' : 'abandoned', result: null };
-}
-
 /** What a recording is made of. */
 interface Recorded {
   head: OnlineHeadRow;
@@ -114,89 +93,23 @@ interface Recorded {
 
 /** The recording file (kind 'recording', mode 'onlineGuest') of what was recorded; null without a frame. */
 export function onlineRecordingFile(r: Recorded): ReplayFile | null {
-  const last = r.last;
-  if (!last || r.frames.length === 0) return null;
-  const players = playersOf(last);
-  const { ended, result } = endingOfView(last, r.head.me);
-  return {
-    format: REPLAY_FORMAT,
-    formatVersion: REPLAY_FORMAT_VERSION,
-    kind: 'recording',
-    id: r.head.id,
-    title: r.title ?? defaultTitle(players, r.head.format),
-    createdAt: r.head.createdAt,
-    app: { ...r.head.app },
-    engine: { ...r.head.engine },
-    game: {
-      mode: 'onlineGuest',
-      format: r.head.format,
-      players,
-      savedBy: r.head.me,
-      ended,
-      result,
-      turns: last.turn.number,
-      actions: r.frames[r.frames.length - 1]!.seq,
-      startedAt: r.head.createdAt,
-      endedAt: iso(Math.max(r.endedAt, r.head.startMs)),
-    },
-    reveal: { policy: 'own', agreed: r.agree ? [r.head.me] : [] },
-    recording: { viewer: r.head.me, defs: { ...r.defs }, frames: r.frames.map((f) => ({ ...f })) },
-  };
+  if (!r.last) return null;
+  const h = r.head;
+  return recordingFile({
+    id: h.id, startMs: h.startMs, createdAt: h.createdAt, me: h.me, format: h.format, app: h.app, engine: h.engine, frames: r.frames, defs: r.defs,
+    last: r.last, agree: r.agree, endedAt: r.endedAt, title: r.title ?? defaultTitle(playersOf(r.last), h.format),
+  });
 }
 
-/** The bytes of base64 text (atob: every browser and Node). Never throws: null for text that is not base64. */
-function base64Bytes(text: string): Uint8Array | null {
-  let bin: string;
-  try {
-    bin = atob(text);
-  } catch {
-    return null;
-  }
-  const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-  return out;
-}
-
-export type SharedGameCheck = { ok: true; file: ReplayFile } | { ok: false; reason: string };
+export type { SharedGameCheck };
 
 /**
  * The game the host shared (`replayGame`), checked before it is kept (never throws): base64 of at most REPLAY_GAME_MAX_BYTES, a replay file the engine
  * reads (bounded expansion, the format's shape), a game replay, and the game this player saw: the same seats, saved by this player, at least as many
  * actions as the last view, the same result when the last view has one.
  */
-export async function checkSharedGame(data: unknown, me: PlayerId, seen: RecordingKeyView | null, lastSeq: number): Promise<SharedGameCheck> {
-  if (typeof data !== 'string' || data.length === 0 || data.length > 4 * Math.ceil(REPLAY_GAME_MAX_BYTES / 3)) return { ok: false, reason: 'it is not a replay of the size a host sends' };
-  const bytes = base64Bytes(data);
-  if (!bytes) return { ok: false, reason: 'it is not base64 text' };
-  let read: Awaited<ReturnType<typeof readReplayFile>>;
-  try {
-    read = await readReplayFile(bytes, { ...REPLAY_LIMITS, maxFileBytes: REPLAY_GAME_MAX_BYTES, maxTextBytes: 64 * 1024 * 1024 });
-  } catch (e) {
-    return { ok: false, reason: e instanceof Error ? e.message : String(e) };
-  }
-  if (!read.ok) return { ok: false, reason: read.error.message };
-  const file = read.value;
-  if (file.kind !== 'game' || !file.play) return { ok: false, reason: 'it is not a game replay' };
-  if (file.game.savedBy !== me) return { ok: false, reason: 'it was made for another player' };
-  if (seen) {
-    const ids = (ps: readonly { id: string; name: string }[]) => ps.map((p) => `${p.id}\u0000${cleanText(p.name).trim().slice(0, 64) || p.id}`).sort().join('\u0001');
-    if (ids(file.game.players) !== ids(seen.players)) return { ok: false, reason: 'its players are not the ones of this game' };
-    if (seen.result && (file.game.result?.winner ?? null) !== seen.result.winner) return { ok: false, reason: 'its result is not the one of this game' };
-  }
-  if (file.play.actions.length < lastSeq) return { ok: false, reason: 'it holds less of the game than this player saw' };
-  return { ok: true, file };
-}
-
-/**
- * A guest's recording, retimed to the host's times (frame `seq` s after s actions: the time of action s), as the fallback of the game it now belongs to
- * when this build cannot make the exact one (design 5: the replay takes it over where the game no longer plays the same).
- */
-function retimed(frames: readonly RecordingFrame[], times: readonly number[]): RecordingFrame[] {
-  let t = 0;
-  return frames.map((f) => {
-    t = Math.max(t, f.seq <= 0 ? 0 : times[f.seq - 1] ?? t);
-    return { ...f, t };
-  });
+export function checkSharedGame(data: unknown, me: PlayerId, seen: RecordingKeyView | null, lastSeq: number): Promise<SharedGameCheck> {
+  return checkShared(data, me, seen, lastSeq, REPLAY_GAME_MAX_BYTES);
 }
 
 /**
@@ -253,17 +166,8 @@ export async function readOnlineRecords(db: ReplayDb): Promise<Map<string, { hea
 
 /** The frames' views, rebuilt and checked as playback would (engine `recordingFrameView`): the frames up to the first that does not fit, and the last view. */
 function rebuild(me: PlayerId, rows: readonly OnlineFrameRow[]): { frames: RecordingFrame[]; defs: Record<string, CardDef>; last: RecordingKeyView | null } {
-  const frames: RecordingFrame[] = [];
-  const defs: Record<string, CardDef> = {};
-  let last: RecordingKeyView | null = null;
-  for (const row of rows) {
-    for (const [k, d] of Object.entries(row.defs ?? {})) if (!Object.hasOwn(defs, k)) defs[k] = d;
-    const v = recordingFrameView(last, row.frame, { viewer: me, defs });
-    if (!v.ok || (frames.length > 0 && row.frame.seq <= frames[frames.length - 1]!.seq)) break;
-    frames.push(row.frame);
-    last = v.value;
-  }
-  return { frames, defs, last };
+  const r = rebuildFrames(me, rows);
+  return { frames: r.frames, defs: r.defs, last: r.prev };
 }
 
 /** One frame waiting for the recorder to be ready (the connection's change, as it came). */
@@ -499,31 +403,12 @@ export class OnlineGuestRecorder {
   }
 
   private record(s: Shown): void {
-    const lastSeq = this.frames[this.frames.length - 1]?.seq ?? -1;
-    if (s.seq <= lastSeq) return;
-    const { key, defs } = keyless(s.view);
-    const fresh: Record<string, CardDef> = {};
-    for (const [k, d] of Object.entries(defs)) {
-      if (Object.hasOwn(this.defs, k)) continue;
-      this.defs[k] = d;
-      fresh[k] = d;
-    }
-    const t = Math.max(0, s.at - this.head.startMs, this.frames[this.frames.length - 1]?.t ?? 0);
-    const prev = this.prev;
-    const turnStarted = prev !== null && key.turn.number !== prev.turn.number && (key.turn.number - 1) % KEY_FRAME_TURNS === 0;
-    const gap = lastSeq >= 0 && s.seq !== lastSeq + 1;
-    const events = [...s.events];
-    let frame: RecordingFrame;
-    if (prev === null || turnStarted || gap || this.run >= RECORDING_MAX_PATCH_RUN) {
-      frame = { seq: s.seq, t, key, events };
-      this.run = 0;
-    } else {
-      frame = { seq: s.seq, t, patch: diffJson(prev, key), events };
-      this.run++;
-    }
-    this.frames.push(frame);
-    this.prev = key;
-    const row: OnlineFrameRow = { key: frameKey(this.id, this.n), type: ONLINE_FRAME, id: this.id, n: this.n, frame, defs: fresh };
+    const so: RecordingSoFar = { frames: this.frames, defs: this.defs, prev: this.prev, run: this.run };
+    const added = addFrame(so, s, this.head.startMs);
+    if (!added) return;
+    this.prev = so.prev;
+    this.run = so.run;
+    const row: OnlineFrameRow = { key: frameKey(this.id, this.n), type: ONLINE_FRAME, id: this.id, n: this.n, frame: added.frame, defs: added.defs };
     this.n++;
     this.keys.add(row.key);
     this.persist([{ store: 'inProgress', put: row }]);

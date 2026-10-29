@@ -208,6 +208,9 @@ function eventCondition(t: TriggeredAbilityDef['trigger'], st: RenderState): str
   const during = (c: Condition): string => (mainPhase(c) ? ' during your main phase' : c.cond === 'turnOf' && c.step === undefined ? ` during ${turnOf(c.whose, st)}` : ` while ${K.cond(c, st)}`);
   if (t.first === 'turn') {
     if (w?.cond === 'turnOf' && w.step === undefined && w.whose === 'you') return ' for the first time during each of your turns';
+    // edh-players-1, ported from the stopped p2-trigger-events-2 (CR 603.2, 500.1; Valgavoth, Harrower of Souls): "for the first time during each of their turns", the turns of the event's player
+    const eventPlayer = (x: unknown): boolean => typeof x === 'object' && x !== null && (x as { ref?: string }).ref === 'event' && (x as { role?: string }).role === 'player';
+    if (w?.cond === 'turnOf' && w.step === undefined && eventPlayer(w.whose)) return ' for the first time during each of their turns';
     return ` for the first time each turn${w !== undefined ? during(w) : ''}`;
   }
   return w !== undefined ? during(w) : '';
@@ -245,6 +248,14 @@ function firstSpellOpponentsTurn(t: TriggeredAbilityDef['trigger']): boolean {
   const w = t.while;
   return t.on.length === 1 && a?.ev === 'cast' && a.player === 'you' && a.nth === 1 && Object.keys(a).length === 3 && t.batch !== true && t.first === undefined
     && w?.cond === 'turnOf' && w.whose === 'opponent' && w.step === undefined && Object.keys(w).length === 2;
+}
+
+/** edh-players-1, ported from the stopped p2-trigger-events-2 (CR 121.2, 601.2i): a lone draw or cast that is the player's Nth this turn (`nth`), while it's that player's own turn (the event's player). */
+function nthDuringTheirTurn(t: TriggeredAbilityDef['trigger']): boolean {
+  const [a] = t.on;
+  const w = t.while as { cond?: string; whose?: { ref?: string; role?: string }; step?: unknown } | undefined;
+  return t.on.length === 1 && (a?.ev === 'draw' || a?.ev === 'cast') && a.nth !== undefined && (a.ev !== 'cast' || a.nthMatching === undefined) && t.batch !== true && t.first === undefined
+    && w?.cond === 'turnOf' && w.step === undefined && typeof w.whose === 'object' && w.whose?.ref === 'event' && w.whose.role === 'player';
 }
 
 /** Key order does not matter in a comparison of plain data. */
@@ -381,6 +392,9 @@ function triggered(def: TriggeredAbilityDef, st: RenderState): string {
   const events = mostLife !== null ? `${K.events([mostLife], st, 'present')} the player with the most life or tied for most life`
     : notFirst !== null ? `${K.events([notFirst], st, 'present')}${eventCondition(def.trigger, st)} other than your first spell that turn`
     : firstSpellOpponentsTurn(def.trigger) ? `${K.events(def.trigger.on, st, 'present').replace(/ each turn$/, '')} during each opponent's turn`
+    // edh-players-1, ported from p2-trigger-events-2 (CR 121.2, 601.2i; The Council of Four; family nth-during-their-turn): "a player draws their second card during their
+    // turn": the Nth of the turn named by "during their turn" alone, without "each turn"
+    : nthDuringTheirTurn(def.trigger) ? alt(K.events(def.trigger.on, st, 'present') + eventCondition(def.trigger, st), `${K.events(def.trigger.on, st, 'present').replace(/ each turn$/, '')}${eventCondition(def.trigger, st)}`)
     : K.events(def.trigger.on, st, 'present', { batch: def.trigger.batch === true, ...(def.trigger.wholeBatch === true ? { wholeBatch: true } : {}) }) + eventCondition(def.trigger, st);
   markTriggerRoles(st);
   // "When" for the object's own enters/dies/leaves, "Whenever" for everything that can happen more than once

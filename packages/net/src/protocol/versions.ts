@@ -16,8 +16,9 @@ import { PROTOCOL_VERSION, type Versions } from './messages';
 export { fingerprintDirectory } from './fingerprint';
 
 /**
- * RPL-0 review: the engine build a bundled server was made with. A bundle (scripts/build-exe.mjs, build-installer.mjs) ships no engine sources to hash,
- * so the build script defines the fingerprint it computed for the bundle and for the browser's build alike; undefined when not bundled.
+ * RPL-0 review: the engine build a bundled server was made with. The installer's bundle (scripts/build-installer.mjs: the Electron main process with the
+ * server; there is no standalone exe) ships no engine sources to hash, so the build script defines the fingerprint it computed for the bundle and for
+ * the browser's build alike; undefined when not bundled.
  */
 declare const __OPENMTG_SERVER_ENGINE_BUILD__: string | undefined;
 const BUNDLED_ENGINE_BUILD: string | undefined = typeof __OPENMTG_SERVER_ENGINE_BUILD__ === 'string' ? __OPENMTG_SERVER_ENGINE_BUILD__ : undefined;

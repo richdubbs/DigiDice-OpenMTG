@@ -181,7 +181,23 @@ function placeUnseen(events: readonly GameEvent[], from: GameView, to: GameView)
   return changed ? out : events;
 }
 
+/**
+ * The last plan made for each events array (an EventBatch's events are a fresh, never-changed array per change), with the views it was made for: the
+ * game screen sizes a change's deadline with its plan and the animator then plays the same change (GameScreen `deadlineMs`, Animator.play), so the
+ * second call gets the same Plan object instead of planning again. Callers must not change a plan.
+ */
+const plans = new WeakMap<readonly GameEvent[], { from: GameView; to: GameView; plan: Plan }>();
+
+/** What the board shows for one change (`batch`, the change's events, from `from` to `to`). The same Plan object for the same three arguments. */
 export function planBatch(batch: readonly GameEvent[], from: GameView, to: GameView): Plan {
+  const known = plans.get(batch);
+  if (known && known.from === from && known.to === to) return known.plan;
+  const plan = makePlan(batch, from, to);
+  plans.set(batch, { from, to, plan });
+  return plan;
+}
+
+function makePlan(batch: readonly GameEvent[], from: GameView, to: GameView): Plan {
   const events = placeUnseen(batch, from, to);
   const a: StepA[] = [];
   const b: PlanB = { moves: [], tokens: [], turn: null, attackers: [], blocks: [], gameOver: null, lost: [], left: [] };

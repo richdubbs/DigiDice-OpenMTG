@@ -15,16 +15,16 @@ const git = (...args: string[]) => execFileSync('git', args, { cwd: repoRoot, en
 /**
  * RPL-0 (replays design 5): the engine build of this client, `__OPENMTG_ENGINE_BUILD__` (src/engine-build.ts). It is packages/net's fingerprint of the
  * engine's sources, the value the local server's handshake sends (`localEngineBuild`, protocol/versions.ts), computed when the build is made; null when
- * the sources cannot be read. A replay records it, and one made under the same build is exact by construction. The build scripts that also bundle the
- * server (scripts/build-exe.mjs, build-installer.mjs) compute it once and hand it here as `OPENMTG_ENGINE_BUILD`, so the page and the bundled server
- * send the same value. The client's tests use a fixed value instead (vitest.config.ts).
+ * the sources cannot be read. A replay records it, and one made under the same build is exact by construction. The installer build (scripts/build-installer.mjs),
+ * which bundles the server into the Electron main process, computes it once and hands it here as `OPENMTG_ENGINE_BUILD`, so the page and the bundled
+ * server send the same value (there is no standalone exe build any more). The client's tests use a fixed value instead (vitest.config.ts).
  */
 const GIVEN_BUILD = process.env['OPENMTG_ENGINE_BUILD'];
 export const ENGINE_BUILD: string | null = GIVEN_BUILD !== undefined && /^[0-9a-f]{64}$/.test(GIVEN_BUILD) ? GIVEN_BUILD : engineBuildFrom(import.meta.url);
 
 /**
  * RPL-0 review (replays design 4): the app a replay records it was saved by (`ReplayApp`, `__OPENMTG_APP__`, src/engine-build.ts). The version is what
- * the local server reports as the app's (`OPENMTG_APP_VERSION` when a build script sets it: the desktop installer's version, the exe's), else the root
+ * the local server reports as the app's (`OPENMTG_APP_VERSION` when the installer build sets it: the desktop app's version), else the root
  * package.json's; the commit is the short hash of the checkout's HEAD, null outside a git checkout.
  */
 export function appRecord(): { version: string; commit: string | null } {
@@ -70,7 +70,8 @@ export default defineConfig(({ command }) => ({
     strictPort: true,
     // changeOrigin: the server accepts loopback Host headers only (DNS rebinding protection). ws: the online socket (/api/online/socket, milestone 9)
     // goes through the same proxy; the server accepts this page's origin only when started with --allow-origin http://127.0.0.1:5173 (scripts/dev.mjs).
-    proxy: { '/api': { target: SERVER, changeOrigin: true, ws: true } },
+    // Godot plan phase 1: the table channel (/table, Settings "Run the game in the server") too, with the same origin rule.
+    proxy: { '/api': { target: SERVER, changeOrigin: true, ws: true }, '^/table($|\?)': { target: SERVER, changeOrigin: true, ws: true } },
   },
   // The rules engine is one chunk of about 1.2 MB, loaded with the first screen that needs it (app/App.tsx loads screens lazily); Home does not wait for it.
   build: { outDir: 'dist', emptyOutDir: true, sourcemap: true, chunkSizeWarningLimit: 1400 },

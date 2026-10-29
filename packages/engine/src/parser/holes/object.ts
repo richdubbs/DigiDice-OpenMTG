@@ -1017,6 +1017,7 @@ export const otherTargets: HoleFn = (ctx, pos) => {
 };
 
 const W_THE_REST = [P('the rest'), P('the other')];
+const W_ALL_OTHER_REVEALED = P('all other cards revealed this way'); // p2-zone-moves-2
 const W_REST_OF_EXILED = P('the rest of the exiled cards'); // std-library-3
 const W_REST_OF_REVEALED = P('the rest of the revealed cards'); // pc-zones-1
 // std-rh (CR 608.2c, 701.20e; Genesis Wave): "all cards revealed this way that weren't put onto the battlefield" is the cards of the revealed group that a choice among it did not
@@ -1042,6 +1043,10 @@ export const rest: HoleFn = (ctx, pos) => {
   // pc-zones-1 (CR 608.2c, 701.20a): "the rest of the revealed cards" is "the rest" again (Kruphix's Insight): the cards of the revealed group a choice among it left
   const revealed = phraseAt(ctx, pos, W_REST_OF_REVEALED);
   if (revealed >= 0) out.push({ end: revealed, value: anaphorObj({ sort: 'set', number: 'plural', head: 'rest', text: 'the rest of the revealed cards' }) });
+  // p2-zone-moves-2 (CR 608.2c, 701.20a): "Put that card into your hand and all other cards revealed this way into your graveyard." (Hermit Druid): the rest of a
+  // group a reveal revealed, the card the sentence named first left out (the same anaphor as "the rest")
+  const others = phraseAt(ctx, pos, W_ALL_OTHER_REVEALED);
+  if (others >= 0) out.push({ end: others, value: anaphorObj({ sort: 'set', number: 'plural', head: 'rest', text: 'all other cards revealed this way' }) });
   const notPut = phraseAt(ctx, pos, W_REST_NOT_PUT); // std-rh
   if (notPut >= 0) out.push({ end: notPut, value: anaphorObj({ sort: 'set', number: 'plural', head: 'rest-not-put', text: "all cards revealed this way that weren't put onto the battlefield" }) });
   return out;

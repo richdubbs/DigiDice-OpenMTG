@@ -32,10 +32,10 @@ function settle(s0: GameState, o: Opts = {}): GameState {
   return s;
 }
 const cast = (s: GameState, name: string, o: Opts = {}, player = 'p1'): GameState => settle(act(s, { type: 'cast', player, card: find(s, name, 'hand', player) }), o);
-/** Pass priority until the stack is empty, answering as `settle` does. */
+/** Pass priority until the stack is empty or the game is over, answering as `settle` does. */
 function resolveAll(s0: GameState, o: Opts = {}): GameState {
   let s = s0;
-  for (let i = 0; i < 40 && (s.zones.stack.length > 0 || (s.pending && s.pending.kind !== 'priority')); i++) {
+  for (let i = 0; i < 40 && !s.result && (s.zones.stack.length > 0 || (s.pending && s.pending.kind !== 'priority')); i++) {
     if (s.pending?.kind === 'priority') { s = passBoth(s); continue; }
     const before = s;
     s = settle(s, o);
@@ -370,5 +370,29 @@ describe('CR 601.2i, 603.2: "Whenever you cast a spell during your turn other th
     expect(life(s, 'p1')).toBe(l + 1);
     s = resolveAll(cast(s, 'Test Spark'));
     expect(life(s, 'p1')).toBe(l + 2);
+  });
+});
+
+describe('review 2026-10-26 F14 (CR 603.2c, 603.4): a resolution that reads the history twice is still ONE time for "if it\'s the first time"', () => {
+  const HEIR = card('Test Steadfast Heir', 'Creature — Human Soldier', 'Whenever one or more counters are put on a creature you control, if it\'s the first time counters have been put on that creature this turn, put a +1/+1 counter on that creature.', '{0}', ['2', '2']);
+  const TAPPER = card('Test Tap Squire', 'Creature — Human', '{T}: You gain 1 life.', '{0}', ['1', '1']);
+  // each "if you gained life this turn" brings the history up to date in the middle of the resolution (triggers/stack.ts#syncHistory): the second one after the
+  // first counter was recorded, so it starts in the middle of the resolution's batch
+  const TWICE = card('Test Twice Blessed', 'Sorcery', 'Put a +1/+1 counter on target creature. Put a +1/+1 counter on that creature if you gained life this turn. You gain 1 life if you gained life this turn.', '{0}');
+  const DEFS = [HEIR, TAPPER, TWICE, BEAR];
+  it('the cards are automated', () => {
+    expect(manualParts(TWICE)).toEqual([]);
+  });
+  it('both counters of the one resolution are one batch of the history: the Heir sees the first time and adds one', () => {
+    let s = ready(scenario(BASICS, { p1: { hand: ['Test Twice Blessed'], battlefield: ['Test Steadfast Heir', 'Test Tap Squire', 'Test Grove Bear'] }, defs: DEFS }));
+    const squire = named(s, 'Test Tap Squire')[0]!;
+    const bear = named(s, 'Test Grove Bear')[0]!;
+    s = resolveAll(settle(act(s, { type: 'activate', player: 'p1', source: squire, ability: 'p:0:0' })));
+    const lifeBefore = life(s, 'p1');
+    s = resolveAll(cast(s, 'Test Twice Blessed', { targets: [[obj(bear)]] }));
+    expect(life(s, 'p1')).toBe(lifeBefore + 1); // the second history read happened
+    const stamps = new Set(s.history.filter((e) => e.ev === 'counters' && (e.subject === bear || e.facts['id'] === bear)).map((e) => e.batch));
+    expect(stamps.size).toBe(2); // the spell's two counters (one batch) and the Heir's own counter (a later batch)
+    expect(counters(s, bear)).toBe(3);
   });
 });

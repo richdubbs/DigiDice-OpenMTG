@@ -9,8 +9,8 @@
  * with the operator's name (`--as`, or OPENMTG_OPERATOR) and the OS user who ran it (`os.userInfo().username`, or `uid:<number>` without a passwd
  * entry, never the environment): the name is free text anyone at the shell can set, the OS user is not. A process with neither refuses to run.
  *
- * - **Stores.** The file store is single-process: it holds a lock file, so the command refuses while the server runs ("stop the server, or use
- *   PostgreSQL"). PostgreSQL runs beside the server, but its store is hosted's to pass (M14-11, at the sync), so ACCOUNTS_STORE=postgres is
+ * - **Stores.** The file store (ACCOUNTS_STORE=file: PostgreSQL on PGlite in ACCOUNTS_DATA_DIR, src/store/pglite.ts) is single-process: it holds
+ *   a lock file, so the command refuses while the server runs ("stop the server, or use PostgreSQL"). PostgreSQL runs beside the server, but its store is hosted's to pass (M14-11, at the sync), so ACCOUNTS_STORE=postgres is
  *   refused here; so is the memory store, which holds nothing between processes.
  * - **No holder of another package** is in this process (hosted, the ladder): the command never erases anything and never ticks. `delete --now`
  *   only moves purgeAt (the server's tick then erases it, at its next start for the file store); `export` is refused unless every required

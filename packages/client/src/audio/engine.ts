@@ -1,19 +1,26 @@
 /**
- * The sound player (docs/design/sound.md): Web Audio in the browser. A sound is rendered (catalog.renderSound, always at 48 kHz) the first time it is
- * needed, or ahead of time with `prerender`, and kept; `play` starts it through its category's volume, the master volume and a limiter, so a crowded
- * moment (a board wipe) never clips. Frequent sounds pick a random variant and a slight detune so they never repeat exactly, and a sound already
- * playing several times at once is not stacked further.
+ * The sound player (docs/design/sound.md): Web Audio in the browser. `play` starts a sound through its category's volume, the master volume and a
+ * limiter, so a crowded moment (a board wipe) never clips. Frequent sounds pick a random variant and a slight detune so they never repeat exactly, and
+ * a sound already playing several times at once is not stacked further.
+ *
+ * Rendering never happens on the page's thread at the moment a sound plays (Review 2026-10-26, Finding 21: renders of 25 ms on average, up to 213 ms,
+ * stalled the animations). Every variant is made by a job: read back from this browser's store (pcmStore.ts, keyed by render.ts `soundCacheKey`), or
+ * else rendered by the render worker (renderer.ts, render.worker.ts; without workers, on the page while it is idle) and then stored. Jobs run one at a
+ * time: first the variants a `play` found missing (that play is skipped, or uses another variant that is ready; the next play has it), then the
+ * `prerender` list in its order. The prerender list waits while the board animates (`data-fx-playing`, board/fx/Animator.ts).
  *
  * Browsers start audio only after a user gesture: the page calls `unlock()` from its first pointer or key press (`installSoundUnlock`); until then
  * nothing is heard. Without Web Audio (jsdom tests, old browsers) the engine stays silent but still tells its listeners what it would play, which is
  * how the tests check that each moment makes its sound.
  */
 import type { SoundSettings } from '../settings/settings';
-import { renderSound, SOUND_META, variantCount, type SoundCategory, type SoundId, type SoundMeta } from './catalog';
+import { SOUND_IDS, SOUND_META, variantCount, type SoundCategory, type SoundId, type SoundMeta } from './catalog';
 import type { Stereo } from './dsp';
+import { indexedDbPcmStore, type PcmStore } from './pcmStore';
+import { RENDER_RATE, soundCacheKey } from './render';
+import { defaultRenderer, type SoundRenderer } from './renderer';
 
-/** The rate every sound is rendered at; the browser resamples to the device's rate on playback. */
-export const RENDER_RATE = 48000;
+export { RENDER_RATE } from './render';
 
 export interface PlayOpts {
   /** -1 left .. 1 right (where it happens on the table). */
@@ -41,6 +48,26 @@ const MAX_VOICES: Record<SoundMeta['frequency'], number> = { 'very frequent': 4,
 /** Two starts of the same sound closer than this are one sound (a burst of identical events). */
 const MIN_GAP_S = 0.025;
 const MAX_TOTAL_VOICES = 32;
+/** How often a prerender list paused by an animation looks again. */
+const PAUSE_POLL_MS = 250;
+
+/** Where the engine gets its sounds made and kept (tests pass fakes; the page uses the defaults). */
+export interface SoundEngineDeps {
+  /** Renders a missing sound (default: the render worker, else the page while idle). */
+  renderer?: SoundRenderer;
+  /** Keeps rendered sounds between sessions (default: IndexedDB; null keeps nothing). */
+  store?: PcmStore | null;
+  /** True while the prerender list should wait (default: the board is animating, `[data-fx-playing]`). */
+  animating?: () => boolean;
+}
+
+function boardAnimating(): boolean {
+  try {
+    return typeof document !== 'undefined' && document.querySelector('[data-fx-playing]') !== null;
+  } catch {
+    return false;
+  }
+}
 
 interface AudioParts {
   ctx: AudioContext;
@@ -73,14 +100,28 @@ export class SoundEngine implements SoundPlayer {
   private readonly listeners = new Set<SoundListener>();
   private ambience: { src: AudioBufferSourceNode; gain: GainNode } | null = null;
   private ambienceUsers = 0;
-  private queue: SoundId[] = [];
-  private pumping = false;
+  /** Variants being made, or that could not be made (not asked for again). */
+  private readonly jobs = new Map<string, 'queued' | 'running' | 'failed'>();
+  /** Variants a play found missing: made before the prerender list. */
+  private readonly urgent: [SoundId, number][] = [];
+  private readonly queue: [SoundId, number][] = [];
+  private running = false;
+  private waiting: ReturnType<typeof setTimeout> | null = null;
+  private pruned = false;
+  private renderer: SoundRenderer | null;
+  private store: PcmStore | null | undefined;
+  private readonly animating: () => boolean;
   private plays = 0;
 
   constructor(
     private readonly settings: () => SoundSettings,
     private readonly random: () => number = Math.random,
-  ) {}
+    deps: SoundEngineDeps = {},
+  ) {
+    this.renderer = deps.renderer ?? null;
+    this.store = deps.store;
+    this.animating = deps.animating ?? boardAnimating;
+  }
 
   /** How many sounds were asked for so far (heard or not): the page's click listener uses it to see whether a handler already made a sound. */
   get playCount(): number {
@@ -155,8 +196,7 @@ export class SoundEngine implements SoundPlayer {
     if (last !== undefined && Math.abs(when - last) < MIN_GAP_S) return;
     const active = this.voices.get(id) ?? 0;
     if (active >= MAX_VOICES[meta.frequency] || this.total >= MAX_TOTAL_VOICES) return;
-    const variant = this.pickVariant(id);
-    const buffer = this.buffer(id, variant, a.ctx);
+    const buffer = this.readyBuffer(id, this.pickVariant(id), a.ctx);
     if (!buffer) return;
     this.lastStart.set(id, when);
     const src = a.ctx.createBufferSource();
@@ -196,23 +236,21 @@ export class SoundEngine implements SoundPlayer {
     src.start(when, Math.min(Math.max(0, opts.offset ?? 0), Math.max(0, buffer.duration - 0.01)));
   }
 
-  /** Render these sounds now, one per idle moment, so their first play does not have to (the game screen calls it as it opens). */
+  /**
+   * Make these sounds ahead of their first play, in this order, off the page's thread (stored copies first, else the render worker); the page lists
+   * every sound at start (main.tsx) and the game screen its own as it opens. Sounds already made or on the list are not asked for again.
+   */
   prerender(ids: readonly SoundId[]): void {
     // Nothing can be heard without Web Audio (tests, old browsers): rendering would only cost time.
     if (!audioContextCtor()) return;
-    for (const id of ids) if (!this.queue.includes(id)) this.queue.push(id);
-    if (this.pumping) return;
-    this.pumping = true;
-    const step = () => {
-      const id = this.queue.shift();
-      if (!id) {
-        this.pumping = false;
-        return;
-      }
-      for (let v = 0; v < variantCount(id); v++) if (!this.buffers.has(`${id}#${v}`)) this.stereo(id, v);
-      later(step);
-    };
-    later(step);
+    for (const id of ids) for (let v = 0; v < variantCount(id); v++) this.want(id, v, false);
+    this.pump();
+  }
+
+  /** True when this variant is ready to play (tests). */
+  isReady(id: SoundId, variant = 0): boolean {
+    const key = `${id}#${variant}`;
+    return this.buffers.has(key) || this.rendered.has(key);
   }
 
   /** The table ambience (a loop) plays while at least one screen wants it. Returns the release. */
@@ -231,7 +269,8 @@ export class SoundEngine implements SoundPlayer {
   private startLoop(): void {
     const a = this.audio;
     if (!a || this.ambience) return;
-    const buffer = this.buffer('ambient.grid', 0, a.ctx);
+    // Not made yet: asked for first, and started when it arrives (made()).
+    const buffer = this.readyBuffer('ambient.grid', 0, a.ctx, false);
     if (!buffer) return;
     const src = a.ctx.createBufferSource();
     src.buffer = buffer;
@@ -266,26 +305,116 @@ export class SoundEngine implements SoundPlayer {
     return v;
   }
 
-  private stereo(id: SoundId, variant: number): Stereo | null {
-    const key = `${id}#${variant}`;
-    let st = this.rendered.get(key);
-    if (!st) {
-      try {
-        st = renderSound(id, RENDER_RATE, variant);
-      } catch (e) {
-        console.error(`[sound] ${id} failed to render`, e);
-        return null;
-      }
-      this.rendered.set(key, st);
+  /**
+   * The buffer to play for this variant, never rendered here: when it is not made yet it is asked for (ahead of the prerender list) and another variant
+   * that is ready plays instead (`others`), or nothing.
+   */
+  private readyBuffer(id: SoundId, variant: number, ctx: AudioContext, others = true): AudioBuffer | null {
+    const buf = this.buffer(id, variant, ctx);
+    if (buf) return buf;
+    this.want(id, variant, true);
+    this.pump();
+    if (!others) return null;
+    for (let v = 0; v < variantCount(id); v++) {
+      if (v === variant) continue;
+      const alt = this.buffer(id, v, ctx);
+      if (alt) return alt;
     }
+    return null;
+  }
+
+  /** Put a variant on the urgent or the prerender list, unless it is made, failed or already on its way (a prerendered one moves up when urgent). */
+  private want(id: SoundId, variant: number, urgent: boolean): void {
+    const key = `${id}#${variant}`;
+    if (this.isReady(id, variant)) return;
+    const state = this.jobs.get(key);
+    if (state === 'running' || state === 'failed') return;
+    if (state === 'queued') {
+      if (!urgent) return;
+      const i = this.queue.findIndex(([qid, qv]) => qid === id && qv === variant);
+      if (i < 0) return;
+      this.queue.splice(i, 1);
+    }
+    this.jobs.set(key, 'queued');
+    (urgent ? this.urgent : this.queue).push([id, variant]);
+  }
+
+  private pcmStore(): PcmStore | null {
+    if (this.store === undefined) this.store = indexedDbPcmStore();
+    return this.store;
+  }
+
+  /** Runs the next job when none is running: urgent ones first; the prerender list waits while the board animates. */
+  private pump(): void {
+    if (this.running) return;
+    let job = this.urgent.shift();
+    if (!job && this.queue.length > 0) {
+      if (this.animating()) {
+        this.waiting ??= setTimeout(() => {
+          this.waiting = null;
+          this.pump();
+        }, PAUSE_POLL_MS);
+        return;
+      }
+      job = this.queue.shift();
+    }
+    if (!job) {
+      this.prune();
+      return;
+    }
+    this.running = true;
+    const [id, variant] = job;
+    const key = `${id}#${variant}`;
+    this.jobs.set(key, 'running');
+    void this.make(id, variant)
+      .catch((e: unknown) => {
+        console.error(`[sound] ${id} could not be made`, e);
+        return null;
+      })
+      .then((st) => {
+        this.running = false;
+        if (st) {
+          this.jobs.delete(key);
+          this.rendered.set(key, st);
+          this.made(id);
+        } else this.jobs.set(key, 'failed');
+        this.pump();
+      });
+  }
+
+  /** One job: the stored copy, else a render (kept for the next session). */
+  private async make(id: SoundId, variant: number): Promise<Stereo | null> {
+    const store = this.pcmStore();
+    const cacheKey = soundCacheKey(id, variant);
+    const kept = store ? await store.get(cacheKey) : undefined;
+    if (kept) return kept;
+    this.renderer ??= defaultRenderer();
+    const st = await this.renderer.render(id, variant);
+    if (st && store) void store.put(cacheKey, st);
     return st;
+  }
+
+  /** A sound just became ready: the ambience starts if a screen is waiting for it. */
+  private made(id: SoundId): void {
+    if (id === 'ambient.grid' && this.ambienceUsers > 0) this.startLoop();
+  }
+
+  /** Once every list is done: stored sounds of keys no longer in use (another release, a changed recipe) are removed. */
+  private prune(): void {
+    if (this.pruned) return;
+    const store = this.store;
+    if (!store) return;
+    this.pruned = true;
+    const keep = new Set<string>();
+    for (const id of SOUND_IDS) for (let v = 0; v < variantCount(id); v++) keep.add(soundCacheKey(id, v));
+    void store.prune(keep);
   }
 
   private buffer(id: SoundId, variant: number, ctx: AudioContext): AudioBuffer | null {
     const key = `${id}#${variant}`;
     const cached = this.buffers.get(key);
     if (cached) return cached;
-    const st = this.stereo(id, variant);
+    const st = this.rendered.get(key);
     if (!st) return null;
     try {
       const buf = ctx.createBuffer(2, st.l.length, RENDER_RATE);
@@ -301,14 +430,8 @@ export class SoundEngine implements SoundPlayer {
   }
 }
 
-function later(fn: () => void): void {
-  const w = typeof window !== 'undefined' ? (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }) : null;
-  if (w?.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 500 });
-  else setTimeout(fn, 16);
-}
-
 /**
- * Every sound, in the order the page renders them while idle (main.tsx): the interface first (the first screens), then the game's opening and turn
+ * Every sound, in the order the page has them made (main.tsx): the interface first (the first screens), then the game's opening and turn
  * cues, the rest of the game, and the ambience last.
  */
 export function prerenderOrder(): SoundId[] {

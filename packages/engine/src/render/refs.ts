@@ -598,6 +598,27 @@ export function specPhrase(spec: TargetSpec, st: RenderState, extra: NpOpts = {}
       }
       // r4-fxb (CR 115.9a): "target spell or ability with a single target" (Bolt Bend, Redirect Lightning): the number of targets it has, said after the noun
       const single = f.targetCount !== undefined && f.targetCount.op === '==' && f.targetCount.value === 1 ? ' with a single target' : '';
+      // edh-cast-1 (CR 115.9b; Siren Stormtamer, Not of This World; family spell-or-ability-that-targets): "target spell or ability that targets a creature you control": one of its
+      // targets is such an object, or a player ("that targets you")
+      const tf = f.targets as { ref?: string; filter?: ObjectFilter } | undefined;
+      const options = f.anyOf?.length === 2 && f.anyOf.every((x) => Object.keys(x).length === 1 && x.targets !== undefined) ? f.anyOf : null;
+      if (options !== null && tf === undefined) {
+        if (single !== '' || count !== undefined || other.other === true) throw new NoRenderer(`target ${spec.id}: a count, limit or "other" on a spell or ability by what it targets`);
+        const said = options.map((x) => {
+          const t = x.targets as { ref?: string; who?: string; filter?: ObjectFilter };
+          if (t.ref === 'each' && (t.who === 'opponent' || t.who === 'player')) return t.who === 'opponent' ? 'an opponent' : 'a player';
+          if (t.ref === 'each' && t.filter !== undefined) return K.np(t.filter, st, { det: 'a' });
+          if (isPlayerOnlyRef(t as PlayerRef)) return K.player(t as PlayerRef, st, 'object').text;
+          throw new NoRenderer(`target ${spec.id}: a spell or ability by what it targets other than an object description or a player`);
+        });
+        return `target spell or ability that targets ${said.join(' or ')}`;
+      }
+      if (tf !== undefined) {
+        if (single !== '' || count !== undefined || other.other === true) throw new NoRenderer(`target ${spec.id}: a count, limit or "other" on a spell or ability by what it targets`);
+        if (tf.ref === 'each' && tf.filter !== undefined) return `target spell or ability that targets ${K.np(tf.filter, st, { det: 'a' })}`;
+        if (isPlayerOnlyRef(tf as PlayerRef)) return `target spell or ability that targets ${K.player(tf as PlayerRef, st, 'object').text}`;
+        throw new NoRenderer(`target ${spec.id}: a spell or ability by what it targets other than an object description or a player`);
+      }
       return other.other === true ? `${count ? `${count} other` : 'another'} target spell or ability${single}` : `${count ? `${count} ` : ''}target spell or ability${single}`;
     }
     case 'objectOrPlayer': {
@@ -900,7 +921,8 @@ export function obj(ref: ObjRef, st: RenderState, form: Form, o: { prefer?: 'all
         }
       }
       // FAST5 T43 (CR 608.2c): the cards of a group a choice among it did not pick are "the rest" ("the other" when one is left)
-      if (restOfGroup(ref.filter) !== null) return { text: poss(alt('the rest', 'the other', "all cards revealed this way that weren't put onto the battlefield")), plural: true, person: 'pl' };
+      // p2-zone-moves-2 (family rest-all-other-revealed): also "all other cards revealed this way" (Hermit Druid)
+      if (restOfGroup(ref.filter) !== null) return { text: poss(alt('the rest', 'the other', "all cards revealed this way that weren't put onto the battlefield", 'all other cards revealed this way')), plural: true, person: 'pl' };
       // std-library-3 (CR 608.2c, 406.1): what a choice among a group of exiled cards left in exile is "the rest of the exiled cards" (parser/lower/mentions.ts#restOf)
       if (restOfExiled(ref.filter)) return { text: poss('the rest of the exiled cards'), plural: true, person: 'pl' };
       // FAST5 T59 (CR 608.2c): "those creatures you don't control": the part of a group a player controls or owns (parser/holes/object.ts#group)
@@ -1344,6 +1366,10 @@ function eachSubjectWordings(filter: ObjectFilter, st: RenderState, np: (f: Obje
   }
   // FAST4 T24: "Artifact spells you cast have convoke", "Each noncreature spell you cast has conspire" (CR 601.2a, 707.10)
   const cast = spellsYouCast(filter);
+  // edh-cast-1 (CR 202.3, 601.2a; Imoti, Celebrant of Bounty; family spells-you-cast-with-mana-value): "Spells you cast with mana value 6 or greater have cascade": the same set
+  // with a mana value comparison on its spells, said after "you cast"
+  const castMv = filter.anyOf?.length === 1 && filter.anyOf[0]!.manaValue?.op === '>=' ? spellsYouCast({ ...filter, anyOf: [(({ manaValue: _mv, ...rest }) => rest)(filter.anyOf[0]!)] }) : null;
+  if (castMv !== null) return [{ text: `${np(castMv, { det: 'none', plural: true })} you cast with mana value ${K.qty(filter.anyOf![0]!.manaValue!.value, st)} or greater`, plural: true }];
   // std-rx7 (family type-list): the singular after "each" also lists the types with "and", "Each instant and sorcery spell you cast has casualty 1" (Silverquill)
   if (cast !== null) return [{ text: `${np(cast, { det: 'none', plural: true })} you cast`, plural: true }, { text: `each ${np(cast, { det: 'none', forEach: true })} you cast`, plural: false }];
   // std-freecast-3 (CR 105.2): "Each legendary spell you cast that's one or more colors has web-slinging {G}{W}{U}": not colorless, said after "you cast"

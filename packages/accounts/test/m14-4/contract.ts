@@ -1,12 +1,12 @@
 /**
- * M14-4: the account store contract suite (design 11.2, 13.2). One suite for every AccountStore: test/m14-4/memory.test.ts and file.test.ts run it
- * on the memory and file stores; M14-11 runs it on PostgresAccountStore (PGlite, and a real server when OPENMTG_TEST_PG_URL is set) with a harness of
- * its own. Fixed inputs and a fixed clock only (owner rule); the races are fixed interleavings of calls on one in-process store, never load.
+ * M14-4: the account store contract suite (design 11.2, 13.2). One suite for every AccountStore: test/m14-4/memory.test.ts runs it on the memory
+ * store; test/m14-11/contract.test.ts on PostgresAccountStore (PGlite, and a real server when OPENMTG_TEST_PG_URL is set) with a harness of its own
+ * (the development store, ACCOUNTS_STORE=file, is that store on PGlite in a directory: test/m14-11/dir.test.ts covers what it adds). Fixed inputs and a fixed clock only (owner rule); the races are fixed interleavings of calls on one in-process store, never load.
  *
  * A harness names, for the erase test's byte search, every place a string occurs in everything the store keeps (`places`), each place named by
  * `placeOf` from the table the row is in. The table names are the memory store's (src/store/memory.ts StoreTables): accounts, names, history,
  * credentials, recovery, devices, sessions, claims, relations, emailCodes, reports, sanctions, appeals, audit, changes, tombstones, meta; a
- * PostgreSQL harness maps its tables onto them. A harness finds the string in raw bytes it cannot place under a table as `file:<name>`.
+ * PostgreSQL harness maps its tables onto them.
  */
 import { createHash } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -66,7 +66,7 @@ export function placeOf(table: string, row: unknown, needle: string): string {
   }
 }
 
-/** The places of `needle` in a store dump of [key, row] entries by table (the memory store's dump, the file store's snapshot). */
+/** The places of `needle` in a store dump of [key, row] entries by table (the memory store's dump). */
 export function placesInTables(tables: Record<string, [string, unknown][]>, needle: string): string[] {
   const out: string[] = [];
   for (const [t, entries] of Object.entries(tables)) {
@@ -196,7 +196,7 @@ function settledOne<T>(results: PromiseSettledResult<T>[], code: StoreErrorCode)
   return { won, value: (results[won] as PromiseFulfilledResult<T>).value };
 }
 
-/** Lets the event loop run (I/O included): a reader that spins on microtasks alone would starve a file store's writes. */
+/** Lets the event loop run (I/O included): a reader that spins on microtasks alone would starve a store's writes on I/O. */
 const tick = () => new Promise<void>((r) => setImmediate(r));
 
 // ---- the suite ---------------------------------------------------------------------------------------------------------------------------------
@@ -735,6 +735,14 @@ export function accountStoreContract(h: StoreHarness): void {
         expect((await store.sessionByTokenHash(s.tokenHash))?.row).toMatchObject({ revokedAt: at(MINUTE), revokeReason: 'signOut' });
       });
 
+      it('sessionById: one session by its id, revoked or not; null for an id with none', async () => {
+        expect(await store.sessionById(s.id)).toEqual(s);
+        expect(await store.sessionById(sessionId(999))).toBeNull();
+        await store.revokeSession(accId(1), s.id, 'signOut', at(MINUTE));
+        expect(await store.sessionById(s.id)).toMatchObject({ ...s, revokedAt: at(MINUTE), revokeReason: 'signOut' });
+        await refused(store.sessionById('as\u0000x'), 'value');
+      });
+
       it('revokeSessions revokes every live session but one, of that account only', async () => {
         const b = sessionOf(1, 1);
         const c = sessionOf(1, 2, { createdAt: at(MINUTE) });
@@ -979,6 +987,9 @@ export function accountStoreContract(h: StoreHarness): void {
         await store.answerAppeal(sanctionId(1), 'upheld', 'It stands.', 'op', at(DAY));
         await refused(store.answerAppeal(sanctionId(1), 'lifted', 'Changed my mind.', 'op', at(DAY)), 'conflict');
         await refused(store.answerAppeal(sanctionId(9), 'lifted', 'x', 'op', at(DAY)), 'notFound');
+        expect(await store.appeal(sanctionId(1))).toMatchObject({ sanction: sanctionId(1), account: accId(1), answer: 'upheld' });
+        expect(await store.appeal(sanctionId(9))).toBeNull();
+        await refused(store.appeal(42 as never), 'value');
         expect(await store.appeals({ open: true, limit: 10 })).toEqual([]);
         expect(await store.appeals({ open: false, account: accId(1), limit: 10 })).toEqual([
           { ...appeal, account: accId(1), text: 'It was a joke.', answer: 'upheld', answerMessage: 'It stands.', answeredAt: at(DAY), answeredBy: 'op' },
@@ -1478,7 +1489,7 @@ export function accountStoreContract(h: StoreHarness): void {
       });
 
       it('copies its arguments when called: changing one before the write is awaited changes nothing', async () => {
-        // the file store runs a write later, in turn; it reads the copy made at the call, as the memory store does (review of M14-4)
+        // a store may run a write later (the PostgreSQL store, after its connection's turn); it reads the copy made at the call (review of M14-4)
         const n1 = newAccount(1, 'Carol', 'carol');
         const p1 = store.createAccount(n1, T0);
         n1.account.name = 'Mallory';

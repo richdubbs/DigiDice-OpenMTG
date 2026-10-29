@@ -66,7 +66,7 @@ export class Game {
   /** r5-fxb (CR 603.10a): what was attached to each object of a simultaneous leave (`LastKnown.attached`), before any of them moved. Transient, never in the state. */
   leavingAttached: Map<ObjectId, { equipped: boolean; modified: boolean; ids?: ObjectId[] }> | null = null;
   /** std-combat-3 (CR 603.10a): the battlefield just before the first object of a simultaneous leave moved (`LastKnown.board`). Transient, never in the state. */
-  leavingBoard: ObjectId[] | null = null;
+  leavingBoard: readonly ObjectId[] | null = null;
   /**
    * trek-8 review (CR 508.4): how the effect that is putting permanents onto the battlefield says they attack ("tapped and attacking target player", ninjutsu's
    * "attacking the creature that was returned"), while its proposals are worked out: a replacement effect that makes a permanent enter tapped and attacking

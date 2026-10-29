@@ -10,7 +10,7 @@
  */
 import type { AbilityDef, ActivatedAbilityDef } from '../types/ability';
 import type { ObjectId } from '../types/ids';
-import type { AbilityRef, GameObject, GameState, ZoneKind } from '../types/state';
+import type { AbilityRef, GameObject, GameState, PendingTrigger, ZoneKind } from '../types/state';
 import type { CharAbility } from '../statics/api';
 import { charsOfObject, type Chars } from './characteristics';
 
@@ -59,6 +59,21 @@ export const activationZones = (def: ActivatedAbilityDef): readonly ZoneKind[] =
 
 /** Does the activated ability function while its source is in `zone`? (CR 113.6) */
 export const activatesFrom = (def: ActivatedAbilityDef, zone: ZoneKind): boolean => activationZones(def).includes(zone);
+
+/**
+ * The ability definition behind a pending trigger: its inline ability, or the printed/granted/generated one of its source with its key now (last known information
+ * if it left, CR 608.2h). It has triggered; losing the ability since does not take it back (CR 603.3): else the printed one. Review 2026-10-26 F-dup: the one
+ * copy, for triggers/stack.ts (ordering, putting on the stack), triggers/mana-now.ts and core/sba-objects.ts (CR 704.5s, a Saga's pending chapter ability).
+ */
+export function pendingTriggerDef(s: GameState, t: PendingTrigger): AbilityDef | undefined {
+  if (t.inline) return t.inline;
+  const o = s.objects[t.sourceId];
+  const lk = s.lki[t.sourceId];
+  const chars = o ? charsOfObject(s, o) : lk ? lk.chars ?? charsOfObject(s, lk.object) : undefined;
+  const found = chars ? abilitiesFromChars(chars).find((a) => a.key === t.abilityRef.key)?.def : undefined;
+  if (found) return found;
+  return t.abilityRef.source === 'printed' ? s.defs[o?.defId ?? lk?.object.defId ?? '']?.faces[t.abilityRef.face]?.abilities[t.abilityRef.index] : undefined;
+}
 
 /**
  * The ability definition behind an ability object on the stack. An ability that is not printed text of a living object (granted, keyword-generated, delayed, ...) exists

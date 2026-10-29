@@ -5,6 +5,13 @@
  * exponentially; the receiver buffers out-of-order fragments, drops duplicates and delivers whole messages in order. Keep-alive pings keep the
  * peer informed when there is nothing to send; a peer that stays silent for `idleTimeout` is declared gone.
  *
+ * F29, congestion control (simple AIMD, after TCP's, RFC 5681 in spirit): the fragments in flight are bounded by a congestion window `cwnd` that
+ * starts at INITIAL_CWND, grows by one fragment per window acknowledged (one per round trip, while the sender is limited by it) up to `window`, and
+ * is halved (MIN_CWND at least) on a retransmission timeout, once per loss episode (a fragment sent before the last cut does not cut again).
+ * A tick retransmits at most `cwnd` expired fragments, oldest first; the others wait for the next tick. A fixed window of 128 fragments resent all
+ * at once overflowed a small router queue on every round and could starve a fragment past `idleTimeout` (the link died); the selective acks and the
+ * per-fragment timer back-off are unchanged.
+ *
  * The channel knows nothing about sockets, encryption or real time: it is driven by `receive(payload, now)` and `tick(now)` and sends through a
  * hook, so tests can run it on a simulated wire with a fake clock.
  */
@@ -18,7 +25,7 @@ export interface LinkOptions {
   rtoInitial: number;
   rtoMin: number;
   rtoMax: number;
-  /** Fragments in flight (sent, not yet acknowledged) at most. */
+  /** Fragments in flight (sent, not yet acknowledged) at most: the ceiling of the congestion window (F29). */
   window: number;
   /** Send a keep-alive when nothing was sent for this long (ms). */
   pingInterval: number;
@@ -65,6 +72,10 @@ export interface SendOptions {
 
 /** Out-of-order fragments the receiver buffers at most (well above any sender window). */
 const RECV_WINDOW = 4096;
+/** F29: the congestion window at the start (fragments; never above `window`). */
+export const INITIAL_CWND = 16;
+/** F29: the congestion window never shrinks below this (fragments; never above `window`). */
+export const MIN_CWND = 4;
 
 export interface ChannelHooks {
   transmit(payload: Buffer): void;
@@ -121,6 +132,12 @@ export class Channel {
   private lastSend: number;
   private rttvar = 0;
   private rto: number;
+  /** F29: the congestion window (fragments; fractional while it grows by 1/cwnd per acknowledged fragment). */
+  private cwnd: number;
+  /** F29: when the window was last halved: a fragment sent before it belongs to that loss episode and does not halve it again. */
+  private cutAt = -Infinity;
+  /** F29: the last pump stopped at the congestion window with data waiting: only then do acks grow the window (no growth while idle). */
+  private windowLimited = false;
   private stopped = false;
   /** The largest message accepted, in fragments (a compressed body is never much larger than its JSON). */
   private readonly receiveFragments: number;
@@ -131,6 +148,7 @@ export class Channel {
     this.lastRecv = now;
     this.lastSend = now;
     this.rto = options.rtoInitial;
+    this.cwnd = Math.min(INITIAL_CWND, options.window);
     this.receiveFragments = Math.min(options.maxMessageFragments, Math.ceil((options.maxReceiveBytes + 64) / FRAGMENT_BYTES) + 1);
     this.recvWindow = Math.min(RECV_WINDOW, Math.max(2 * this.receiveFragments, 4 * options.window, 256));
   }
@@ -142,6 +160,11 @@ export class Channel {
   /** True when every message sent so far has been acknowledged. */
   get idle(): boolean {
     return this.queueHead >= this.queue.length && this.inFlight.size === 0;
+  }
+
+  /** F29: the fragments that may be in flight now (the congestion window, whole fragments). */
+  get congestionWindow(): number {
+    return Math.max(1, Math.min(this.options.window, Math.floor(this.cwnd)));
   }
 
   /** Bytes of messages waiting to be sent (not cut into fragments yet; a message counts until its last fragment went out). */
@@ -197,9 +220,18 @@ export class Channel {
   tick(now: number): void {
     if (this.stopped) return;
     if (now - this.lastRecv >= this.options.idleTimeout) return this.die(`timeout: nothing heard for ${Math.round((now - this.lastRecv) / 1000)} s`);
+    // F29: oldest first (the map keeps sending order: sequence numbers grow), at most a congestion window of them per tick.
+    let resent = 0;
     for (const f of this.inFlight.values()) {
       if (now - f.sentAt < f.rto) continue;
       if (now - f.firstSentAt >= this.options.idleTimeout) return this.die('timeout: data not acknowledged');
+      if (f.sentAt >= this.cutAt) {
+        // A loss the window did not react to yet (a fragment sent before the last cut was in flight when it was made): halve the window.
+        this.cwnd = Math.max(Math.min(MIN_CWND, this.options.window), this.cwnd / 2);
+        this.cutAt = now;
+      }
+      if (resent >= this.congestionWindow) break;
+      resent++;
       f.tries++;
       f.sentAt = now;
       f.rto = Math.min(f.rto * 2, this.options.rtoMax);
@@ -222,7 +254,8 @@ export class Channel {
 
   private pump(now: number): void {
     // A fragment is sent only inside the span the peer's selective acks cover, so it can always tell us it got it.
-    while (!this.stopped && this.inFlight.size < this.options.window && this.queueHead < this.queue.length && this.nextSeq <= this.peerCum + SACK_SPAN) {
+    const window = this.congestionWindow;
+    while (!this.stopped && this.inFlight.size < window && this.queueHead < this.queue.length && this.nextSeq <= this.peerCum + SACK_SPAN) {
       const m = this.queue[this.queueHead]!;
       const i = m.next++;
       const frag: Fragment = { seq: this.nextSeq++, msgId: m.msgId, index: i, count: m.count, data: m.body.subarray(i * FRAGMENT_BYTES, (i + 1) * FRAGMENT_BYTES) };
@@ -233,6 +266,7 @@ export class Channel {
       this.inFlight.set(frag.seq, { frag, sentAt: now, firstSentAt: now, tries: 1, rto: this.rto });
       this.transmitFrame(frag, now);
     }
+    this.windowLimited = this.inFlight.size >= window && this.queueHead < this.queue.length;
     if (this.queueHead > 256 && this.queueHead * 2 > this.queue.length) {
       this.queue = this.queue.slice(this.queueHead);
       this.queueHead = 0;
@@ -268,6 +302,8 @@ export class Channel {
 
   private acked(seq: number, f: Flight, now: number): void {
     this.inFlight.delete(seq);
+    // F29, additive increase: 1/cwnd per fragment acknowledged, so one fragment per window acknowledged (per round trip), only while it limits.
+    if (this.windowLimited) this.cwnd = Math.min(this.options.window, this.cwnd + 1 / this.cwnd);
     if (f.tries === 1) this.sampleRtt(now - f.sentAt); // Karn: only fragments sent once give a sample
   }
 

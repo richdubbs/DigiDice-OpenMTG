@@ -11,7 +11,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./api": "./src/api.ts",
-    "./online": "./src/online/api.ts"
+    "./online": "./src/online/api.ts",
+    "./table": "./src/table/api.ts",
+    "./sounds": "./src/sounds/api.ts"
   },
   "scripts": {
     "start": "tsx src/main.ts",
@@ -21,9 +23,11 @@
     "@openmtg/cards": "*",
     "@openmtg/engine": "*",
     "@openmtg/net": "*",
+    "@openmtg/play": "*",
     "ws": "^8.22.0"
   },
   "devDependencies": {
+    "@openmtg/hosted": "*",
     "@types/ws": "^8.18.2"
   }
 }

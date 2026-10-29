@@ -7,19 +7,20 @@
  * (installed by effects/funnels.ts), so this core module imports none of the interpreter's dispatchers (no cycle through core/registries.ts).
  */
 import { proposeNested } from '../effects/nested';
-import { charsOfObject, controllerOf } from '../rules/characteristics';
+import { charsOfObject, controllerOf, readingStable } from '../rules/characteristics';
 import { finalChapter } from '../statics/levels';
 import type { Game } from './game';
 
 /** CR 714.3c: the active player's Sagas with a chapter ability (CR 714.2d: final chapter number at least 1), each gets a lore counter. */
 function putLoreCounters(g: Game): void {
   const ap = g.s.turn.activePlayer;
-  const sagas = g.s.zones.battlefield.filter((id) => {
+  // review 2026-10-26 (performance): a pure read of every permanent, so the characteristics cache is checked once (`readingStable`), not once per permanent
+  const sagas = readingStable(g.s, () => g.s.zones.battlefield.filter((id) => {
     const o = g.s.objects[id];
     if (!o || o.phasedOut || controllerOf(g.s, o) !== ap) return false;
     const c = charsOfObject(g.s, o);
     return c.subtypes.includes('Saga') && finalChapter(c.abilities) > 0;
-  });
+  }));
   for (const id of sagas) {
     const o = g.s.objects[id];
     if (!o || o.zone !== 'battlefield') continue; // gone meanwhile (a replacement of an earlier counter could have moved it)

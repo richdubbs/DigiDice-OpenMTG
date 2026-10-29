@@ -191,6 +191,8 @@ function equipQuality(f: NonNullable<KeywordAbilityDef['filter']>): string | nul
   // and/or white"): exactly that quality of a creature you control (parser/templates/zz-cloud/std-msh.json kw.stdmsh.equip.worthy)
   if (sortedJson(f) === sortedJson(WORTHY)) return 'worthy';
   // CMD2 (CR 702.6c, 903.3d): "Equip commander {3}": the creature you control must be a commander
+  // edh-mana-keywords-1 (CR 702.6c, 205.4): "Equip legendary creature {3}": a legendary creature you control
+  if (keys === 'controller,supertypes,types' && f.controller === 'you' && f.supertypes?.length === 1 && f.supertypes[0] === 'Legendary' && f.types?.length === 1 && f.types[0] === 'Creature') return 'legendary creature';
   if (keys === 'commander,controller,types' && f.commander === true && f.controller === 'you' && f.types?.length === 1 && f.types[0] === 'Creature') return 'commander';
   if (keys !== 'controller,subtypes,types' || f.controller !== 'you') return null;
   if (f.types?.length !== 1 || f.types[0] !== 'Creature' || f.subtypes?.length !== 1) return null;

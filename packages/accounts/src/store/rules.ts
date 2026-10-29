@@ -69,7 +69,7 @@ const MIN_TIME_MS = -30_610_224_000_000;
 const MAX_TIME_MS = 253_402_300_799_999;
 /**
  * Milliseconds of an ISO-8601 time, or 'value'. INTERFACE CHANGE (M14-11): a time before year 1000 or after year 9999 is refused by every store (a date
- * the language holds but whose ISO form PostgreSQL does not read: the PostgreSQL store refused it, the memory and file stores did not).
+ * the language holds but whose ISO form PostgreSQL does not read: the PostgreSQL store refused it, the memory store did not).
  */
 export function ms(label: string, v: unknown): number {
   if (typeof v !== 'string') bad(label, 'is not an ISO 8601 time');

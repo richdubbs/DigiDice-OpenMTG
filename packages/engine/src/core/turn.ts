@@ -31,7 +31,6 @@ export function givePriority(g: Game, player: PlayerId): void {
  * Other decisions are raised from inside via g.choose (and suspend the run).
  */
 export function advance(g: Game): void {
-  let stacked = false; // M12-2: a triggered ability was put on the stack during this call (read only by the D12 check below)
   for (let guard = 0; guard < MAX_LOOP; guard++) {
     if (g.s.result) {
       g.s.pending = null;
@@ -52,8 +51,10 @@ export function advance(g: Game): void {
       collectPendingTriggers(g);
       if (performStateBasedActions(g)) continue;
       if (g.s.result) continue;
+      // Review 2026-10-26 F4/F6 (owner, 2026-10-26: "stop for me even when a trigger lands after I passed"; CR 117.4 read with 603.3): new objects on the stack
+      // begin a new round of passes, so a player who passed before the triggered abilities were put on the stack gets priority again before they resolve
       if (putPendingTriggersOnStack(g)) {
-        stacked = true;
+        g.s.priority.passes = 0;
         continue;
       }
       // M12-2 (m12 design D12; CR 800.4a, 800.4j): a player who left the game never receives priority: the next player in turn order does instead
@@ -63,14 +64,11 @@ export function advance(g: Game): void {
       }
       // M12-2 (m12 design D12; CR 117.4, 800.4a): players left the game after the others passed: when every player still in the game has passed in
       // succession, the top object resolves or the step ends now, nobody is asked again. Never true in a two-player game (`passPriority` ends the round).
-      // When abilities triggered meanwhile (the leaver's permanents leaving, CR 603.6c), the stack changed under the passes: the player receives priority
-      // (CR 800.4a, 117.5) and a new round of passes begins, so every player can answer the new objects.
+      // When abilities triggered meanwhile (the leaver's permanents leaving, CR 603.6c), the passes were reset as they were put on the stack (above): the
+      // player receives priority (CR 800.4a, 117.5) and a new round of passes begins, so every player can answer the new objects.
       if (g.s.priority.passes > 0 && g.s.priority.passes >= playersInTheGame(g)) {
-        if (stacked) g.s.priority.passes = 0;
-        else {
-          allPassed(g);
-          continue;
-        }
+        allPassed(g);
+        continue;
       }
       if (shouldAutoPass(g, p)) {
         passPriority(g, p, true);
@@ -201,11 +199,10 @@ export function activeOrNext(g: Game): PlayerId {
 /** Called when a player takes an action at priority (CR 117.3c: they receive priority again). */
 export function resetPasses(g: Game): void {
   g.s.priority.passes = 0;
-  // RES-ALL: another player cast or activated something: whoever was resolving all decides again (they may want to answer it)
-  const all = g.s.priority.resolveAll?.filter((x) => x === g.s.priority.player);
-  if (all === undefined) return;
-  if (all.length > 0) g.s.priority.resolveAll = all;
-  else delete g.s.priority.resolveAll;
+  // RES-ALL: another player cast or activated something: whoever was resolving all decides again (they may want to answer it). Review 2026-10-26 F4: the player
+  // who acted is never one of them (a player resolving all is passed for while the stack is not empty, `shouldAutoPass`, and the list ends with the stack,
+  // `allPassed`), so the whole list ends
+  delete g.s.priority.resolveAll;
 }
 
 function goToNextStep(g: Game): void {

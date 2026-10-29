@@ -14,7 +14,8 @@
  *   The host player's own need the guest's approval in a two-player game too (the same proposal, `manualProposal` / `manualVote` /
  *   `manualClosed`, as with 3-4 players).
  * - A guest action is applied at most once: a repeat of the last applied id is answered with an `ack` (or the current view, if the guest's
- *   connection does not have it yet), and an action chosen from an older view is refused as 'stale' (messages.ts, ActionMessage).
+ *   connection does not have it yet), and an action chosen from an older view is refused as 'stale' (messages.ts, ActionMessage). F28: a view that
+ *   is older only by stop changes (`setStops`, anyone's) is not older: the action applies (`lastProgressSeq`, as packages/hosted's TableActor).
  * - Undo is off online (every player would have to agree; later), so the host keeps no history of states (session.ts, audit 2026-10-12 M4).
  * - Flood control (audit M4, M5, m7): each guest's messages are paced and its syncs coalesced (limits.ts, one gate per seat), a `setStops` is applied
  *   only when it changes something while the game runs (stops.ts), join attempts are rate-limited, and nothing a guest sends can throw out of here: a
@@ -371,6 +372,11 @@ export class GameHost extends Emitter<HostEvents> {
   private readonly forfeitAfterMs: number | null;
   private readonly seatOfCode = new Map<string, number>();
   private session: OnlineSession | null = null;
+  /**
+   * F28: the seq after the last applied action that was not a `setStops` (as TableActor.lastProgressSeq in packages/hosted). A stop change does not
+   * change what another player may do, so an action chosen from a view at or after this seq is not stale although the seq moved on.
+   */
+  private lastProgressSeq = 0;
   /** The table in seating order, once a 3-4 player game was created. */
   private table: { id: PlayerId; name: string; seat: number }[] | null = null;
   private readonly guests = new Map<number, GuestSeat>();
@@ -1050,7 +1056,8 @@ export class GameHost extends Emitter<HostEvents> {
     if (seat.lastAction > 0 && m.id === seat.lastAction) return this.answerUnchanged(seat, m.id);
     if (m.id < seat.lastAction) return refuse('stale', `Action ${m.id} is older than the last one applied (${seat.lastAction}).`);
     const action = m.action;
-    if (!STATELESS.has(action.type) && m.seq !== this.session.actions.length) {
+    // F28: views after the last progress differ only by stop changes (anyone's), so an action chosen from any of them still applies.
+    if (!STATELESS.has(action.type) && (m.seq < this.lastProgressSeq || m.seq > this.session.actions.length)) {
       return refuse('stale', 'The game moved on since the view this action was chosen from; choose again from the latest view.');
     }
     // The proposer acting otherwise withdraws its proposal (milestone 9: the guest's was the only one).
@@ -1325,6 +1332,7 @@ export class GameHost extends Emitter<HostEvents> {
       return failure('engineError', `The engine failed on this action (the game is unchanged): ${e instanceof Error ? e.message : String(e)}`);
     }
     if (!r.ok) return { ok: false, error: { ...r.error, code: 'illegalAction' } };
+    if (action.type !== 'setStops') this.lastProgressSeq = this.session!.actions.length;
     // RPL-3: the record's line first, so the game's end (in broadcast) finds the action that ended it.
     if (this.record) this.emit('recordAction', this.record.add(action, prev, this.session!.state));
     const seat = from === HOST_PLAYER ? undefined : this.seatByPlayer(from);

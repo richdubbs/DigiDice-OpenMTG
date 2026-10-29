@@ -22,7 +22,8 @@ export { replay, GameSession, type ReplayResult } from './core/replay';
 // RPL-0 INTERFACE CHANGE (additive; replays design 13): the replay contracts. The open view and the view schema (core/view.ts), the event redaction shared
 // by packages/net and the client (core/view-events.ts, moved from net game/redact.ts), checkpoint digests (core/digest.ts), view patches (core/view-patch.ts,
 // moved from the parked milestone 13 branch) and the replay and bug report files (replay/*). All browser-safe.
-export { openView, ENGINE_VIEW_SCHEMA } from './core/view';
+export { openView, ENGINE_VIEW_SCHEMA, OLDEST_READ_VIEW_SCHEMA, readsViewSchema, adaptRecordedView } from './core/view';
+export { viewCharsOf, type ViewChars, type ViewCharsAbility } from './core/view-chars';
 export { eventsFor, replayedEventsFor, hiddenActionInProgress, UNSEEN_ID, type EventsForOptions } from './core/view-events';
 export { gameDigest, digestSummary, checkpointDue, CHECKPOINT_EVERY, DIGEST_VERSION } from './core/digest';
 export { diffViews, applyViewPatch, nextView, diffJson, applyPatch, jsonEqual, PatchError, PATCH_MAX_WORK, type PatchOp, type JsonPath, type ApplyPatchOptions } from './core/view-patch';
@@ -43,6 +44,8 @@ export { poolTypes, manaText } from './rules/mana';
 export { parseManaAbilityLine, type AddManaStep } from './rules/mana-text';
 export { isSummoningSick } from './rules/timing';
 export { ptNumbers } from './rules/characteristics';
+// Review 2026-10-26, Finding 19: the client checks a view's characteristics cache once per view instead of once per card (packages/client board/model.ts).
+export { readingStable } from './rules/characteristics';
 export { parseKeywordLine, parseEnchant, parseLandwalk, AUTOMATED_KEYWORDS, SUBTYPE_QUALITY_WORDS, type KeywordLine } from './cards/keywords';
 export { KEYWORD_RULES } from './cards/keyword-list';
 export { parseQuality, hasQuality, qualityText } from './rules/quality';

@@ -8,18 +8,11 @@
  * player's animation-speed setting (the animator's own floor, 0.2, still applies); with reduced motion or animations off nothing is animated anyway. As the
  * pile shrinks the factor climbs back, one resolution at a time, to exactly 1 at 5: the same curve both ways, so the speed-up and the slow-down are smooth.
  */
+import { STACK_PACE_THRESHOLD, stackPace } from '@openmtg/play/stackPace';
 import type { StepA } from './plan';
 
-/** More objects than this on the stack and the resolutions speed up. */
-export const STACK_PACE_THRESHOLD = 5;
-/** The fastest pace: a quarter of the normal time (reached at 10 objects). */
-export const STACK_PACE_FLOOR = 0.25;
-
-export function stackPace(size: number): number {
-  if (!(size > STACK_PACE_THRESHOLD)) return 1;
-  const r = STACK_PACE_THRESHOLD / size;
-  return Math.max(STACK_PACE_FLOOR, r * r);
-}
+// The pace curve itself is @openmtg/play's (Godot plan phase 1: the computer there uses it too).
+export { STACK_PACE_FLOOR, STACK_PACE_THRESHOLD, stackPace } from '@openmtg/play/stackPace';
 
 /**
  * How many objects are on the stack as each step of a change's part A begins: the stack on screen before the change, one more for each spell or ability

@@ -8,7 +8,8 @@
  * - Port 47600 when free, else any free port (the old OpenMTG.exe or another program may hold it). A second start of the app focuses the open window.
  * - Links to other sites open in the default browser, never inside the app. F11 toggles full screen.
  * - Updates at every launch (update.ts): a newer version on the GitHub Releases of richdubbs/DigiDice-OpenMTG is downloaded and installed before the game
- *   starts, and the new version opens by itself. Offline or no newer release: the app starts as it is. %APPDATA%\OpenMTG\update.log has the latest
+ *   starts, and the new version opens by itself. Offline or no newer release: the app starts as it is. A download that takes more than 3 minutes goes
+ *   on in the background (the window title says so) and installs when the player closes OpenMTG. %APPDATA%\OpenMTG\update.log has the latest
  *   launch's check.
  */
 import { app, BrowserWindow, dialog, Menu, shell } from 'electron';
@@ -18,7 +19,7 @@ import path from 'node:path';
 import { CardDatabase, defaultCacheDir } from '@openmtg/cards';
 import { contextFrom, startServer, warmCardCache, type RunningServer, type ServerOptions } from '@openmtg/server';
 import { cardDataStale, refreshCardData } from './cardData';
-import { acceptPublishers, launchLog, updateAtLaunch } from './update';
+import { acceptPublishers, BACKGROUND_NOTE, launchLog, updateAtLaunch } from './update';
 
 declare const __OPENMTG_VERSION__: string;
 
@@ -30,6 +31,24 @@ if (!process.env.OPENMTG_CACHE_DIR?.trim()) process.env.OPENMTG_CACHE_DIR = path
 
 let win: BrowserWindow | null = null;
 let running: RunningServer | null = null;
+/** A note after the window title (an update downloading in the background), or ''. */
+let titleNote = '';
+
+function setTitleNote(note: string): void {
+  titleNote = note;
+  win?.setTitle(note ? `OpenMTG - ${note}` : 'OpenMTG');
+}
+
+/** Whether `url` is a page of the app: the waiting screen or the local server (same origin: scheme, host and port), never another site. */
+function isOurs(url: string): boolean {
+  if (url.startsWith('data:')) return true;
+  if (running === null) return false;
+  try {
+    return new URL(url).origin === new URL(running.url).origin;
+  } catch {
+    return false;
+  }
+}
 
 /** The waiting screen shown before the server is up (a data: page, so it needs nothing from the server). */
 function waitingPage(message: string): string {
@@ -65,7 +84,11 @@ function createWindow(): BrowserWindow {
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   w.once('ready-to-show', () => w.show());
-  const isOurs = (url: string) => url.startsWith('data:') || (running !== null && url.startsWith(running.url));
+  w.on('page-title-updated', (e, title) => {
+    if (!titleNote) return;
+    e.preventDefault();
+    w.setTitle(`${title} - ${titleNote}`);
+  });
   const openOutside = (url: string) => {
     if (/^https?:\/\//i.test(url)) void shell.openExternal(url);
   };
@@ -102,6 +125,11 @@ async function startOpenMTG(): Promise<void> {
     const update = await updateAtLaunch({ updater: autoUpdater, newCancellationToken: () => new CancellationToken(), show: showMessage });
     // The installer is starting and this copy is closing.
     if (update === 'installing') return;
+    if (update === 'background') {
+      setTitleNote(BACKGROUND_NOTE);
+      autoUpdater.once('update-downloaded', () => setTitleNote('Update ready, installs when you close OpenMTG'));
+      autoUpdater.once('error', () => setTitleNote(''));
+    }
   }
 
   const cacheDir = defaultCacheDir();

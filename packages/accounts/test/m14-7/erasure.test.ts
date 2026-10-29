@@ -2,7 +2,7 @@
  * M14-7: the erasure (design 10.2 steps 3-8; 13.2): at purgeAt with two fake required holders, one failing once and one answering `pending` once
  * (both retried, the account hidden meanwhile, the tombstone written only after both); a holder that is done is never called again; a missing
  * required holder blocks the tombstone until it is registered; a rerun changes nothing; the tombstone and the 90-day hold; an erase whose
- * snapshot failed finished at the next tick; and on the file store a byte search of ACCOUNTS_DATA_DIR after the erasure, with FileMailer's files
+ * snapshot failed finished at the next tick; and a byte search of the store's rows and of ACCOUNTS_DATA_DIR after the erasure, with FileMailer's files
  * (a fake that files them as FileMailer does) and the operator's export files deleted with the account. The review of M14-7's fixes, each as a
  * fixed interleaving: two services ticking at once on one store, and a pass that outlasted its lease (one erasure); a full page of held-up
  * erasures and the one after it; a sign-in and a wrong password during the store's erase, and an audit flush the store refused (nothing of the
@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
-  AccountStoreError, adminExportPath, DELETED_PLAYER_NAME, MemoryAccountStore, openFileAccountStore, type AccountId, type AccountStore,
+  AccountStoreError, adminExportPath, DELETED_PLAYER_NAME, MemoryAccountStore, type AccountId, type AccountStore,
 } from '@openmtg/accounts';
 import { ERASE_BATCH, ERASURE_LEASE_MS, PERMANENT_SANCTION_UNTIL, runningSanctionEnd } from '../../src/rights/deletion';
 import { placesInTables } from '../m14-4/contract';
@@ -434,9 +434,9 @@ describe('M14-7: what an erasure still owes, and one tick at a time', () => {
 });
 
 describe('M14-7: nothing left behind (10.2, 13.2)', () => {
-  it('the file store: a byte search of ACCOUNTS_DATA_DIR finds the id only in the tombstone, the deleted event and change, and open reports; no name or email', async () => {
+  it('a byte search of the store and ACCOUNTS_DATA_DIR finds the id only in the tombstone, the deleted event and change, and open reports; no name or email', async () => {
     const dir = freshDir();
-    const store = await openFileAccountStore({ dir });
+    const store = new MemoryAccountStore();
     const mailer = new FakeMailer(join(dir, 'mail'));
     const s = rightsSetup({ store, mailer, env: { ACCOUNTS_DATA_DIR: dir, MAILER: 'file' } });
     const alice = await registerAs(s, 'Alice');
@@ -466,22 +466,22 @@ describe('M14-7: nothing left behind (10.2, 13.2)', () => {
     await s.service.admin.exportAccount(OP, A, false);
     await s.service.admin.exportAccount(OP, bob.auth.account, false);
     await s.service.admin.exportAccount(OP, carol.auth.account, false);
-    expect(placesInDir(dir, 'Alicia').length).toBeGreaterThan(0);
+    expect(placesInDir(dir, store, 'Alicia').length).toBeGreaterThan(0);
 
     expect((await s.service.tick(new Date(del.purgeAt))).erased).toBe(1);
 
     expect(mailer.forgot.filter((x) => x === A).length).toBeGreaterThanOrEqual(1);
     expect(readdirSync(join(dir, 'mail'))).toEqual([bob.auth.account]);
     expect(readdirSync(join(dir, 'exports')).filter((f) => f.startsWith(A))).toEqual([]);
-    for (const p of placesInDir(dir, A)) expect(['tombstone', 'audit:deleted', 'change:deleted', 'report-target:open']).toContain(p);
-    expect(placesInDir(dir, A)).toEqual(expect.arrayContaining(['tombstone', 'audit:deleted', 'change:deleted']));
-    for (const needle of ['Alicia', 'Alice', 'alice.smith@example.com', 'alice.smith']) expect(placesInDir(dir, needle), needle).toEqual([]);
+    for (const p of placesInDir(dir, store, A)) expect(['tombstone', 'audit:deleted', 'change:deleted', 'report-target:open']).toContain(p);
+    expect(placesInDir(dir, store, A)).toEqual(expect.arrayContaining(['tombstone', 'audit:deleted', 'change:deleted']));
+    for (const needle of ['Alicia', 'Alice', 'alice.smith@example.com', 'alice.smith']) expect(placesInDir(dir, store, needle), needle).toEqual([]);
     for (const k of [s.names.key('Alicia'), s.names.key('Alice')]) {
-      for (const p of placesInDir(dir, `"${k}"`)) expect(p, k).toBe('name-for-nobody');
+      for (const p of placesInDir(dir, store, `"${k}"`)) expect(p, k).toBe('name-for-nobody');
     }
     // Bob's data stays, but not his export file, which named her (the game in its holder's section): made again, it names nobody erased (his
     // block went with her, and his report about her is not listed while its target is not active: security review of M14-7, finding 4)
-    expect(placesInDir(dir, 'Bobby').length).toBeGreaterThan(0);
+    expect(placesInDir(dir, store, 'Bobby').length).toBeGreaterThan(0);
     expect(readdirSync(join(dir, 'exports')).filter((f) => f.startsWith(bob.auth.account))).toEqual([]);
     expect(readdirSync(join(dir, 'exports')).filter((f) => f.startsWith(carol.auth.account))).toHaveLength(1);
     expect(s.log.filter((l) => l.name === 'accounts.erasure.exports').map((l) => l.fields)).toEqual([{ dropped: 1 }]);

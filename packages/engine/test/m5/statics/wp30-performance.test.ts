@@ -68,7 +68,7 @@ describe('characteristics computed once per frozen definition', () => {
   });
 
   it('an unfrozen definition edited in place is seen at once (only frozen definitions are memoized)', () => {
-    const st = structuredClone(s()); // structuredClone un-freezes, like the scenario helper does
+    const st = structuredClone(s()); // structuredClone un-freezes (util/clone.ts#clone no longer does: F17/F9)
     const id = Object.keys(st.objects).find((x) => st.objects[x]!.defId === 'Grizzly Bears')!;
     expect(charsOfObject(st, st.objects[id]!).subtypes).toEqual(['Bear']);
     st.defs['Grizzly Bears']!.faces[0]!.subtypes.push('Elf');

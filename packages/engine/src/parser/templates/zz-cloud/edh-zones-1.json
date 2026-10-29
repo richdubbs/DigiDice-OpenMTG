@@ -1,0 +1,220 @@
+[
+  {
+    "id": "eff.edhz1.player.may.search.desc.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2h",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} may search their library for {f:SearchDesc} , put it onto the battlefield , then shuffle",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "search",
+          "who": "$p",
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": "$p"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may",
+      "then"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Destroy target land. That land's controller may search their library for an artifact card with mana value 2 or less, put it onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Destroy target artifact. Its controller may search their library for a creature card with toughness 2 or less, put it onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target land. That land's controller may search their library for an artifact card with mana value 2 or less, put it onto the battlefield tapped, then shuffle.",
+      "Destroy target land. That land's controller may search their library for an artifact card with mana value 2 or less, put it into their hand, then shuffle.",
+      "Destroy target land. That land's controller searches their library for an artifact card with mana value 2 or less, puts it onto the battlefield, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.edhz1.player.put.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 400.7",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} put[s] {o:Objs} onto the battlefield",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "$p"
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "The owner of target land shuffles it into their library, then reveals the top card of their library. If it's a land card, they put it onto the battlefield."
+      },
+      {
+        "text": "Target player shuffles target card from their graveyard into their library, then reveals the top card of their library. If it's a creature card, that player puts it onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "The owner of target land shuffles it into their library, then reveals the top card of their library. If it's a land card, they put it onto the battlefield tapped.",
+      "The owner of target land shuffles it into their library, then reveals the top card of their library. If it's a land card, they put it into their hand.",
+      "The owner of target land shuffles it into their library, then reveals the top card of their library. If it's a land card, they put it onto the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhz1.player.shuffleInto.thenRevealTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 701.20a",
+      "CR 400.3",
+      "CR 401.2",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} shuffle[s] {o:Objs} into their library , then reveal[s] the top card of their library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": "$p"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": 1
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "The owner of target land shuffles it into their library, then reveals the top card of their library."
+      },
+      {
+        "text": "Target player shuffles target card from their graveyard into their library, then reveals the top card of their library."
+      }
+    ],
+    "counterExamples": [
+      "Target player shuffles target card from their graveyard into their library, then reveals the top two cards of their library.",
+      "Target player shuffles target card from their graveyard into their library, then draws a card.",
+      "Target player shuffles target card from their graveyard into your library, then reveals the top card of their library."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.edhz1.you.untap",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 608.2c"
+    ],
+    "pattern": "you untap {o:Objs}",
+    "build": {
+      "op": "untap",
+      "what": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target opponent discards a card and you untap all lands you control."
+      },
+      {
+        "text": "Target player loses 2 life and you untap up to two target lands."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent discards a card and untaps all lands you control.",
+      "Target opponent discards a card and you untap all lands you control at random.",
+      "Target opponent discards a card and that player untaps all lands they control."
+    ]
+  },
+  {
+    "id": "eff.edhz1.exileUntil.total.thatPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 202.3",
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} exiles cards from the top of their library until that player has exiled cards with total mana value {n:Qty} or greater",
+    "build": {
+      "op": "exileUntil",
+      "who": "$p",
+      "filter": {},
+      "total": {
+        "stat": "manaValue",
+        "atLeast": "$n"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent exiles cards from the top of their library until that player has exiled cards with total mana value 12 or greater."
+      },
+      {
+        "text": "Target opponent exiles cards from the top of their library until that player has exiled cards with total mana value 8 or greater."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent exiles cards from the top of their library until that player has exiled cards with total mana value 12 or less.",
+      "Each opponent exiles cards from the top of their library until that player has exiled a creature card.",
+      "Each opponent mills cards until that player has milled cards with total mana value 12 or greater."
+    ]
+  }
+]

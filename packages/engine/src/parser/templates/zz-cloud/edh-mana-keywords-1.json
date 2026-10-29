@@ -1,0 +1,390 @@
+[
+  {
+    "id": "eff.edhmk1.mana.anyColorAmong",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 106.1",
+      "CR 106.5",
+      "CR 605.1a"
+    ],
+    "pattern": "add one mana of any color among {f:Filter}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "colorsOf",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "count": 1
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any color among Wizards you control."
+      },
+      {
+        "text": "{1}, {T}: Add one mana of any color among artifact creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Add one mana of any color among Wizards.",
+      "{T}: Add two mana of any color among Wizards you control.",
+      "{T}: Add one mana of any one color among Wizards you control."
+    ]
+  },
+  {
+    "id": "kw.edhmk1.equip.legendary",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 702.6c",
+      "CR 205.4"
+    ],
+    "pattern": "equip legendary creature {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "supertypes": [
+          "Legendary"
+        ],
+        "controller": "you"
+      }
+    },
+    "examples": [
+      {
+        "text": "Equip legendary creature {5}"
+      },
+      {
+        "text": "Equip legendary creature {2}{W}"
+      }
+    ],
+    "counterExamples": [
+      "Equip legendary creature",
+      "Equip legendary creatures {2}",
+      "Equip nonlegendary creature {2}"
+    ]
+  },
+  {
+    "id": "eff.edhmk1.mana.exiledCardColors",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.5",
+      "CR 607.2a",
+      "CR 105.2"
+    ],
+    "pattern": "add {n:Qty} mana of any of the exiled card 's colors",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "colorsOf",
+        "of": {
+          "ref": "linked",
+          "link": "exiled"
+        },
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, you may exile a blue card from your hand.\n{2}, {T}: Add one mana of any of the exiled card's colors."
+      },
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\n{2}, {T}: Add two mana of any of the exiled card's colors."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Add one mana of any of the exiled card's colors.",
+      "When ~ enters, exile target creature card from a graveyard.\n{2}, {T}: Add one mana of any of the exiled card's types."
+    ]
+  },
+  {
+    "id": "sta.edhmk1.triggerMod.sharedController",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.10a",
+      "CR 109.4",
+      "CR 205.3m"
+    ],
+    "pattern": "if a triggered ability of a {s:Subtypes} or another {t:Subtypes} you control triggers , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "abilitiesOf": {
+            "anyOf": [
+              {
+                "subtypes": "$s",
+                "controller": "you"
+              },
+              {
+                "subtypes": "$t",
+                "controller": "you",
+                "other": true
+              }
+            ]
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "If a triggered ability of a Goblin or another Elf you control triggers, that ability triggers an additional time."
+      },
+      {
+        "text": "If a triggered ability of a Wizard or another Zombie you control triggers, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If a triggered ability of a Goblin or another Elf you control triggers, that ability triggers two additional times.",
+      "If a triggered ability of a Goblin or another Elf an opponent controls triggers, that ability triggers an additional time.",
+      "If an activated ability of a Goblin or another Elf you control is activated, that ability triggers an additional time."
+    ]
+  },
+  {
+    "id": "rid.edhmk1.instead.thatType",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 106.1",
+      "CR 106.7"
+    ],
+    "pattern": "if {c:Cond} , add {n:Qty} mana of that type instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "dynamic.kind": "couldProduce"
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "@previousMerged": {
+              "dynamic": {
+                "count": "$n",
+                "oneType": true
+              }
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any type that a Wall you control could produce. If ~ has a +1/+1 counter on it, add three mana of that type instead."
+      },
+      {
+        "text": "{T}: Add one mana of any type that a land you control could produce. If you control a Dragon, add two mana of that type instead."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any type that a Wall you control could produce. If ~ has a +1/+1 counter on it, add three mana of any type instead.",
+      "{T}: Add one mana of any color. If ~ has a +1/+1 counter on it, add three mana of that type instead.",
+      "{T}: Add one mana of any type that a Wall you control could produce. If ~ has a +1/+1 counter on it, add three mana of that type."
+    ]
+  },
+  {
+    "id": "eff.edhmk1.mana.anyCombination.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": -1,
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 605.1a"
+    ],
+    "pattern": "add {n:Qty} mana in any combination of colors",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyColor",
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{4}, {T}, Sacrifice ~: Add five mana in any combination of colors."
+      },
+      {
+        "text": "{T}, Sacrifice ~: Add six mana in any combination of colors."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add five mana of any one color.",
+      "{T}: Add five mana in any combination of {R} and/or {G}.",
+      "{T}: Add five mana of any color."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 605.1a"
+    ],
+    "subject": "none",
+    "id": "eff.edhmk1.mana.anyCombination.twoTypes",
+    "priority": -1,
+    "pattern": "add {n:Qty} mana in any combination of {a:ManaSym} and/or {b:ManaSym}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyColor",
+        "count": "$n",
+        "from": [
+          "$a",
+          "$b"
+        ]
+      }
+    },
+    "examples": [
+      {
+        "text": "{T}, Sacrifice a Mountain: Add three mana in any combination of {R} and/or {G}."
+      },
+      {
+        "text": "{1}, {T}: Add two mana in any combination of {W} and/or {U}."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add three mana in any combination of colors.",
+      "{T}: Add three mana of any one color for each Elf you control.",
+      "{T}: Add three mana in any combination of {R}, {G}, and/or {W}."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 107.3"
+    ],
+    "subject": "none",
+    "id": "eff.edhmk1.mana.anyCombination.twoTypes.whereX",
+    "pattern": "add x mana in any combination of {a:ManaSym} and/or {b:ManaSym} , where x is {q:Qty}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyColor",
+        "count": "$q",
+        "from": [
+          "$a",
+          "$b"
+        ]
+      }
+    },
+    "examples": [
+      {
+        "text": "{T}: Add X mana in any combination of {B} and/or {R}, where X is the number of Zombies you control."
+      },
+      {
+        "text": "{2}, {T}: Add X mana in any combination of {G} and/or {W}, where X is ~'s power."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add X mana in any combination of colors, where X is the number of Zombies you control.",
+      "{T}: Add X mana of any one color, where X is the number of Zombies you control.",
+      "{T}: Add X mana in any combination of {B} and/or {R}."
+    ]
+  },
+  {
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 605.1a"
+    ],
+    "subject": "none",
+    "id": "eff.edhmk1.mana.anyCombination.threeTypes",
+    "priority": -1,
+    "pattern": "add {n:Qty} mana in any combination of {a:ManaSym} , {b:ManaSym} , and/or {c:ManaSym}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyColor",
+        "count": "$n",
+        "from": [
+          "$a",
+          "$b",
+          "$c"
+        ]
+      }
+    },
+    "examples": [
+      {
+        "text": "{1}, {T}: Add two mana in any combination of {U}, {B}, and/or {R}."
+      },
+      {
+        "text": "{2}, {T}: Add three mana in any combination of {W}, {G}, and/or {B}."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Add two mana in any combination of colors.",
+      "{1}, {T}: Add two mana in any combination of {U} and/or {R}.",
+      "{1}, {T}: Add two mana in any combination of {U}, {B}, {R}, and/or {G}."
+    ]
+  }
+]

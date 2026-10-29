@@ -24,9 +24,8 @@
     "hosted": "tsx packages/hosted/src/main.ts",
     "bug": "tsx scripts/bug.ts",
     "gen:schema": "tsx scripts/gen-ability-schema.ts",
-    "exe": "node scripts/build-exe.mjs",
     "installer": "node scripts/build-installer.mjs",
-    "desktop": "node scripts/update-desktop.mjs",
+    "sounds": "tsx packages/server/src/sounds/cli.ts",
     "stats:coverage": "tsx scripts/coverage-stats.ts"
   },
   "engines": {
@@ -34,7 +33,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
-    "postject": "^1.0.0-alpha.6",
     "ts-json-schema-generator": "^2.9.0",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3",

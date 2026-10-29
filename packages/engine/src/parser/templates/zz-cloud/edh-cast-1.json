@@ -1,0 +1,581 @@
+[
+ {
+  "id": "sta.edhc1.top.lands.cast.lifeCost",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 118.9",
+   "CR 202.3",
+   "CR 601.3",
+   "CR 401.5",
+   "CR 305.1",
+   "CR 611.3a"
+  ],
+  "pattern": "you may play lands and cast {f:Filter} from the top of your library . if you cast a spell this way , pay life equal to its mana value rather than ( pay | paying ) its mana cost",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "play",
+     "of": {
+      "types": [
+       "Land"
+      ]
+     },
+     "fromTop": true
+    },
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "cast",
+     "of": "$f",
+     "fromTop": true,
+     "costChange": {
+      "kind": "set",
+      "life": "manaValue"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "may",
+   "if",
+   "this way",
+   "rather than"
+  ],
+  "examples": [
+   {
+    "text": "You may play lands and cast Elf spells from the top of your library. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost."
+   },
+   {
+    "text": "You may play lands and cast artifact spells from the top of your library. If you cast a spell this way, pay life equal to its mana value rather than paying its mana cost."
+   }
+  ],
+  "counterExamples": [
+   "You may play lands and cast spells from the top of your library. If you cast a spell this way, pay life equal to its power rather than pay its mana cost.",
+   "You may play lands and cast spells from your graveyard. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.",
+   "You may play lands and cast spells from the top of your library. If you cast a spell this way, you lose life equal to its mana value."
+  ]
+ },
+ {
+  "id": "sta.edhc1.top.play.cast.two",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 305.1",
+   "CR 601.3",
+   "CR 601.3e",
+   "CR 401.5",
+   "CR 611.3a"
+  ],
+  "pattern": "you may play {a:Filter} and cast {b:Filter} from the top of your library",
+  "build": [
+   {
+    "s": "permit",
+    "who": {
+     "ref": "you"
+    },
+    "action": "play",
+    "of": "$a",
+    "fromTop": true
+   },
+   {
+    "s": "permit",
+    "who": {
+     "ref": "you"
+    },
+    "action": "cast",
+    "of": "$b",
+    "fromTop": true
+   }
+  ],
+  "consumes": [
+   "may"
+  ],
+  "examples": [
+   {
+    "text": "You may play artifact lands and cast artifact spells from the top of your library."
+   },
+   {
+    "text": "You may play legendary lands and cast legendary spells from the top of your library."
+   }
+  ],
+  "counterExamples": [
+   "You may play historic lands or cast historic spells from the top of your library.",
+   "You may play historic lands and cast historic spells from your graveyard.",
+   "Your opponents may play historic lands and cast historic spells from the top of your library."
+  ]
+ },
+ {
+  "id": "sta.edhc1.spells.each.thatColors.less",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.2f",
+   "CR 118.7",
+   "CR 604.1",
+   "CR 105.2"
+  ],
+  "pattern": "each spell you cast that's {c1:Color} or {c2:Color} costs {m:ManaCost} less to cast",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "costMod",
+     "applies": {
+      "spells": {
+       "colors": [
+        "$c1",
+        "$c2"
+       ],
+       "stackKind": "spell",
+       "zone": "stack"
+      },
+      "caster": "you"
+     },
+     "change": {
+      "kind": "reduce",
+      "mana": "$m",
+      "floor": "zero"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Each spell you cast that's white or blue costs {2} less to cast."
+   },
+   {
+    "text": "Each spell you cast that's black or red costs {1} less to cast."
+   }
+  ],
+  "counterExamples": [
+   "Each spell you cast that's red or green costs {1} more to cast.",
+   "Each spell your opponents cast that's red or green costs {1} less to cast.",
+   "Each spell you cast that's red and green costs {1} less to cast."
+  ]
+ },
+ {
+  "id": "cm.edhc1.spells.less.you.power",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.2f",
+   "CR 118.7",
+   "CR 208.1",
+   "CR 604.1"
+  ],
+  "pattern": "{f:Filter} you cast with power {n:Qty} or greater cost {m:ManaCost} less to cast",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "costMod",
+     "applies": {
+      "spells": {
+       "types": "$f.types",
+       "subtypes": "$f.subtypes",
+       "supertypes": "$f.supertypes",
+       "colors": "$f.colors",
+       "colorless": "$f.colorless",
+       "stackKind": "spell",
+       "zone": "stack",
+       "power": {
+        "op": ">=",
+        "value": "$n"
+       }
+      },
+      "caster": "you"
+     },
+     "change": {
+      "kind": "reduce",
+      "mana": "$m",
+      "floor": "zero"
+     }
+    }
+   ]
+  },
+  "examples": [
+   {
+    "text": "Creature spells you cast with power 5 or greater cost {3} less to cast."
+   },
+   {
+    "text": "Dragon spells you cast with power 6 or greater cost {1} less to cast."
+   }
+  ],
+  "counterExamples": [
+   "Creature spells you cast with power 4 or greater cost {2} more to cast.",
+   "Creature spells you cast with power 4 or less cost {2} less to cast.",
+   "Creature spells your opponents cast with power 4 or greater cost {2} less to cast."
+  ]
+ },
+ {
+  "id": "eff.edhc1.pumpgrant.eachSingular",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 611.2a",
+   "CR 611.2c",
+   "CR 613.4c",
+   "CR 613.1f"
+  ],
+  "pattern": "each {f:Filter} gets {pt:PT} and gains {a:Abilities} {d:Dur}",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "continuous",
+     "affects": {
+      "ref": "each",
+      "filter": "$f"
+     },
+     "mods": [
+      {
+       "layer": "7c",
+       "power": "$pt.p",
+       "toughness": "$pt.t"
+      },
+      {
+       "layer": 6,
+       "add": "$a"
+      }
+     ]
+    }
+   ]
+  },
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Each creature you control gets +1/+1 and gains trample until end of turn."
+   },
+   {
+    "text": "Each Goblin you control with power 4 or greater gets +2/+0 and gains menace until end of turn."
+   }
+  ],
+  "counterExamples": [
+   "Each creature you control gets +1/+1 and gains trample.",
+   "Each creature you control gets +1/+1 and loses trample until end of turn.",
+   "Each creature you control gets +1/+1 until end of turn."
+  ]
+ },
+ {
+  "id": "sta.edhc1.spells.cast.mv.cascade",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 702.85a",
+   "CR 613.1f",
+   "CR 202.3",
+   "CR 601.2"
+  ],
+  "pattern": "{f:Filter} you cast with mana value {n:Qty} or greater have cascade",
+  "build": {
+   "s": "continuous",
+   "affects": {
+    "ref": "each",
+    "filter": {
+     "anyOf": [
+      {
+       "types": "$f.types",
+       "subtypes": "$f.subtypes",
+       "supertypes": "$f.supertypes",
+       "colors": "$f.colors",
+       "colorless": "$f.colorless",
+       "manaValue": {
+        "op": ">=",
+        "value": "$n"
+       },
+       "stackKind": "spell",
+       "zone": "stack"
+      }
+     ],
+     "controller": "you",
+     "not": {
+      "stackKind": "copy",
+      "zone": "stack"
+     },
+     "zone": "stack"
+    }
+   },
+   "mods": [
+    {
+     "layer": 6,
+     "add": [
+      {
+       "kind": "keyword",
+       "keyword": "cascade",
+       "text": "cascade"
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "text": "Spells you cast with mana value 7 or greater have cascade."
+   },
+   {
+    "text": "Creature spells you cast with mana value 4 or greater have cascade."
+   }
+  ],
+  "counterExamples": [
+   "Spells you cast with mana value 6 or greater have storm.",
+   "Spells you cast with mana value 6 or less have cascade.",
+   "Spells your opponents cast with mana value 6 or greater have cascade."
+  ]
+ },
+ {
+  "id": "eff.edhc1.spells.cast.thisTurn.cantBeCountered",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 101.2",
+   "CR 701.6a",
+   "CR 611.2a",
+   "CR 611.2c"
+  ],
+  "pattern": "{f:Filter} you cast this turn can't be countered",
+  "build": {
+   "op": "effect",
+   "duration": {
+    "d": "endOfTurn"
+   },
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "each",
+      "filter": {
+       "anyOf": [
+        "$f"
+       ],
+       "controller": "you",
+       "not": {
+        "stackKind": "copy",
+        "zone": "stack"
+       },
+       "zone": "stack"
+      }
+     },
+     "mode": "cant",
+     "action": "beCountered"
+    }
+   ]
+  },
+  "consumes": [
+   "can't"
+  ],
+  "examples": [
+   {
+    "text": "Gain 2 life. Creature spells you cast this turn can't be countered."
+   },
+   {
+    "text": "Scry 1. Spells you cast this turn can't be countered."
+   }
+  ],
+  "counterExamples": [
+   "Creature spells you cast can't be countered.",
+   "Creature spells you cast this turn can be countered.",
+   "Creature spells your opponents cast this turn can't be countered.",
+   "The next artifact spell you cast this turn can't be countered."
+  ]
+ },
+ {
+  "id": "eff.edhc1.copy.spell.thenReturn",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "priority": 1,
+  "cr": [
+   "CR 707.10",
+   "CR 707.10c",
+   "CR 400.3",
+   "CR 608.2c",
+   "CR 115.1"
+  ],
+  "pattern": "copy {o:Obj} , then return it to its owner 's hand",
+  "build": [
+   {
+    "op": "copy",
+    "what": "$o",
+    "result": "spell",
+    "who": {
+     "ref": "you"
+    }
+   },
+   {
+    "op": "move",
+    "what": "$o",
+    "to": {
+     "zone": "hand"
+    }
+   }
+  ],
+  "examples": [
+   {
+    "text": "Copy target noncreature spell, then return it to its owner's hand. You may choose new targets for the copy."
+   },
+   {
+    "text": "Copy target instant spell, then return it to its owner's hand. You may choose new targets for the copy."
+   }
+  ],
+  "counterExamples": [
+   "Copy target instant or sorcery spell, then return it to its owner's hand.",
+   "Copy target instant or sorcery spell, then return it to your hand. You may choose new targets for the copy.",
+   "Copy target instant or sorcery spell, then exile it. You may choose new targets for the copy.",
+   "Copy target instant or sorcery spell, then return it to its owner's hand. You may choose new targets for the copies."
+  ],
+  "consumes": [
+   "then"
+  ]
+ },
+ {
+  "id": "eff.edhc1.mayCopyExiled.castFree",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 707.12",
+   "CR 707.10a",
+   "CR 608.2g",
+   "CR 607.2a",
+   "CR 118.9",
+   "CR 601.2"
+  ],
+  "pattern": "you may copy the exiled card . if you do , you may cast the copy without paying its mana cost",
+  "build": {
+   "op": "cast",
+   "who": {
+    "ref": "you"
+   },
+   "what": {
+    "ref": "linked",
+    "link": "exiled"
+   },
+   "free": true,
+   "optional": true,
+   "copyIn": "exile"
+  },
+  "consumes": [
+   "may",
+   "if",
+   "do"
+  ],
+  "examples": [
+   {
+    "text": "Imprint -- When ~ enters, you may exile an instant card with mana value 2 or less from your hand.\n{3}, {T}: You may copy the exiled card. If you do, you may cast the copy without paying its mana cost."
+   },
+   {
+    "text": "When ~ enters, you may exile a sorcery card from your hand.\n{1}, {T}: You may copy the exiled card. If you do, you may cast the copy without paying its mana cost."
+   }
+  ],
+  "counterExamples": [
+   "When ~ enters, you may exile a creature card from your hand.\n{3}, {T}: You may copy the exiled card. If you do, you may cast the copy.",
+   "When ~ enters, you may exile a creature card from your hand.\n{3}, {T}: You may copy the exiled card. If you do, you may cast the copy by paying {1}.",
+   "When ~ enters, you may exile a creature card from your hand.\n{3}, {T}: Copy the exiled card. If you do, you may cast the copy without paying its mana cost."
+  ]
+ },
+ {
+  "id": "eff.edhc1.changeTarget.a.toSelf",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 115.7",
+   "CR 115.7a",
+   "CR 115.1",
+   "CR 608.2b"
+  ],
+  "pattern": "change a target of {o:Obj} to ~",
+  "build": {
+   "op": "changeTarget",
+   "who": {
+    "ref": "you"
+   },
+   "what": "$o",
+   "to": {
+    "ref": "self"
+   }
+  },
+  "examples": [
+   {
+    "text": "{1}{U}: Change a target of target spell or ability to ~."
+   },
+   {
+    "text": "{2}: Change a target of target spell to ~."
+   }
+  ],
+  "counterExamples": [
+   "{1}{U}: Change the target of target spell or ability with a single target.",
+   "{1}{U}: Change a target of target spell or ability to target creature.",
+   "{1}{U}: Change a target of target spell or ability to ~ and ~ gains flying until end of turn."
+  ]
+ },
+ {
+  "id": "eff.edhc1.changeTarget.the.toSelf",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 115.7",
+   "CR 115.7a",
+   "CR 115.1",
+   "CR 608.2b"
+  ],
+  "pattern": "change the target of {o:Obj} to ~",
+  "build": {
+   "op": "changeTarget",
+   "who": {
+    "ref": "you"
+   },
+   "what": "$o",
+   "to": {
+    "ref": "self"
+   }
+  },
+  "examples": [
+   {
+    "text": "When ~ enters, you may change the target of target sorcery spell with a single target to ~."
+   },
+   {
+    "text": "{3}: Change the target of target sorcery spell with a single target to ~."
+   }
+  ],
+  "counterExamples": [
+   "{3}: Change the target of target sorcery spell with a single target.",
+   "{3}: Change the target of target sorcery spell with a single target to target creature.",
+   "{3}: Change the target of target sorcery spell with a single target to ~ and ~ gains flying until end of turn."
+  ]
+ }
+]

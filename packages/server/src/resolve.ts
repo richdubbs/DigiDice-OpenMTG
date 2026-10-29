@@ -102,15 +102,23 @@ function unknownRow(section: DeckSection, l: DeckLine, r: ResolvedName, raw: str
   return out;
 }
 
-/** Close names for the first MAX_SUGGESTED_UNKNOWN distinct unknown names, yielding between batches; a note in `errors` when some got none. */
-async function addSuggestions(unknown: UnknownCard[], suggest: (name: string) => string[], errors: ResolveError[]): Promise<void> {
-  const rows = unknown.filter((u) => !u.ambiguous);
-  const names = [...new Set(rows.map((u) => u.name))];
+/**
+ * Close names (`suggest`, a fuzzy scan of the whole index) for the first MAX_SUGGESTED_UNKNOWN distinct `names`, yielding to the event loop between
+ * batches so other requests keep being answered. Names past the cap are absent from the answer. Also used by POST /api/cards/defs (defs.ts).
+ */
+export async function pacedSuggestions(names: Iterable<string>, suggest: (name: string) => string[]): Promise<Map<string, string[]>> {
   const found = new Map<string, string[]>();
-  for (const [i, name] of names.slice(0, MAX_SUGGESTED_UNKNOWN).entries()) {
+  for (const [i, name] of [...new Set(names)].slice(0, MAX_SUGGESTED_UNKNOWN).entries()) {
     if (i > 0 && i % SUGGEST_BATCH === 0) await yieldToEventLoop();
     found.set(name, suggest(name));
   }
+  return found;
+}
+
+/** Close names for the first MAX_SUGGESTED_UNKNOWN distinct unknown names, yielding between batches; a note in `errors` when some got none. */
+async function addSuggestions(unknown: UnknownCard[], suggest: (name: string) => string[], errors: ResolveError[]): Promise<void> {
+  const rows = unknown.filter((u) => !u.ambiguous);
+  const found = await pacedSuggestions(rows.map((u) => u.name), suggest);
   for (const u of rows) u.suggestions = found.get(u.name) ?? [];
   const first = rows.find((u) => !found.has(u.name));
   if (first) errors.push({ line: first.line, text: first.name, message: `Suggestions are given for the first ${MAX_SUGGESTED_UNKNOWN} unknown names only` });

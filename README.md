@@ -61,7 +61,10 @@ npm run typecheck        # type-check every package
 127.0.0.1 only). Open http://127.0.0.1:47600 in your browser (`npm run play -- --open` opens it for
 you; `--port 47601` picks another port; `--no-build` reuses the last build). Stop it with Ctrl+C.
 For development, `npm run dev` runs the server (restarting on changes) and the Vite dev server with
-hot reload at http://127.0.0.1:5173.
+hot reload at http://127.0.0.1:5173. A program that starts the server itself and reads its output can
+run it with `--announce-json` (or `OPENMTG_ANNOUNCE_JSON=1`): its first line is then one JSON object,
+`{"port":47600,"token":"...","url":"http://127.0.0.1:47600"}`, with the token the table channel asks
+for (`npm run start -- --announce-json` prints it for a server started by hand).
 
 - **Decks.** On the Decks screen, start a new deck and build it in the deckbuilder (search with
   filters, each card shows how much of it OpenMTG automates: Full, Partial or Manual), or import

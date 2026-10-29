@@ -29,6 +29,7 @@ import { foldStdRx31 } from './fold-stdrx31';
 import { foldStdCombat1 } from './fold-stdcombat1';
 import { foldStdCosts2 } from './fold-stdcosts2';
 import { foldStdLibrary2 } from './fold-stdlibrary2';
+import { foldEdhCast1 } from './fold-edhcast1';
 import { foldStdCopy6 } from './fold-stdcopy6';
 import { foldP2Refs1 } from './fold-p2refs1';
 import { foldStdControl1 } from './fold-stdcontrol1';
@@ -2154,6 +2155,13 @@ function putThatAndRest(list: EffectStep[], i: number, st: RenderState): Folded 
   if (rest === null || rest.chosen !== a.what.name) return null;
   const that = K.obj(a.what, st, 'object');
   const restText = K.obj(b.what, st, 'object').text;
+  // p2-zone-moves-2 (CR 406.1, 608.2c): "Put that card into your hand and exile all other cards revealed this way." (Demonic Consultation): the rest exiled is said
+  // with its own verb (exile has no "into" phrase); anything else about the exile (face down, a link) has no wording here
+  if (b.to.zone === 'exile') {
+    if (Object.keys(b.to).length !== 1 || a.to.zone === 'exile') return null;
+    const text = `put ${that.text} ${destPhrase(a.to, st, that.plural, true)} and exile ${restText}`;
+    return { clauses: [acting('you', text, `you ${text}`)], consumed: 2 };
+  }
   const text = `put ${that.text} ${destPhrase(a.to, st, that.plural, true)} and ${restText} ${destPhrase(b.to, st, true, true)}`;
   return { clauses: [acting('you', text, `you ${text}`)], consumed: 2 };
 }
@@ -3538,6 +3546,8 @@ export function foldAt(list: EffectStep[], i: number, st: RenderState): Folded |
   if (lib2 !== null) return lib2;
   const copy6 = foldStdCopy6(list, i, st); // std-copy-6: shapes only its own templates build
   if (copy6 !== null) return copy6;
+  const edhCast1 = foldEdhCast1(list, i, st); // edh-cast-1: shapes only its own templates build
+  if (edhCast1 !== null) return edhCast1;
   const p2refs1 = foldP2Refs1(list, i, st); // p2-refs-1: shapes only its own templates build
   if (p2refs1 !== null) return p2refs1;
   const control1 = foldStdControl1(list, i, st); // std-control-1: shapes only its own templates build

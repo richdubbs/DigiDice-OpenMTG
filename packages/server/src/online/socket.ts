@@ -14,6 +14,7 @@ import { WebSocketServer, type WebSocket } from 'ws';
 import { CLOSE_PROTOCOL, CLOSE_REPLACED, CLOSE_SHUTDOWN, MAX_CLIENT_MESSAGE_BYTES, ONLINE_PROTOCOL, ONLINE_REPLAYS_PATH, type OnlineSessionResponse } from './api';
 import { OnlineBridge, type BridgeOptions } from './bridge';
 import { checkExtraOrigin, checkSessionRequest, checkUpgrade, newOnlineToken } from './guard';
+import { finishLeftRecordings, type OnlineLibrary } from './guestRecording';
 import { OnlineReplayStore, replayRequest } from './replays';
 
 export interface OnlineOptions {
@@ -27,6 +28,10 @@ export interface OnlineOptions {
   replaysDir?: string | null;
   /** RPL-3: this server's app (its version; no commit), recorded in the replay files it makes. */
   app?: ReplayApp;
+  /** RPL-3: the server's replay library, for a page without one of its own (`library` on host or join: online/bridge.ts). */
+  library?: OnlineLibrary | null;
+  /** RPL-3: the folder of the guests' recordings for `library` (http.ts: `replays/online-guest` next to the card cache). */
+  guestRecordingsDir?: string | null;
 }
 
 const STATUS_TEXT: Record<number, string> = { 403: 'Forbidden', 404: 'Not Found' };
@@ -41,6 +46,8 @@ export class OnlineService {
   private readonly extraOrigins: readonly string[];
   private readonly wss: WebSocketServer;
   private server: Server | null = null;
+  /** RPL-3: the replays an earlier server left for the library, being kept there (tests wait for it). */
+  readonly left: Promise<void> = Promise.resolve();
 
   constructor(cards: BridgeOptions['cards'], o: OnlineOptions = {}) {
     for (const origin of o.allowOrigins ?? []) {
@@ -52,8 +59,10 @@ export class OnlineService {
     this.app = o.app ?? NO_APP;
     this.replayStore = o.replaysDir ? new OnlineReplayStore(o.replaysDir) : null;
     this.bridge = new OnlineBridge({
-      cards, backends: { startHost: (h) => GameHost.start(h), joinGuest: (g) => GameGuest.join(g) }, replays: this.replayStore, app: this.app, ...o.bridge,
+      cards, backends: { startHost: (h) => GameHost.start(h), joinGuest: (g) => GameGuest.join(g) }, replays: this.replayStore, app: this.app,
+      library: o.library ?? null, guestRecordings: o.guestRecordingsDir ?? null, ...o.bridge,
     });
+    if (o.library) this.left = keepLeftReplays(o.library, this.replayStore, o.guestRecordingsDir ?? null, this.app);
     // No compression (CRIME-style length leaks; views are small enough), and a size cap on what the browser may send.
     this.wss = new WebSocketServer({ noServer: true, maxPayload: MAX_CLIENT_MESSAGE_BYTES, perMessageDeflate: false });
   }
@@ -64,10 +73,9 @@ export class OnlineService {
     return a && typeof a === 'object' ? (a as AddressInfo).port : 0;
   }
 
-  /** Take the HTTP server's upgrade requests. */
+  /** The HTTP server whose upgrade requests come here (http.ts routes them: `upgrade`; Godot plan phase 1 added the table channel's /table beside it). */
   attach(server: Server): void {
     this.server = server;
-    server.on('upgrade', (req: IncomingMessage, socket: Socket, head: Buffer) => this.upgrade(req, socket, head));
   }
 
   /** GET /api/online/session: the token, for the client's own page only (guard.ts, checkSessionRequest). */
@@ -114,7 +122,8 @@ export class OnlineService {
     await new Promise<void>((r) => this.wss.close(() => r()));
   }
 
-  private upgrade(req: IncomingMessage, socket: Socket, head: Buffer): void {
+  /** An upgrade request (any path but /table): checked (guard.ts), then handed to `ws`. */
+  upgrade(req: IncomingMessage, socket: Socket, head: Buffer): void {
     socket.on('error', () => undefined); // a reset by the browser must not take the server down
     const verdict = checkUpgrade({ url: req.url, host: req.headers.host, origin: req.headers.origin }, { port: this.port, token: this.token, extraOrigins: this.extraOrigins });
     if (!verdict.ok) {
@@ -141,5 +150,23 @@ export class OnlineService {
     });
     ws.on('close', () => handle.closed());
     ws.on('error', () => handle.closed());
+  }
+}
+
+/**
+ * RPL-3: at a server's start, the replays of online games an earlier server left for the library (it stopped or crashed with a game open): the guests'
+ * recordings (online/guestRecording.ts) and the host's records begun for the library. Never throws.
+ */
+async function keepLeftReplays(library: OnlineLibrary, store: OnlineReplayStore | null, guests: string | null, app: ReplayApp): Promise<void> {
+  try {
+    if (guests) await finishLeftRecordings(guests, library);
+    for (const id of store?.leftForLibrary() ?? []) {
+      const file = store!.file(id, app);
+      if (file === 'running') continue;
+      if (file && !('problem' in file)) await library.add(file);
+      store!.remove(id);
+    }
+  } catch (e) {
+    console.error(`[online] the replays an earlier server left could not be kept: ${e instanceof Error ? e.message : String(e)}`);
   }
 }

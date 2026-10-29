@@ -16,8 +16,8 @@ let fd: PlayedGame | undefined;
 const faceDownGame = (): PlayedGame => (fd ??= botGame(faceDownConfig('rpl0-open-fd'), 500));
 
 describe('RPL-0: openView (replays design 6)', { timeout: 300_000 }, () => {
-  it('ENGINE_VIEW_SCHEMA is 1, the first view schema', () => {
-    expect(ENGINE_VIEW_SCHEMA).toBe(1);
+  it('ENGINE_VIEW_SCHEMA is 2 (Godot plan phase 2 added the characteristics summary `chars`; schema 1 is still read, core/view.ts)', () => {
+    expect(ENGINE_VIEW_SCHEMA).toBe(2);
   });
 
   it('CR 400.2, 401.2: shows every object as it is, the hands and libraries in order, and nothing a view never carries', () => {

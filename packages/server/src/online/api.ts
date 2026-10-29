@@ -86,6 +86,8 @@ export type ClientMessage =
    */
   | {
     t: 'host'; id: number; name: string; deck: OnlineDeck; format?: string; port?: number;
+    /** RPL-3: this server keeps the game's replay in its own library (a page without one: the Godot app); left out, the page keeps it. */
+    library?: true;
     /**
      * M12-1, M12-5a (m12 design 4.6, section 6): a 3- or 4-player game. The host gets one join code per guest seat (`OnlineStatus.codes`), the guests
      * wait in a lobby, and the game starts when every seat is taken, the players seated at random (CR 806.3).
@@ -93,7 +95,11 @@ export type ClientMessage =
     seats?: 3 | 4;
   }
   /** Join a game: `address` is "ip:port", "[ipv6]:port" or "name:port" (the port may be left out: 47620), `code` the host's join code. */
-  | { t: 'join'; id: number; address: string; code: string; name: string; deck: OnlineDeck }
+  | {
+    t: 'join'; id: number; address: string; code: string; name: string; deck: OnlineDeck;
+    /** RPL-3: this server records the game into its own library (online/guestRecording.ts); left out, the page records it. */
+    library?: true;
+  }
   /**
    * An action for this player. The server checks its shape, that `player` is this player, and that it fits the current view (a priority action must
    * be one of `legal`, an answer must name the pending decision); then the host's engine decides (CR 733: an illegal action changes nothing).
@@ -195,6 +201,8 @@ export interface OnlineReplayStatus {
   shared: boolean;
   /** The host only: every player agreed, but the game was too large to send (the guests keep their recordings). */
   tooLarge?: true;
+  /** RPL-3 (`library` on host or join): the replay is in this server's library under `id`; it is saved again when a later choice changes it. */
+  saved?: true;
 }
 
 /** RPL-3: one record the host's server keeps (GET `ONLINE_REPLAYS_PATH`). */

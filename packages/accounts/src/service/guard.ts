@@ -27,7 +27,7 @@ import { codePoints, hostedTextProblem } from '../text';
 import { newToken, tokenHash } from '../ids';
 import { sanctionView } from '../views';
 import { HasherBusyError } from '../crypto/api';
-import type { AccountSessionRow, AppealRow, SanctionRow } from '../store/api';
+import type { AccountSessionRow, SanctionRow } from '../store/api';
 import { RESTRICTED_CALLS, type Auth, type Proof, type RequestContext, type ServiceGuard, type ServiceMethod } from './api';
 import { checkAuth, IN_FLIGHT_RETRY_MS, iso, type Core } from './context';
 import { fail, ok, Refusal } from './result';
@@ -67,13 +67,13 @@ export function createGuard(core: Core): CoreGuard {
     running.sort((a, b) => (a.until === null ? 1 : b.until === null ? -1 : Date.parse(a.until) - Date.parse(b.until)));
     const s = running[running.length - 1];
     if (s === undefined) return undefined;
-    const appeals: AppealRow[] = await core.store.appeals({ account: s.account, limit: 10_000 });
-    return sanctionView(s, appeals.find((a) => a.sanction === s.id) ?? null);
+    return sanctionView(s, await core.store.appeal(s.id));
   }
 
+  /** The Auth's session row (one primary-key read), or null when it has none or the row is another account's. */
   async function findSession(auth: Auth): Promise<AccountSessionRow | null> {
-    const rows = await core.store.sessionsOf(auth.account);
-    return rows.find((r) => r.id === auth.session) ?? null;
+    const row = await core.store.sessionById(auth.session);
+    return row !== null && row.account === auth.account ? row : null;
   }
 
   async function session(ctx: RequestContext, auth: Auth, call: ServiceMethod) {

@@ -1,7 +1,8 @@
 /** The board's read model (pure helpers over a GameView). */
-import { viewFor, type LegalAction } from '@openmtg/engine';
+import { getChars, isSummoningSick, viewFor, type LegalAction } from '@openmtg/engine';
 import { describe, expect, it } from 'vitest';
 import { battlefieldRows, playableObjects, seating, stackItems } from '../../src/board';
+import { attachmentsOf, charsOf, objectName, permanentInfo, stateOfView } from '../../src/board/model';
 import { ALICE, BOB, editable, playGame } from './fixtures';
 
 const game = playGame(5, undefined, (s) => s.zones.stack.length > 0);
@@ -42,5 +43,42 @@ describe('board model', () => {
     const items = stackItems(k.view);
     expect(items.map((i) => i.id)).toEqual([...k.view.zones.stack].reverse());
     expect(items[0]!.kind).toBe('spell');
+  });
+
+  // Review 2026-10-26, Finding 19: the read model is kept per view, computed in one engine scope; the answers are the engine's own.
+  it('per-view memo: the same answers as asking the engine object by object, once per view', () => {
+    let checked = 0;
+    for (const c of [...game.captured.filter((_, i) => i % 7 === 0), ...game.kept]) {
+      const v = c.view;
+      const fresh = stateOfView(editable(v));
+      for (const o of Object.values(v.objects)) {
+        const chars = charsOf(v, o);
+        if (chars === null) continue;
+        expect(chars).toEqual(getChars(fresh, o.id));
+        expect(charsOf(v, o)).toBe(chars);
+        checked++;
+        if (o.zone !== 'battlefield') continue;
+        const info = permanentInfo(v, o);
+        expect(permanentInfo(v, o)).toBe(info);
+        expect(info.summoningSick).toBe(isSummoningSick(fresh, fresh.objects[o.id]!, getChars(fresh, o.id)));
+        expect(info.name).toBe(objectName(v, o.id));
+      }
+      expect(stackItems(v)).toBe(stackItems(v));
+      expect(battlefieldRows(v, ALICE)).toBe(battlefieldRows(v, ALICE));
+    }
+    expect(checked).toBeGreaterThan(50);
+  });
+
+  it('CR 301.5, 303.4: the attachment index lists what is attached to each permanent, in battlefield order', () => {
+    const c = game.captured.find((x) => x.turn === 5 && x.step === 'main1')!;
+    const v = editable(c.view);
+    const mine = v.zones.battlefield.filter((id) => v.objects[id]!.controller === ALICE);
+    const forests = mine.filter((id) => v.defs[v.objects[id]!.defId]!.name === 'Forest');
+    const bear = mine.find((id) => v.defs[v.objects[id]!.defId]!.name === 'Test Bear')!;
+    for (const f of forests.slice(0, 2)) v.objects[f] = { ...v.objects[f]!, attachedTo: bear };
+    expect(attachmentsOf(v, bear)).toEqual(v.zones.battlefield.filter((id) => v.objects[id]?.attachedTo === bear));
+    expect(attachmentsOf(v, bear)).toHaveLength(2);
+    expect(attachmentsOf(v, forests[0]!)).toEqual([]);
+    expect(permanentInfo(v, v.objects[bear]!).attachments).toEqual(forests.slice(0, 2));
   });
 });

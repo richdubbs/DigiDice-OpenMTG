@@ -8,8 +8,12 @@
  *
  * Signed through Azure Artifact Signing with the settings in scripts/signing.local.json (git-ignored; see SIGNING below): sign in first with
  * `az login`, as an account with the Artifact Signing Certificate Profile Signer role. The first signed build installs the TrustedSigning PowerShell
- * module for the current user (electron-builder does it). `--no-sign`, or no settings file, builds unsigned (Windows then warns before running the
- * installer). No keys or secrets here.
+ * module for the current user (electron-builder does it). No keys or secrets here.
+ *
+ * `--no-sign`, or no settings file, builds an UNSIGNED installer for trying things out only: OpenMTG-Setup-<version>-unsigned.exe, with no latest.yml
+ * and no update settings in the app, so it can neither be released nor update itself. (An installed copy without a publisher name in its
+ * resources/app-update.yml would install updates without checking their signature: review 2026-10-26 F10.) A signed build is checked for that
+ * publisher name after packaging and fails without it.
  *
  * The version is packages/desktop/package.json's; raise it for every installer that is handed out, or auto-update cannot tell the builds apart.
  */
@@ -32,6 +36,21 @@ const signingFile = path.join(root, 'scripts', 'signing.local.json');
 const AZURE_SIGNING = existsSync(signingFile) ? JSON.parse(readFileSync(signingFile, 'utf8')) : null;
 if (!AZURE_SIGNING && !process.argv.includes('--no-sign')) console.log('No scripts/signing.local.json: building unsigned.');
 const sign = !process.argv.includes('--no-sign') && AZURE_SIGNING !== null;
+// electron-builder writes publisherName into the app's app-update.yml; without it installed copies would accept any update unchecked.
+if (sign && (typeof AZURE_SIGNING.publisherName !== 'string' || AZURE_SIGNING.publisherName.trim() === '')) {
+  throw new Error(`${signingFile} has no publisherName (the certificate's subject name, CN): installed copies need it to check the signature of every update. Not building.`);
+}
+if (!sign) {
+  console.warn(
+    [
+      '',
+      '!!! UNSIGNED BUILD: for trying things out only. NEVER release or hand it out. !!!',
+      '!!! The installer is named ...-unsigned.exe, there is no latest.yml, and the app neither checks nor installs updates. !!!',
+      '',
+    ].join('\n'),
+  );
+}
+const setupName = `OpenMTG-Setup-${desktop.version}${sign ? '' : '-unsigned'}.exe`;
 
 const stage = path.join(root, 'release', '.installer-app');
 const out = path.join(root, 'release', 'installer');
@@ -40,7 +59,7 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(path.join(stage, 'build'), { recursive: true });
 mkdirSync(path.join(stage, 'notices'), { recursive: true });
 
-// RPL-0 review (replays design 5): one engine build for the page and the server, as in build-exe.mjs: read once from the client's Vite config, given to
+// RPL-0 review (replays design 5): one engine build for the page and the server: read once from the client's Vite config, given to
 // the Vite build (OPENMTG_ENGINE_BUILD) and to the app bundle (__OPENMTG_SERVER_ENGINE_BUILD__), which ships no engine sources to hash. The app version
 // is the desktop app's, the one its server reports (OPENMTG_APP_VERSION).
 const { build: viteBuild, loadConfigFromFile } = await import('vite');
@@ -111,12 +130,30 @@ await builder.build({
       shortcutName: 'OpenMTG',
       uninstallDisplayName: 'OpenMTG',
       deleteAppDataOnUninstall: false,
-      artifactName: 'OpenMTG-Setup-${version}.${ext}',
+      artifactName: sign ? 'OpenMTG-Setup-${version}.${ext}' : 'OpenMTG-Setup-${version}-unsigned.${ext}',
     },
     // Installed copies read the GitHub Releases of the repository at every launch (packages/desktop/src/update.ts) and install a newer version by
-    // themselves; the installer, its .blockmap and latest.yml are uploaded to a release by hand (gh release create v<version> ...).
-    publish: [{ provider: 'github', owner: 'richdubbs', repo: 'DigiDice-OpenMTG', releaseType: 'release' }],
+    // themselves; the installer, its .blockmap and latest.yml are uploaded to a release by hand (gh release create v<version> ...). An unsigned build
+    // gets no publish settings at all (null: electron-builder would otherwise guess GitHub from the repository), hence no app-update.yml or latest.yml.
+    publish: sign ? [{ provider: 'github', owner: 'richdubbs', repo: 'DigiDice-OpenMTG', releaseType: 'release' }] : null,
   },
 });
 rmSync(stage, { recursive: true, force: true });
-console.log(`Done: ${path.join(out, `OpenMTG-Setup-${desktop.version}.exe`)}`);
+
+// F10 (review 2026-10-26): electron-updater checks an update's signature only when the installed copy's app-update.yml names a publisher.
+const appUpdateYml = path.join(out, 'win-unpacked', 'resources', 'app-update.yml');
+if (sign) {
+  const yml = existsSync(appUpdateYml) ? readFileSync(appUpdateYml, 'utf8') : null;
+  if (yml === null || !/^publisherName:/m.test(yml)) {
+    rmSync(out, { recursive: true, force: true });
+    throw new Error(
+      `${appUpdateYml} ${yml === null ? 'is missing' : 'has no publisherName'}: installed copies would install updates without checking their signature. ` +
+        'The build was deleted; do not release it. Check scripts/signing.local.json and electron-builder (win.azureSignOptions.publisherName).',
+    );
+  }
+} else if (existsSync(appUpdateYml)) {
+  rmSync(out, { recursive: true, force: true });
+  throw new Error(`${appUpdateYml} exists in an unsigned build: it would let that copy install updates unchecked. The build was deleted.`);
+}
+console.log(`Done: ${path.join(out, setupName)}`);
+if (!sign) console.warn('UNSIGNED BUILD: for trying things out only; do not release or hand it out.');

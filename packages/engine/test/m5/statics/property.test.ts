@@ -142,7 +142,8 @@ describe('property: with no dependencies the layers equal a timestamp-only oracl
             effects.push({ ts, mods: sp.mods, who: sp.names });
           }
         }
-        for (const name of holders) t.defs[name]!.faces[0]!.abilities = abilities[name]!;
+        // copy-on-write: the definitions are frozen and `tweak`'s clone shares them (util/clone.ts, F17/F9)
+        for (const name of holders) { const d = t.defs[name]!; t.defs[name] = { ...d, faces: [{ ...d.faces[0]!, abilities: abilities[name]! }, ...d.faces.slice(1)] }; }
       });
       // the starting point: the printed values
       const start = new Map<string, O>();

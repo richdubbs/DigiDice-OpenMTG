@@ -37,6 +37,7 @@ import { delayedWhenForms, eventPatternForms, triggerOwnForms } from '../trigger
 import { installTokenClassifier, PREDEFINED_TOKENS } from '../effects/handlers/token-defs';
 import { OP_FORMS as COPY_OP_FORMS } from '../effects/handlers/tokens-copy';
 import { OP_FORMS as CAST_OP_FORMS } from '../effects/handlers/tokens-cast';
+import { OP_FORMS as CHANGE_TARGET_OP_FORMS } from '../effects/handlers/change-target';
 import { TRIGGER_MOD_CAPABILITIES } from '../triggers/collect';
 import { OP_FORMS as DAY_NIGHT_OP_FORMS } from '../core/day-night';
 import { INITIATIVE_OP_FORMS } from '../core/designations';
@@ -167,6 +168,7 @@ export function buildEngineCapabilities(): Set<string> {
   for (const name of COPY_OP_FORMS) caps.add(name);
   // M6-12 INTERFACE CHANGE (m6 design 7, `OP_FORMS`): "cast it by paying [cost] rather than paying its mana cost" (op:cast.costChange, madness CR 702.35a-b)
   if (Object.hasOwn(OP_HANDLERS, 'cast')) for (const name of CAST_OP_FORMS) caps.add(name);
+  if (Object.hasOwn(OP_HANDLERS, 'changeTarget')) for (const name of CHANGE_TARGET_OP_FORMS) caps.add(name); // edh-cast-1
   // M6-12 INTERFACE CHANGE (m6 design 7): "that ability triggers an additional time" for the reviewed causes (triggers/collect.ts, CR 603.2d)
   for (const name of TRIGGER_MOD_CAPABILITIES) caps.add(name);
   // M6-4 INTERFACE CHANGE (m6 design 7, `OP_FORMS`): "it becomes day / night" (op:designate.day|night) acts on daybound and nightbound permanents (core/day-night.ts)

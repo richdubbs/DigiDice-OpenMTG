@@ -13,7 +13,7 @@
  *       'indexBuilding' (the automation filter needs the classification index, still being built: `progress`, `retryAfterMs`);
  *   501 not implemented yet (C0 scaffold stubs; no C1 endpoint answers it any more).
  */
-import type { AutomationLevel, CardDef, Color, ManualSpan } from '@openmtg/engine';
+import type { AutomationLevel, CardDef, Color, ManualSpan, ReplayGameInfo, ReplayReveal } from '@openmtg/engine';
 
 /** Default port of the local server (127.0.0.1 only). */
 export const DEFAULT_PORT = 47600;
@@ -477,6 +477,149 @@ export interface UpdateStatusResponse {
 export type UpdateRequest = Record<string, never>;
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------
+// The player's library in the server's data folder (library/): GET /api/library/decks, GET /api/library/decks/:id, POST /api/library/decks/save,
+// POST /api/library/decks/delete, GET and POST /api/library/settings, GET /api/library/images, POST /api/library/images/add, /delete, /clear
+
+/** A deck of the player's library: the desktop client's `Deck` record (client/src/decks/model.ts), one file per deck. */
+export interface LibraryDeck {
+  id: string;
+  name: string;
+  /** Format id, e.g. "modern", "commander", "casual". */
+  format: string;
+  main: DeckEntry[];
+  sideboard: DeckEntry[];
+  commander: DeckEntry[];
+  companion: DeckEntry[];
+  notes: string;
+  /** ISO timestamps; `updatedAt` is also the version a save names as `expected`. */
+  createdAt: string;
+  updatedAt: string;
+  /** Oracle name of the card shown for the deck. */
+  cover?: string;
+}
+
+export interface LibraryDecksResponse {
+  /** Newest first, then by name. */
+  decks: LibraryDeck[];
+}
+
+export interface LibraryDeckResponse {
+  deck: LibraryDeck;
+}
+
+/**
+ * `expected`: the `updatedAt` of the stored version this save replaces, or null when the deck must not exist yet; another stored version answers 409
+ * (`code: 'deckConflict'`, the stored deck in `stored`) and writes nothing. Absent: no check.
+ */
+export interface LibrarySaveRequest {
+  deck: LibraryDeck;
+  expected?: string | null;
+}
+
+export interface LibraryDeleteRequest {
+  id: string;
+}
+
+export interface LibraryDeleteResponse {
+  /** False when there was no such deck. */
+  deleted: boolean;
+}
+
+export interface LibrarySettingsResponse {
+  /** The saved object, null when nothing was saved. */
+  settings: Record<string, unknown> | null;
+  updatedAt: string | null;
+}
+
+export interface LibrarySettingsRequest {
+  settings: Record<string, unknown>;
+}
+
+export interface LibrarySettingsSaved {
+  updatedAt: string;
+}
+
+/**
+ * A stored picture of an image slot (the engine's `imageSlots` key: one per printed side), as the desktop client's image store
+ * keeps it (client/src/images/store.ts StoredImage), with the stored file's local path instead of the bytes.
+ */
+export interface LibraryImage {
+  key: string;
+  /** Oracle name of the card or token ("A // B" for a two-sided card). */
+  card: string;
+  /** "Delver of Secrets (front)". */
+  label: string;
+  /** The added file's own name. */
+  fileName: string;
+  /** image/png, image/jpeg, image/gif, image/webp, image/bmp, image/avif or image/heic, read from the bytes. */
+  type: string;
+  size: number;
+  /** ms since the epoch. */
+  addedAt: number;
+  /** The stored file on this machine. */
+  path: string;
+}
+
+export interface LibraryImagesResponse {
+  /** By card, then label, then key. */
+  images: LibraryImage[];
+}
+
+/** One of `path` (a file on this computer) or `data` (the bytes, base64); a picture of 25 MB at most. */
+export interface LibraryImageAddRequest {
+  key: string;
+  card: string;
+  label: string;
+  fileName?: string;
+  path?: string;
+  data?: string;
+}
+
+export interface LibraryImageResponse {
+  image: LibraryImage;
+}
+
+export interface LibraryImageDeleteRequest {
+  key: string;
+}
+
+export interface LibraryImagesCleared {
+  /** How many pictures were deleted. */
+  deleted: number;
+}
+
+/** A replay of the library (library/replays.ts): its facts (engine ReplayFile without the play), Keep, size, when added and the file's local path. */
+export interface LibraryReplay {
+  id: string;
+  title: string;
+  createdAt: string;
+  kind: 'game' | 'recording';
+  game: ReplayGameInfo;
+  reveal: ReplayReveal;
+  hasRecording: boolean;
+  /** The file's format version and engine facts (absent on entries added before they were kept). */
+  formatVersion?: number;
+  engine?: { build: string | null; model: number; viewSchema: number };
+  /** What it can be watched as on this server: "exact" (this build), "checked" (checked when watched), "recordingOnly", "needsNewer". */
+  status: 'exact' | 'checked' | 'recordingOnly' | 'needsNewer';
+  keep: boolean;
+  size: number;
+  addedAt: number;
+  path: string;
+}
+
+export interface LibraryReplaysResponse {
+  /** Newest first. */
+  replays: LibraryReplay[];
+  /** How many replays not marked Keep are kept: 10, 50 or 200. */
+  retention: number;
+}
+
+export interface LibraryReplayResponse {
+  replay: LibraryReplay;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------
 // Errors and the endpoint table
 
 export interface ApiError {
@@ -484,13 +627,15 @@ export interface ApiError {
   /** C1 addition: close names for an unknown card name (404) or the full names an ambiguous face name may mean (409). */
   suggestions?: string[];
   /** C1 addition, on 503 answers: why the endpoint cannot answer yet (see the file header). */
-  code?: 'noCardData' | 'indexBuilding' | 'updateRunning';
+  code?: 'noCardData' | 'indexBuilding' | 'updateRunning' | 'deckConflict';
   /** C1 addition, with `code: 'indexBuilding'`: cards classified so far, of the whole pool. */
   progress?: { done: number; total: number };
   /** C1 addition, with `code: 'indexBuilding'`: when to ask again. */
   retryAfterMs?: number;
   /** For 501 answers of the C0 scaffold stubs: what the endpoint still has to do (no C1 endpoint sends it). */
   todo?: string[];
+  /** With `code: 'deckConflict'`: the stored version of the deck (absent when it was deleted). */
+  stored?: LibraryDeck;
 }
 
 /** Every endpoint: method + path pattern -> request and response types. `:name` is a URL-encoded path parameter. */
@@ -505,6 +650,26 @@ export interface ApiEndpoints {
   'POST /api/images/match': { query: Record<string, never>; body: ImageMatchRequest; response: ImageMatchResponse };
   'GET /api/update': { query: Record<string, never>; body: undefined; response: UpdateStatusResponse };
   'POST /api/update': { query: Record<string, never>; body: UpdateRequest; response: UpdateStatusResponse };
+  'GET /api/library/decks': { query: Record<string, never>; body: undefined; response: LibraryDecksResponse };
+  'GET /api/library/decks/:id': { query: Record<string, never>; body: undefined; response: LibraryDeckResponse };
+  'POST /api/library/decks/save': { query: Record<string, never>; body: LibrarySaveRequest; response: LibraryDeckResponse };
+  'POST /api/library/decks/delete': { query: Record<string, never>; body: LibraryDeleteRequest; response: LibraryDeleteResponse };
+  'GET /api/library/settings': { query: Record<string, never>; body: undefined; response: LibrarySettingsResponse };
+  'POST /api/library/settings': { query: Record<string, never>; body: LibrarySettingsRequest; response: LibrarySettingsSaved };
+  'GET /api/library/images': { query: Record<string, never>; body: undefined; response: LibraryImagesResponse };
+  'POST /api/library/images/add': { query: Record<string, never>; body: LibraryImageAddRequest; response: LibraryImageResponse };
+  'POST /api/library/images/delete': { query: Record<string, never>; body: LibraryImageDeleteRequest; response: LibraryDeleteResponse };
+  'POST /api/library/images/clear': { query: Record<string, never>; body: Record<string, never>; response: LibraryImagesCleared };
+  'GET /api/library/replays': { query: Record<string, never>; body: undefined; response: LibraryReplaysResponse };
+  'POST /api/library/replays/update': { query: Record<string, never>; body: { id: string; title?: string; keep?: boolean }; response: LibraryReplayResponse };
+  'POST /api/library/replays/delete': { query: Record<string, never>; body: { id: string }; response: LibraryDeleteResponse };
+  'POST /api/library/replays/import': {
+    query: Record<string, never>;
+    /** A file on this computer (`path`) or a file's bytes (`data`, base64); `keep`: marked Keep where it came from. */
+    body: { path?: string; data?: string; keep?: boolean };
+    response: LibraryReplayResponse;
+  };
+  'POST /api/library/replays/retention': { query: Record<string, never>; body: { limit: number }; response: { retention: number } };
 }
 
 export type EndpointKey = keyof ApiEndpoints;
@@ -522,4 +687,19 @@ export const ENDPOINTS: readonly EndpointKey[] = [
   'POST /api/images/match',
   'GET /api/update',
   'POST /api/update',
+  'GET /api/library/decks',
+  'GET /api/library/decks/:id',
+  'POST /api/library/decks/save',
+  'POST /api/library/decks/delete',
+  'GET /api/library/settings',
+  'POST /api/library/settings',
+  'GET /api/library/images',
+  'POST /api/library/images/add',
+  'POST /api/library/images/delete',
+  'POST /api/library/images/clear',
+  'GET /api/library/replays',
+  'POST /api/library/replays/update',
+  'POST /api/library/replays/delete',
+  'POST /api/library/replays/import',
+  'POST /api/library/replays/retention',
 ];

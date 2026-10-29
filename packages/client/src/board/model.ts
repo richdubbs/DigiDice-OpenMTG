@@ -4,7 +4,7 @@
  * the view. A hidden object (`defId === HIDDEN_DEF`, CR 400.2) is never asked anything: its card back is all the board knows about it.
  */
 import {
-  HIDDEN_DEF, STEP_ORDER, getChars, isByHandKind, isSummoningSick,
+  HIDDEN_DEF, STEP_ORDER, getChars, isByHandKind, isSummoningSick, readingStable,
   type CardDef, type Chars, type GameObject, type GameState, type GameView, type LegalAction, type ObjectId, type PlayerId, type PlayerState, type Step,
 } from '@openmtg/engine';
 import { faceDownName, isFaceDownObject } from '../cards/objectStatus';
@@ -25,14 +25,110 @@ export function isHidden(o: GameObject): boolean {
   return o.defId === HIDDEN_DEF;
 }
 
-/** The characteristics of a visible object after the layers (CR 613); null for a hidden object or when the engine can't compute them from the view. */
-export function charsOf(view: GameView, o: GameObject): Chars | null {
-  if (isHidden(o) || !view.defs[o.defId]) return null;
+/**
+ * Review 2026-10-26, Finding 19 (performance): what the board reads of a view, kept per view. A view never changes once made (the connection hands out a new
+ * view with each change; PacedConnection snapshots them), and every function memoized here is a pure function of the view and its arguments, so each is
+ * worked out once per view instead of once per component that asks (a redraw used to ask the engine for the same card's characteristics about six times,
+ * each call checking the engine's characteristics cache by walking the whole view).
+ */
+interface ViewMemo {
+  /** `charsOf` of every visible object, filled in one `readingStable` pass on the first question. */
+  chars: Map<ObjectId, Chars | null> | null;
+  /** `isSummoningSick` of every permanent with known characteristics, filled in one `readingStable` pass. */
+  sick: Map<ObjectId, boolean> | null;
+  names: Map<ObjectId, string>;
+  perms: Map<ObjectId, PermanentInfo>;
+  /** Host id -> the battlefield ids attached to it, in battlefield order. */
+  attached: Map<ObjectId, ObjectId[]> | null;
+  rows: Map<PlayerId, BattlefieldRows>;
+  stack: StackItem[] | null;
+  targeted: Map<string, ObjectId[]> | null;
+}
+const MEMO = new WeakMap<GameView, ViewMemo>();
+function memoOf(view: GameView): ViewMemo {
+  let m = MEMO.get(view);
+  if (!m) {
+    m = { chars: null, sick: null, names: new Map(), perms: new Map(), attached: null, rows: new Map(), stack: null, targeted: null };
+    MEMO.set(view, m);
+  }
+  return m;
+}
+
+function charsOrNull(s: GameState, id: ObjectId): Chars | null {
   try {
-    return getChars(stateOfView(view), o.id);
+    return getChars(s, id);
   } catch {
     return null;
   }
+}
+
+/** The characteristics of every visible object of a view, in one engine scope (the characteristics cache is checked once, not once per object). */
+function allCharsOf(view: GameView): Map<ObjectId, Chars | null> {
+  const out = new Map<ObjectId, Chars | null>();
+  const s = stateOfView(view);
+  readingStable(s, () => {
+    for (const o of Object.values(view.objects)) if (!isHidden(o) && view.defs[o.defId]) out.set(o.id, charsOrNull(s, o.id));
+  });
+  return out;
+}
+
+/** The characteristics of a visible object after the layers (CR 613); null for a hidden object or when the engine can't compute them from the view. */
+export function charsOf(view: GameView, o: GameObject): Chars | null {
+  if (isHidden(o) || !view.defs[o.defId]) return null;
+  const m = memoOf(view);
+  m.chars ??= allCharsOf(view);
+  let c = m.chars.get(o.id);
+  if (c === undefined) {
+    // Not one of the view's visible objects (the engine answers by id, so this is the question asked before the memo): asked once, then kept.
+    c = charsOrNull(stateOfView(view), o.id);
+    m.chars.set(o.id, c);
+  }
+  return c;
+}
+
+/** Summoning sickness (CR 302.6) of a permanent of the view, worked out for all its permanents in one engine scope. */
+function summoningSickOf(view: GameView, o: GameObject, chars: Chars): boolean {
+  const m = memoOf(view);
+  if (m.sick === null) {
+    const sick = new Map<ObjectId, boolean>();
+    const s = stateOfView(view);
+    readingStable(s, () => {
+      for (const id of view.zones.battlefield) {
+        const p = view.objects[id];
+        const c = p ? charsOf(view, p) : null;
+        if (p && c) sick.set(id, sickOrFalse(s, p, c));
+      }
+    });
+    m.sick = sick;
+  }
+  const hit = view.objects[o.id] === o && charsOf(view, o) === chars ? m.sick.get(o.id) : undefined;
+  return hit ?? sickOrFalse(stateOfView(view), o, chars);
+}
+
+function sickOrFalse(s: GameState, o: GameObject, chars: Chars): boolean {
+  try {
+    return isSummoningSick(s, o, chars);
+  } catch {
+    return false;
+  }
+}
+
+const NO_IDS: ObjectId[] = [];
+/** The permanents attached to an object (Auras, Equipment, Fortifications; CR 301.5, 303.4), in battlefield order, from one index per view. */
+export function attachmentsOf(view: GameView, id: ObjectId): readonly ObjectId[] {
+  const m = memoOf(view);
+  if (m.attached === null) {
+    const index = new Map<ObjectId, ObjectId[]>();
+    for (const a of view.zones.battlefield) {
+      const host = view.objects[a]?.attachedTo;
+      if (host === undefined || host === null) continue;
+      const list = index.get(host);
+      if (list) list.push(a);
+      else index.set(host, [a]);
+    }
+    m.attached = index;
+  }
+  return m.attached.get(id) ?? NO_IDS;
 }
 
 export function defOf(view: GameView, o: GameObject): CardDef | null {
@@ -84,6 +180,13 @@ export function playerName(view: GameView, id: PlayerId): string {
 
 /** A display name for an object: its name after the layers, the source of an ability, or "Hidden card". */
 export function objectName(view: GameView, id: ObjectId): string {
+  const names = memoOf(view).names;
+  let name = names.get(id);
+  if (name === undefined) names.set(id, (name = nameOf(view, id)));
+  return name;
+}
+
+function nameOf(view: GameView, id: ObjectId): string {
   const o = view.objects[id];
   if (!o) {
     const l = view.lki[id];
@@ -158,16 +261,19 @@ export interface PermanentInfo {
   attachments: ObjectId[];
 }
 
+/** The board's facts about a permanent; kept per view (the same object for every component that asks about the view's own object). */
 export function permanentInfo(view: GameView, o: GameObject): PermanentInfo {
+  const perms = memoOf(view).perms;
+  const hit = perms.get(o.id);
+  if (hit && hit.obj === o) return hit;
+  const info = permanentInfoOf(view, o);
+  if (view.objects[o.id] === o) perms.set(o.id, info);
+  return info;
+}
+
+function permanentInfoOf(view: GameView, o: GameObject): PermanentInfo {
   const chars = charsOf(view, o);
-  let sick = false;
-  if (chars) {
-    try {
-      sick = isSummoningSick(stateOfView(view), o, chars);
-    } catch {
-      sick = false;
-    }
-  }
+  const sick = chars ? summoningSickOf(view, o, chars) : false;
   return {
     id: o.id,
     obj: o,
@@ -178,8 +284,14 @@ export function permanentInfo(view: GameView, o: GameObject): PermanentInfo {
     isCreature: chars?.types.includes('Creature') ?? false,
     summoningSick: sick,
     combat: combatRole(view, o.id),
-    attachments: view.zones.battlefield.filter((id) => view.objects[id]?.attachedTo === o.id),
+    attachments: attachmentsOf(view, o.id) as ObjectId[],
   };
+}
+
+export interface BattlefieldRows {
+  creatures: PermanentInfo[];
+  lands: PermanentInfo[];
+  others: PermanentInfo[];
 }
 
 /**
@@ -188,7 +300,14 @@ export function permanentInfo(view: GameView, o: GameObject): PermanentInfo {
  * planeswalkers, battles) at the right of that row. Attachments are listed under their host instead of on their own, so an Aura or Equipment on a creature
  * stays with it on the main line.
  */
-export function battlefieldRows(view: GameView, player: PlayerId): { creatures: PermanentInfo[]; lands: PermanentInfo[]; others: PermanentInfo[] } {
+export function battlefieldRows(view: GameView, player: PlayerId): BattlefieldRows {
+  const rows = memoOf(view).rows;
+  let r = rows.get(player);
+  if (!r) rows.set(player, (r = rowsOf(view, player)));
+  return r;
+}
+
+function rowsOf(view: GameView, player: PlayerId): BattlefieldRows {
   const creatures: PermanentInfo[] = [];
   const lands: PermanentInfo[] = [];
   const others: PermanentInfo[] = [];
@@ -229,8 +348,13 @@ function abilityText(view: GameView, o: GameObject): string {
   return (text ?? '').replace(/[~¤]/g, source); // r4-static: "¤", the card's own name inside a quoted ability it grants
 }
 
-/** The stack, top first (CR 405.2: the last object put on it is on top). */
+/** The stack, top first (CR 405.2: the last object put on it is on top). Kept per view: callers must not change the list. */
 export function stackItems(view: GameView): StackItem[] {
+  const m = memoOf(view);
+  return (m.stack ??= stackItemsOf(view));
+}
+
+function stackItemsOf(view: GameView): StackItem[] {
   const out: StackItem[] = [];
   for (const id of [...view.zones.stack].reverse()) {
     const o = view.objects[id];
@@ -258,6 +382,11 @@ export function stackItems(view: GameView): StackItem[] {
 
 /** Every object or player some spell or ability on the stack targets, with the stack objects targeting it. */
 export function targetedBy(view: GameView): Map<string, ObjectId[]> {
+  const memo = memoOf(view);
+  return (memo.targeted ??= targetedByOf(view));
+}
+
+function targetedByOf(view: GameView): Map<string, ObjectId[]> {
   const m = new Map<string, ObjectId[]>();
   for (const item of stackItems(view)) for (const t of item.targets) m.set(t, [...(m.get(t) ?? []), item.id]);
   return m;

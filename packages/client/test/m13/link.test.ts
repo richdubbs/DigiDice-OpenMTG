@@ -47,6 +47,15 @@ describe('connecting', () => {
     expect(next.link.welcome()?.resumed).toBe(true);
   });
 
+  it('keeps its own token when a resumed welcome carries none (the server does not echo it back)', async () => {
+    const h = await connected();
+    const { token: _echo, ...resumed } = welcomeMsg({ resumed: true });
+    const next = await connected({ storage: h.storage, welcome: resumed });
+    expect(next.socket().sent[0]).toEqual({ t: 'hello', protocol: 1, name: 'Alice', token: TOKEN });
+    expect(next.link.welcome()).not.toHaveProperty('token');
+    expect(next.storage.session.token).toBe(TOKEN);
+  });
+
   it('sends the name it has now when it says hello again, and takes a new one', async () => {
     const h = fakeHosted();
     h.link.setName('Alicia');

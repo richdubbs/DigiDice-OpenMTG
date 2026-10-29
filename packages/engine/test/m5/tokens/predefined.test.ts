@@ -14,7 +14,7 @@ import lexicon from '../../../src/parser/lexicon.generated.json';
 import type { AbilityDef } from '../../../src/index';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const CR_CANDIDATES = [process.env['OPENMTG_CR_DIR'], resolve(HERE, '../../../../../rules/cr'), resolve(HERE, '../../../../../../OpenMTG/rules/cr')].filter((x): x is string => !!x);
+const CR_CANDIDATES = [process.env['OPENMTG_CR_DIR'], resolve(HERE, '../../../../../rules/cr'), resolve(HERE, '../../../../../../DigiDice-OpenMTG-archive/rules/cr')].filter((x): x is string => !!x);
 const CR_DIR = CR_CANDIDATES.find((d) => existsSync(join(d, '1-game-concepts/111-tokens.md')));
 
 const norm = (t: string): string => t.replace(/(\w)’(\w)/g, "$1'$2").replace(/[“”]/g, '"').replace(/[‘’]/g, '"').replace(/\s+/g, ' ').toLowerCase().trim();

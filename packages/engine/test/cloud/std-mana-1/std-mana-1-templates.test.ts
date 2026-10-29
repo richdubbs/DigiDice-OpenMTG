@@ -183,10 +183,14 @@ describe('std-mana-1 parser and renderer changes (one test each)', () => {
     expect(json('Whenever you tap a Forest for mana, add an additional {G}.')).not.toContain('"tapped"');
     expect(full('Whenever you tap a creature for mana, add an additional {G}.')).toBe(true);
   });
-  it('parser/holes/event.ts, render/evt.ts (CR 106.12): "you tap a land for {C}" is an activation that produced {C}; a nonland permanent for {C} is not read', () => {
+  it('parser/holes/event.ts, render/evt.ts (CR 106.12): "you tap a land for {C}" is an activation that produced {C}; a nonland permanent for {C} is read only with the {T} it had (edh-perms-1: `tapped` beside `produced`)', () => {
     expect(JSON.stringify(parseCard(card('Example Relic', 'Enchantment', 'Whenever you tap a land for {C}, add an additional {C}.'), OPTS).faces[0]!.abilities)).toContain('"produced":"C"');
     expect(full('Whenever you tap a land for {G}, you gain 1 life.')).toBe(true);
-    expect(full('Whenever you tap an artifact for {C}, add an additional {C}.')).toBe(false);
+    // edh-perms-1 (Forsaken Monument): a permanent that is not a land may have mana abilities without {T}, so the reading asks for the {T} the activation had
+    const artifact = parseCard(card('Example Relic', 'Enchantment', 'Whenever you tap an artifact for {C}, add an additional {C}.'), OPTS).faces[0]!;
+    expect(full('Whenever you tap an artifact for {C}, add an additional {C}.')).toBe(true);
+    expect(JSON.stringify(artifact.abilities)).toContain('"tapped":true');
+    expect(JSON.stringify(artifact.abilities)).toContain('"produced":"C"');
   });
   it('parser/lower/anaphora.ts#sentenceReferences (CR 611.2b): a leading "for as long as that land ..." does not count as a second reference of the sentence', () => {
     const f = parseCard(card('Example Relic', 'Creature — Golem', 'Whenever ~ attacks, put a rust counter on target land. For as long as that land has a rust counter on it, it loses all land types and abilities and has "{T}: Add {B}."'), OPTS).faces[0]!;

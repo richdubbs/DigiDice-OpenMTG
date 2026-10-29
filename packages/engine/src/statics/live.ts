@@ -21,6 +21,7 @@ import { isMergedObject } from './merge';
 import { suspectedPresent } from './suspect';
 import { honePresent } from './hone';
 import { whileObjectHolds } from './while-object';
+import { noteLayerRead, READ_TAPPED } from './layer-reads';
 
 const KEYWORD_COUNTER_SET: ReadonlySet<string> = new Set(KEYWORD_COUNTERS);
 
@@ -86,7 +87,7 @@ function durationOver(s: GameState, source: LiveEffect['source'], d: ContinuousE
     case 'controlled': return false; // judged by computeAll with the controller after layer 2 (`endsUnlessControlled`, CR 611.2b, 613.1b)
     // WP15 INTERFACE CHANGE (review): "remains attached to it": attached to something else than as the effect began is over too (CR 301.5c)
     case 'attached': return attachedTo !== undefined ? o.attachedTo !== attachedTo : o.attachedTo === undefined;
-    case 'tapped': return !o.tapped;
+    case 'tapped': noteLayerRead(READ_TAPPED); return !o.tapped;
     default: return false; // 'onBattlefield' is the zone test above
   }
 }
@@ -253,11 +254,10 @@ export function layerSourcesPresent(s: GameState): boolean {
   const ce = s.continuousEffects;
   const ceLast = ce.length > 0 ? ce[ce.length - 1]!.id : '';
   // std-ra (CR 122.1, 613.4c): hone counters on an Equipment pump the creature it is attached to (statics/hone.ts). Putting a counter takes no timestamp, so the
-  // memo below would not see it: read before it
-  if (honePresent(s)) return true;
+  // memo below does not see it: read apart from it (review 2026-10-26, performance: after a memo that already says yes, which needs no hone counter)
   const hit = SOURCES.get(s);
   if (hit && hit.object === s.counters.object && hit.effect === s.counters.effect && hit.ceLength === ce.length && hit.ceLast === ceLast
-    && hit.battlefield === s.zones.battlefield.length && hit.command === s.zones.command.length && hit.timestamp === s.counters.timestamp) return hit.value;
+    && hit.battlefield === s.zones.battlefield.length && hit.command === s.zones.command.length && hit.timestamp === s.counters.timestamp) return hit.value || honePresent(s);
   let value = ce.some((e) => e.effect.s === 'continuous');
   // M6-9 (m6 design 3.7): a merged permanent has the abilities of every component (CR 702.140e), which no single definition shows: the layer system computes it
   if (!value) value = s.zones.battlefield.some((id) => { const o = s.objects[id]; return o !== undefined && isMergedObject(o); });
@@ -281,5 +281,5 @@ export function layerSourcesPresent(s: GameState): boolean {
     }
   }
   SOURCES.set(s, { object: s.counters.object, effect: s.counters.effect, ceLength: ce.length, ceLast, battlefield: s.zones.battlefield.length, command: s.zones.command.length, timestamp: s.counters.timestamp, value });
-  return value;
+  return value || honePresent(s);
 }

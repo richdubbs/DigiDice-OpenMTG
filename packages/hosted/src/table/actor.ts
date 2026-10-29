@@ -29,7 +29,7 @@ import { actionLegalityProblem, actionShapeProblem, isSeq, normalizeStops, offer
 import { checkpointOf, defaultTableLimits, growthProblem, noteCount, sizeProblem, type TableLimits } from './limits';
 import { fullViewJson, proposalView, seatPayload, type SeatBase, type SeatPayload } from './payload';
 import { defaultPlacements, type PlacementRule, type PlacementSeat } from './placements';
-import type { Checkpoint, SeatSend, TableCause, TableCommand, TableEnd, TableStep } from './types';
+import type { Checkpoint, SeatSend, SnapshotLoss, TableCause, TableCommand, TableEnd, TableStep } from './types';
 
 export interface TableOptions {
   /** The game id (records and the start message carry it). */
@@ -62,10 +62,11 @@ export interface TableRecoverOptions extends TableOptions {
   records: readonly LogRecord[];
   /**
    * M13-5 INTERFACE CHANGE (additive): the state at a snapshot's `seq` (the runtime's recovery, design 2.3): the records up to it are not applied
-   * again, only counted. Taken only while no player has lost by then (a loss's out order and citations come from its change's events); otherwise
-   * every record is replayed, as without it.
+   * again, only counted. A loss's out order, turn and citations come from its change's events, not from the state: F31, the snapshot carries them
+   * (`losses`, Checkpoint.losses), so it is taken also after a player has lost when they match the state's losers; a snapshot without them (written
+   * before F31) is taken only while no player has lost by then. Otherwise every record is replayed, as without it.
    */
-  from?: { state: GameState; seq: number };
+  from?: { state: GameState; seq: number; losses?: readonly SnapshotLoss[] };
   /** M13-5 INTERFACE CHANGE (additive): called after each record is applied (the runtime's watchdog progress and checkpoint-hash checks). */
   onRecord?: (rec: LogRecord, state: GameState) => void;
 }
@@ -116,6 +117,18 @@ const json = (m: HostedServerMessage): string => JSON.stringify(m);
 
 /** A by-hand answer (a manualResolve answer: the only actions with free text and the growth budget). */
 const isManual = (a: Action): boolean => a.type === 'answer' && a.answer.kind === 'manualResolve';
+
+/**
+ * F31: whether a snapshot can start a recovery as far as losses go: with its losses (Checkpoint.losses), when they name exactly the players the state
+ * shows as lost, each once, with sane numbers; without them (a snapshot written before F31), only while nobody has lost.
+ */
+function snapshotLossesUsable(from: NonNullable<TableRecoverOptions['from']>, configIndex: (id: PlayerId) => number): boolean {
+  const lost = from.state.players.filter((p) => p.hasLost).map((p) => p.id);
+  if (!from.losses) return lost.length === 0;
+  const named = from.losses.map((l) => l.player);
+  if (new Set(named).size !== named.length || named.length !== lost.length || !lost.every((id) => named.includes(id))) return false;
+  return from.losses.every((l) => configIndex(l.player) >= 0 && Number.isInteger(l.order) && l.order >= 1 && Number.isInteger(l.turn) && l.turn >= 0);
+}
 
 /** ISO time of a record (`LogRecord.at`); a time out of the Date range is clamped (never throws). */
 function iso(at: number): string {
@@ -199,14 +212,19 @@ export class TableActor {
    * (`recoverTableClock`: the outage charged to nobody, every seat disconnected with a fresh reconnect window), the per-game counts from the records.
    * Open proposals are not stored (the proposer proposes again). The seats get full views when they reconnect.
    */
-  static recover(o: TableRecoverOptions): { actor: TableActor; step: TableStep } {
+  static recover(o: TableRecoverOptions): { actor: TableActor; step: TableStep; fromSnapshot: number | null } {
     const n = o.config.players.length;
-    const from = o.from && o.from.seq <= o.records.length && !o.from.state.players.some((p) => p.hasLost) ? o.from : null;
-    let state = from ? from.state : createGame(o.config);
     const configIndex = (id: PlayerId) => o.config.players.findIndex((p, i) => (p.id ?? `p${i + 1}`) === id);
+    const from = o.from && o.from.seq <= o.records.length && snapshotLossesUsable(o.from, configIndex) ? o.from : null;
+    let state = from ? from.state : createGame(o.config);
     const settings = o.clock ?? defaultClockSettings(n);
     const losses: { index: number; order: number; turn: number; rules: string[] | null }[] = [];
     let order = 0;
+    // F31: the losses up to the snapshot, as it kept them (the records up to it are not replayed, so their events are not seen here).
+    for (const l of from?.losses ?? []) {
+      losses.push({ index: configIndex(l.player), order: l.order, turn: l.turn, rules: l.rules ? [...l.rules] : null });
+      order = Math.max(order, l.order);
+    }
     let progress = 0;
     let lastProgressSeq = 0;
     let prevActions = new Map<number, number>();
@@ -214,7 +232,7 @@ export class TableActor {
     const notes = new Map<number, number>();
     o.records.forEach((rec, k) => {
       if (rec.seq !== k + 1) throw new Error(`TableActor.recover: record ${k + 1} has seq ${rec.seq}`);
-      // Up to the snapshot the record is only counted (nobody had lost by then: `from` is taken only so).
+      // Up to the snapshot the record is only counted (its losses come with the snapshot, or nobody had lost by then: `from` is taken only so).
       const replayed = !from || rec.seq > from.seq;
       let lost: number[] = [];
       let events: GameEvent[] = [];
@@ -282,7 +300,14 @@ export class TableActor {
     const step = actor.run(() => {
       if (state.result) actor.endGame(o.at);
     });
-    return { actor, step };
+    return { actor, step, fromSnapshot: from ? from.seq : null };
+  }
+
+  /** F31: the losses so far, as a checkpoint keeps them (Checkpoint.losses). */
+  private lossFacts(): SnapshotLoss[] {
+    return this.byIndex
+      .filter((ch) => ch.outOrder !== null)
+      .map((ch) => ({ player: ch.player, order: ch.outOrder!, turn: ch.outTurn ?? 0, rules: ch.lossRules ? [...ch.lossRules] : null }));
   }
 
   // -------------------------------------------------------------------------------------------------------------------------------------------------
@@ -720,8 +745,8 @@ export class TableActor {
     }
     const notes = noteCount(c.action);
     if (notes > 0) this.channelOf(c.seat)!.notes += notes;
-    if (cp) this.cur.checkpoint = { seq, hash: cp.hash, stateJson: cp.json };
     const lost = this.trackLosses(prev, r.events);
+    if (cp) this.cur.checkpoint = { seq, hash: cp.hash, stateJson: cp.json, losses: this.lossFacts() };
     if (!c.neutral) {
       try {
         this.clockAfter(c.seat, c.clock, lost, r.events.length, c.at);

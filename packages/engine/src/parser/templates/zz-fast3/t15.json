@@ -265,6 +265,7 @@
     "since": 5,
     "status": "stable",
     "cr": ["CR 601.3b", "CR 702.8a", "CR 609.4"],
+    "priority": -1,
     "pattern": "you may cast {a:Filter} and {b:Filter} as though they had flash",
     "build": { "s": "permit", "who": { "ref": "you" }, "action": "haveFlash", "of": { "anyOf": ["$a", "$b"] } },
     "consumes": ["may", "as though"],

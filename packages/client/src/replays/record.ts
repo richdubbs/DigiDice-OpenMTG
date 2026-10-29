@@ -5,23 +5,33 @@
  * `LiveReplay` under the connection and its sealed form (live.ts), and gives the connection back unchanged, so a call site wraps what it already
  * builds: `sealConnection(recordLocalGame(new LocalConnection(config), { format }))`. Recording never stops a game: a failure is logged and the game
  * is played unrecorded.
+ *
+ * Review 2026-10-26 F1: a game in the game worker (connection/WorkerConnection.ts) is recorded through its `recordSource()`: the worker sends the
+ * checkpoints and the last state's facts with each change, never a state.
  */
 import { LocalConnection } from '../connection/LocalConnection';
 import type { GameConnection } from '../connection/GameConnection';
+import type { RecordSource } from './recordSource';
 import { sealConnection } from '../game/sealed';
 import { pageReplays, type ReplayEnv } from './env';
 import { registerLiveReplay } from './live';
 import { GameRecorder, finishAbandoned } from './recorder';
 import { sweepOnlineReplays } from '../online/replays';
 
-/** A connection whose game runs in this page: a hot-seat LocalConnection, or a game against the computer around one (game/computer.ts). */
-export type LocalGame = LocalConnection | (GameConnection & { readonly local: LocalConnection });
+/**
+ * A connection whose game runs in this page: a hot-seat LocalConnection, or a game against the computer around one (game/computer.ts); or (F1) a game
+ * in the game worker, which gives the recorder its `recordSource()` (WorkerConnection; by its shape, so this file does not load the worker's code).
+ */
+export type LocalGame =
+  | LocalConnection
+  | (GameConnection & { readonly local: LocalConnection })
+  | (GameConnection & { readonly recordSource: () => RecordSource });
 
 /** Record the game on `connection` (see the file comment). Returns `connection`. */
 export function recordLocalGame<C extends LocalGame>(connection: C, opts: { format: string }, env: ReplayEnv = pageReplays()): C {
   try {
-    const local = connection instanceof LocalConnection ? connection : connection.local;
-    const recorder = GameRecorder.start(local, { format: opts.format }, env);
+    const source = connection instanceof LocalConnection ? connection : 'recordSource' in connection ? connection.recordSource() : connection.local;
+    const recorder = GameRecorder.start(source, { format: opts.format }, env);
     registerLiveReplay([connection, sealConnection(connection)], recorder.live);
   } catch (e) {
     console.error('[Replays] the game could not be recorded', e);

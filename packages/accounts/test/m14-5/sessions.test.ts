@@ -10,7 +10,6 @@ import {
   ACCOUNT_LIMITS, ACCOUNT_RATE_LIMITS, ACCOUNT_STORE_METHODS, createMemoryAccountStore, isAccountToken, type AccountStore, type SignedIn,
 } from '@openmtg/accounts';
 import { tokenHash } from '../../src/ids';
-import { DEVICE_SCAN } from '../../src/service/sessions';
 import { addressFor, BIRTH, code, ctxOf, DAY, HOUR, inRow, MIN, PW, PW2, registerAs, setup, value, type Setup } from './support';
 
 async function signIn(s: Setup, name: string, over: Parameters<typeof ctxOf>[1] = {}, password = PW, device?: string): Promise<SignedIn> {
@@ -165,15 +164,19 @@ describe('M14-5: register, sign in, resume', () => {
     expect(code(inRow('sessions', await t.service.sessions(ctxOf(t.clock), bob.auth)))).toBe('sessionExpired');
   });
 
-  it('a sign-in\'s device cap reads at most DEVICE_SCAN proofs however many session rows the account gathered; at most 10 proofs stay valid', async () => {
+  it('a sign-in\'s device cap reads the account\'s proofs in one call, however many session rows it gathered; at most 10 proofs stay valid', async () => {
     const inner = createMemoryAccountStore();
-    let deviceReads = 0;
+    let proofReads = 0;
     const store = Object.fromEntries(
       ACCOUNT_STORE_METHODS.map((m) => [m, (...args: unknown[]) => (inner[m] as (...a: unknown[]) => unknown).apply(inner, args)]),
     ) as unknown as AccountStore;
     store.device = (hash) => {
-      deviceReads++;
+      proofReads++;
       return inner.device(hash);
+    };
+    store.devicesOf = (account) => {
+      proofReads += 100;
+      return inner.devicesOf(account);
     };
     const s = setup({ store });
     const reg = await registerAs(s, 'Alice');
@@ -181,12 +184,13 @@ describe('M14-5: register, sign in, resume', () => {
     const reads: number[] = [];
     for (let i = 0; i < 60; i++) {
       s.clock.advance(MIN);
-      deviceReads = 0;
+      proofReads = 0;
       devices.push((await signIn(s, 'Alice', { connection: `c${i}` })).device);
-      reads.push(deviceReads);
+      reads.push(proofReads);
     }
     expect((await inner.sessionsOf(reg.auth.account)).length).toBe(61);
-    expect(Math.max(...reads)).toBeLessThanOrEqual(DEVICE_SCAN);
+    // one devicesOf per sign-in, and no proof read one by one
+    expect(new Set(reads)).toEqual(new Set([100]));
     const valid: string[] = [];
     for (const d of devices) {
       const row = await inner.device(tokenHash(d));

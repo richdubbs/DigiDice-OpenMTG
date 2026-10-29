@@ -325,7 +325,10 @@ export function prepareDeferred<T>(cx: ExecCtx, node: T, opts: { keepEvent: bool
     // std-rw8 (CR 603.12, 608.2h, 118.12): what a payment of this resolution sacrificed ("When you do, ~ deals damage equal to that creature's power") is read now as
     // well: the reflexive trigger is an ability of its own, whose costs paid hold nothing
     const sacrificed = about !== undefined && about['ref'] === 'costSacrificed';
-    if (about && ((ofThisResolution(about) && readsLastKnown(cx, about as unknown as ObjRef)) || sacrificed)) {
+    // edh-players-1 (CR 608.2h, 603.7c; Arcane Denial): "its controller" of a spell still on the stack (a counter that did nothing, "can't be countered") is read now
+    // as well: a spell is gone from the stack once it finishes resolving, and the delayed trigger would find no object to ask
+    const spellPlayer = about !== undefined && (x['ref'] === 'controllerOf' || x['ref'] === 'ownerOf') && ofThisResolution(about) && resolveObjs(cx, about as unknown as ObjRef).some((h) => cx.g.s.objects[h.id]?.zone === 'stack');
+    if (about && ((ofThisResolution(about) && readsLastKnown(cx, about as unknown as ObjRef)) || spellPlayer || sacrificed)) {
       if (typeof x['q'] === 'string') {
         const n = evalQty(cx, x as unknown as Quantity);
         if (n !== undefined) return n;

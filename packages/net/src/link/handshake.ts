@@ -24,10 +24,14 @@
  * dropped before it can spend anyone's tokens. A connection id whose DATA0 failed to open is remembered for the cookie's lifetime, so one cookie
  * buys at most one X25519 computation.
  *
- * INITs are not rate-limited at all (a deviation from the audit's "rate-limit INIT and DATA0 per address"): their source can be forged, so a limit
- * per address would let anyone lock a guest out by forging its address, and a total limit would let anyone lock every guest out with a cheap
- * flood of forged INITs. An INIT costs only an HMAC, an HKDF and one AES-GCM seal (M12-5a, a host with several codes: up to three more HMACs for the code
- * tag, or one for a decoy key), stores nothing (but the bounded tag-less counter below), and is answered with fewer bytes than it has.
+ * INITs are not rate-limited per address (a deviation from the audit's "rate-limit INIT and DATA0 per address"): their source can be forged, so a
+ * limit per address would let anyone lock a guest out by forging its address. A tight total limit would let anyone lock every guest out with a cheap
+ * flood of forged INITs, so the only limit is a generous global one (owner decision 2026-10-26, "fix"): `initsTotal`, by default 2,000 INITs answered
+ * a second with bursts of 4,000, far above any real traffic (a guest repeats its INIT a few times with backoff). It bounds what a flood costs the
+ * host (it cannot pin a core on HMACs and seals); at worst a flood past it slows new handshakes (a guest's INIT may need a repeat or two), it never
+ * touches connections that exist, and never a per-address limit. An INIT costs only an HMAC, an HKDF and one AES-GCM seal (M12-5a, a host with several
+ * codes: up to three more HMACs for the code tag, or one for a decoy key), stores nothing (but the bounded tag-less counter below), and is answered
+ * with fewer bytes than it has.
  *
  * At most `maxPending` connections may wait for the game layer to admit them (the oldest is closed for a newer one), at most `maxConnections`
  * exist at all, and the owner drives every connection from one timer (`tick`). A datagram that makes anything here throw is dropped (audit C4).
@@ -54,7 +58,7 @@ import {
 import { ACCEPT_PLAIN, acceptAad, encodeInit, PacketType, parsePacket, type Packet } from '../wire/packet';
 import type { LinkOptions } from './channel';
 import { Connection, type Remote, type SendDatagram } from './connection';
-import { KeyedLimiter, type RateConfig } from './ratelimit';
+import { KeyedLimiter, TokenBucket, type RateConfig } from './ratelimit';
 
 /** Host-side limits (audit m6). */
 export interface HostLimits {
@@ -66,6 +70,11 @@ export interface HostLimits {
   handshakesPerAddress: RateConfig;
   /** The same over every address together (default 200/s, bursts of 400). */
   handshakesTotal: RateConfig;
+  /**
+   * INITs answered over every address together (default 2,000/s, bursts of 4,000): only a cap on the CPU a flood can take (see the file comment);
+   * never per address. Past it an INIT is dropped unanswered (its guest repeats it).
+   */
+  initsTotal: RateConfig;
 }
 
 /** Connection ids whose DATA0 failed to open that are remembered at most (HostHandshake.failed). */
@@ -78,6 +87,7 @@ export const DEFAULT_HOST_LIMITS: HostLimits = {
   maxConnections: 8,
   handshakesPerAddress: { rate: 10, burst: 20 },
   handshakesTotal: { rate: 200, burst: 400 },
+  initsTotal: { rate: 2000, burst: 4000 },
 };
 
 export interface EndpointStats {
@@ -123,6 +133,8 @@ export class HostHandshake {
   private readonly ephemerals = new Map<number, Ephemeral>();
   private readonly listeners: ((c: Connection) => void)[] = [];
   private readonly limiter: KeyedLimiter;
+  /** The global INIT cap (`limits.initsTotal`). */
+  private readonly inits: TokenBucket;
   private readonly now: () => number;
   /** M12-5a: the host's join codes (one, or one per guest seat). */
   private readonly codes: readonly string[];
@@ -138,6 +150,7 @@ export class HostHandshake {
     this.limits = { ...DEFAULT_HOST_LIMITS, ...o.limits };
     this.now = o.now ?? Date.now;
     this.limiter = new KeyedLimiter(this.limits.handshakesPerAddress, this.limits.handshakesTotal, this.now());
+    this.inits = new TokenBucket(this.limits.initsTotal, this.now());
   }
 
   get connections(): Connection[] {
@@ -191,6 +204,11 @@ export class HostHandshake {
     const id = p.connId.toString('hex');
     if (p.type === PacketType.Init) {
       if (this.conns.has(id)) return; // a late repeat: the guest is connected already
+      // The global cap only (never per address: a forged source would lock its owner out); checked before any crypto.
+      if (!this.inits.take(this.now())) {
+        this.stats.rateLimited++;
+        return void this.stats.dropped++;
+      }
       // Stateless: the same INIT from the same source in the same second gets the same ACCEPT, and nothing is stored per INIT (but the bounded counter
       // of tag-less INITs at a host with several codes). No key exchange here (it runs for a DATA0 whose cookie, bound to this source, proves the sender
       // receives there): INITs from forged addresses cost one HMAC, one HKDF and one AES-GCM seal, and at a host with several codes up to three more

@@ -1,0 +1,25 @@
+{
+  "name": "@openmtg/play",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "author": "DigiDice LLC",
+  "description": "OpenMTG local play without a screen: the hot-seat connection, the game against the computer and the view-patch sender, shared by the browser client and the local server (unofficial fan project).",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "typecheck": "node --max-old-space-size=6144 ../../node_modules/typescript/bin/tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@openmtg/ai": "*",
+    "@openmtg/engine": "*"
+  },
+  "devDependencies": {
+    "@openmtg/hosted": "*"
+  }
+}

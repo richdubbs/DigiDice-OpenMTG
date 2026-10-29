@@ -70,7 +70,7 @@ export interface AccountsHost {
   /** Hosted's guest sessions (5.5); a fake in tests. */
   guests: GuestSessions;
   log: AccountsLog;
-  /** A store the host made (PostgresAccountStore at the sync); otherwise the composition opens config.store's memory or file store. */
+  /** A store the host made (PostgresAccountStore at the sync); otherwise the composition opens config.store's memory or file store (PGlite). */
   store?: AccountStore;
   /** External providers the host configured (shopify, passkey); the local provider always comes first. */
   providers?: IdentityProvider[];

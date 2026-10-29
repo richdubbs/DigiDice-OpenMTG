@@ -10,7 +10,7 @@ import { copyExceptText } from './copy-except';
 import { quotedAbility } from './quote';
 import { continuous, ptPredicate } from './mods';
 import { countParts, distinctParts } from './qty';
-import { isPlayerRef, markTriggerRoles, withSubjects } from './refs';
+import { isPlayerRef, markTriggerRoles, spellsYouCast, withSubjects } from './refs';
 import { destPhrase } from './steps-util';
 import { MOVE_VERB, tokenText } from './steps-zones';
 import { absorb, cloneState, withVariants, type RenderState } from './state';
@@ -472,7 +472,16 @@ function costMod(e: Extract<StaticEffect, { s: 'costMod' }>, st: RenderState, in
   const { toughnessGreaterThanPower: tgp, ...withoutTgp } = applies.spells ?? {};
   const tgpReading = tgp === true && caster === 'you' && inside === '' && change.kind !== 'set'
     ? [`each ${K.np({ ...withoutTgp, zone: 'stack', stackKind: 'spell' }, st, { det: 'none' })} you cast with toughness greater than its power costs ${amount} ${word} to cast${per}`] : [];
-  if (mvReading.length + colorReading.length + tgpReading.length > 0) return alt(text, ...mvReading, ...colorReading, ...tgpReading);
+  // edh-cast-1 (CR 208.1, 601.2f; Goreclaw, Terror of Qal Sisma; family spells-you-cast-with-power): "Creature spells you cast with power 4 or greater cost {2} less to
+  // cast": Oracle puts "you cast" before the power comparison, as for a mana value
+  const { power: pw, ...withoutPower } = applies.spells ?? {};
+  const powerReading = pw !== undefined && caster === 'you' && inside === '' && change.kind !== 'set' && pw.op === '>=' && Object.keys(withoutPower).some((k) => k !== 'zone' && k !== 'stackKind')
+    ? [`${spellsPhrase(withoutPower, st)} you cast with power ${K.qty(pw.value, st)} or greater cost ${amount} ${word} to cast${per}`] : [];
+  // edh-cast-1 (CR 105.2, 601.2f; Goblin Anarchomancer; family each-spell-that-is): "Each spell you cast that's red or green costs {1} less to cast": the colors said after "each
+  // spell you cast", singular
+  const eachReading = caster === 'you' && inside === '' && change.kind !== 'set' && cs !== undefined && cs.length === 2 && Object.keys(withoutColors).every((k) => k === 'zone' || k === 'stackKind')
+    ? [`each spell you cast that is ${COLOR_WORD[cs[0]!]} or ${COLOR_WORD[cs[1]!]} costs ${amount} ${word} to cast${per}`] : [];
+  if (mvReading.length + colorReading.length + tgpReading.length + powerReading.length + eachReading.length > 0) return alt(text, ...mvReading, ...colorReading, ...tgpReading, ...powerReading, ...eachReading);
   // CLOUD C5 (CR 607.2d): "Creature spells you cast of the chosen type cost {1} less to cast": Oracle puts "you cast" before the chosen quality (Herald's Horn, Umori)
   const { chosen, ...withoutChosen } = applies.spells ?? {};
   if (chosen !== undefined && caster === 'you' && inside === '' && change.kind !== 'set') {
@@ -1407,6 +1416,21 @@ function tokensPlusOnePassive(e: ReplacementDef, duration: Duration | undefined,
 }
 
 /**
+ * edh-perms-1 (CR 614.1a, 614.5, 111.1): "If one or more tokens would be created under your control, those tokens plus that many 1/1 green Squirrel creature tokens are
+ * created instead." (Chatterfang, Squirrel General): every token you would create, then as many more of one description (`modify.then` = one `createToken` by you whose
+ * count is the event's number, the template rep.edhpm1.tokens.plusThatMany.passive). null for anything else.
+ */
+function tokensPlusThatMany(e: ReplacementDef, duration: Duration | undefined, st: RenderState): string | null {
+  const ev = e.replaces;
+  const b = e.body;
+  if (ev.ev !== 'createToken' || b.b !== 'modify' || b.then === undefined || duration !== undefined || e.condition !== undefined || e.optional === true || e.shield !== undefined) return null;
+  if (b.destination !== undefined || b.amount !== undefined || b.count !== undefined || b.to !== undefined || ev.player !== 'you' || ev.byEffect !== undefined || ev.token !== undefined) return null;
+  const one = b.then.do.length === 1 ? b.then.do[0]! : undefined;
+  if (one === undefined || one.op !== 'createToken' || JSON.stringify(one.count) !== '{"q":"eventAmount"}' || JSON.stringify(one.who) !== '{"ref":"you"}' || Object.keys(one).some((k) => !['op', 'who', 'count', 'token'].includes(k))) return null;
+  return `if one or more tokens would be created under your control, those tokens plus ${tokenText(one.token, 'that many', true, st)} are created instead`;
+}
+
+/**
  * r4-repl (CR 614.1a, 614.6, 111.1): "If one or more artifact tokens would be created under your control, that many 5/5 red Dragon creature tokens with flying are
  * created instead." (Draconic Visitor): the tokens of a card type you would create replaced by as many tokens of another description (`instead`, `count` the
  * event's number; the template rep.r4repl.tokens.typed.thatMany.other). null for anything else.
@@ -1694,7 +1718,7 @@ function replace(e: ReplacementDef, st: RenderState, duration: Duration | undefi
   const raised = raisedDamage(e, duration, st);
   if (raised !== null) return raised;
   // Cloud r3-repl (CR 614.1a, 111.1): "If you would create one or more artifact tokens, instead create those tokens plus an additional Map token." (Worldwalker Helm)
-  const plusOne = tokensPlusOne(e, duration, st) ?? tokensPlusOnePassive(e, duration, st) ?? thatManyOtherTokens(e, duration, st) ?? oneOfEachToken(e, duration);
+  const plusOne = tokensPlusOne(e, duration, st) ?? tokensPlusOnePassive(e, duration, st) ?? tokensPlusThatMany(e, duration, st) ?? thatManyOtherTokens(e, duration, st) ?? oneOfEachToken(e, duration);
   if (plusOne !== null) return plusOne;
   // r4-repl (CR 614.1a, 121.2): "As long as you have one or fewer cards in hand, if you would draw one or more cards, you draw that many cards plus one instead."
   const moreDraws = drawManyPlus(e, duration, st) ?? youGetCounters(e, duration, st) ?? extraTurnSkipped(e, duration);
@@ -3615,6 +3639,17 @@ function sharedSubject(e: StaticEffect, r: StaticEffect, st: RenderState): strin
     ]);
     return alt(merged!, apart!);
   }
+  // edh-perms-1 (CR 613.1d, 613.1f, 509.1b; Brotherhood Regalia): "Equipped creature has ward {2}, is an Assassin in addition to its other types, and can't be blocked.": a plain
+  // grant of abilities and an added creature type of one object, then a plain blocking ban of the same object, the subject said once in a list of three
+  const typeGrant = e.mods.length === 2 && Object.keys(e).every((k) => ['s', 'affects', 'mods'].includes(k)) ? { type: e.mods.find((m) => m.layer === 4), grant: e.mods.find((m) => m.layer === 6) } : null;
+  if (typeGrant?.type !== undefined && typeGrant.grant !== undefined && Object.keys(typeGrant.type).join() === 'layer,subtypes' && isPlainGrant({ ...e, mods: [typeGrant.grant] })
+    && r.s === 'restrict' && r.mode === 'cant' && r.action === 'beBlocked' && r.other === undefined && r.max === undefined && r.when === undefined && r.min === undefined
+    && JSON.stringify(r.subject) === JSON.stringify(e.affects)) {
+    const first = staticEffect({ ...e, mods: [typeGrant.grant] }, st);
+    const type = afterSubject(staticEffect({ ...e, mods: [typeGrant.type] }, st));
+    const plural = K.obj(e.affects as ObjRef, st, 'subject').plural;
+    if (type !== null && /^ (is|are) /.test(type)) return `${first},${type}, and ${restrictFor(r, st, '', plural).trim()}`;
+  }
   // FAST4 T29: ... and a grant of abilities before "can't be blocked", "Equipped creature has hexproof and can't be blocked" (CR 613.1f, 509.1b)
   // FAST4 T33: ... and "loses all abilities and can't become untapped" (CR 613.1f, 502.3)
   const loseAll = e.mods.length === 1 && e.mods[0]!.layer === 6 && JSON.stringify(e.mods[0]) === '{"layer":6,"removeAll":true}';
@@ -3742,6 +3777,11 @@ export function staticEffect(e: StaticEffect, st: RenderState, o: { duration?: D
       if (e.goad === true && o.duration?.d === 'permanent') return `${restrict(e, st)} for the rest of the game`;
       const plain = restrict(e, st);
       const base = lasting(plain, o.duration, st);
+      // edh-cast-1 (CR 101.2, 601.2a, 611.2a; Domri, Anarch of Bolas; family spells-cast-this-turn-cant-be-countered): "Creature spells you cast this turn can't be countered":
+      // the duration sits after "you cast"
+      const castInner = e.mode === 'cant' && e.action === 'beCountered' && e.other === undefined && e.max === undefined && e.when === undefined && o.duration?.d === 'endOfTurn'
+        && e.subject.ref === 'each' && 'filter' in e.subject ? spellsYouCast(e.subject.filter) : null;
+      if (castInner !== null) return alt(base, `${K.np(castInner, st, { det: 'none', plural: true })} you cast this turn can't be countered`);
       // "Target creature must be blocked this turn if able" (CR 509.1c): the duration sits between the verb and "if able"
       const inside0 = e.mode === 'mustIfAble' && e.action === 'beBlocked' ? inlineDuration(o.duration) : null;
       // r4-fxb (family each-combat-this-turn): a requirement lasting the turn applies in each combat of it, "must be blocked each combat this turn if able" (CR 506.1, 509.1c)
@@ -3844,7 +3884,11 @@ export function staticEffect(e: StaticEffect, st: RenderState, o: { duration?: D
       if (two !== null && two[0]!.controller === undefined && two[1]!.controller !== undefined) throw new NoRenderer('a union of two descriptions whose controller may be shared');
       const whose = JSON.stringify(e.abilitiesOf) === SELF_OR_ITS_EQUIPMENT ? `${K.obj({ ref: 'self' }, st, 'subject').text} or an equipment attached to it`
         : two !== null && e.cause === undefined ? `${K.np(two[0]!, st, { det: 'a' })} or ${K.np(two[1]!, st, { det: 'a' })}` : K.np(e.abilitiesOf, st, { det: 'a' });
-      if (e.cause === undefined) return lasting(`if a triggered ability of ${whose} triggers, ${that} triggers ${times}`, o.duration, st);
+      // edh-mana-keywords-1 (CR 603.2d, 109.4; family trigger-mod-shared-controller): two descriptions of permanents you control are also said with one "you control" for
+      // both, "a Shaman or another Wizard you control" (Harmonic Prodigy)
+      const shared = two !== null && e.cause === undefined && two[0]!.controller === 'you' && two[1]!.controller === 'you'
+        ? `${K.np({ ...two[0]!, controller: undefined }, st, { det: 'a' })} or ${K.np({ ...two[1]!, controller: undefined }, st, { det: 'a' })} you control` : null;
+      if (e.cause === undefined) return lasting(`if a triggered ability of ${shared === null ? whose : alt(whose, shared)} triggers, ${that} triggers ${times}`, o.duration, st);
       // std-typechange-2 (CR 603.2d, 114.4): "a triggered ability of this creature or an emblem you own" (The Masamune): the source's own abilities or those of any emblem
       // its controller owns; no other description says emblems
       const caused = JSON.stringify(e.abilitiesOf) === SELF_OR_EMBLEM ? `${K.obj({ ref: 'self' }, st, 'subject').text} or an emblem you own` : K.np(e.abilitiesOf, st, { det: 'a' });

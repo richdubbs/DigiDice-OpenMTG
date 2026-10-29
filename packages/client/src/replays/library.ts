@@ -19,7 +19,7 @@
  * the named facts of a file go into its summary row, never fields the format does not know (the list reads every row each time it is shown).
  */
 import {
-  ABILITY_MODEL_VERSION, ENGINE_VIEW_SCHEMA, REPLAY_EXTENSION, REPLAY_FORMAT_VERSION, REPLAY_LIMITS, checkReplay, cleanText, fileText, parseBoundedJson,
+  REPLAY_EXTENSION, REPLAY_FORMAT_VERSION, REPLAY_LIMITS, checkReplay, cleanText, fileText, parseBoundedJson,
   readReplayFile, writeGzippedJson, type Checked, type ReplayApp, type ReplayEngine, type ReplayFile, type ReplayGameInfo, type ReplayKind, type ReplayReveal,
 } from '@openmtg/engine';
 import type { DbRow, ReplayDb } from './db';
@@ -143,23 +143,7 @@ export function summaryOf(file: ReplayFile): ReplaySummary {
   };
 }
 
-/** What a replay can be watched as on this OpenMTG (design 5, 10): the library's status badge. */
-export type ReplayStatus = 'exact' | 'checked' | 'recordingOnly' | 'needsNewer';
-
-export function replayStatus(s: ReplaySummary, build: string | null): ReplayStatus {
-  if (s.formatVersion > REPLAY_FORMAT_VERSION) return 'needsNewer';
-  if (s.kind === 'recording') return s.engine.viewSchema > ENGINE_VIEW_SCHEMA ? 'needsNewer' : 'recordingOnly';
-  // A game whose ability model this engine cannot read plays its recording only (design 5.4).
-  if (s.engine.model !== ABILITY_MODEL_VERSION) return s.hasRecording && s.engine.viewSchema <= ENGINE_VIEW_SCHEMA ? 'recordingOnly' : 'needsNewer';
-  return build !== null && s.engine.build === build ? 'exact' : 'checked';
-}
-
-export const STATUS_LABEL: Record<ReplayStatus, string> = {
-  exact: 'Exact',
-  checked: 'Checked when watched',
-  recordingOnly: 'Recording only',
-  needsNewer: 'Needs a newer OpenMTG',
-};
+export { replayStatus, STATUS_LABEL, type ReplayStatus } from '@openmtg/play/replay/status'; // shared with the local server's library
 
 /** A file name for an exported replay: the title without characters file systems refuse, and the extension. */
 export function exportFileName(title: string): string {

@@ -6,21 +6,34 @@
  * them without a preflight, which is never granted).
  */
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
-import type { AddressInfo } from 'node:net';
+import type { AddressInfo, Socket } from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defaultCacheDir } from '@openmtg/cards';
-import { API_PREFIX, DEFAULT_PORT, type ApiError } from './api';
+import { API_PREFIX, DEFAULT_PORT, type ApiError, type EndpointKey } from './api';
 import { cardStore } from './cache';
 import type { ServerContext, UpdateIo } from './context';
 import { ONLINE_REPLAYS_PATH, ONLINE_SESSION_PATH } from './online/api';
+import { newOnlineToken } from './online/guard';
 import { OnlineService, type OnlineOptions } from './online/socket';
 import { matchRoute } from './routes';
+import { SOUNDS_PREFIX } from './sounds/api';
+import { SoundService } from './sounds/service';
 import { resolveStatic } from './static';
+import { TABLE_SOCKET_PATH } from './table/api';
+import type { ReplayApp } from '@openmtg/engine';
+import { TableService, type TableServiceOptions } from './table/socket';
+import { addReplay, GameRecording, loadReplay, type RecordingInfo } from './library/replays';
 
 export const HOST = '127.0.0.1';
 /** Largest accepted JSON body (a decklist, a list of names or file names). */
 export const MAX_BODY_BYTES = 2 * 1024 * 1024;
+/** Endpoints that take larger bodies: a picture of up to 25 MB sent as base64 (library/images.ts). */
+const BODY_LIMITS: Partial<Record<EndpointKey, number>> = {
+  'POST /api/library/images/add': 36 * 1024 * 1024,
+  // A replay of up to 8 MB sent as base64 (library/replays.ts).
+  'POST /api/library/replays/import': 12 * 1024 * 1024,
+};
 /** How much of an oversized body is read and discarded before the connection is closed instead (readJsonBody). */
 const DRAIN_LIMIT_BYTES = 64 * 1024 * 1024;
 
@@ -85,6 +98,11 @@ export interface ServerOptions {
    * false turns it off (API tests).
    */
   online?: OnlineOptions | false;
+  /**
+   * Godot plan phase 1: the table channel, the WebSocket at /table (table/socket.ts) over which the Godot table or this server's own page plays a game whose
+   * engine runs here. Default on, with the online socket's per-launch token and its extra origins; false turns it off.
+   */
+  table?: Omit<TableServiceOptions, 'token' | 'allowOrigins' | 'version'> | false;
   /** UPD1: installed rules packs; default $OPENMTG_PACKS_DIR, else `packs` next to the card cache directory. */
   packsDir?: string;
   /** UPD1: the rules-pack manifest URL; default $OPENMTG_PACK_URL (none: the pack part of the Update button is off). null turns it off. */
@@ -97,6 +115,13 @@ export interface ServerOptions {
    * extra connect-src origin of the Content-Security-Policy. null turns it off.
    */
   hostedUrl?: string | null;
+  /**
+   * Godot plan phase 3: the game's sounds as WAV files under /api/sounds (sounds/api.ts), rendered off the event loop by `workers` threads (default: one
+   * less than the cores, at most 2) and kept in `dir` (default `sounds` next to the card cache directory). false turns them off.
+   */
+  sounds?: { dir?: string; workers?: number } | false;
+  /** The player's library (decks, settings); default `library` next to the card cache directory. */
+  libraryDir?: string;
 }
 
 export interface RunningServer {
@@ -105,6 +130,12 @@ export interface RunningServer {
   url: string;
   /** The online service (null when turned off). */
   online: OnlineService | null;
+  /** Godot plan phase 1: the table channel (null when turned off). */
+  table: TableService | null;
+  /** The per-launch token of the online socket and the table channel (for a shell that starts this server: the Godot app, the desktop app). */
+  token: string;
+  /** Godot plan phase 3: the sounds under /api/sounds (null when turned off). */
+  sounds: SoundService | null;
   close(): Promise<void>;
 }
 
@@ -146,20 +177,20 @@ class BodyError extends Error {
  * rest of it is read and thrown away, so the client can finish sending and then reads the answer: destroying the request instead would reset the
  * connection and the client would never see the 413. Past DRAIN_LIMIT_BYTES the connection is closed after all (a runaway upload).
  */
-function readJsonBody(req: IncomingMessage): Promise<unknown> {
+function readJsonBody(req: IncomingMessage, limit: number = MAX_BODY_BYTES): Promise<unknown> {
   const type = req.headers['content-type'] ?? '';
   if (!/^application\/json\b/i.test(type)) return Promise.reject(new BodyError(415, 'POST bodies must be application/json'));
   return new Promise((resolve, reject) => {
-    const tooLarge = (): void => reject(new BodyError(413, `Body larger than ${MAX_BODY_BYTES} bytes`));
+    const tooLarge = (): void => reject(new BodyError(413, `Body larger than ${limit} bytes`));
     let chunks: Buffer[] = [];
     let size = 0;
-    let over = Number(req.headers['content-length'] ?? 0) > MAX_BODY_BYTES;
+    let over = Number(req.headers['content-length'] ?? 0) > limit;
     if (over) tooLarge();
     req.on('data', (buf: Buffer) => {
       size += buf.length;
       if (size > DRAIN_LIMIT_BYTES) req.destroy();
       if (over) return;
-      if (size > MAX_BODY_BYTES) {
+      if (size > limit) {
         over = true;
         chunks = [];
         tooLarge();
@@ -186,7 +217,7 @@ async function handleApi(req: IncomingMessage, res: ServerResponse, url: URL, ct
   let body: unknown;
   if (req.method === 'POST') {
     try {
-      body = await readJsonBody(req);
+      body = await readJsonBody(req, BODY_LIMITS[m.key] ?? MAX_BODY_BYTES);
     } catch (e) {
       if (e instanceof BodyError) return sendError(res, e.status, e.message);
       throw e;
@@ -227,12 +258,23 @@ export function contextFrom(options: ServerOptions): ServerContext {
     packUrl: options.packUrl !== undefined ? options.packUrl : process.env['OPENMTG_PACK_URL']?.trim() || null,
     ...(options.updateIo ? { updateIo: options.updateIo } : {}),
     hostedUrl: hostedSocketOrigin(options.hostedUrl !== undefined ? options.hostedUrl : process.env['OPENMTG_HOSTED_URL']),
+    ...(options.libraryDir !== undefined ? { libraryDir: options.libraryDir } : {}),
   };
 }
 
-/** The request listener, without listening (tests may use it directly). `online` answers GET /api/online/session (startServer makes it). */
-export function createApp(options: ServerOptions = {}, online: OnlineService | null = null): Server {
+/** The sound service of `options` (null when turned off): its files next to the card cache unless a folder is given. */
+export function soundsFrom(options: ServerOptions, ctx: ServerContext = contextFrom(options)): SoundService | null {
+  if (options.sounds === false) return null;
+  return new SoundService({ dir: options.sounds?.dir ?? path.join(path.dirname(ctx.cacheDir), 'sounds'), ...(options.sounds?.workers !== undefined ? { size: options.sounds.workers } : {}) });
+}
+
+/**
+ * The request listener, without listening (tests may use it directly). `online` answers GET /api/online/session (startServer makes it); `sounds` answers
+ * /api/sounds (made here from the options when not given; startServer makes it, to close it).
+ */
+export function createApp(options: ServerOptions = {}, online: OnlineService | null = null, sounds: SoundService | null | undefined = undefined): Server {
   const ctx = contextFrom(options);
+  const soundService = sounds === undefined ? soundsFrom(options, ctx) : sounds;
   const dist = options.clientDist === undefined ? DEFAULT_CLIENT_DIST : options.clientDist;
   const csp = contentSecurityPolicy(ctx.hostedUrl ?? null);
   return createServer((req, res) => {
@@ -245,8 +287,10 @@ export function createApp(options: ServerOptions = {}, online: OnlineService | n
     }
     // RPL-3: the host's online game records, for this server's own page (online/replays.ts; checked like the token request).
     if (online && (url.pathname === ONLINE_REPLAYS_PATH || url.pathname.startsWith(`${ONLINE_REPLAYS_PATH}/`))) return online.replays(req, res, url.pathname);
+    // Godot plan phase 3: the sounds (WAV files are not JSON: sounds/service.ts answers them itself)
+    const isSound = soundService !== null && url.pathname.startsWith(`${SOUNDS_PREFIX}/`);
     const isApi = url.pathname === API_PREFIX || url.pathname.startsWith(`${API_PREFIX}/`);
-    (isApi ? handleApi(req, res, url, ctx) : handleStatic(req, res, url, dist)).catch((e: unknown) => {
+    (isSound ? soundService.handle(req, res, url.pathname) : isApi ? handleApi(req, res, url, ctx) : handleStatic(req, res, url, dist)).catch((e: unknown) => {
       console.error('[openmtg-server]', e);
       if (!res.headersSent) sendError(res, 500, 'Internal server error');
       else res.end();
@@ -254,18 +298,51 @@ export function createApp(options: ServerOptions = {}, online: OnlineService | n
   });
 }
 
+/** The path of a request target, or null when it is not one. */
+function pathOf(target: string | undefined): string | null {
+  try {
+    return new URL(target ?? '', 'http://127.0.0.1').pathname;
+  } catch {
+    return null;
+  }
+}
+
 /** Start listening on 127.0.0.1 (never on other interfaces). */
 export function startServer(options: ServerOptions = {}): Promise<RunningServer> {
   const ctx = contextFrom(options);
   // RPL-3: the host's online game records live next to the card cache (`<data>/replays/online`), like the compiled cache and the rules packs.
-  const replays = { replaysDir: path.join(path.dirname(ctx.cacheDir), 'replays', 'online'), app: { version: ctx.version, commit: null } };
+  // A page without a library of its own (the Godot app) has the online games' replays kept in the server's library, and the guests' recordings beside.
+  const replays = {
+    replaysDir: path.join(path.dirname(ctx.cacheDir), 'replays', 'online'), app: { version: ctx.version, commit: null },
+    library: { add: async (file: Parameters<typeof addReplay>[1]) => void (await addReplay(ctx, file)) },
+    guestRecordingsDir: path.join(path.dirname(ctx.cacheDir), 'replays', 'online-guest'),
+  };
+  // One per-launch token for the online socket and the table channel.
+  const token = (options.online !== false ? options.online?.token : undefined) ?? newOnlineToken();
+  const allowOrigins = options.online !== false ? (options.online?.allowOrigins ?? []) : [];
   const online = options.online === false ? null : new OnlineService(async () => {
     const r = await cardStore(ctx);
     if (!r.ok) throw new Error(r.error);
     return r.store.db;
-  }, { ...replays, ...options.online });
-  const server = createApp(options, online);
+  }, { ...replays, ...options.online, token });
+  // Every local game played over the table channel is recorded as a replay in the library (library/replays.ts).
+  const record = (info: Omit<RecordingInfo, 'version'>) => new GameRecording(ctx, { ...info, version: ctx.version });
+  const tableOptions = options.table === false ? null : { ...options.table, tables: { record, ...options.table?.tables } };
+  const table = tableOptions === null ? null : new TableService({
+    ...tableOptions, token, allowOrigins, version: ctx.version, loadReplay: (id) => loadReplay(ctx, id),
+    ...(online ? { onlineCapture: (app: ReplayApp) => online.bridge.bugCapture(app) } : {}),
+  });
+  const sounds = soundsFrom(options, ctx);
+  const server = createApp(options, online, sounds);
   online?.attach(server);
+  table?.attach(server);
+  // WebSocket upgrades: /table to the table channel, everything else to the online socket (which refuses other paths).
+  server.on('upgrade', (req: IncomingMessage, socket: Socket, head: Buffer) => {
+    if (table && pathOf(req.url) === TABLE_SOCKET_PATH) return table.upgrade(req, socket, head);
+    if (online) return online.upgrade(req, socket, head);
+    socket.on('error', () => undefined);
+    socket.end('HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
+  });
   return new Promise((resolve, reject) => {
     server.once('error', reject);
     server.listen(options.port ?? DEFAULT_PORT, HOST, () => {
@@ -276,8 +353,13 @@ export function startServer(options: ServerOptions = {}): Promise<RunningServer>
         port,
         url: `http://${HOST}:${port}`,
         online,
+        table,
+        token,
+        sounds,
         close: async () => {
+          await table?.close();
           await online?.close();
+          await sounds?.close();
           await new Promise<void>((done, fail) => server.close((err) => (err ? fail(err) : done())));
         },
       });

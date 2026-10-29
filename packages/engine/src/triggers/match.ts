@@ -265,7 +265,8 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
   /** CR 119.9, 119.10: life gained or lost. */
   life: (p, e, cx) => e.data['change'] === p.change && pm(cx, p.player, playerOf(e)) && cmpMatches(p.amount, numberData(e, 'amount')),
   /** CR 121.2: `nth` is "the Nth card you draw each turn". */
-  draw: (p, e, cx) => pm(cx, p.player, playerOf(e)) && (p.nth === undefined || numberData(e, 'nth') === p.nth),
+  // edh-players-1 (CR 504.1): `exceptFirstInDrawStep`, not the first card the turn player drew in their own draw step (normalize.ts says which it was)
+  draw: (p, e, cx) => pm(cx, p.player, playerOf(e)) && (p.nth === undefined || numberData(e, 'nth') === p.nth) && !(p.exceptFirstInDrawStep === true && e.data['firstInDrawStep'] === true),
   /** CR 603.2e: "becomes" happens at the time of the change only. `monstrous`, `renowned`, `saddled`, `crewed` come from the keyword actions' `actionPerformed` events (verbs in normalize.ts). */
   becomes: (p, e, cx) => {
     if (e.data['what'] !== p.what) return false;

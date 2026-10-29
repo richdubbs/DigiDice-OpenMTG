@@ -9,7 +9,7 @@ import { chmod, mkdir, open, readdir, readFile, rename, unlink } from 'node:fs/p
 import { join } from 'node:path';
 import type { AccountExport, AccountId } from '../api';
 
-/** The folder under ACCOUNTS_DATA_DIR (beside the file store's files and FileMailer's mail/). */
+/** The folder under ACCOUNTS_DATA_DIR (beside the file store's db/ and lock, and FileMailer's mail/). */
 export const ADMIN_EXPORTS_DIR = 'exports';
 
 const FILE_NAME = /^(acc_[0-7][0-9A-HJKMNP-TV-Z]{25})-(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z\.json(?:\.tmp)?$/;

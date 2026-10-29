@@ -195,6 +195,22 @@ function basePtOnly(then: readonly unknown[], els: readonly unknown[]): string |
 }
 
 /**
+ * edh-mana-keywords-1 (CR 614.15, 106.7): `if C then [addMana couldProduce N oneType] else [addMana couldProduce 1]` with the same objects: the number N when the
+ * `then` is "N mana of that type" in place of the one mana of any type those objects could produce (the parser's rider rid.edhmk1.instead.thatType), else null.
+ */
+function thatTypeInstead(s: StepOf<'if'>): number | null {
+  if (s.then.length !== 1 || s.else === undefined || s.else.length !== 1) return null;
+  const [x, y] = [s.then[0] as unknown as Record<string, unknown>, s.else[0] as unknown as Record<string, unknown>];
+  const dx = x['dynamic'] as Record<string, unknown> | undefined;
+  const dy = y['dynamic'] as Record<string, unknown> | undefined;
+  if (x['op'] !== 'addMana' || y['op'] !== 'addMana' || dx === undefined || dy === undefined || dx['kind'] !== 'couldProduce' || dy['kind'] !== 'couldProduce') return null;
+  if (dx['oneType'] !== true || dy['oneType'] !== undefined || dy['count'] !== 1 || typeof dx['count'] !== 'number' || dx['count'] < 2) return null;
+  const same = (k: string): boolean => JSON.stringify(dx[k]) === JSON.stringify(dy[k]);
+  const rest = (o: Record<string, unknown>): string => JSON.stringify({ ...o, dynamic: undefined });
+  return same('among') && same('colorsOnly') && rest(x) === rest(y) ? dx['count'] : null;
+}
+
+/**
  * r4-repl (CR 614.15, 406.1): "Exile the top two cards of your library. If C, exile the top three cards instead." (Burning Curiosity): the same exile of the top
  * cards of the same player's library with another number of cards, the library named once (the parser's rider rid.r4repl.instead.exileTop.count builds exactly
  * this shape). The new number, or null.
@@ -921,6 +937,10 @@ export const CLAUSES_FLOW = {
     // instead" keeps Y when declined, a subset of a group keeps the rest, CR 608.2d, 614.15)
     // FAST5X E1: with a condition decided as the spell is cast, one instruction may replace another as a whole (render/self-replacement.ts#isCastChoice), and
     // Oracle also writes "If the gift was promised, instead counter target spell" (the parser's rider rid.fast5x.instead.front)
+    // edh-mana-keywords-1 (CR 614.15, 106.1, 106.7): "Add one mana of any type that a land you control could produce. If ~ has a +1/+1 counter on it, add three mana of
+    // that type instead." (Incubation Druid): the same production of one type for a count of mana; "that type" is the type chosen in the sentence it replaces
+    const typeCount = thatTypeInstead(s);
+    if (typeCount !== null) return plain(`${K.steps(s.else!, st)}. If ${K.cond(s.cond, st)}, add ${typeCount} mana of that type instead`, { standalone: true });
     const castChoice = isCastChoice(s.cond);
     // the text says the replaced instruction happens only when the condition does not hold: its targets' `onlyIf` (parser/lower/riders.ts) is in the words
     // CLOUD C9 (CR 608.2c, 614.15): also another instruction on the same objects, a search by a search, several instructions on the same objects, and a whole

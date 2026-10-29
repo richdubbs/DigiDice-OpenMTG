@@ -750,7 +750,9 @@ function ownerSubject(d: Draft, u: Unit, beforeStep: number): Mention | null {
   const who = whos[0]!.step['who'] as Rec;
   const obj = who['object'];
   if (!isRec(obj) || obj['ref'] !== 'target' || d.targets.find((t) => t.id === obj['id'])?.max !== 1) return null;
-  return { sort: 'player', number: 'singular', heads: ['player'], ref: who, origin: 'target', unit: u.index, headOnly: true };
+  // edh-zones-1 (CR 608.2c; Chaos Warp): the owner who acts is also Oracle's singular "they" ("..., then reveals the top card of their library. If it's a permanent card, they
+  // put it onto the battlefield."), as the opponent who controls a target is (namedPlayerOf, r4-refs)
+  return { sort: 'player', number: 'singular', heads: ['player'], ref: who, origin: 'target', unit: u.index, headOnly: true, alsoThey: true };
 }
 
 /** Zones a move with no owner puts an object into ITS OWNER's (CR 400.3): "to its owner's hand", "into its owner's library". */

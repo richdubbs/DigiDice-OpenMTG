@@ -470,6 +470,8 @@ export function applyModifyNumbers(g: Game, e: Proposed, b: Modify, c: Candidate
       }
       case 'counters': case 'createToken': {
         const count = changeNumber(g, e.count, change, c, e);
+        // edh-perms-1 (CR 616.1g): a doubler applied after a "plus" effect doubles the tokens that effect added too, so a later "that many" counts them doubled
+        if (e.ev === 'createToken' && typeof change.mul === 'number' && g.chain) { const added = ADDED_TOKENS.get(g.chain.used); if (added) ADDED_TOKENS.set(g.chain.used, Math.floor(added * change.mul)); }
         if (count !== e.count) g.log(`${name}: ${count} ${e.ev === 'counters' ? `${e.kind} counter${count === 1 ? '' : 's'}` : `token${count === 1 ? '' : 's'}`} instead of ${e.count}.`, { rules: ['CR 614.1a', 'CR 616.1g'], level: 'info' });
         return count > 0 ? { ...e, count } : null;
       }
@@ -543,10 +545,20 @@ const THEN_CREATE = new WeakMap<ReadonlySet<string>, Set<string>>();
  * (Manufactor and its clone: three of each), which the one-pass `then` below cannot do: with more than one, none runs and the players make the tokens by hand.
  */
 const EXCEPT_ADDERS = new WeakMap<ReadonlySet<string>, number>();
+/** edh-perms-1 (CR 614.5, 616.1): how many tokens the `modify.then` effects applied so far to one event add (a literal count, or "that many" of the event as it stood), so a later "that many" sees them. */
+const ADDED_TOKENS = new WeakMap<ReadonlySet<string>, number>();
 function thenAfterCreate(g: Game, e: Extract<Proposed, { ev: 'createToken' }>, then: NonNullable<Modify['then']>, c: Candidate): void {
   const cx = replacementCtx(g, e, c);
   const live = g.chain;
   const before = new Set<string>(live?.used ?? []);
+  if (live && cx.event?.amount !== undefined) {
+    // an earlier "plus" effect applied to this event already adds tokens: "that many" of this one counts them (Xorn, then Chatterfang: two Treasures, two Squirrels)
+    const earlier = ADDED_TOKENS.get(live.used) ?? 0;
+    cx.event.amount += earlier;
+    let own = 0;
+    for (const x of then.do) if (x.op === 'createToken') own += typeof x.count === 'number' ? x.count : (typeof x.count === 'object' && x.count.q === 'eventAmount' ? cx.event.amount : 0);
+    ADDED_TOKENS.set(live.used, earlier + own);
+  }
   const exceptive = then.do.some((x) => x.op === 'createToken' && x.exceptReplaced === true);
   if (live) {
     const adders = THEN_CREATE.get(live.used) ?? new Set<string>();

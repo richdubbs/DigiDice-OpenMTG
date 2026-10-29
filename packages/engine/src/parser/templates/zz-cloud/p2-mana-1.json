@@ -190,7 +190,7 @@
     "id": "eff.p2mana1.mana.couldProduce.type",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 106.7",
       "CR 106.1",

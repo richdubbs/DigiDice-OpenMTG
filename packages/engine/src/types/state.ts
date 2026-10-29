@@ -947,8 +947,9 @@ export interface LastKnown {
    * std-combat-3 ADDITION (additive), CR 603.10a: the permanents on the battlefield immediately before it left (itself included; for objects that leave together,
    * before the first of them moved, core/zones.ts#leavingTogether). A leaves-the-battlefield trigger "looks back in time": a quantity in its pattern ("with the
    * greatest power among creatures that player controls") is read on the battlefield as it was then (triggers/lookback-board.ts). Set by core/zones.ts#moveObject.
+   * Review 2026-10-26 F18: frozen, and shared by every object that left in the same event.
    */
-  board?: ObjectId[];
+  board?: readonly ObjectId[];
   combat?: {
     attacking: boolean;
     blocking: boolean;

@@ -28,7 +28,11 @@ export function drawHandler(cx: ExecCtx, st: Step<'draw'>): StepResult {
   const all: ObjHandle[] = [];
   for (const p of playersOf(cx, st.who)) {
     const drawn: ObjectId[] = [];
-    const n = perPlayer ? readFor(cx, p, () => cardCount(cx, st.count)) ?? 0 : cardCount(cx, st.count) ?? 0;
+    const most = perPlayer ? readFor(cx, p, () => cardCount(cx, st.count)) ?? 0 : cardCount(cx, st.count) ?? 0;
+    // edh-players-1 (CR 121.1, 608.2d, 609.3; Arcane Denial): "may draw up to two cards" is the drawing player's own choice of how many, 0 to the count
+    const n = st.upTo === true && most > 0
+      ? cx.g.choose({ kind: 'chooseNumber', player: p, prompt: `${playerName(g, p)}: draw how many cards? (up to ${most})`, min: 0, max: most, cancellable: false, rules: ['CR 121.1', 'CR 608.2d'] }).n
+      : most;
     // Cloud r4-repl (CR 121.2, 614.1a): the draw of n cards is proposed as one event first, so "you draw that many cards plus one instead" changes its number
     // (effects/proposal-kinds/draw-many.ts); a draw replaced or reduced to nothing draws no card. Each card is then drawn (and proposed) on its own, as before
     const final = n > 0 ? proposeResult(g, { ev: 'drawMany', player: p, count: n })?.event : undefined;
@@ -111,7 +115,8 @@ function discardable(cx: ExecCtx, p: PlayerId, ids: ObjectId[]): ObjectId[] {
 
 /** C6: the value forms of the discard op this module runs (model/cap-walk.ts emits them; model/capabilities.ts registers them): the players who can't (CR 101.3). */
 export const OP_FORMS: readonly string[] = ['op:discard.cantAs', 'op:discard.perPlayerCount', // std-rx30: perPlayerCount
-  'op:draw.perPlayerCount']; // p2-zone-moves-1
+  'op:draw.perPlayerCount', // p2-zone-moves-1
+  'op:draw.upTo']; // edh-players-1
 
 /** CR 701.9a: move cards from a player's hand to that player's graveyard. Every player chooses first, in APNAP order, then the cards are discarded together (CR 608.2e). */
 export function discardHandler(cx: ExecCtx, st: Step<'discard'>): StepResult {

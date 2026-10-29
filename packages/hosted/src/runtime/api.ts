@@ -194,11 +194,20 @@ export interface TableRouter {
 
 /** The deck pool (design 2.1): `prepareDeck` with the server's card index, off the main thread; a bounded queue and a deadline per deck. */
 export interface DeckPool {
-  /** Resolves, validates for `format` and compiles a decklist (never throws for bad input). `busy` when the queue is full (the gateway answers `busy`). */
-  prepare(deck: DeckSubmission, format: string): Promise<DeckResult>;
+  /**
+   * Resolves, validates for `format` and compiles a decklist (never throws for bad input). `busy` when the queue is full (the gateway answers `busy`).
+   * F32 (INTERFACE CHANGE, additive): `session`, the session asking (create, join, queue): its deck checks are paced (`rateLimited` past its bucket);
+   * none for the server's own checks (a restart's lobby decks). A list already checked for the format within a few minutes is answered from a cache,
+   * without a worker and without a token.
+   */
+  prepare(deck: DeckSubmission, format: string, session?: string): Promise<DeckResult>;
 }
 
-export type DeckResult = PrepareResult | { ok: false; errors: string[]; warnings: string[]; busy: true } | { ok: false; errors: string[]; warnings: string[]; timeout: true };
+export type DeckResult =
+  | PrepareResult
+  | { ok: false; errors: string[]; warnings: string[]; busy: true }
+  | { ok: false; errors: string[]; warnings: string[]; timeout: true }
+  | { ok: false; errors: string[]; warnings: string[]; rateLimited: true; retryAfterMs: number };
 
 /** The runtime as the process sees it. */
 export interface Runtime extends TableRouter, DeckPool, SignalSource {

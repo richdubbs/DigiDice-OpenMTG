@@ -536,6 +536,7 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
   const types = (f.types ?? []).map(lowerType);
   const all = (f.allTypes ?? []).map(lowerType);
   const subtypes = f.subtypes ?? [];
+  let basicLandType = false; // edh-zones-1
   // M11-4 (CR 903.3, 903.3d): the designation is the adjective next to a type or "spell" ("commander creatures you control", "commander spells you cast") and
   // the noun itself otherwise ("a commander", "commanders you control", "a commander you own in the command zone": no "card" or "permanent" after it)
   const commanderNoun = f.commander === true && types.length === 0 && all.length === 0 && subtypes.length === 0 && !isToken && !f.stackKind && !onStack && !o.head;
@@ -575,6 +576,10 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
   } else if (isOutlaws(subtypes) && types.length === 0 && all.length === 0 && !isToken) {
     // FAST5X E20, CR 700.12: "an outlaw", "outlaws you control" (parser/holes/filter.ts reads the noun as the five creature types) (FAST5 T62: "another outlaw you control")
     p.heads = ['outlaw'];
+  } else if (isBasicLandTypeLand(types, all, subtypes) && !isToken) {
+    // edh-zones-1 (CR 205.3i; family basic-land-type-with): a land that has a basic land type, "a land card with a basic land type" (parser/holes/filter.ts#featureAt)
+    p.heads = ['land'];
+    basicLandType = true;
   } else if (subtypes.length > 0) {
     const sub = subtypes.slice();
     checkSubtypeTypes(f.types ?? [], sub);
@@ -674,6 +679,7 @@ function build(f: ObjectFilter, st: RenderState, plural: boolean, o: NpOpts): Pa
   const withs: string[] = [];
   const wPlural = plural && o.eachWithSingular !== true; // std-rx11: "each with power greater than its base power"
   if (f.keyword !== undefined) withs.push([f.keyword].flat().join(' or '));
+  if (basicLandType) withs.push('a basic land type'); // edh-zones-1
   // FAST5X E15 (CR 208.1, 202.3, 608.2d): "a creature with the greatest power among creatures they control" (parser/holes/filter.ts#featureAt)
   const most = (field: 'power' | 'toughness' | 'manaValue', c: NumberCmp): string => {
     const v = c.value;
@@ -1099,6 +1105,11 @@ function mvPowerOrToughness(options: readonly ObjectFilter[]): NonNullable<Objec
   return cmp === JSON.stringify(p.power) && cmp === JSON.stringify(t.toughness) ? m.manaValue! : null;
 }
 
+/** edh-zones-1 (CR 205.3i): the type Land with exactly the five basic land types as its subtypes (any of them): "a land card with a basic land type". */
+function isBasicLandTypeLand(types: string[], all: string[], subtypes: string[]): boolean {
+  return types.length === 1 && types[0] === 'land' && all.length === 0 && subtypes.length === 5 && [...BASIC_LAND_TYPES].every((t) => subtypes.includes(t));
+}
+
 /** trek-9 (CR 205.3i, 202.3): a description of lands only ("a Plains card", "a land card"): the Plains-like basic land types or the type Land, nothing else of the cards named. */
 const BASIC_LAND_TYPES: ReadonlySet<string> = new Set(['Plains', 'Island', 'Swamp', 'Mountain', 'Forest']);
 function isLandDescription(o: ObjectFilter): boolean {
@@ -1386,7 +1397,9 @@ function compose(p: Parts, o: NpOpts, plural: boolean): string {
   // Echoes): other than the object the ability is on; only with nothing said after the description
   // FAST5 T61 (CR 109.2, 608.2h): "put a +1/+1 counter on it for each Mount and/or Vehicle you control other than ~" says the same as "for each other Mount or Vehicle
   // you control": a count of the things of a description besides the object the ability is on (parser/holes/filter.ts, "other than ~")
-  const besideTarget = other && det === 'target' && p.post.length === 0;
+  // edh-perms-1 (CR 109.2; Rosie Cotton of South Lane): also after a controller phrase, "put a +1/+1 counter on target creature you control other than ~" says the same as
+  // "... on another target creature you control"
+  const besideTarget = other && det === 'target' && (p.post.length === 0 || p.post.every((x) => /\b(you|an opponent|a player|they) controls?$/.test(x)));
   if (besideTarget || (other && o.forEach === true && det === 'none' && count === undefined)) {
     const plain = besideTarget ? [count !== undefined ? `${count} target` : 'target', core].filter((x) => x !== '').join(' ') : core;
     return alt(`${phrase}${tail}`, `${plain}${tail} other than ~`);

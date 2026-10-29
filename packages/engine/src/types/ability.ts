@@ -1891,7 +1891,11 @@ export type EffectStep =
   | (StepBase & { op: 'loseLife'; who: PlayerRef; amount: Quantity })
   | (StepBase & { op: 'setLife'; who: PlayerRef; value: Quantity })
   // --- cards ---------------------------------------------------------------------
-  | (StepBase & { op: 'draw'; who: PlayerRef; count: Quantity })
+  /**
+   * edh-players-1 INTERFACE CHANGE (additive): `upTo`, "Its controller may draw up to two cards" (Arcane Denial; CR 121.1, 608.2d, 609.3): each player of `who` chooses
+   * how many cards to draw, from 0 to the count (the count is the most, never an obligation). Capability `op:draw.upTo` (effects/handlers/cards-draw.ts#OP_FORMS).
+   */
+  | (StepBase & { op: 'draw'; who: PlayerRef; count: Quantity; upTo?: true })
   /**
    * C6 INTERFACE CHANGE (additive): `cantAs` names the players of `who` who can't do what the step tells them, "Each opponent discards a card. Each opponent who
    * can't loses 3 life." (CR 101.3: the part of an instruction that is impossible is ignored, and the card may say what happens instead; CR 608.2c, 608.2e):
@@ -2034,7 +2038,14 @@ export type EffectStep =
    * each spell or ability `what` names to another legal target of it (legal for that spell or ability, as if it had been chosen for it); with no other legal
    * target the target is unchanged. The new target becomes a target of it (CR 603.2: "becomes the target" triggers, ward). Capability `op:changeTarget`.
    */
-  | (StepBase & { op: 'changeTarget'; who: PlayerRef; what: ObjRef })
+  /**
+   * edh-cast-1 INTERFACE CHANGE (additive): `to`, "Change a target of target spell or ability to ~" (Spellskite), "change the target of target instant or sorcery spell with a single
+   * target to this creature" (Hydroelectric Specimen): `who` changes ONE target of each spell or ability `what` names to the object `to` names, when that object is a legal
+   * target for that target (CR 115.7a, 115.7b?; cites from memory, unverified): it is not already a target of the same instance of the word "target", and the spell's target spec
+   * allows it. When the spell or ability has several targets `who` chooses which one to change. With no target that can be changed to it, nothing changes. Capability
+   * `op:changeTarget.to` (effects/handlers/change-target.ts#OP_FORMS).
+   */
+  | (StepBase & { op: 'changeTarget'; who: PlayerRef; what: ObjRef; to?: ObjRef })
   | (StepBase & { op: 'tap'; what: ObjRef })
   | (StepBase & { op: 'untap'; what: ObjRef })
   | (StepBase & { op: 'attach'; what: ObjRef; to: ObjRef | null })
@@ -2467,8 +2478,10 @@ export type ManaProduction =
    * each unit one of the types the activated mana abilities of the objects `among` names would produce if they resolved now (their costs ignored). An ability
    * whose types the engine can't read (a type chosen elsewhere, another "could produce") leaves the step to the player (never a guess). Capability
    * `feature:mana.couldProduce` (effects/handlers/cards-mana.ts).
+   * edh-mana-keywords-1 INTERFACE CHANGE (additive), CR 106.1, 106.7: `oneType`, "If ~ has a +1/+1 counter on it, add three mana of that type instead" (Incubation Druid):
+   * one type is chosen among those and every unit is that type (without it each unit is chosen on its own). Capability `op:addMana.couldProduce.oneType`.
    */
-  | { kind: 'couldProduce'; count: Quantity; among: ObjRef; colorsOnly?: true }
+  | { kind: 'couldProduce'; count: Quantity; among: ObjRef; colorsOnly?: true; oneType?: true }
   /**
    * p2-mana-2 INTERFACE CHANGE (additive), CR 700.5, 106.1: "Choose a color. Add an amount of mana of that color equal to your devotion to that color." (Nykthos, Shrine
    * to Nyx; Nyx Lotus): the player chooses a color as the ability resolves, then adds that many mana of it as the mana symbols of that color among the mana costs of
@@ -2711,7 +2724,9 @@ export type EventPattern =
   /**
    * r5-repl INTERFACE CHANGE (additive): `exceptFirstInDrawStep`, "If you would draw a card except the first one you draw in each of your draw steps" (CR 504.1,
    * 614.1a): not the first card the player draws in their own draw step. Compared by the replacement matcher only (effects/replacements.ts#matchProposed,
-   * `feature:replace.draw.exceptFirstInDrawStep`); a trigger pattern with it is a form nothing registers.
+   * `feature:replace.draw.exceptFirstInDrawStep`). edh-players-1 (additive): also a trigger pattern, "Whenever an opponent draws a card except the first one they
+   * draw in each of their draw steps" (Orcish Bowmasters), judged on the draw event (triggers/normalize.ts says whether it was that first card, match.ts reads it).
+   * Capability `feature:ev.draw.exceptFirstInDrawStep`.
    */
   | { ev: 'draw'; player?: PlayerPred; nth?: number; exceptFirstInDrawStep?: true }
   /**

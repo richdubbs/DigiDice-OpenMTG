@@ -82,8 +82,11 @@ export class FakeRuntime implements GatewayRuntime {
     this.inputs.push({ game, input });
     return this.games.has(game);
   }
-  async prepare(deck: { main: { name: string }[] }): Promise<DeckResult> {
+  /** F32: the session each deck check was asked for (undefined: the server's own). */
+  readonly deckSessions: (string | undefined)[] = [];
+  async prepare(deck: { main: { name: string }[] }, _format?: string, session?: string): Promise<DeckResult> {
     this.prepared++;
+    this.deckSessions.push(session);
     if (this.prepareDelayMs) await new Promise((r) => setTimeout(r, this.prepareDelayMs));
     if (deck.main.some((e) => e.name === 'Bad Card')) return { ok: false, errors: ['Unknown card: Bad Card'], warnings: [] };
     return { ok: true, deck: { main: Array<string>(60).fill('Forest'), sideboard: [], commanders: [], defs: [], warnings: [] } };
@@ -177,7 +180,7 @@ export class Browser<L extends Link = Link> {
     await this.client.until(() => this.of('welcome').length > 0 || this.client.closed !== null);
     const w = this.last('welcome');
     if (!w) throw new Error(`no welcome: ${JSON.stringify(this.client.closed)} ${this.client.frames.join(' ')}`);
-    this.token = w.token;
+    this.token = w.token ?? token ?? '';
     this.session = w.session;
     return w;
   }

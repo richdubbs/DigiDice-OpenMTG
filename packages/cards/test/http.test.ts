@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { MIN_SPACING_MANIFEST_MS, MIN_SPACING_SLOW_MS, RATE_LIMIT_WAIT_MS, ScryfallHttpError, ScryfallRateLimitError, USER_AGENT } from '../src/http';
+import {
+  MIN_SPACING_MANIFEST_MS,
+  MIN_SPACING_SLOW_MS,
+  RATE_LIMIT_WAIT_MS,
+  REQUEST_TIMEOUT_MS,
+  ScryfallClient,
+  ScryfallHttpError,
+  ScryfallRateLimitError,
+  ScryfallTimeoutError,
+  USER_AGENT,
+} from '../src/http';
 import { clientWith, fakeClock, json } from './helpers';
 
 const NAMED = 'https://api.scryfall.com/cards/named?exact=Shock';
@@ -207,5 +217,62 @@ describe('HTTP 429 handling', () => {
     const { client, calls } = clientWith(() => new Response('', { status: 429 }), clock);
     await expect(client.download('https://data.scryfall.io/x.jsonl.gz')).rejects.toBeInstanceOf(ScryfallRateLimitError);
     expect(calls).toHaveLength(2);
+  });
+});
+
+describe('request timeout', () => {
+  /** A fetch that answers `answer(url)`, or never when it returns null (until the request is aborted, as the real fetch does). */
+  function hanging(answer: (url: string) => Response | null) {
+    const calls: string[] = [];
+    const fetchImpl = ((input: string, init?: RequestInit) => {
+      calls.push(input);
+      const res = answer(input);
+      if (res) return Promise.resolve(res);
+      return new Promise<Response>((_, reject) => init?.signal?.addEventListener('abort', () => reject(init.signal!.reason)));
+    }) as unknown as typeof fetch;
+    return { client: new ScryfallClient({ fetch: fetchImpl, clock: fakeClock(), timeoutMs: 30 }), calls };
+  }
+
+  it('is 30 s by default', () => {
+    expect(REQUEST_TIMEOUT_MS).toBe(30_000);
+  });
+
+  it('fails a request with no answer like a network error (no retry), and the queue moves on', async () => {
+    const { client, calls } = hanging((url) => (url.includes('/sets') ? json({ ok: true }) : null));
+    const slow = client.getJson(NAMED);
+    const next = client.getJson(SETS);
+    await expect(slow).rejects.toBeInstanceOf(ScryfallTimeoutError);
+    await expect(slow).rejects.toThrow(/ETIMEDOUT/);
+    expect(await next).toEqual({ ok: true });
+    expect(calls).toEqual([NAMED, SETS]);
+  });
+
+  it('times out a JSON body that stops arriving', async () => {
+    // half a JSON body, then nothing; the real fetch errors the body stream when the request is aborted
+    const fetchImpl = (async (_u: string, init?: RequestInit) =>
+      new Response(
+        new ReadableStream({
+          start(c) {
+            c.enqueue(new TextEncoder().encode('{"a":'));
+            init?.signal?.addEventListener('abort', () => c.error(init.signal!.reason));
+          },
+        }),
+        { status: 200 },
+      )) as unknown as typeof fetch;
+    const client = new ScryfallClient({ fetch: fetchImpl, clock: fakeClock(), timeoutMs: 30 });
+    await expect(client.getJson(BULK)).rejects.toBeInstanceOf(ScryfallTimeoutError);
+  });
+
+  it('lets a file download stream for longer than the timeout once it has started', async () => {
+    let signal: AbortSignal | undefined;
+    const fetchImpl = (async (_u: string, init?: RequestInit) => {
+      signal = init?.signal ?? undefined;
+      return new Response('gzipbytes');
+    }) as unknown as typeof fetch;
+    const client = new ScryfallClient({ fetch: fetchImpl, clock: fakeClock(), timeoutMs: 20 });
+    const res = await client.download('https://data.scryfall.io/oracle-cards/x.jsonl.gz');
+    await new Promise((r) => setTimeout(r, 60));
+    expect(signal?.aborted).toBe(false);
+    expect(await res.text()).toBe('gzipbytes');
   });
 });

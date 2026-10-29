@@ -42,6 +42,11 @@ export interface Clause {
    * readings stay, after a sentence break, as for any standalone clause.
    */
   joined?: string;
+  /**
+   * edh-zones-1 (CR 608.2c, 701.26b; family and-you-plain-clause): a plain instruction (no actor of its own: the controller does it) that follows another player's clause is also
+   * said "... and you <this text>" ("that player discards a card and you untap all lands you control", Sword of Feast and Famine). The text without "you".
+   */
+  andYou?: string;
 }
 
 export const EMPTY_CLAUSE: Clause = { imp: '', sub: '', actor: null, empty: true };

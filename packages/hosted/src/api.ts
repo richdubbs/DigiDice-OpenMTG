@@ -717,7 +717,8 @@ export interface ProposalView {
 
 export interface WelcomeMessage {
   t: 'welcome';
-  token: string;
+  /** A new session's token, minted by this hello; absent on a resume (the client keeps the token it sent: the server never echoes it back). */
+  token?: string;
   /** The session id (public within this connection only; never the token). */
   session: string;
   name: string;

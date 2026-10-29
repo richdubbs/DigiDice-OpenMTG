@@ -1,7 +1,9 @@
 /**
- * M14-6: `openmtg-accounts admin` (design 9.6; 13.2), run in process through `main` on a file store in a temporary directory: each command parsed
- * and run, and audited with the operator (`--as`, or OPENMTG_OPERATOR) and the OS user; the command line's own refusals (exit 2); the file store's
- * lock refusing the command beside a running server; `delete --now` only setting purgeAt (never a tick, never an erasure); `export` refused without
+ * M14-6: `openmtg-accounts admin` (design 9.6; 13.2), run in process through `main` with ACCOUNTS_DATA_DIR a temporary directory: each command
+ * parsed and run, and audited with the operator (`--as`, or OPENMTG_OPERATOR) and the OS user; the command line's own refusals (exit 2); the file
+ * store's lock (the real one: PostgreSQL on PGlite in the directory) refusing the command beside a running server; every other test runs its commands
+ * on one memory store that stays open between them (the command line's openFileAccountStore factory answers it: F26, the file store's own tests are
+ * test/m14-11/dir.test.ts); `delete --now` only setting purgeAt (never a tick, never an erasure); `export` refused without
  * the required holders and written, marked, with `--partial` (mode 0600); `rekey --check` listing a collision. The data-rights part (M14-7) is a
  * fake here, as the work package says.
  */
@@ -10,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-  AccountsAdminError, builtFactories, createNameData, createNameRules, encodeNameTable, openFileAccountStore, type AccountExport, type AccountId,
+  AccountsAdminError, builtFactories, createMemoryAccountStore, createNameData, createNameRules, encodeNameTable, openFileAccountStore, type AccountExport, type AccountId,
   type AccountsFactories, type AccountStore, type AuditEvent, type CreateRightsPart, type GeneratedNameData, type NameRules, type RightsPart,
 } from '@openmtg/accounts';
 import { main, osUserOf, type CliIo } from '../../src/cli';
@@ -19,8 +21,18 @@ import { buildPasswordHasher } from '../../src/crypto/hasher';
 import { Clock, ctxOf, DAY, fastDerive, HOUR, OP, PW, registerAs, setup, T0, value, type Setup } from './support';
 
 let dir = '';
+/** The store every command of a test runs on (its close does nothing: each command closes the service it built). */
+let shared: AccountStore;
 beforeEach(async () => {
   dir = await mkdtemp(join(tmpdir(), 'openmtg-m14-6-'));
+  const store = createMemoryAccountStore();
+  shared = new Proxy(store, {
+    get(t, p) {
+      if (p === 'close') return async () => undefined;
+      const v = Reflect.get(t, p) as unknown;
+      return typeof v === 'function' ? (v as (...a: unknown[]) => unknown).bind(t) : v;
+    },
+  });
 });
 afterEach(async () => {
   await rm(dir, { recursive: true, force: true });
@@ -73,9 +85,10 @@ function fakeRights(calls: RightsCalls, opts: { writeFile?: boolean } = {}): Cre
 
 const newCalls = (): RightsCalls => ({ deleteAccount: [], exportAccount: [], purge: 0, tick: 0, erase: 0 });
 
-/** The factories the command line builds with in these tests: a fast hasher, M14-8's mailer while it is a stub, the fake rights part. */
+/** The factories the command line builds with in these tests: the shared store, a fast hasher, M14-8's mailer while it is a stub, the fake rights part. */
 function factories(calls: RightsCalls, extra: Partial<AccountsFactories> = {}): Partial<AccountsFactories> {
   return {
+    openFileAccountStore: async () => shared,
     createPasswordHasher: (o) => buildPasswordHasher(o, { derive: fastDerive, sleep: async () => undefined }),
     ...(builtFactories().createNoMailer === undefined ? { createNoMailer: () => ({ kind: 'none', send: async () => undefined }) } : {}),
     createRightsPart: fakeRights(calls),
@@ -103,22 +116,14 @@ async function cli(
   return { code, out: out.join('\n'), err: err.join('\n') };
 }
 
-/** Accounts on the file store, made by the service (then closed, so the lock is free). */
+/** Accounts on the shared store, made by the service (then closed, as the server would be before the command runs). */
 async function prepare(clock: Clock, f: (s: Setup) => Promise<void>, names?: NameRules): Promise<void> {
-  const store = await openFileAccountStore({ dir });
-  const s = setup({ store, clock, ...(names !== undefined ? { names } : {}) });
+  const s = setup({ store: shared, clock, ...(names !== undefined ? { names } : {}) });
   await f(s);
   await s.service.close();
 }
 
-async function withStore<T>(f: (store: AccountStore) => Promise<T>): Promise<T> {
-  const store = await openFileAccountStore({ dir });
-  try {
-    return await f(store);
-  } finally {
-    await store.close();
-  }
-}
+const withStore = <T>(f: (store: AccountStore) => Promise<T>): Promise<T> => f(shared);
 
 describe('M14-6: the command line\'s own refusals (9.6)', () => {
   it('usage, unknown commands and options, a missing operator, bad durations: exit 2 with the usage; --help exit 0', async () => {
@@ -185,7 +190,7 @@ describe('M14-6: the command line\'s own refusals (9.6)', () => {
 });
 
 describe('M14-6: each command, run in process (9.6)', () => {
-  it('every moderation command parsed and run on the file store, each audited with the operator and the OS user', async () => {
+  it('every moderation command parsed and run, each audited with the operator and the OS user', async () => {
     const clock = new Clock();
     let A = '' as AccountId, B = '' as AccountId, rep = '', rep2 = '', appealed = '';
     await prepare(clock, async (s) => {
@@ -356,21 +361,23 @@ describe('M14-6: the OS user every command records (9.6, D16)', () => {
   });
 });
 
-describe('M14-6: beside a running server (9.6)', () => {
+describe('M14-6: beside a running server (9.6: the real file store, PostgreSQL on PGlite)', { timeout: 60_000 }, () => {
   it('the file store\'s lock refuses the command while another opener holds it ("stop the server, or use PostgreSQL"); afterwards it runs', async () => {
     const clock = new Clock();
-    let A = '' as AccountId;
-    await prepare(clock, async (s) => void (A = (await registerAs(s, 'Alice')).auth.account));
+    const real = factories(newCalls(), { openFileAccountStore });
+    const s = setup({ store: await openFileAccountStore({ dir }), clock });
+    const A = (await registerAs(s, 'Alice')).auth.account;
+    await s.service.close();
     const server = await openFileAccountStore({ dir });
     try {
-      const r = await cli(['show', A, '--as', 'op'], clock);
+      const r = await cli(['show', A, '--as', 'op'], clock, { factories: real });
       expect(r.code).toBe(1);
       expect(r.err).toMatch(/is in use \(is the server running\?\): stop the server, or use PostgreSQL/);
       expect(r.out).toBe('');
     } finally {
       await server.close();
     }
-    expect((await cli(['show', A, '--as', 'op'], clock)).code).toBe(0);
+    expect((await cli(['show', A, '--as', 'op'], clock, { factories: real })).code).toBe(0);
   });
 });
 

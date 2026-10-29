@@ -24,7 +24,7 @@ import type { Condition, Destination, EventPattern, ObjectFilter, ReplacementBod
 import type { ObjectId, PlayerId } from '../types/ids';
 import { type ContinuousEffectRec, type GameObject, type ObjHandle, type SemEvent } from '../types/state';
 import { isIndestructible } from '../rules/destroy';
-import { charsOfObject, controllerOf, faceChars, hasKeyword } from '../rules/characteristics';
+import { charsOfObject, controllerOf, faceChars, hasKeyword, readingStable } from '../rules/characteristics';
 import { onBattlefield } from '../statics/hooks';
 import { matchEvent } from '../triggers/match';
 import type { ApplicableReplacement, ExecCtx, Proposed } from './api';
@@ -452,6 +452,10 @@ function foreignCandidates(g: Game, e: Proposed, at: MatchGame): Candidate[] {
  * (`RULE_REPLACEMENTS`, CR 714.3a-b; empty until M6-6), then (M6-1) the static abilities of other objects.
  */
 export function applicable(g: Game, e: Proposed): Candidate[] {
+  return readingStable(g.s, () => applicableIn(g, e)); // review 2026-10-26 (performance): pure, so its characteristics questions share one cache check of `g.s`
+}
+
+function applicableIn(g: Game, e: Proposed): Candidate[] {
   // trek-8 review (CR 702.12b, 614.6; the Hyena Umbra ruling of 2024-06-07): an indestructible permanent is not destroyed by an effect that says "destroy" ("effects that
   // try to destroy it simply have no effect"), so there is no destruction for any "if it would be destroyed" replacement effect to replace: none applies to it
   // (rules/destroy.ts reports 'indestructible', and a regeneration shield is not used up)

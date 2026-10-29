@@ -1,0 +1,18 @@
+# edh-perms-1 (Commander lane edh-perms; test/cloud/edh-perms-1, golden edh-perms-1-review.json)
+# token-creation replacements (Treasure plus an additional one, plus that many, twice that many for any player, creature tokens that many); "You create a number of ... equal to ...";
+# tap ~ / a permanent for mana triggers; state trigger of ~ (no ice counters); enter tapped as a copy of any land; Equipped creature has ..., is a ... in addition to its other types, and can't be blocked;
+# target creature you control other than ~; X/X Elemental with abilities where X is
+Xorn
+Chatterfang, Squirrel General
+Primal Vigor
+Divine Visitation
+Ancient Copper Dragon
+Ancient Gold Dragon
+Forbidden Orchard
+Forsaken Monument
+Dark Depths
+Vesuva
+Brotherhood Regalia
+Rosie Cotton of South Lane
+Destiny Spinner
+Ancient Bronze Dragon

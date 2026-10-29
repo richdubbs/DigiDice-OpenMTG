@@ -25,6 +25,7 @@ import { partyCreatureOf, partySize, type PartyCreature } from './party';
 import { readLink } from './links';
 import { LAND_TYPES, PERMANENT_TYPES, subtypeClass } from './subtypes';
 import { hasSharedTypeLine, unlockedHalves } from '../rules/base-chars';
+import { noteLayerRead, READ_COMBAT, READ_LIFE, READ_MANA_POOL, READ_STEP, READ_TAPPED, READ_TURN_STATS } from './layer-reads';
 
 /** p2-graveyard-1: the method a spell was cast with is `via`, or its copy for another zone (`<via>:2`, as triggers/match.ts#castVia reads it). */
 const viaOf = (paid: string | undefined, via: string): boolean => paid !== undefined && (paid === via || paid.startsWith(`${via}:`));
@@ -284,7 +285,7 @@ function match(cx: EvalCx, id: ObjectId, f: ObjectFilter): boolean {
   if (f.keyword !== undefined && !wordList(f.keyword).some((k) => c.keywords.some((x) => x.keyword === k))) return false;
   if (f.notKeyword !== undefined && wordList(f.notKeyword).some((k) => c.keywords.some((x) => x.keyword === k))) return false;
   if (f.hasAbility !== undefined && !c.abilities.some((a) => abilityIsOfKind(a.def, f.hasAbility!))) return false;
-  if (f.tapped !== undefined && o.tapped !== f.tapped) return false;
+  if (f.tapped !== undefined && (noteLayerRead(READ_TAPPED), o.tapped !== f.tapped)) return false;
   if (f.token !== undefined && (o.kind === 'token') !== f.token) return false; // CR 111.1
   if (f.isCard !== undefined && (o.kind === 'card') !== f.isCard) return false;
   if (f.faceDown !== undefined && o.faceDown !== f.faceDown) return false;
@@ -294,10 +295,10 @@ function match(cx: EvalCx, id: ObjectId, f: ObjectFilter): boolean {
   if (f.is !== undefined && !objectsOf(cx, f.is).includes(id)) return false;
   if (f.attacking !== undefined && !attackingMatches(cx, id, f.attacking)) return false;
   // CLOUD std-msh (CR 506.5): attacking, and no other creature is
-  if (f.attackingAlone === true && (cx.s.combat?.attackers.length !== 1 || cx.s.combat.attackers[0]!.id !== id)) return false;
-  if (f.blocking !== undefined && (cx.s.combat?.blockers.some((b) => b.id === id) === true) !== f.blocking) return false; // CR 509.1g
+  if (f.attackingAlone === true && (combatOf(cx)?.attackers.length !== 1 || combatOf(cx)!.attackers[0]!.id !== id)) return false;
+  if (f.blocking !== undefined && (combatOf(cx)?.blockers.some((b) => b.id === id) === true) !== f.blocking) return false; // CR 509.1g
   // CR 509.1h: blocked and unblocked are both said of attacking creatures only (std-rx23: a creature that is not attacking is not unblocked)
-  if (f.blocked !== undefined && cx.s.combat?.attackers.some((a) => a.id === id && a.blocked === f.blocked) !== true) return false;
+  if (f.blocked !== undefined && combatOf(cx)?.attackers.some((a) => a.id === id && a.blocked === f.blocked) !== true) return false;
   if (f.attached !== undefined && isAttachedAtAll(cx, o) !== f.attached) return false;
   if (f.attachedToSource !== undefined && (objOf(cx, cx.source)?.attachedTo === id) !== f.attachedToSource) return false;
   // FAST4 T22: attached to one of these objects (CR 301.5, 303.4), as the attachments are now (CR 611.3a)
@@ -383,15 +384,18 @@ function abilityIsOfKind(def: { kind: string; isMana?: boolean }, k: 'activated'
   return def.kind === k;
 }
 
+/** Review 2026-10-26: the combat, a volatile layer input (statics/layer-reads.ts): every read of it by the layer code goes through here, which notes it. */
+const combatOf = (cx: EvalCx): GameState['combat'] => (noteLayerRead(READ_COMBAT), cx.s.combat);
+
 /** p2-combat-flow-1 (CR 509.1g, 506.4): does this creature block one of these objects now? */
 const blocksAny = (cx: EvalCx, id: ObjectId, attackers: readonly ObjectId[]): boolean =>
-  (cx.s.combat?.blockers.find((b) => b.id === id)?.blocking ?? []).some((a) => attackers.includes(a));
+  (combatOf(cx)?.blockers.find((b) => b.id === id)?.blocking ?? []).some((a) => attackers.includes(a));
 /** p2-combat-flow-1 (CR 509.1h, 506.4): is this attacker blocked now by one of these objects? */
 const blockedByAnyOf = (cx: EvalCx, id: ObjectId, blockers: readonly ObjectId[]): boolean =>
-  (cx.s.combat?.attackers.find((a) => a.id === id)?.blockedBy ?? []).some((b) => blockers.includes(b));
+  (combatOf(cx)?.attackers.find((a) => a.id === id)?.blockedBy ?? []).some((b) => blockers.includes(b));
 
 function attackingMatches(cx: EvalCx, id: ObjectId, want: boolean | { defender: PlayerPred; orPlaneswalker?: true }): boolean {
-  const a = cx.s.combat?.attackers.find((x) => x.id === id);
+  const a = combatOf(cx)?.attackers.find((x) => x.id === id);
   if (typeof want === 'boolean') return (a !== undefined) === want; // CR 506.4, 508.1k
   // std-combat-1 (CR 506.3, 508.5): "attacking you and/or planeswalkers you control": the player itself, or a planeswalker that player controls (never a battle)
   if (want.orPlaneswalker === true) {
@@ -543,6 +547,7 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
       // (`beforeEvent`) or the maximum over players (`per`) has no meaning for a static ability: unknown here.
       if (q.beforeEvent === true || q.per !== undefined) return undefined;
       if (historyCounter === null) throw new Error('statics/match.ts: no history counter is installed (effects/eval.ts installs rules/history.ts#countHistory)');
+      noteLayerRead(READ_COMBAT); // a history scope of "this combat" reads the combat in progress (rules/history.ts#historyInScope)
       return historyCounter(cx.s, q.event, q.scope, q.by, {
         you: cx.controller, ...(cx.source !== null ? { sourceId: cx.source } : {}), resolvePlayers: (ref) => playersOf(cx, ref), qty: (x) => evalQuantity(cx, x),
       });
@@ -550,7 +555,7 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
     case 'countPlayers': {
       if (q.didNot !== undefined) return undefined; // r5-fxz: an earlier step of a resolution; a static ability has none
       // std-mkm (CR 119.3, 120.3a): only the players who lost life this turn
-      const lostOf = (p: string): number => cx.s.players.find((x) => x.id === p)?.turnStats.lifeLost ?? 0;
+      const lostOf = (p: string): number => (noteLayerRead(READ_TURN_STATS), cx.s.players.find((x) => x.id === p)?.turnStats.lifeLost ?? 0);
       const controlled = new Map<PlayerId, number>();
       if (q.controlsIs !== undefined) {
         for (const id of eachMatching(cx, q.controlsIs.filter)) {
@@ -577,7 +582,7 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
         if (q.sizeVs !== undefined || q.sizeIs !== undefined) return undefined;
         const than = playerOf(cx, q.lifeVs.than);
         if (than === undefined) return undefined;
-        const lifeOf = (p: string): number | undefined => cx.s.players.find((x) => x.id === p)?.life;
+        const lifeOf = (p: string): number | undefined => (noteLayerRead(READ_LIFE), cx.s.players.find((x) => x.id === p)?.life);
         const t = lifeOf(than);
         if (t === undefined) return undefined;
         return players.filter((p) => { const l = lifeOf(p); return l !== undefined && compareCmp(q.lifeVs!.op, l, t); }).length;
@@ -590,6 +595,7 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
       // r4-static (CR 119.1): the players whose life total compares with a fixed number ("as long as an opponent has 10 or less life")
       if (q.lifeIs !== undefined) {
         const { op, n } = q.lifeIs;
+        noteLayerRead(READ_LIFE);
         return players.filter((p) => { const l = cx.s.players.find((x) => x.id === p)?.life; return l !== undefined && compareCmp(op, l, n); }).length;
       }
       // std-rx24 (CR 122.1f): the players whose poison counters compare with a fixed number ("as long as an opponent has three or more poison counters")
@@ -634,6 +640,7 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
       return ids.length === 1 ? statOf(cx, ids[0]!, q.stat) : undefined;
     }
     case 'life': {
+      noteLayerRead(READ_LIFE);
       const ps = playersOf(cx, q.of);
       // p2-group-actions-1 (CR 119.1): the highest or lowest life total among a set of players
       if (q.agg !== undefined) { const lives = cx.s.players.filter((p) => ps.includes(p.id)).map((p) => p.life); return lives.length === 0 ? undefined : q.agg === 'max' ? Math.max(...lives) : Math.min(...lives); }
@@ -749,18 +756,20 @@ export function evalQuantity(cx: EvalCx, q: Quantity): number | undefined {
     case 'turnNumber': return cx.s.turn.number;
     case 'startingLife': return cx.s.options.startingLife; // FAST5 T60, CR 103.4
     case 'speed': return cx.s.designations.speed?.[cx.controller] ?? 0; // FAST5X-4, CR 702.179f: no speed counts as 0
-    // FAST5X E19 (CR 106.4): the controller's unspent mana ("as long as you have six or more unspent mana"); `players` is part of the layer cache key
-    case 'unspentMana': return cx.s.players.find((p) => p.id === cx.controller)?.manaPool.filter((u) => q.type === undefined || u.type === q.type).length;
-    case 'cardsDrawnThisTurn': return cx.s.players.find((p) => p.id === cx.controller)?.turnStats.cardsDrawn;
-    case 'spellsCastThisTurn': return cx.s.players.find((p) => p.id === cx.controller)?.turnStats.spellsCast;
-    case 'lifeGainedThisTurn': return cx.s.players.find((p) => p.id === cx.controller)?.turnStats.lifeGained;
-    // Cloud std-woe (CR 119.3, 120.3a): all the life ONE player lost this turn, damage included (rules/life.ts#changeLife counts every loss); `players` is part of the layer
-    // cache key, as for unspentMana. A reference to several players (or none) is unknown here, never a sum
+    // FAST5X E19 (CR 106.4): the controller's unspent mana ("as long as you have six or more unspent mana"); the mana pool is a volatile layer input (noted:
+    // statics/layer-reads.ts), in the cache key of a computation that read it
+    case 'unspentMana': noteLayerRead(READ_MANA_POOL); return cx.s.players.find((p) => p.id === cx.controller)?.manaPool.filter((u) => q.type === undefined || u.type === q.type).length;
+    case 'cardsDrawnThisTurn': noteLayerRead(READ_TURN_STATS); return cx.s.players.find((p) => p.id === cx.controller)?.turnStats.cardsDrawn;
+    case 'spellsCastThisTurn': noteLayerRead(READ_TURN_STATS); return cx.s.players.find((p) => p.id === cx.controller)?.turnStats.spellsCast;
+    case 'lifeGainedThisTurn': noteLayerRead(READ_TURN_STATS); return cx.s.players.find((p) => p.id === cx.controller)?.turnStats.lifeGained;
+    // Cloud std-woe (CR 119.3, 120.3a): all the life ONE player lost this turn, damage included (rules/life.ts#changeLife counts every loss); noted as a volatile
+    // layer input, as for unspentMana. A reference to several players (or none) is unknown here, never a sum
     case 'lifeLostThisTurn': {
+      noteLayerRead(READ_TURN_STATS);
       const ps = playersOf(cx, q.of);
       return ps.length === 1 ? cx.s.players.find((p) => p.id === ps[0])?.turnStats.lifeLost : undefined;
     }
-    case 'descendedThisTurn': { const p = cx.s.players.find((x) => x.id === cx.controller); return p === undefined ? undefined : p.turnStats.descended ?? 0; } // FAST5X E22 (CR 700.11)
+    case 'descendedThisTurn': { noteLayerRead(READ_TURN_STATS); const p = cx.s.players.find((x) => x.id === cx.controller); return p === undefined ? undefined : p.turnStats.descended ?? 0; } // FAST5X E22 (CR 700.11)
     case 'turnsBegun': { const p = cx.s.players.find((x) => x.id === cx.controller); return p === undefined ? undefined : p.turnsBegun ?? 0; } // std-r9 (CR 500.7, 500.11)
     case 'kickCount': {
       // M6-0, CR 702.33d-e, 400.7d: the kicker payments of the spell, or of the spell this permanent was; never cast = never kicked
@@ -830,6 +839,7 @@ export function evalCondition(cx: EvalCx, c: Condition): boolean {
       const active = cx.s.turn.activePlayer;
       const ok = c.whose === 'any' ? true : c.whose === 'you' ? active === cx.controller : c.whose === 'opponent' ? active !== cx.controller : playersOf(cx, c.whose).includes(active);
       const steps = c.step === undefined ? undefined : Array.isArray(c.step) ? c.step : [c.step];
+      if (steps !== undefined) noteLayerRead(READ_STEP);
       return ok && (steps === undefined || steps.includes(cx.s.turn.step));
     }
     case 'wasCast': {
@@ -884,6 +894,7 @@ export function evalCondition(cx: EvalCx, c: Condition): boolean {
       const want = c.times === undefined ? 1 : evalQuantity(cx, c.times.value);
       if (want === undefined) return false;
       if (historyCounter === null) throw new Error('statics/match.ts: no history counter is installed (effects/eval.ts installs rules/history.ts#countHistory)');
+      noteLayerRead(READ_COMBAT); // a history scope of "this combat" reads the combat in progress (rules/history.ts#historyInScope)
       const n = historyCounter(cx.s, c.event, c.scope, c.by, {
         you: cx.controller, ...(cx.source !== null ? { sourceId: cx.source } : {}), resolvePlayers: (ref) => playersOf(cx, ref), qty: (q) => evalQuantity(cx, q),
       });

@@ -1,11 +1,12 @@
 /**
  * `PostgresAccountStore` (M14-11; design 11.5): the production account store, on an `AccountsSql` (hosted's `SqlClient` over a `pg` pool, or PGlite in
  * the tests: accounts imports nothing of hosted). Parameterized queries only; every table is qualified (`accounts.<table>`), so no `search_path` is
- * assumed. The schema is migrations/001_accounts.sql, run by hosted's migration runner before this store opens (it never runs DDL, and refuses
- * 'schema' a database that is not at ACCOUNTS_SCHEMA_VERSION). The store is meant to run as the service's role of design 11.5, which the owner makes
- * and gives its rights with `SELECT accounts.grant_service('<role>')` after the migrations (the tests run the whole contract suite as that role).
+ * assumed. The schema is migrations/001_accounts.sql, run by hosted's migration runner (or, for the development store on PGlite, by
+ * src/store/pglite.ts) before this store opens (it never runs DDL, and refuses 'schema' a database that is not at ACCOUNTS_SCHEMA_VERSION).
+ * The store is meant to run as the service's role of design 11.5, which the owner makes and gives its rights with
+ * `SELECT accounts.grant_service('<role>')` after the migrations (the tests run the whole contract suite as that role).
  *
- * It answers every call as the memory and file stores do (one contract suite, test/m14-4/contract.ts), by the same rules: src/store/rules.ts builds
+ * It answers every call as the memory store does (one contract suite, test/m14-4/contract.ts), by the same rules: src/store/rules.ts builds
  * and checks every row and every key first, so a bad value is refused ('value') before the database is touched, and a write copies its arguments when
  * it is called. Then:
  * - **A write is one transaction**, and runs its checks and its changes inside it. A refusal rolls everything back. PostgreSQL's own refusals are
@@ -1212,6 +1213,13 @@ export class PostgresAccountStore implements AccountStore {
     });
   }
 
+  sessionById(id: string): Promise<AccountSessionRow | null> {
+    return this.read(async (q) => {
+      const r = await q.query<Row>(`SELECT ${SESSION_COLUMNS} FROM accounts.sessions WHERE id = $1`, [text('id', id)]);
+      return r.rows[0] ? sessionOf(r.rows[0]) : null;
+    });
+  }
+
   // ---- guest claims (5.5) ----
 
   claimGuest(c: ClaimRow): Promise<void> {
@@ -1525,6 +1533,13 @@ export class PostgresAccountStore implements AccountStore {
       if (q.after !== undefined) w.add('(created_at, sanction_id) > (SELECT created_at, sanction_id FROM accounts.appeals WHERE sanction_id = ?)', text('after', q.after));
       const r = await db.query<Row>(`SELECT ${APPEAL_COLUMNS} FROM accounts.appeals ${w.sql} ORDER BY created_at, sanction_id LIMIT ${w.push(n)}`, w.params);
       return r.rows.map(appealOf);
+    });
+  }
+
+  appeal(sanction: string): Promise<AppealRow | null> {
+    return this.read(async (q) => {
+      const r = await q.query<Row>(`SELECT ${APPEAL_COLUMNS} FROM accounts.appeals WHERE sanction_id = $1`, [text('sanction', sanction)]);
+      return r.rows[0] ? appealOf(r.rows[0]) : null;
     });
   }
 

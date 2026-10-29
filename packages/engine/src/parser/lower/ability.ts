@@ -284,7 +284,7 @@ function buildProgram(pieces: ProgramPiece[], face: FaceInfo, ue: UnitEnv, acc: 
   };
   const sequence = (ps: readonly ProgramPiece[], prior: readonly Unit[] = []): Unit[] => {
     const us: Unit[] = [];
-    for (const p of joinThoseSpellsGain(joinGainsSuspend(joinSpeedFloor(joinFightsDifferent(joinPreventedThisWay(joinChosenFromOutside(joinRevealedByTheOther(joinRoundDown(joinAlternatingPicks(joinOnlyAttackers(joinYouChooseKeepFour(joinChoosesDestroyRest(ps))))))))))))) us.push(unitOf(p, [...prior, ...us]));
+    for (const p of joinCopyExiledCast(joinThoseSpellsGain(joinGainsSuspend(joinSpeedFloor(joinFightsDifferent(joinPreventedThisWay(joinChosenFromOutside(joinRevealedByTheOther(joinRoundDown(joinAlternatingPicks(joinOnlyAttackers(joinYouChooseKeepFour(joinChoosesDestroyRest(ps)))))))))))))) us.push(unitOf(p, [...prior, ...us]));
     // CLOUD std-fra (guard G10): a sentence-initial "Then if ..." that eff.stdfra.then.effects reads stays a sentence the parser does not understand where an "If you do"
     // sentence follows it (a conditional instruction is not an instruction done "you do": the "if you do" would read it)
     return us.map((u, i) => {
@@ -635,6 +635,26 @@ function joinThoseSpellsGain<P extends { tokens: Tok[] }>(pieces: readonly P[]):
       && norms(third.tokens) === 'you may choose new targets for the copy .') {
       out.push({ ...p, tokens: [...p.tokens, ...next.tokens, ...third.tokens] });
       i += 2;
+      continue;
+    }
+    out.push(p);
+  }
+  return out;
+}
+
+/**
+ * edh-cast-1 (CR 707.12, 707.10a, 608.2g; Isochron Scepter): "You may copy the exiled card. If you do, you may cast the copy without paying its mana cost." is one instruction,
+ * the copy of a card created in exile and cast as the effect resolves (a copy not cast ceases to exist): the two sentences are joined, so one template reads both
+ * (eff.edhc1.mayCopyExiled.castFree). Any other sentences are left as they are.
+ */
+function joinCopyExiledCast<P extends { tokens: Tok[] }>(pieces: readonly P[]): P[] {
+  const out: P[] = [];
+  for (let i = 0; i < pieces.length; i++) {
+    const p = pieces[i]!;
+    const next = pieces[i + 1];
+    if (next !== undefined && norms(p.tokens) === 'you may copy the exiled card .' && norms(next.tokens) === 'if you do , you may cast the copy without paying its mana cost .') {
+      out.push({ ...p, tokens: [...p.tokens, ...next.tokens] });
+      i++;
       continue;
     }
     out.push(p);

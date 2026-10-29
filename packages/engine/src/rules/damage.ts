@@ -22,10 +22,14 @@ export interface DamageSource {
 
 /** Who is dealing the damage, with characteristics as they were (last known information if the source is gone). */
 export function damageSource(g: Game, sourceId: ObjectId): DamageSource | null {
-  const o = g.maybeObj(sourceId) ?? g.s.lki[sourceId]?.object;
+  const live = g.maybeObj(sourceId);
+  const lk = live ? undefined : g.s.lki[sourceId];
+  const o = live ?? lk?.object;
   if (!o) return null;
   if (o.kind === 'ability' && o.stack?.sourceId && o.stack.sourceId !== sourceId) return damageSource(g, o.stack.sourceId);
-  const chars = charsOfObject(g.s, o);
+  // Review 2026-10-26 F15 (CR 608.2h): a source that is gone deals damage with its last known information, the characteristics it had as it left (written once by
+  // core/zones.ts#moveObject), not the layers worked out again on the detached object in today's state
+  const chars = lk?.chars ?? charsOfObject(g.s, o);
   return { id: o.id, name: chars.name || g.nameOf(sourceId), chars, controller: o.controller };
 }
 

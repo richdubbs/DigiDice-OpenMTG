@@ -5,6 +5,8 @@
  * m7 (join attempts).
  */
 import { afterEach, describe, expect, it } from 'vitest';
+import { legalActions, viewFor } from '@openmtg/engine';
+import { autoAction } from '../src/game/autoplay';
 import { GameHost, GUEST_MESSAGE_BYTES, GUEST_MESSAGE_DEPTH, type HostOptions } from '../src/game/host';
 import type { Connection } from '../src/link/connection';
 import { PROTOCOL_VERSION, type ErrorMessage, type ViewMessage } from '../src/protocol/messages';
@@ -192,10 +194,35 @@ describe('a seated guest', () => {
     expect(c.views().length).toBe(views); // no view rendered for a resend
     expect(c.inbox.find((m) => m['type'] === 'ack')).toMatchObject({ seq: seq0 + 1, ref: 1 });
     expect(host.state!.actionCount).toBe(count);
-    c.send({ type: 'action', id: 2, seq: seq0, action: { type: 'pass', player: 'p2' } });
+    // F28: the view before a stop change is not older (the next test); a seq no view had yet is.
+    c.send({ type: 'action', id: 2, seq: seq0 + 2, action: { type: 'pass', player: 'p2' } });
     await until(() => c.errors().some((e) => e.ref === 2), 3000, 'the refusal');
     expect(c.errors().find((e) => e.ref === 2)).toMatchObject({ code: 'stale' });
     expect(host.state!.actionCount).toBe(count);
+  });
+
+  it('F28: a stop change of the host does not make the guest\'s action from the view before it stale; one from before real progress still is', async () => {
+    const { host, c } = await seated();
+    const guestAction = () => autoAction(viewFor(host.state!, 'p2'), legalActions(host.state!, 'p2'), 'p2');
+    for (let i = 0; i < 50 && !guestAction(); i++) {
+      const a = autoAction(host.view()!, host.legal(), 'p1');
+      if (!a) break;
+      expect(host.act(a).ok).toBe(true);
+    }
+    const a = guestAction();
+    expect(a).not.toBeNull();
+    const seq = host.seq;
+    await until(() => c.views().at(-1)?.seq === seq, 3000, 'the guest\'s view');
+    const stops = host.state!.players.find((p) => p.id === 'p1')!.stops;
+    expect(host.act({ type: 'setStops', player: 'p1', stops: { ...stops, fullControl: !stops.fullControl } }).ok).toBe(true);
+    expect(host.seq).toBe(seq + 1);
+    c.send({ type: 'action', id: 1, seq, action: a! }); // chosen from the view before the host's stop change
+    await until(() => c.views().some((v) => v.ref === 1) || c.errors().some((e) => e.ref === 1), 3000, 'the answer');
+    expect(c.errors()).toEqual([]);
+    expect(host.seq).toBe(seq + 2);
+    c.send({ type: 'action', id: 2, seq, action: { type: 'pass', player: 'p2' } }); // the guest's own action moved the game on since
+    await until(() => c.errors().some((e) => e.ref === 2), 3000, 'the refusal');
+    expect(c.errors().find((e) => e.ref === 2)).toMatchObject({ code: 'stale' });
   });
 
   it('audit M5: messages that fail validation count as strikes; a seated guest that keeps sending them is closed', async () => {

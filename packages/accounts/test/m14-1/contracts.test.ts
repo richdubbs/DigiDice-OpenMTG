@@ -18,7 +18,7 @@ const STORE = [
   'redactName', 'findAccounts', 'inactiveSince', 'nameKeyVersion', 'nameEntries', 'rekey', 'credentials', 'credentialBySubject', 'putCredential',
   'deleteCredential', 'replaceRecoveryCodes', 'recoveryCodes', 'spendRecoveryCode', 'putDevice', 'device', 'devicesOf', 'updateDevice', 'deleteDevices',
   'putSession', 'sessionByTokenHash', 'rotateSession', 'rerotateInGrace', 'updateSession', 'revokeSession', 'revokeSessions', 'sessionsOf', 'claimGuest',
-  'claimsOf',
+  'claimsOf', 'sessionById', 'appeal',
   'setRelation', 'deleteRelation', 'relationsOf', 'relationsAmong', 'putEmailCode', 'liveEmailCodes', 'useEmailCode', 'deleteEmailCodes', 'putReport',
   'report', 'reports', 'closeReport', 'putSanction', 'sanction', 'sanctionsOf', 'runningSanctions', 'endSanction', 'sanctionsEndingBy', 'markSeen',
   'putAppeal', 'appeals', 'answerAppeal', 'appendAudit', 'audit', 'appendChange', 'changes', 'changesHead', 'dueDeletions', 'erase', 'tombstone', 'purge',
@@ -101,7 +101,7 @@ describe('M14-1: ACCOUNT_STORE_METHODS', () => {
     expect(pinStore).toBe(true);
     expect(new Set(ACCOUNT_STORE_METHODS).size).toBe(ACCOUNT_STORE_METHODS.length);
     expect([...ACCOUNT_STORE_METHODS].sort()).toEqual([...STORE].sort());
-    expect(ACCOUNT_STORE_METHODS).toHaveLength(70);
+    expect(ACCOUNT_STORE_METHODS).toHaveLength(72);
     expect(Object.isFrozen(ACCOUNT_STORE_METHODS)).toBe(true);
   });
 

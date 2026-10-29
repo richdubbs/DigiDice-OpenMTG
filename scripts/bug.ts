@@ -25,7 +25,7 @@ import { readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
-  ABILITY_MODEL_VERSION, ENGINE_VIEW_SCHEMA, HIDDEN_DEF, REPLAY_LIMITS, checkpointAfter, cleanText, getChars, readBugReportFile, recordingFrameView,
+  ABILITY_MODEL_VERSION, ENGINE_VIEW_SCHEMA, HIDDEN_DEF, OLDEST_READ_VIEW_SCHEMA, readsViewSchema, REPLAY_LIMITS, checkpointAfter, cleanText, getChars, readBugReportFile, recordingFrameView,
   replayAction, startReplay, type Action, type BugReportFile, type CardDef, type GameConfig, type GameState, type GameView, type RecordingKeyView,
   type ReplayCheckpoint, type ReplayFile, type ReplayLimits, type ReplayRejection,
 } from '../packages/engine/src/index';
@@ -279,8 +279,8 @@ function replayRecording(r: BugReportFile): { code: 0 | 2; lines: string[] } {
   const at = Math.min(r.at.action, Math.max(0, frames.length - 1));
   const out = [`  Moment reported: frame ${at + 1} of ${frames.length}${r.at.action > at ? ` (the report names frame ${r.at.action + 1}, past the end)` : ''}`];
   out.push('', 'This report holds a recording: only what its player was shown, so there is no game to run on the engine.');
-  if (r.replay.engine.viewSchema !== ENGINE_VIEW_SCHEMA) {
-    out.push(`  Its views are of view schema ${r.replay.engine.viewSchema}; this build reads ${ENGINE_VIEW_SCHEMA}: it cannot be read here.`);
+  if (!readsViewSchema(r.replay.engine.viewSchema)) {
+    out.push(`  Its views are of view schema ${r.replay.engine.viewSchema}; this build reads ${OLDEST_READ_VIEW_SCHEMA} to ${ENGINE_VIEW_SCHEMA}: it cannot be read here.`);
     return { code: 2, lines: out };
   }
   let view: RecordingKeyView | null = null;
